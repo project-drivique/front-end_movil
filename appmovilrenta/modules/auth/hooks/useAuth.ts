@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { LoginForm, RegistroForm, OlvideContrasenaForm, AuthError } from '../types/auth.types';
 import { buscarUsuarioDemo, UsuarioDemo } from '../../../mocks/demoUsers';
 import { esCorreoValido as validarCorreo, esContrasenaSegura as validarContrasenaSegura } from '@/utils/validators';
@@ -164,4 +164,61 @@ export function useOlvideContrasena() {
   }
 
   return { form, errores, cargando, enviado, actualizarCorreo, enviarEnlace };
+}
+
+// ── useVerificarCorreo (HU: verificación de correo tras registro) ────────────
+// Genera un código de 6 dígitos "del lado del servidor" (simulado, guardado
+// en memoria — en producción esto lo enviaría un servicio de correo real) y
+// lo valida contra lo que el usuario escribe en las 6 casillas.
+
+export function useVerificarCorreo(correo: string) {
+  const [cargando, setCargando] = useState(false);
+  const [codigoEnviado, setCodigoEnviado] = useState(false);
+  const [verificando, setVerificando] = useState(false);
+  const [codigoIncorrecto, setCodigoIncorrecto] = useState(false);
+  const codigoActualRef = useRef<string | null>(null);
+
+  function generarCodigo(): string {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
+  async function enviarCodigo(): Promise<string> {
+    setCargando(true);
+    setCodigoIncorrecto(false);
+    try {
+      await new Promise((r) => setTimeout(r, 800));
+      // Mock: no hay backend de correo real — el "envío" es generar el
+      // código acá mismo y guardarlo en memoria para compararlo después.
+      const codigo = generarCodigo();
+      codigoActualRef.current = codigo;
+      setCodigoEnviado(true);
+      return codigo;
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  async function verificarCodigo(codigoIngresado: string): Promise<boolean> {
+    setVerificando(true);
+    try {
+      await new Promise((r) => setTimeout(r, 600));
+      const esValido =
+        !!codigoActualRef.current && codigoIngresado === codigoActualRef.current;
+      setCodigoIncorrecto(!esValido);
+      return esValido;
+    } finally {
+      setVerificando(false);
+    }
+  }
+
+  return {
+    correo,
+    cargando,
+    codigoEnviado,
+    verificando,
+    codigoIncorrecto,
+    setCodigoIncorrecto,
+    enviarCodigo,
+    verificarCodigo,
+  };
 }

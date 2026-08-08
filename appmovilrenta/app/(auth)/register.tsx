@@ -38,7 +38,6 @@ export default function RegistroScreen() {
   } = useRegistro();
 
   const [modalTerminos, setModalTerminos] = useState(false);
-  const [registroExitoso, setRegistroExitoso] = useState(false);
   const [correoTocado, setCorreoTocado] = useState(false);
 
   const errorCorreo = getError('correo') ??
@@ -48,34 +47,10 @@ export default function RegistroScreen() {
 
   function handleRegistrar() {
     registrar(
-      () => setRegistroExitoso(true),
+      // La verificación de correo (HU aparte) es la pantalla intermedia
+      // obligatoria tras registrarse — ya no se va directo a login.
+      () => router.replace(`/(auth)/verify-email?correo=${encodeURIComponent(form.correo)}`),
       () => {}
-    );
-  }
-
-  if (registroExitoso) {
-    return (
-      <View style={[styles.flex, { backgroundColor: c.bg, alignItems: 'center', justifyContent: 'center', padding: 32 }]}>
-        <View style={[exitoS.circulo, { backgroundColor: c.primaryBg }]}>
-          <Ionicons name="checkmark-circle" size={64} color="#10B981" />
-        </View>
-        <Text style={[exitoS.titulo, { color: c.textPrimary }]}>{t('auth.registro.exitoTitulo')}</Text>
-        <Text style={[exitoS.msg, { color: c.textSecondary }]}>{t('auth.registro.exitoMsg')}</Text>
-        <TouchableOpacity
-          style={exitoS.btnWrap}
-          onPress={() => router.replace('/(auth)/login')}
-          activeOpacity={0.85}
-        >
-          <LinearGradient
-            colors={GRADIENTES.boton.colors}
-            start={GRADIENTES.boton.start}
-            end={GRADIENTES.boton.end}
-            style={exitoS.btn}
-          >
-            <Text style={exitoS.btnTexto}>{t('auth.registro.exitoBtn')} →</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
     );
   }
 
@@ -367,42 +342,6 @@ const newS = StyleSheet.create({
   },
   loginLink: {
     fontSize: 13.5,
-    fontWeight: '700',
-  },
-});
-
-const exitoS = StyleSheet.create({
-  circulo: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  titulo: {
-    fontSize: 26,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  msg: {
-    fontSize: 15,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 32,
-  },
-  btnWrap: {
-    borderRadius: 12,
-  },
-  btn: {
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 12,
-  },
-  btnTexto: {
-    color: '#FFFFFF',
-    fontSize: 15,
     fontWeight: '700',
   },
 });
