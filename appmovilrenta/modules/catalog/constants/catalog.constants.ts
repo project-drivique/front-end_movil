@@ -113,6 +113,16 @@ export function getDireccionSucursal(sucursal: string): string | null {
   return encontrada ? encontrada.direccion : null;
 }
 
+// El mock de sucursales (branches.json) no trae horario — todas las
+// sucursales operan con el mismo horario estándar de la compañía.
+export const HORARIO_ATENCION_SUCURSAL = "Todos los días · 6:00 a.m. – 10:00 p.m.";
+
+// URL de Google Maps para "Cómo llegar" a partir de la dirección de la
+// sucursal (no requiere API key, funciona con Linking.openURL).
+export function getUrlComoLlegar(direccion: string): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
+}
+
 export const FILTROS_BASE = {
   categoria: "Todos",
   precioMin: "",

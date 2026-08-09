@@ -76,12 +76,15 @@ export interface Vehiculo {
   año?: number;
   placa?: string;
   sucursal?: string;
+  descripcion?: string;
   aireAcondicionado?: boolean;
   vidriosElectricos?: boolean;
   cierreCentralizado?: boolean;
   bluetooth?: boolean;
   camaraReversa?: boolean;
   sensoresParqueo?: boolean;
+  usb?: boolean;
+  pantallaTactil?: boolean;
   tarifas?: {
     kmLimitado?: Tarifa;
     kmIlimitado?: Tarifa;
