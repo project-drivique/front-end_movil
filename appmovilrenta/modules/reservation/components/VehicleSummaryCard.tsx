@@ -55,8 +55,8 @@ export default function VehiculoResumenCard({ vehiculo }: Props) {
     { icono: <Ionicons name="people-outline" size={14} color={COLORES.accentText} />, label: `${vehiculo.pasajeros ?? 5} ${t("catalogo.detalles.personas")}` },
   ];
 
-  // Mismas 7 características que maneja VehiculoDetalles.tsx en el catálogo — nada extra,
-  // solo se agregan las que el vehículo realmente tiene (chequeo condicional campo por campo).
+  // Solo se agregan las características que el vehículo realmente tiene
+  // (chequeo condicional campo por campo).
   const caracteristicas: CaracteristicaItem[] = [];
 
   if (vehiculo.aireAcondicionado) {
