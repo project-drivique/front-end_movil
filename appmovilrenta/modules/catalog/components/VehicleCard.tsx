@@ -20,7 +20,6 @@ import {
 } from "react-native";
 import { COLORES } from "../constants/catalog.constants";
 import { Vehiculo } from "../types/catalog.types";
-import VehiculoDetalles from "./VehicleDetails";
 import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
@@ -71,7 +70,6 @@ function VehiculoCard({
   const c = useTemaColores();
   const { t } = useTranslation();
   const [fotoActiva, setFotoActiva] = useState(0);
-  const [verDetalles, setVerDetalles] = useState(false);
   const [cardWidth, setCardWidth] = useState(0);
 
   const imagenes = getSafeImages(vehiculo);
@@ -184,101 +182,94 @@ function VehiculoCard({
       </View>
 
       <View style={styles.contenido}>
-        {!verDetalles && (
-          <View>
-            <View style={styles.tagsRow}>
-              <View style={styles.tagCategoria}>
-                <Text style={styles.tagCategoriaText}>
-                  {t(`catalogo.categoriaValores.${vehiculo.categoria ?? "Economico"}`, {
-                    defaultValue: vehiculo.categoria ?? "Económico",
-                  })}
-                </Text>
-              </View>
-              <View style={styles.tagSucursal}>
-                <Ionicons name="location-outline" size={10} color="#059669" />
-                <Text style={styles.tagSucursalText}>
-                  {vehiculo.sucursal ?? "Centro"}
-                </Text>
-              </View>
-            </View>
-
-            <Text style={[styles.nombre, { color: c.textPrimary }]}>{vehiculo.nombre}</Text>
-
-            <View style={styles.infoRow}>
-              <View style={styles.infoItem}>
-                <Ionicons name="settings-outline" size={14} color="#2f4ea2" />
-                <Text style={[styles.infoText, { color: c.textSecondary }]}>
-                  {t(`catalogo.transmisionValores.${vehiculo.transmision}`, {
-                    defaultValue: vehiculo.transmision,
-                  })}
-                </Text>
-              </View>
-              <View style={[styles.infoSeparador, { backgroundColor: c.border }]} />
-              <View style={styles.infoItem}>
-                <MaterialCommunityIcons
-                  name="gas-station-outline"
-                  size={14}
-                  color="#2f4ea2"
-                />
-                <Text style={[styles.infoText, { color: c.textSecondary }]}>
-                  {t(`catalogo.combustibleValores.${vehiculo.combustible}`, {
-                    defaultValue: vehiculo.combustible,
-                  })}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.estrellasRow}>
-              {estrellas.map((llena, i) => (
-                <Estrella key={i} llena={llena} />
-              ))}
-              <Text style={[styles.ratingText, { color: c.textSecondary }]}>{rating.toFixed(1)}</Text>
-            </View>
-
-            <Text style={styles.precio}>
-              {formatCurrency(vehiculo.precio, monedaActual, tasaUSD)}
-              <Text style={[styles.precioDia, { color: c.textMuted }]}> /{t("catalogo.porDia")}</Text>
+        <View style={styles.tagsRow}>
+          <View style={styles.tagCategoria}>
+            <Text style={styles.tagCategoriaText}>
+              {t(`catalogo.categoriaValores.${vehiculo.categoria ?? "Economico"}`, {
+                defaultValue: vehiculo.categoria ?? "Económico",
+              })}
             </Text>
-
-            <TouchableOpacity
-              style={[
-                styles.reservarBtnWrap,
-                !estadoDisponible && [styles.reservarBtnDisabled, { backgroundColor: c.bgInput }],
-              ]}
-              onPress={handleReservar}
-              disabled={!estadoDisponible}
-              activeOpacity={0.85}
-            >
-              {estadoDisponible ? (
-                <LinearGradient
-                  colors={GRADIENTES.boton.colors}
-                  start={GRADIENTES.boton.start}
-                  end={GRADIENTES.boton.end}
-                  style={styles.reservarBtn}
-                >
-                  <Ionicons name="car-sport-outline" size={16} color="#fff" />
-                  <Text style={styles.reservarBtnText}>{t("catalogo.reservarAhora")}</Text>
-                </LinearGradient>
-              ) : (
-                <View style={styles.reservarBtn}>
-                  <Ionicons name="car-sport-outline" size={16} color="#fff" />
-                  <Text style={styles.reservarBtnText}>{t("catalogo.reservarAhora")}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
           </View>
-        )}
+          <View style={styles.tagSucursal}>
+            <Ionicons name="location-outline" size={10} color="#059669" />
+            <Text style={styles.tagSucursalText}>
+              {vehiculo.sucursal ?? "Centro"}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={[styles.nombre, { color: c.textPrimary }]}>{vehiculo.nombre}</Text>
+
+        <View style={styles.infoRow}>
+          <View style={styles.infoItem}>
+            <Ionicons name="settings-outline" size={14} color="#2f4ea2" />
+            <Text style={[styles.infoText, { color: c.textSecondary }]}>
+              {t(`catalogo.transmisionValores.${vehiculo.transmision}`, {
+                defaultValue: vehiculo.transmision,
+              })}
+            </Text>
+          </View>
+          <View style={[styles.infoSeparador, { backgroundColor: c.border }]} />
+          <View style={styles.infoItem}>
+            <MaterialCommunityIcons
+              name="gas-station-outline"
+              size={14}
+              color="#2f4ea2"
+            />
+            <Text style={[styles.infoText, { color: c.textSecondary }]}>
+              {t(`catalogo.combustibleValores.${vehiculo.combustible}`, {
+                defaultValue: vehiculo.combustible,
+              })}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.estrellasRow}>
+          {estrellas.map((llena, i) => (
+            <Estrella key={i} llena={llena} />
+          ))}
+          <Text style={[styles.ratingText, { color: c.textSecondary }]}>{rating.toFixed(1)}</Text>
+        </View>
+
+        <Text style={styles.precio}>
+          {formatCurrency(vehiculo.precio, monedaActual, tasaUSD)}
+          <Text style={[styles.precioDia, { color: c.textMuted }]}> /{t("catalogo.porDia")}</Text>
+        </Text>
+
+        <TouchableOpacity
+          style={[
+            styles.reservarBtnWrap,
+            !estadoDisponible && [styles.reservarBtnDisabled, { backgroundColor: c.bgInput }],
+          ]}
+          onPress={handleReservar}
+          disabled={!estadoDisponible}
+          activeOpacity={0.85}
+        >
+          {estadoDisponible ? (
+            <LinearGradient
+              colors={GRADIENTES.boton.colors}
+              start={GRADIENTES.boton.start}
+              end={GRADIENTES.boton.end}
+              style={styles.reservarBtn}
+            >
+              <Ionicons name="car-sport-outline" size={16} color="#fff" />
+              <Text style={styles.reservarBtnText}>{t("catalogo.reservarAhora")}</Text>
+            </LinearGradient>
+          ) : (
+            <View style={styles.reservarBtn}>
+              <Ionicons name="car-sport-outline" size={16} color="#fff" />
+              <Text style={styles.reservarBtnText}>{t("catalogo.reservarAhora")}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.detallesBtn}
-          onPress={() => setVerDetalles(!verDetalles)}
+          onPress={() => router.push({ pathname: "/vehicle/[id]", params: { id: String(vehiculo.id) } })}
         >
-          <Text style={styles.detallesBtnText}>
-            {verDetalles ? t("catalogo.ocultarDetalles") : t("catalogo.verDetalles")}
-          </Text>
+          <Text style={styles.detallesBtnText}>{t("catalogo.verDetalles")}</Text>
+          <Ionicons name="chevron-forward" size={13} color="#2563eb" />
         </TouchableOpacity>
-
-        {verDetalles && <VehiculoDetalles vehiculo={vehiculo} />}
       </View>
     </View>
   );
@@ -442,6 +433,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: "#2563eb",
-    textDecorationLine: "underline",
   },
 });

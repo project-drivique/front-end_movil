@@ -6,18 +6,21 @@ interface Props {
   icono: keyof typeof Ionicons.glyphMap;
   texto: string;
   primaryBg: string;
+  /** Opcional — para secciones con su propio color temático (ej. verde
+   *  para tarifas, azul para seguros). Por defecto usa el azul de marca. */
+  color?: string;
 }
 
 // Encabezado de sección liviano: ícono de color + texto — sin envolver los
 // campos en una caja con borde (evita que los formularios se vean "muy
 // blancos"/cargados; el color se usa en el encabezado, no en contenedores).
-export function SectionLabel({ icono, texto, primaryBg }: Props) {
+export function SectionLabel({ icono, texto, primaryBg, color = "#1D4ED8" }: Props) {
   return (
     <View style={s.row}>
       <View style={[s.iconWrap, { backgroundColor: primaryBg }]}>
-        <Ionicons name={icono} size={13} color="#1D4ED8" />
+        <Ionicons name={icono} size={13} color={color} />
       </View>
-      <Text style={s.texto}>{texto}</Text>
+      <Text style={[s.texto, { color }]}>{texto}</Text>
     </View>
   );
 }
