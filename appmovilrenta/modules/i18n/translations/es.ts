@@ -602,6 +602,11 @@ export default {
     bienvenido: 'Bienvenido, {{nombre}}',
     configuracion: 'Configuración',
     soporteProximamente: 'Soporte — próximamente',
+    listas: 'Listas',
+    crearLista: 'Crear lista',
+    eliminar: 'Eliminar',
+    agregarALista: 'Agregar a lista',
+    sinFavoritos: 'No tienes vehículos favoritos guardados.',
   },
   // Configuración
   reserva: {
