@@ -118,12 +118,9 @@ export default function TabLayout() {
           }}
         />
 
-        {/* El flujo de reserva ya no vive en la barra de navegación — se
-            llega a él desde el botón "Reservar ahora" de la tarjeta del
-            catálogo (VehiculoCard -> router.push("/(tabs)/reserve")).
-            La ruta sigue existiendo, solo se oculta del tab bar. */}
         <Tabs.Screen name="reserve" options={{ href: null }} />
         <Tabs.Screen name="support" options={{ href: null }} />
+        <Tabs.Screen name="favorites" options={{ href: null }} />
 
         {/* Pantallas sin tab */}
         <Tabs.Screen name="index" options={{ href: null }} />
