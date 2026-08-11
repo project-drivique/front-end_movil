@@ -596,6 +596,12 @@ export default {
     notificacionesProximamente: 'Notificaciones — próximamente',
     alertaMisReservasTitulo: 'Inicia sesión',
     alertaMisReservasMensaje: 'Necesitas una cuenta activa para ver tu historial de reservas.',
+    mas: 'Más',
+    soporte: 'Soporte',
+    misFavoritos: 'Mis favoritos',
+    bienvenido: 'Bienvenido, {{nombre}}',
+    configuracion: 'Configuración',
+    soporteProximamente: 'Soporte — próximamente',
   },
   // Configuración
   reserva: {
