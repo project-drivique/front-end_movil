@@ -607,6 +607,11 @@ export default {
     eliminar: 'Eliminar',
     agregarALista: 'Agregar a lista',
     sinFavoritos: 'No tienes vehículos favoritos guardados.',
+    generales: 'Generales',
+    promociones: 'Promociones',
+    sinNotificacionesGenerales: 'No tienes notificaciones del sistema.',
+    sinNotificacionesPromociones: 'No hay promociones o campañas vigentes en este momento.',
+    marcarLeidas: 'Marcar todas como leídas',
   },
   // Configuración
   reserva: {
