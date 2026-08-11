@@ -111,9 +111,9 @@ export default function TabLayout() {
         <Tabs.Screen
           name="search"
           options={{
-            title: t("tabs.explorar"),
+            title: t("tabs.mas"),
             tabBarIcon: ({ focused }) => (
-              <TabIcon name="compass" focused={focused} c={c} />
+              <TabIcon name="menu" focused={focused} c={c} />
             ),
           }}
         />
@@ -123,6 +123,7 @@ export default function TabLayout() {
             catálogo (VehiculoCard -> router.push("/(tabs)/reserve")).
             La ruta sigue existiendo, solo se oculta del tab bar. */}
         <Tabs.Screen name="reserve" options={{ href: null }} />
+        <Tabs.Screen name="support" options={{ href: null }} />
 
         {/* Pantallas sin tab */}
         <Tabs.Screen name="index" options={{ href: null }} />
