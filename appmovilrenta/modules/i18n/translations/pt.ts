@@ -578,7 +578,13 @@ export default {
     buscarProximamente: 'Procurar — brevemente',
     notificacionesProximamente: 'Notificações — brevemente',
     alertaMisReservasTitulo: 'Iniciar sessão',
-    alertaMisReservasMensaje: 'Precisa de uma conta ativa para ver o seu histórico de reservas.',
+    alertaMisReservasMensaje: 'Precisa de uma conta activa para ver o seu histórico de reservas.',
+    mas: 'Mais',
+    soporte: 'Suporte',
+    misFavoritos: 'Meus favoritos',
+    bienvenido: 'Bem-vindo, {{nombre}}',
+    configuracion: 'Configurações',
+    soporteProximamente: 'Suporte — em breve',
   },
   reserva: {
     flujo: {
