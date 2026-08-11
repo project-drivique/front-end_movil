@@ -574,11 +574,17 @@ export default {
     notificaciones: 'Notificações',
     misReservas: 'Minhas reservas',
     perfil: 'Perfil',
-    explorar: 'Explorar',
+      explorar: 'Explorar',
     buscarProximamente: 'Buscar — em breve',
     notificacionesProximamente: 'Notificações — em breve',
     alertaMisReservasTitulo: 'Fazer login',
     alertaMisReservasMensaje: 'Você precisa de uma conta ativa para ver seu histórico de reservas.',
+    mas: 'Mais',
+    soporte: 'Suporte',
+    misFavoritos: 'Meus favoritos',
+    bienvenido: 'Bem-vindo, {{nombre}}',
+    configuracion: 'Configurações',
+    soporteProximamente: 'Suporte — em breve',
   },
   reserva: {
     flujo: {
