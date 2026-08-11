@@ -585,6 +585,11 @@ export default {
     bienvenido: 'Bem-vindo, {{nombre}}',
     configuracion: 'Configurações',
     soporteProximamente: 'Suporte — em breve',
+    listas: 'Listas',
+    crearLista: 'Criar lista',
+    eliminar: 'Excluir',
+    agregarALista: 'Adicionar à lista',
+    sinFavoritos: 'Você não tem veículos favoritos salvos.',
   },
   reserva: {
     flujo: {
