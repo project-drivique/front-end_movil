@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ConfiguracionModal } from "@/modules/i18n/components/ConfiguracionModal";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { LinearGradient } from "expo-linear-gradient";
+import { useNotificationStore } from "@/store/notificationStore";
 
 export default function MasMenuScreen() {
   const insets = useSafeAreaInsets();
@@ -18,6 +19,7 @@ export default function MasMenuScreen() {
   const [configVisible, setConfigVisible] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState({ titulo: "", mensaje: "" });
+  const unreadCount = useNotificationStore((s) => s.notificaciones.filter((n) => !n.leido).length);
 
   const handleNavigation = (route: string, authRequired: boolean = false, params?: Record<string, string>) => {
     if (authRequired && !usuario) {
@@ -107,6 +109,11 @@ export default function MasMenuScreen() {
           <Text style={[styles.menuItemText, { color: c.textPrimary }]}>
             {t("tabs.notificaciones")}
           </Text>
+          {unreadCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{unreadCount}</Text>
+            </View>
+          )}
           <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
         </TouchableOpacity>
 
@@ -257,5 +264,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     marginLeft: 14,
+  },
+  badge: {
+    backgroundColor: "#EF4444",
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 6,
+    marginRight: 8,
+  },
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "800",
   },
 });

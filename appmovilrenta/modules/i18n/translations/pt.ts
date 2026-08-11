@@ -590,6 +590,11 @@ export default {
     eliminar: 'Eliminar',
     agregarALista: 'Adicionar à lista',
     sinFavoritos: 'Não tem veículos favoritos guardados.',
+    generales: 'Gerais',
+    promociones: 'Promoções',
+    sinNotificacionesGenerales: 'Você não tem notificações do sistema.',
+    sinNotificacionesPromociones: 'Não há promoções ou campanhas ativas no momento.',
+    marcarLeidas: 'Marcar todas como lidas',
   },
   reserva: {
     flujo: {
