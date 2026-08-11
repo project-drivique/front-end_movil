@@ -592,6 +592,11 @@ export default {
     eliminar: 'Delete',
     agregarALista: 'Add to list',
     sinFavoritos: 'You do not have any saved favorite vehicles.',
+    generales: 'General',
+    promociones: 'Promotions',
+    sinNotificacionesGenerales: 'You have no system notifications.',
+    sinNotificacionesPromociones: 'There are no active promotions or campaigns at the moment.',
+    marcarLeidas: 'Mark all as read',
   },
   reserva: {
     flujo: {
