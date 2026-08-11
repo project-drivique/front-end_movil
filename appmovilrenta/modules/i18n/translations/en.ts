@@ -587,6 +587,11 @@ export default {
     bienvenido: 'Welcome, {{nombre}}',
     configuracion: 'Settings',
     soporteProximamente: 'Support — coming soon',
+    listas: 'Lists',
+    crearLista: 'Create list',
+    eliminar: 'Delete',
+    agregarALista: 'Add to list',
+    sinFavoritos: 'You do not have any saved favorite vehicles.',
   },
   reserva: {
     flujo: {

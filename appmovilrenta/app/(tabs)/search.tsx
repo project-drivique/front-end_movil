@@ -90,7 +90,7 @@ export default function MasMenuScreen() {
 
         <TouchableOpacity
           style={[styles.menuItem, { backgroundColor: c.bgCard, borderColor: c.border }]}
-          onPress={() => handleNavigation("/(tabs)/catalog", true, { favoritos: "true" })}
+          onPress={() => handleNavigation("/(tabs)/favorites", true)}
         >
           <Ionicons name="heart-outline" size={22} color={c.textSecondary} />
           <Text style={[styles.menuItemText, { color: c.textPrimary }]}>
