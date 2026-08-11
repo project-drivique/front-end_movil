@@ -581,6 +581,12 @@ export default {
     notificacionesProximamente: 'Notifications — coming soon',
     alertaMisReservasTitulo: 'Log in',
     alertaMisReservasMensaje: 'You need an active account to see your booking history.',
+    mas: 'More',
+    soporte: 'Support',
+    misFavoritos: 'My Favorites',
+    bienvenido: 'Welcome, {{nombre}}',
+    configuracion: 'Settings',
+    soporteProximamente: 'Support — coming soon',
   },
   reserva: {
     flujo: {

@@ -9,7 +9,7 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { ConfiguracionModal } from "@/modules/i18n/components/ConfiguracionModal";
 import { useAuditoria } from "@/store/auditStore";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -134,6 +134,17 @@ export default function Catalogo() {
   const c = useTemaColores();
   const { t } = useTranslation();
   const usuario = useAuthStore((state) => state.usuario);
+  const getInitials = () => {
+    if (!usuario) return "?";
+    const name = usuario.nombre && usuario.nombre.trim() !== "" 
+      ? usuario.nombre 
+      : (usuario.correo ? usuario.correo.split("@")[0] : "");
+    if (!name) return "?";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 0) return "?";
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  };
   const [textBusqueda, setTextBusqueda] = useState("");
   const [modalFormVisible, setModalFormVisible] = useState(false);
   const [sweetAlertVisible, setSweetAlertVisible] = useState(false);
@@ -171,9 +182,18 @@ export default function Catalogo() {
     [t]
   );
 
+  const params = useLocalSearchParams<{ favoritos?: string }>();
   const usuarioId = usuario ? String(usuario.id ?? usuario.correo ?? "user") : null;
   const { favoritos, toggleFavorito, esFavorito } = useFavoritos(usuarioId);
   const [soloFavoritos, setSoloFavoritos] = useState(false);
+
+  useEffect(() => {
+    if (params.favoritos === "true") {
+      setSoloFavoritos(true);
+    } else if (params.favoritos === "false") {
+      setSoloFavoritos(false);
+    }
+  }, [params.favoritos]);
 
   const {
     cargando,
@@ -305,7 +325,19 @@ export default function Catalogo() {
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>Drivique</Text>
         </View>
-        {!usuario && (
+        {usuario ? (
+          <TouchableOpacity
+            style={styles.avatarHeaderBtn}
+            onPress={() => router.push("/(tabs)/profile")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.avatarContainer, { backgroundColor: c.primaryBg }]}>
+              <Text style={[styles.avatarText, { color: "#1D4ED8" }]}>
+                {getInitials()}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ) : (
           <View style={styles.headerBtns}>
             <TouchableOpacity
               style={styles.ajustesBtn}
@@ -642,4 +674,20 @@ const styles = StyleSheet.create({
   paginaBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },
   paginaBtnTextDisabled: { color: "#CBD5E1" },
   paginaInfoTexto: { fontSize: 14, fontWeight: "700", color: "#475569" },
+  avatarHeaderBtn: {
+    padding: 2,
+  },
+  avatarContainer: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#1D4ED840",
+  },
+  avatarText: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
 });

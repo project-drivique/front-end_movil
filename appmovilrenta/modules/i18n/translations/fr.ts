@@ -579,6 +579,12 @@ export default {
     notificacionesProximamente: 'Notifications — bientôt disponible',
     alertaMisReservasTitulo: 'Connexion',
     alertaMisReservasMensaje: 'Vous avez besoin d\'un compte actif pour voir votre historique de réservations.',
+    mas: 'Plus',
+    soporte: 'Support',
+    misFavoritos: 'Mes favoris',
+    bienvenido: 'Bienvenue, {{nombre}}',
+    configuracion: 'Configuration',
+    soporteProximamente: 'Support — à venir',
   },
   reserva: {
     flujo: {
