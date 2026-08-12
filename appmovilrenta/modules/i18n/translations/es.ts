@@ -612,6 +612,11 @@ export default {
     sinNotificacionesGenerales: 'No tienes notificaciones del sistema.',
     sinNotificacionesPromociones: 'No hay promociones o campañas vigentes en este momento.',
     marcarLeidas: 'Marcar todas como leídas',
+    reportarIncidencia: 'Reportar incidencia',
+    hacerReporte: 'Hacer reporte',
+    misReportes: 'Mis reportes',
+    canalesAtencion: 'Canales de atención',
+    preguntasFrecuentes: 'Preguntas frecuentes',
   },
   // Configuración
   reserva: {

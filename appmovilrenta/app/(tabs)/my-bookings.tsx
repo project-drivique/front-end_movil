@@ -321,6 +321,28 @@ function TarjetaReserva({
             </Text>
             <Text style={[styles.tarjetaTotal, { color: c.textPrimary }]}>{fmt(reserva.total)}</Text>
           </View>
+
+          {/* Botón para reportar incidencia en el vehículo */}
+          <TouchableOpacity
+            style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
+            onPress={(e) => {
+              e.stopPropagation();
+              router.push({
+                pathname: "/(tabs)/support",
+                params: {
+                  reservaId: reserva.referencia,
+                  vehiculoNombre: reserva.vehiculoNombre,
+                  placa: vehiculoSnap?.placa || "KLS-849",
+                },
+              } as any);
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="build-outline" size={13} color={c.primary} />
+            <Text style={[styles.reportarBtnText, { color: c.primary }]}>
+              {t("tabs.hacerReporte")}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -421,6 +443,22 @@ const styles = StyleSheet.create({
   },
   tarjetaReferencia: { fontSize: 10, flexShrink: 1 },
   tarjetaTotal: { fontSize: 14, fontWeight: "800" },
+  reportarBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    marginTop: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignSelf: "flex-end",
+  },
+  reportarBtnText: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
 
   vacioContainer: {
     flex: 1,
