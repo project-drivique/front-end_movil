@@ -68,7 +68,7 @@ export default {
       invitado: 'Continuar como invitado',
       exitoMsg: '¡Bienvenido! Iniciando sesión...',
       bloqueado: 'Cuenta bloqueada',
-      hintBloqueado: 'Cuenta bloqueada tras 3 intentos. Usa ¿Olvidaste tu contraseña?',
+      sinPermisosAcceso: 'No tienes permisos para acceder. Contacta al administrador principal.',
       crearCuenta: 'Crear cuenta nueva',
       separador: 'o',
       iniciarSesion: 'Iniciar sesión',
