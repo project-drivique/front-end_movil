@@ -186,6 +186,8 @@ export default function FirmaContrato({
       const contrato = await contratoService.guardarFirma(referencia, {
         codigo: codigoContrato,
         firmaTrazos: pdfFirma.uri,
+        archivoOriginalUri: pdfFirma.uri,
+        archivoOriginalNombre: pdfFirma.nombre,
         ciudad: ciudadSucursal,
         fecha: new Date().toISOString(),
       });

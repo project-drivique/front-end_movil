@@ -7,6 +7,7 @@
 // FirmaCanvas.
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
+import { Platform } from "react-native";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import {
   DatosDocumentos,
@@ -201,7 +202,18 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
   return uri;
 }
 
-export async function compartirContratoPdf(uri: string) {
+export async function compartirContratoPdf(uri: string, nombre = "contrato-firmado.pdf") {
+  if (Platform.OS === "web" && typeof document !== "undefined") {
+    const enlace = document.createElement("a");
+    enlace.href = uri;
+    enlace.download = nombre;
+    enlace.rel = "noopener";
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    return uri;
+  }
+
   const disponible = await Sharing.isAvailableAsync();
   if (disponible) {
     await Sharing.shareAsync(uri, {

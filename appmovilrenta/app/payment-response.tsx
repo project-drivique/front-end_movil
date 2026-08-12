@@ -25,6 +25,7 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { GRADIENTES } from "@/constants/gradients";
 import { COLOR_MARCA } from "@/modules/catalog/constants/catalog.constants";
 import {
+  calcularGrupoReserva,
   ReservaGuardada,
   reservaPersistService,
 } from "@/modules/reservation/services/reservationPersistService";
@@ -38,8 +39,7 @@ import {
 } from "@/modules/reservation/types/reservation.types";
 import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { contratoService, ContratoGuardado } from "@/modules/reservation/services/contractService";
-import { generarContratoPdf, compartirContratoPdf } from "@/modules/reservation/services/pdfService";
-import { calcularGrupoReserva } from "@/modules/reservation/services/reservationPersistService";
+import { compartirContratoPdf } from "@/modules/reservation/services/pdfService";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 
 export default function PagoRespuestaScreen() {
@@ -201,47 +201,22 @@ export default function PagoRespuestaScreen() {
       Alert.alert(t("misReservas.contratoNoDisponibleTitulo"), t("misReservas.contratoNoDisponible"));
       return;
     }
-    const datosPersonalesSnap = reserva.datosPersonalesSnapshot as DatosPersonales | undefined;
-    const datosDocumentosSnap = reserva.datosDocumentosSnapshot as DatosDocumentos | undefined;
-    const fechasLugarSnap = reserva.fechasLugarSnapshot as DatosFechasLugar | undefined;
-    const planesSnap = reserva.planesSnapshot as DatosPlanes | undefined;
-
-    if (!vehiculoSnap || !datosPersonalesSnap || !fechasLugarSnap || !planesSnap) {
-      Alert.alert(t("misReservas.errorPdfTitulo"), t("misReservas.errorPdfMensaje"));
-      return;
-    }
-
     setGenerandoPdf(true);
     try {
-      const textos = [
-        "title", "subtitle", "autoGenNote", "badgeLabel", "contractCode", "status", "statusSigned",
-        "generationDate", "reservationCode", "intro", "userDataTitle", "fullName", "document", "email",
-        "phone", "reservationTitle", "vehicle", "plate", "branch", "branchCity", "branchAddress",
-        "startDate", "endDate", "totalValue", "protectionPlan", "domicileDelivery", "signaturesTitle",
-        "userSignature", "platformSignature", "digitallySigned", "responsible", "role",
-        "platformResponsible", "platformRole", "footerNote1", "footerNote2",
-      ].reduce<Record<string, string>>((acc, key) => {
-        acc[key] = t(`reserva.contrato.${key}`);
-        return acc;
-      }, {});
+      const archivoOriginalUri = contratoActual.archivoOriginalUri ||
+        (/^(blob:|file:|content:|https?:|data:)/.test(contratoActual.firmaTrazos)
+          ? contratoActual.firmaTrazos
+          : null);
 
-      const uri = await generarContratoPdf({
-        contrato: contratoActual,
-        vehiculo: vehiculoSnap,
-        datosPersonales: datosPersonalesSnap,
-        datosDocumentos: datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null },
-        fechasLugar: fechasLugarSnap,
-        planes: planesSnap,
-        total: reserva.total,
-        referencia: reserva.referencia,
-        formatPrecio: fmt,
-        formatearFecha: (iso) => (iso ? fechaCorta(iso) : "—"),
-        tipoDocumentoTexto: datosPersonalesSnap.tipoDocumento
-          ? t(`reserva.datosPersonales.tiposDocumento.${datosPersonalesSnap.tipoDocumento === "Doc. Extranjero" ? "DocExtranjero" : datosPersonalesSnap.tipoDocumento}`, { defaultValue: datosPersonalesSnap.tipoDocumento })
-          : "",
-        textos,
-      });
-      await compartirContratoPdf(uri);
+      if (archivoOriginalUri) {
+        await compartirContratoPdf(
+          archivoOriginalUri,
+          contratoActual.archivoOriginalNombre || `contrato-${reserva.referencia}.pdf`
+        );
+        return;
+      }
+
+      Alert.alert(t("misReservas.contratoNoDisponibleTitulo"), t("misReservas.contratoNoDisponible"));
     } catch (error) {
       console.error("[pago-respuesta] Error generando el PDF", error);
       Alert.alert(t("misReservas.errorPdfTitulo"), t("misReservas.errorPdfMensaje"));

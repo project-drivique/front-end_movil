@@ -19,6 +19,9 @@ export interface ContratoGuardado {
    * solo cambia el formato de almacenamiento interno.
    */
   firmaTrazos: string;
+  /** Archivo PDF original que el usuario adjuntó como contrato firmado. */
+  archivoOriginalUri?: string;
+  archivoOriginalNombre?: string;
   ciudad: string;
   fecha: string;
   estado: "FIRMADO";
@@ -81,7 +84,14 @@ export const contratoService = {
    */
   guardarFirma: async (
     referenciaReserva: string,
-    datos: { codigo?: string; firmaTrazos: string; ciudad?: string; fecha?: string }
+    datos: {
+      codigo?: string;
+      firmaTrazos: string;
+      archivoOriginalUri?: string;
+      archivoOriginalNombre?: string;
+      ciudad?: string;
+      fecha?: string;
+    }
   ): Promise<ContratoGuardado | null> => {
     if (!referenciaReserva) return null;
     const todos = await leerTodos();
@@ -90,6 +100,8 @@ export const contratoService = {
       codigo: datos.codigo || generarCodigoContrato(),
       referenciaReserva,
       firmaTrazos: datos.firmaTrazos,
+      archivoOriginalUri: datos.archivoOriginalUri,
+      archivoOriginalNombre: datos.archivoOriginalNombre,
       ciudad: datos.ciudad || "",
       fecha: datos.fecha || new Date().toISOString(),
       estado: "FIRMADO",
