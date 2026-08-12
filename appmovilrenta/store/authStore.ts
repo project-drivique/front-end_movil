@@ -1,13 +1,23 @@
-// store/authStore.ts
-
 import { create } from "zustand";
+import { useUsuarioStore } from "./userStore";
+
+export type RolUsuario =
+  | "cliente"
+  | "administrador"
+  | "encargado_sucursal"
+  | "operador"
+  | "supervisor";
 
 export interface Usuario {
   id: string;
   correo: string;
   nombres?: string;
   apellidos?: string;
-  rol: "cliente" | "administrador" | "operador" | "supervisor";
+  rol: RolUsuario;
+  activo?: boolean;
+  permisosValidos?: boolean;
+  sucursalId?: string;
+  sucursalNombre?: string;
 }
 
 interface AuthStore {
@@ -21,5 +31,12 @@ export const useAuthStore = create<AuthStore>()((set) => ({
   usuario: null,
   token: null,
   setUsuario: (usuario, token) => set({ usuario, token }),
-  cerrarSesion: () => set({ usuario: null, token: null }),
+  cerrarSesion: () => {
+    set({ usuario: null, token: null });
+    try {
+      useUsuarioStore.getState().limpiarUsuario();
+    } catch {
+      // Ignorar si no está inicializado
+    }
+  },
 }));
