@@ -77,6 +77,7 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
     contrato,
     vehiculo,
     datosPersonales,
+    datosDocumentos,
     fechasLugar,
     planes,
     total,
@@ -94,6 +95,14 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
   const direccionSucursal = sucursalRetiroNombre ? getDireccionSucursal(sucursalRetiroNombre) ?? "" : "";
 
   const svgFirma = trazosASvgPaths(contrato.firmaTrazos);
+  const metodoPagoTexto = fechasLugar.metodoPago === "efectivo" ? tx.paymentMethodCash : tx.paymentMethodWompi;
+  const serviciosTexto = (vehiculo?.servicios || [])
+    .filter((servicio) => planes.serviciosSeleccionados.includes(servicio.nombre))
+    .map((servicio) => servicio.nombre)
+    .join(", ") || tx.noneAdded;
+  const direccionCompleta = esDomicilioRetiro
+    ? `${fechasLugar.direccionRetiro || ""}, ${fechasLugar.barrioRetiro || ""}, ${ciudadSucursal}`
+    : tx.notProvided;
 
   const html = `
   <html>
@@ -154,22 +163,54 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
         <div class="campo"><div class="campo-label">${esc(tx.document)}</div><div class="campo-valor">${esc(tipoDocumentoTexto)} ${esc(datosPersonales.numeroDocumento)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.email)}</div><div class="campo-valor">${esc(datosPersonales.correo)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.phone)}</div><div class="campo-valor">${esc(datosPersonales.celular)}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx.address)}</div><div class="campo-valor">${esc(direccionCompleta)}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx.license)}</div><div class="campo-valor">${esc(datosDocumentos.licenciaConduccion?.nombre || tx.notProvided)}</div></div>
       </div>
 
       <h2>${esc(tx.reservationTitle)}</h2>
       <div class="grid">
         <div class="campo"><div class="campo-label">${esc(tx.vehicle)}</div><div class="campo-valor">${esc(marca)} ${esc(modelo)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.plate)}</div><div class="campo-valor">${esc(vehiculo?.placa)}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx.color)}</div><div class="campo-valor">${esc(vehiculo?.color)}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx.year)}</div><div class="campo-valor">${esc(vehiculo?.año)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.branch)}</div><div class="campo-valor">${esc(esDomicilioRetiro ? tx.domicileDelivery : fechasLugar.lugarRetiro)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.branchCity)}</div><div class="campo-valor">${esc(ciudadSucursal)}</div></div>
         ${!esDomicilioRetiro ? `<div class="campo"><div class="campo-label">${esc(tx.branchAddress)}</div><div class="campo-valor">${esc(direccionSucursal)}</div></div>` : ""}
         <div class="campo"><div class="campo-label">${esc(tx.startDate)}</div><div class="campo-valor">${esc(formatearFecha(fechasLugar.fechaRetiro))}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.endDate)}</div><div class="campo-valor">${esc(formatearFecha(fechasLugar.fechaDevolucion))}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx.paymentMethod)}</div><div class="campo-valor">${esc(metodoPagoTexto)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.totalValue)}</div><div class="campo-valor">${esc(formatPrecio(total))}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx.additionalServices)}</div><div class="campo-valor">${esc(serviciosTexto)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.protectionPlan)}</div><div class="campo-valor">${esc(planes.proteccion)}</div></div>
+        ${esDomicilioRetiro ? `
+          <div class="campo"><div class="campo-label">${esc(tx.deliveryAddress)}</div><div class="campo-valor">${esc(fechasLugar.direccionRetiro)}</div></div>
+          <div class="campo"><div class="campo-label">${esc(tx.deliveryNeighborhood)}</div><div class="campo-valor">${esc(fechasLugar.barrioRetiro)}</div></div>
+          <div class="campo"><div class="campo-label">${esc(tx.deliveryReferences)}</div><div class="campo-valor">${esc(fechasLugar.referenciasRetiro)}</div></div>
+        ` : ""}
+      </div>
+
+      <h2>${esc(tx.clausesTitle)}</h2>
+      <div class="clausulas">
+        <p><b>${esc(tx.clause1Title)}</b> ${esc(tx.clause1Text
+          .replace("{{marca}}", marca)
+          .replace("{{modelo}}", modelo)
+          .replace("{{placa}}", vehiculo?.placa || "")
+          .replace("{{inicio}}", formatearFecha(fechasLugar.fechaRetiro))
+          .replace("{{fin}}", formatearFecha(fechasLugar.fechaDevolucion)))}</p>
+        <p><b>${esc(tx.clause2Title)}</b> ${esc(tx.clause2Text)}</p>
+        <p><b>${esc(tx.clause3Title)}</b></p>
+        <ul>
+          <li>${esc(tx.clause3Item1)}</li><li>${esc(tx.clause3Item2)}</li>
+          <li>${esc(tx.clause3Item3)}</li><li>${esc(tx.clause3Item4)}</li>
+        </ul>
+        <p><b>${esc(tx.clause4Title)}</b> ${esc(tx.clause4Text)}</p>
+        <p><b>${esc(tx.clause5Title)}</b> ${esc(tx.clause5Text)}</p>
+        <p><b>${esc(tx.clause6Title)}</b> ${esc(tx.clause6Text)}</p>
       </div>
 
       <h2>${esc(tx.signaturesTitle)}</h2>
+      <div class="meta"><b>${esc(tx.signCity)}:</b> ${esc(ciudadSucursal)}</div>
+      <div class="meta"><b>${esc(tx.signDate)}:</b> ${esc(formatearFecha(contrato.fecha.slice(0, 10)))}</div>
       <div class="firmas">
         <div class="firma-card">
           <div class="firma-titulo">${esc(tx.userSignature)}</div>

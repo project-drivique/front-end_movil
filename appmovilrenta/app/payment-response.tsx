@@ -39,7 +39,7 @@ import {
 } from "@/modules/reservation/types/reservation.types";
 import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { contratoService, ContratoGuardado } from "@/modules/reservation/services/contractService";
-import { compartirContratoPdf } from "@/modules/reservation/services/pdfService";
+import { generarContratoPdf, compartirContratoPdf } from "@/modules/reservation/services/pdfService";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 
 export default function PagoRespuestaScreen() {
@@ -183,12 +183,17 @@ export default function PagoRespuestaScreen() {
   const encabezado = encabezadoPorGrupo[grupo];
 
   const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
+  const datosPersonalesSnap = reserva.datosPersonalesSnapshot as DatosPersonales | undefined;
+  const datosDocumentosSnap = reserva.datosDocumentosSnapshot as DatosDocumentos | undefined;
+  const fechasLugarSnap = reserva.fechasLugarSnapshot as DatosFechasLugar | undefined;
+  const planesSnap = reserva.planesSnapshot as DatosPlanes | undefined;
   const foto = vehiculoSnap?.imagenes?.[0];
 
   const handleValidarClave = () => {
     const datosPersonalesSnap = reserva?.datosPersonalesSnapshot as DatosPersonales | undefined;
-    const numeroDocumento = datosPersonalesSnap?.numeroDocumento?.trim();
-    if (numeroDocumento && claveIngresada.trim() === numeroDocumento) {
+    const numeroDocumento = datosPersonalesSnap?.numeroDocumento?.replace(/\D/g, "");
+    const claveNormalizada = claveIngresada.replace(/\D/g, "");
+    if (numeroDocumento && claveNormalizada === numeroDocumento) {
       setErrorClave("");
       setClaveDesbloqueada(true);
     } else {
@@ -203,20 +208,46 @@ export default function PagoRespuestaScreen() {
     }
     setGenerandoPdf(true);
     try {
-      const archivoOriginalUri = contratoActual.archivoOriginalUri ||
-        (/^(blob:|file:|content:|https?:|data:)/.test(contratoActual.firmaTrazos)
-          ? contratoActual.firmaTrazos
-          : null);
-
-      if (archivoOriginalUri) {
-        await compartirContratoPdf(
-          archivoOriginalUri,
-          contratoActual.archivoOriginalNombre || `contrato-${reserva.referencia}.pdf`
-        );
+      if (!vehiculoSnap || !datosPersonalesSnap || !fechasLugarSnap || !planesSnap) {
+        Alert.alert(t("misReservas.errorPdfTitulo"), t("misReservas.errorPdfMensaje"));
         return;
       }
 
-      Alert.alert(t("misReservas.contratoNoDisponibleTitulo"), t("misReservas.contratoNoDisponible"));
+      const clavesTexto = [
+        "title", "subtitle", "autoGenNote", "badgeLabel", "contractCode", "status", "statusSigned",
+        "generationDate", "reservationCode", "intro", "userDataTitle", "fullName", "document", "email",
+        "phone", "address", "license", "notProvided", "reservationTitle", "vehicle", "plate", "color", "year",
+        "branch", "branchCity", "branchAddress", "startDate", "endDate", "paymentMethod", "totalValue",
+        "additionalServices", "protectionPlan", "domicileDelivery", "deliveryAddress", "deliveryNeighborhood",
+        "deliveryReferences", "returnAtDomicile", "returnAtDomicileValue", "clausesTitle", "clause1Title",
+        "clause1Text", "clause2Title", "clause2Text", "clause3Title", "clause3Item1", "clause3Item2",
+        "clause3Item3", "clause3Item4", "clause4Title", "clause4Text", "clause5Title", "clause5Text",
+        "clause6Title", "clause6Text", "signaturesTitle", "signCity", "signDate", "userSignature",
+        "platformSignature", "digitallySigned", "responsible", "role", "platformResponsible", "platformRole",
+        "footerNote1", "footerNote2", "paymentMethodCash", "paymentMethodWompi", "noneAdded",
+      ];
+      const textos = clavesTexto.reduce<Record<string, string>>((acc, key) => {
+        acc[key] = t(`reserva.contrato.${key}`);
+        return acc;
+      }, {});
+
+      const uri = await generarContratoPdf({
+        contrato: contratoActual,
+        vehiculo: vehiculoSnap,
+        datosPersonales: datosPersonalesSnap,
+        datosDocumentos: datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null },
+        fechasLugar: fechasLugarSnap,
+        planes: planesSnap,
+        total: reserva.total,
+        referencia: reserva.referencia,
+        formatPrecio: fmt,
+        formatearFecha: (iso) => (iso ? fechaCorta(iso) : "—"),
+        tipoDocumentoTexto: datosPersonalesSnap.tipoDocumento
+          ? t(`reserva.datosPersonales.tiposDocumento.${datosPersonalesSnap.tipoDocumento === "Doc. Extranjero" ? "DocExtranjero" : datosPersonalesSnap.tipoDocumento}`, { defaultValue: datosPersonalesSnap.tipoDocumento })
+          : "",
+        textos,
+      });
+      await compartirContratoPdf(uri, `contrato-${reserva.referencia}.pdf`);
     } catch (error) {
       console.error("[pago-respuesta] Error generando el PDF", error);
       Alert.alert(t("misReservas.errorPdfTitulo"), t("misReservas.errorPdfMensaje"));
@@ -234,6 +265,24 @@ export default function PagoRespuestaScreen() {
         onVolver={irAMisReservas}
       />
 
+      {contratoActual && claveDesbloqueada && vehiculoSnap && datosPersonalesSnap && fechasLugarSnap && planesSnap ? (
+        <FirmaContrato
+          vehiculo={vehiculoSnap}
+          datosPersonales={datosPersonalesSnap}
+          datosDocumentos={
+            datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null }
+          }
+          fechasLugar={fechasLugarSnap}
+          planes={planesSnap}
+          total={reserva.total}
+          referencia={reserva.referencia}
+          onFirmado={() => {}}
+          soloLectura
+          contratoFirmado={contratoActual}
+          onDescargar={handleDescargarPdf}
+          descargando={generandoPdf}
+        />
+      ) : (
       <ScrollView
         style={{ backgroundColor: c.bg }}
         contentContainerStyle={[styles.scroll, { paddingTop: 24 }]}
@@ -338,7 +387,7 @@ export default function PagoRespuestaScreen() {
             </LinearGradient>
           </TouchableOpacity>
         </View>
-      ) : (
+      ) : !contratoActual ? (
         <TouchableOpacity
           style={[styles.btnWrap, { marginBottom: 12 }, !contratoActual && { opacity: 0.5 }]}
           onPress={handleDescargarPdf}
@@ -361,9 +410,10 @@ export default function PagoRespuestaScreen() {
             </Text>
           </LinearGradient>
         </TouchableOpacity>
-      )}
+      ) : null}
 
     </ScrollView>
+      )}
     </View>
   );
 }

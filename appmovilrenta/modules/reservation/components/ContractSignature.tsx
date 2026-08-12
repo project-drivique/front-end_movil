@@ -59,6 +59,10 @@ interface Props {
   total: number;
   referencia: string;
   onFirmado: (contrato: ContratoGuardado | null) => void;
+  soloLectura?: boolean;
+  contratoFirmado?: ContratoGuardado | null;
+  onDescargar?: () => void;
+  descargando?: boolean;
 }
 
 export default function FirmaContrato({
@@ -70,6 +74,10 @@ export default function FirmaContrato({
   total,
   referencia,
   onFirmado,
+  soloLectura = false,
+  contratoFirmado = null,
+  onDescargar,
+  descargando = false,
 }: Props) {
   const { t, i18n } = useTranslation();
   const c = useTemaColores();
@@ -237,7 +245,11 @@ export default function FirmaContrato({
               <Text style={styles.badgeLabelTexto}>{t("reserva.contrato.badgeLabel")}</Text>
             </View>
             <MetaLinea label={t("reserva.contrato.contractCode")} valor={codigoContrato} c={c} />
-            <MetaLinea label={t("reserva.contrato.status")} valor={t("reserva.contrato.statusPending")} c={c} />
+            <MetaLinea
+              label={t("reserva.contrato.status")}
+              valor={t(soloLectura ? "reserva.contrato.statusSigned" : "reserva.contrato.statusPending")}
+              c={c}
+            />
             <MetaLinea label={t("reserva.contrato.generationDate")} valor={fechaGeneracion} c={c} />
             <MetaLinea label={t("reserva.contrato.reservationCode")} valor={referencia} c={c} />
           </View>
@@ -361,15 +373,33 @@ export default function FirmaContrato({
 
             <View style={styles.firmasFila}>
               <View style={[styles.firmaTarjeta, { backgroundColor: c.bgInput, borderColor: c.border }]}>
-                <CampoSubidaDocumento
-                  etiqueta={t("reserva.contrato.userSignature")}
-                  ayuda={t("reserva.contrato.uploadSignaturePdfHelp") || "Anexe un documento PDF firmado"}
-                  archivo={pdfFirma}
-                  cargando={cargandoFirma}
-                  error={errorFirma}
-                  onSeleccionar={seleccionarPdfFirma}
-                  onQuitar={() => setPdfFirma(null)}
-                />
+                {soloLectura ? (
+                  <View>
+                    <Text style={[styles.firmaTitulo, { color: c.textPrimary }]}>
+                      {t("reserva.contrato.userSignature")}
+                    </Text>
+                    <View style={[styles.selloPlataforma, { backgroundColor: c.bgCard }]}>
+                      <Ionicons name="document-attach-outline" size={34} color="#1e3a8a" />
+                      <Text style={[styles.firmaDato, { color: c.textPrimary, textAlign: "center" }]}>
+                        {contratoFirmado?.archivoOriginalNombre || t("reserva.contrato.digitallySigned")}
+                      </Text>
+                      <View style={styles.selloBadge}>
+                        <Ionicons name="checkmark-circle" size={14} color="#1e3a8a" />
+                        <Text style={styles.selloBadgeTexto}>{t("reserva.contrato.statusSigned")}</Text>
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <CampoSubidaDocumento
+                    etiqueta={t("reserva.contrato.userSignature")}
+                    ayuda={t("reserva.contrato.uploadSignaturePdfHelp") || "Anexe un documento PDF firmado"}
+                    archivo={pdfFirma}
+                    cargando={cargandoFirma}
+                    error={errorFirma}
+                    onSeleccionar={seleccionarPdfFirma}
+                    onQuitar={() => setPdfFirma(null)}
+                  />
+                )}
                 <View style={{ marginTop: 12 }}>
                   <Text style={[styles.firmaDato, { color: c.textPrimary }]}>
                     <Text style={styles.clausulaNegrita}>{t("reserva.contrato.fullName")}:</Text>{" "}
@@ -407,8 +437,8 @@ export default function FirmaContrato({
 
           <TouchableOpacity
             style={styles.firmarBtnWrap}
-            onPress={handleFirmar}
-            disabled={firmando}
+            onPress={soloLectura ? onDescargar : handleFirmar}
+            disabled={soloLectura ? descargando : firmando}
             activeOpacity={0.85}
           >
             <LinearGradient
@@ -417,9 +447,15 @@ export default function FirmaContrato({
               end={GRADIENTES.boton.end}
               style={styles.firmarBtn}
             >
-              <Ionicons name={firmando ? "hourglass-outline" : "create-outline"} size={18} color="#fff" />
+              <Ionicons
+                name={(soloLectura ? descargando : firmando) ? "hourglass-outline" : soloLectura ? "download-outline" : "create-outline"}
+                size={18}
+                color="#fff"
+              />
               <Text style={styles.firmarBtnTexto}>
-                {firmando ? t("reserva.contrato.signing") : t("reserva.contrato.signAndContinue")}
+                {soloLectura
+                  ? descargando ? t("misReservas.generandoPdf") : t("misReservas.descargarContrato")
+                  : firmando ? t("reserva.contrato.signing") : t("reserva.contrato.signAndContinue")}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
