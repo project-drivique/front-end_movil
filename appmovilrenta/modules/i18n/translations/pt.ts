@@ -595,6 +595,11 @@ export default {
     sinNotificacionesGenerales: 'Você não tem notificações do sistema.',
     sinNotificacionesPromociones: 'Não há promoções ou campanhas ativas no momento.',
     marcarLeidas: 'Marcar todas como lidas',
+    reportarIncidencia: 'Reportar incidência',
+    hacerReporte: 'Fazer relatório',
+    misReportes: 'Meus relatórios',
+    canalesAtencion: 'Canais de atendimento',
+    preguntasFrecuentes: 'Perguntas Frequentes',
   },
   reserva: {
     flujo: {
