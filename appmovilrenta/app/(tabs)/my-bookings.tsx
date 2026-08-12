@@ -1,9 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Image,
+  Modal,
+  Pressable,
   ScrollView,
   SectionList,
   StatusBar,
@@ -16,16 +19,19 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { GRADIENTES } from "@/constants/gradients";
 import { COLOR_MARCA } from "@/modules/catalog/constants/catalog.constants";
-import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { IdiomaKey } from "@/modules/i18n";
+import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import {
   GrupoReserva,
   ReservaGuardada,
   calcularGrupoReserva,
   reservaPersistService,
 } from "@/modules/reservation/services/reservationPersistService";
+import { ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
+import { ModalCalificar } from "@/modules/reservation/components/ModalCalificar";
 import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
-import { DateField } from "@/components/ui/DateField";
+import { AlertModal } from "@/components/ui/AlertModal";
 
 const COLOR_GRUPO: Record<GrupoReserva, string> = {
   pendiente: "#f59e0b",
@@ -37,6 +43,31 @@ const COLOR_GRUPO: Record<GrupoReserva, string> = {
 
 const ORDEN_GRUPOS: GrupoReserva[] = ["pendiente", "confirmada", "en_curso", "finalizada", "cancelada"];
 
+// Mapa de idioma de la app -> locale BCP-47 para nombres de mes localizados
+const LOCALE_POR_IDIOMA: Record<IdiomaKey, string> = {
+  es: "es-CO",
+  en: "en-US",
+  fr: "fr-FR",
+  pt: "pt-PT",
+  br: "pt-BR",
+};
+
+function claveMes(fecha: string): string {
+  return fecha.slice(0, 7); // "YYYY-MM"
+}
+
+function etiquetaMes(claveYYYYMM: string, locale: string): string {
+  const fecha = new Date(claveYYYYMM + "-01T00:00:00");
+  const texto = fecha.toLocaleDateString(locale, { month: "long", year: "numeric" });
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+function etiquetaMesCorto(claveYYYYMM: string, locale: string): string {
+  const fecha = new Date(claveYYYYMM + "-01T00:00:00");
+  const texto = fecha.toLocaleDateString(locale, { month: "short" }).replace(".", "");
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
 interface Seccion {
   grupo: GrupoReserva;
   data: ReservaGuardada[];
@@ -46,13 +77,14 @@ export default function MisReservasScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t } = useTranslation();
+  const { idiomaActual } = useIdioma();
   const [reservas, setReservas] = useState<ReservaGuardada[]>([]);
   const [cargando, setCargando] = useState(true);
 
   const [filtroGrupo, setFiltroGrupo] = useState<GrupoReserva | "todas">("todas");
-  const [mostrarFiltroFecha, setMostrarFiltroFecha] = useState(false);
-  const [fechaDesde, setFechaDesde] = useState("");
-  const [fechaHasta, setFechaHasta] = useState("");
+  const [modalMesVisible, setModalMesVisible] = useState(false);
+  const [filtroMes, setFiltroMes] = useState<string | null>(null);
+  const [anioVisible, setAnioVisible] = useState(new Date().getFullYear());
 
   useFocusEffect(
     useCallback(() => {
@@ -70,23 +102,65 @@ export default function MisReservasScreen() {
     }, [])
   );
 
-  const hayFiltrosActivos = filtroGrupo !== "todas" || !!fechaDesde || !!fechaHasta;
+  const hayFiltrosActivos = filtroGrupo !== "todas" || !!filtroMes;
 
   const limpiarFiltros = () => {
     setFiltroGrupo("todas");
-    setFechaDesde("");
-    setFechaHasta("");
+    setFiltroMes(null);
+  };
+
+  const locale = LOCALE_POR_IDIOMA[idiomaActual] ?? "es-CO";
+
+  // Años para elegir en el modal: el actual, más cualquier año en el que
+  // ya haya reservas (por si hay datos de demo de años anteriores).
+  const aniosDisponibles = useMemo(() => {
+    const anioActual = new Date().getFullYear();
+    const anios = new Set<number>([anioActual]);
+    for (const r of reservas) {
+      const fecha = r.fechaRetiro ? String(r.fechaRetiro) : r.fechaReserva;
+      if (fecha) anios.add(Number(fecha.slice(0, 4)));
+    }
+    return Array.from(anios).sort((a, b) => b - a);
+  }, [reservas]);
+
+  // Los 12 meses del año que se está mostrando en el modal (siempre los
+  // 12, tenga o no reservas, para poder filtrar por cualquier mes).
+  const mesesDelAnioVisible = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => {
+      const clave = `${anioVisible}-${String(i + 1).padStart(2, "0")}`;
+      return { clave, etiqueta: etiquetaMesCorto(clave, locale) };
+    });
+  }, [anioVisible, locale]);
+
+  const hayReservaEnMes = (claveDelMes: string) =>
+    reservas.some((r) => {
+      const fecha = r.fechaRetiro ? String(r.fechaRetiro) : r.fechaReserva;
+      return !!fecha && claveMes(fecha) === claveDelMes;
+    });
+
+  const abrirModalMes = () => {
+    if (filtroMes) setAnioVisible(Number(filtroMes.slice(0, 4)));
+    setModalMesVisible(true);
+  };
+
+  const seleccionarMes = (clave: string | null) => {
+    setFiltroMes(clave);
+    setModalMesVisible(false);
+    if (clave && !hayReservaEnMes(clave)) {
+      Alert.alert(t("misReservas.sinResultadosFiltroTitulo"), t("misReservas.sinReservasEnMes", { mes: etiquetaMes(clave, locale) }));
+    }
   };
 
   const reservasFiltradas = useMemo(() => {
     return reservas.filter((r) => {
       if (filtroGrupo !== "todas" && calcularGrupoReserva(r) !== filtroGrupo) return false;
-      const fecha = r.fechaRetiro ? String(r.fechaRetiro) : null;
-      if (fechaDesde && (!fecha || fecha < fechaDesde)) return false;
-      if (fechaHasta && (!fecha || fecha > fechaHasta)) return false;
+      if (filtroMes) {
+        const fecha = r.fechaRetiro ? String(r.fechaRetiro) : r.fechaReserva;
+        if (!fecha || claveMes(fecha) !== filtroMes) return false;
+      }
       return true;
     });
-  }, [reservas, filtroGrupo, fechaDesde, fechaHasta]);
+  }, [reservas, filtroGrupo, filtroMes]);
 
   const secciones: Seccion[] = useMemo(() => {
     const porGrupo = new Map<GrupoReserva, ReservaGuardada[]>();
@@ -138,42 +212,88 @@ export default function MisReservasScreen() {
                 c={c}
               />
             ))}
+
+            <View style={[styles.divisorChip, { backgroundColor: c.border }]} />
+
             <TouchableOpacity
-              style={[styles.chipFecha, { borderColor: c.border, backgroundColor: mostrarFiltroFecha ? c.primaryBg : c.bgCard }]}
-              onPress={() => setMostrarFiltroFecha((v) => !v)}
+              style={[styles.chipMes, { backgroundColor: filtroMes ? c.primaryBg : c.bgInput }]}
+              onPress={abrirModalMes}
+              activeOpacity={0.75}
             >
-              <Ionicons name="calendar-outline" size={13} color={mostrarFiltroFecha ? c.primary : c.textSecondary} />
-              <Text style={[styles.chipTexto, { color: mostrarFiltroFecha ? c.primary : c.textSecondary }]}>
-                {t("misReservas.filtrarPorFecha")}
+              <Ionicons name="calendar-outline" size={13} color={filtroMes ? c.primary : c.textSecondary} />
+              <Text
+                style={[styles.chipTexto, { color: filtroMes ? c.primary : c.textSecondary, fontWeight: filtroMes ? "700" : "600" }]}
+              >
+                {filtroMes ? etiquetaMes(filtroMes, locale) : t("misReservas.filtrarPorMes")}
               </Text>
+              <Ionicons name="chevron-down" size={12} color={filtroMes ? c.primary : c.textMuted} />
             </TouchableOpacity>
+
             {hayFiltrosActivos && (
-              <TouchableOpacity style={styles.limpiarBtn} onPress={limpiarFiltros}>
-                <Text style={[styles.limpiarBtnTexto, { color: c.primary }]}>{t("misReservas.limpiarFiltros")}</Text>
+              <TouchableOpacity
+                style={styles.limpiarBtn}
+                onPress={limpiarFiltros}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="close-circle" size={20} color={c.textMuted} />
               </TouchableOpacity>
             )}
           </ScrollView>
 
-          {mostrarFiltroFecha && (
-            <View style={styles.fechasFila}>
-              <View style={styles.fechaCampo}>
-                <DateField
-                  label={t("misReservas.desde")}
-                  value={fechaDesde}
-                  onChange={setFechaDesde}
-                  colores={c}
-                />
-              </View>
-              <View style={styles.fechaCampo}>
-                <DateField
-                  label={t("misReservas.hasta")}
-                  value={fechaHasta}
-                  onChange={setFechaHasta}
-                  colores={c}
-                />
-              </View>
-            </View>
-          )}
+          <Modal
+            visible={modalMesVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setModalMesVisible(false)}
+          >
+            <Pressable style={styles.modalOverlay} onPress={() => setModalMesVisible(false)}>
+              <Pressable style={[styles.modalCard, { backgroundColor: c.bgCard }]} onPress={() => {}}>
+                <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>{t("misReservas.filtrarPorMes")}</Text>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.aniosFila}>
+                  {aniosDisponibles.map((anio) => (
+                    <TouchableOpacity
+                      key={anio}
+                      style={[styles.chipAnio, { backgroundColor: anioVisible === anio ? COLOR_MARCA : c.bgInput }]}
+                      onPress={() => setAnioVisible(anio)}
+                      activeOpacity={0.75}
+                    >
+                      <Text style={[styles.chipAnioTexto, { color: anioVisible === anio ? "#fff" : c.textSecondary }]}>
+                        {anio}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
+                <View style={styles.mesesGrid}>
+                  {mesesDelAnioVisible.map((m) => (
+                    <TouchableOpacity
+                      key={m.clave}
+                      style={[styles.celdaMes, { backgroundColor: filtroMes === m.clave ? COLOR_MARCA : c.bgInput }]}
+                      onPress={() => seleccionarMes(m.clave)}
+                      activeOpacity={0.75}
+                    >
+                      <Text style={[styles.celdaMesTexto, { color: filtroMes === m.clave ? "#fff" : c.textPrimary }]}>
+                        {m.etiqueta}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <TouchableOpacity style={styles.todosMesesBtn} onPress={() => seleccionarMes(null)} activeOpacity={0.7}>
+                  <Text
+                    style={[
+                      styles.todosMesesTexto,
+                      { color: !filtroMes ? c.primary : c.textSecondary, fontWeight: !filtroMes ? "800" : "600" },
+                    ]}
+                  >
+                    {t("misReservas.todosLosMeses")}
+                  </Text>
+                  {!filtroMes && <Ionicons name="checkmark" size={16} color={c.primary} />}
+                </TouchableOpacity>
+              </Pressable>
+            </Pressable>
+          </Modal>
         </View>
       )}
 
@@ -253,13 +373,11 @@ function FiltroChip({
   const colorActivo = color ?? COLOR_MARCA;
   return (
     <TouchableOpacity
-      style={[
-        styles.chip,
-        { borderColor: activo ? colorActivo : c.border, backgroundColor: activo ? `${colorActivo}1A` : c.bgCard },
-      ]}
+      style={[styles.chip, { backgroundColor: activo ? colorActivo : c.bgInput }]}
       onPress={onPress}
+      activeOpacity={0.75}
     >
-      <Text style={[styles.chipTexto, { color: activo ? colorActivo : c.textSecondary, fontWeight: activo ? "700" : "600" }]}>
+      <Text style={[styles.chipTexto, { color: activo ? "#fff" : c.textSecondary, fontWeight: activo ? "700" : "600" }]}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -280,6 +398,21 @@ function TarjetaReserva({
   const grupo = calcularGrupoReserva(reserva);
   const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
   const foto = vehiculoSnap?.imagenes?.[0];
+
+  const [resena, setResena] = useState<ResenaGuardada | null>(null);
+  const [modalCalificarVisible, setModalCalificarVisible] = useState(false);
+  const [alertGuardadoVisible, setAlertGuardadoVisible] = useState(false);
+
+  useEffect(() => {
+    if (grupo !== "finalizada") return;
+    let activo = true;
+    resenaService.obtenerPorReserva(reserva.referencia).then((r) => {
+      if (activo) setResena(r);
+    });
+    return () => {
+      activo = false;
+    };
+  }, [grupo, reserva.referencia]);
 
   return (
     <TouchableOpacity
@@ -343,8 +476,67 @@ function TarjetaReserva({
               {t("tabs.hacerReporte")}
             </Text>
           </TouchableOpacity>
+
+          {grupo === "finalizada" && (
+            <TouchableOpacity
+              style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
+              onPress={(e) => {
+                e.stopPropagation();
+                setModalCalificarVisible(true);
+              }}
+              activeOpacity={0.8}
+            >
+              {resena ? (
+                <>
+                  <View style={{ flexDirection: "row", gap: 1 }}>
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Ionicons
+                        key={i}
+                        name={i < resena.calificacion ? "star" : "star-outline"}
+                        size={13}
+                        color="#F59E0B"
+                      />
+                    ))}
+                  </View>
+                  <Text style={[styles.reportarBtnText, { color: c.primary }]} numberOfLines={1}>
+                    {t("misReservas.editarCalificacion")}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="star-outline" size={13} color={c.primary} />
+                  <Text style={[styles.reportarBtnText, { color: c.primary }]}>
+                    {t("misReservas.calificarViaje")}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
       </View>
+
+      {grupo === "finalizada" && (
+        <>
+          <ModalCalificar
+            visible={modalCalificarVisible}
+            referenciaReserva={reserva.referencia}
+            valorInicial={resena}
+            onCerrar={() => setModalCalificarVisible(false)}
+            onGuardado={(nuevaResena) => {
+              setResena(nuevaResena);
+              setModalCalificarVisible(false);
+              setAlertGuardadoVisible(true);
+            }}
+          />
+          <AlertModal
+            visible={alertGuardadoVisible}
+            icono="checkmark-circle-outline"
+            titulo={t("misReservas.calificacionGuardadaTitulo")}
+            mensaje={t("misReservas.calificacionGuardadaMensaje")}
+            onCerrar={() => setAlertGuardadoVisible(false)}
+          />
+        </>
+      )}
     </TouchableOpacity>
   );
 }
@@ -363,30 +555,66 @@ const styles = StyleSheet.create({
   filtrosWrap: { borderBottomWidth: 1, paddingVertical: 10 },
   chipsFila: { paddingHorizontal: 16, gap: 8, alignItems: "center" },
   chip: {
-    borderWidth: 1,
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
-  chipFecha: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     paddingVertical: 7,
   },
   chipTexto: { fontSize: 12 },
-  limpiarBtn: { paddingHorizontal: 8, paddingVertical: 7 },
+  limpiarBtn: { paddingHorizontal: 4, paddingVertical: 4 },
   limpiarBtnTexto: { fontSize: 12, fontWeight: "700" },
-  fechasFila: {
+
+  divisorChip: { width: 1, height: 18, marginHorizontal: 2 },
+  chipMes: {
     flexDirection: "row",
-    gap: 10,
-    paddingHorizontal: 16,
-    marginTop: 10,
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 999,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
   },
-  fechaCampo: { flex: 1 },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 340,
+    borderRadius: 16,
+    padding: 20,
+  },
+  modalTitulo: { fontSize: 16, fontWeight: "800", marginBottom: 14 },
+  aniosFila: { gap: 8, paddingBottom: 14 },
+  chipAnio: {
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  chipAnioTexto: { fontSize: 13, fontWeight: "700" },
+  mesesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  celdaMes: {
+    width: "31%",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  celdaMesTexto: { fontSize: 13, fontWeight: "700" },
+  todosMesesBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 16,
+    paddingVertical: 10,
+  },
+  todosMesesTexto: { fontSize: 13.5 },
 
   lista: { padding: 16, paddingBottom: 40 },
   seccionHeaderFila: {

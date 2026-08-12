@@ -40,6 +40,7 @@ import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummary
 import { contratoService, ContratoGuardado } from "@/modules/reservation/services/contractService";
 import { generarContratoPdf, compartirContratoPdf } from "@/modules/reservation/services/pdfService";
 import { calcularGrupoReserva } from "@/modules/reservation/services/reservationPersistService";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 export default function PagoRespuestaScreen() {
   const insets = useSafeAreaInsets();
@@ -52,6 +53,9 @@ export default function PagoRespuestaScreen() {
   const [contratoFirmado, setContratoFirmado] = useState(false);
   const [contratoActual, setContratoActual] = useState<ContratoGuardado | null>(null);
   const [generandoPdf, setGenerandoPdf] = useState(false);
+  const [claveDesbloqueada, setClaveDesbloqueada] = useState(false);
+  const [claveIngresada, setClaveIngresada] = useState("");
+  const [errorClave, setErrorClave] = useState("");
 
   useEffect(() => {
     let activo = true;
@@ -125,25 +129,28 @@ export default function PagoRespuestaScreen() {
 
     if (vehiculoSnap && datosPersonalesSnap && fechasLugarSnap && planesSnap) {
       return (
-        <FirmaContrato
-          vehiculo={vehiculoSnap}
-          datosPersonales={datosPersonalesSnap}
-          datosDocumentos={
-            datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null }
-          }
-          fechasLugar={fechasLugarSnap}
-          planes={planesSnap}
-          total={reserva.total}
-          referencia={reserva.referencia}
-          onFirmado={async () => {
-            await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
-            const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
-            const contratoNuevo = await contratoService.obtenerPorReserva(reserva.referencia);
-            setReserva(actualizada ?? null);
-            setContratoActual(contratoNuevo);
-            setContratoFirmado(true);
-          }}
-        />
+        <View style={{ flex: 1, backgroundColor: c.bg }}>
+          <HeaderDetalle insets={insets} c={c} titulo={t("reserva.contrato.title")} onVolver={irAMisReservas} />
+          <FirmaContrato
+            vehiculo={vehiculoSnap}
+            datosPersonales={datosPersonalesSnap}
+            datosDocumentos={
+              datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null }
+            }
+            fechasLugar={fechasLugarSnap}
+            planes={planesSnap}
+            total={reserva.total}
+            referencia={reserva.referencia}
+            onFirmado={async () => {
+              await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
+              const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
+              const contratoNuevo = await contratoService.obtenerPorReserva(reserva.referencia);
+              setReserva(actualizada ?? null);
+              setContratoActual(contratoNuevo);
+              setContratoFirmado(true);
+            }}
+          />
+        </View>
       );
     }
   }
@@ -177,6 +184,17 @@ export default function PagoRespuestaScreen() {
 
   const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
   const foto = vehiculoSnap?.imagenes?.[0];
+
+  const handleValidarClave = () => {
+    const datosPersonalesSnap = reserva?.datosPersonalesSnapshot as DatosPersonales | undefined;
+    const numeroDocumento = datosPersonalesSnap?.numeroDocumento?.trim();
+    if (numeroDocumento && claveIngresada.trim() === numeroDocumento) {
+      setErrorClave("");
+      setClaveDesbloqueada(true);
+    } else {
+      setErrorClave(t("misReservas.claveIncorrecta"));
+    }
+  };
 
   const handleDescargarPdf = async () => {
     if (!contratoActual) {
@@ -234,40 +252,12 @@ export default function PagoRespuestaScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
-      {/* Header */}
-      <View style={{
-        flexDirection: "row",
-        alignItems: "center",
-        paddingTop: insets.top,
-        height: insets.top + 56,
-        paddingHorizontal: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: c.border,
-        backgroundColor: c.bgHeader,
-      }}>
-        <TouchableOpacity
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: c.bgInput,
-          }}
-          onPress={irAMisReservas}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="arrow-back" size={20} color={c.textPrimary} />
-        </TouchableOpacity>
-        <Text style={{
-          fontSize: 16,
-          fontWeight: "700",
-          color: c.textPrimary,
-          marginLeft: 12,
-        }}>
-          {t("misReservas.detalle.tituloHeader", { defaultValue: "Detalle de Reserva" })}
-        </Text>
-      </View>
+      <HeaderDetalle
+        insets={insets}
+        c={c}
+        titulo={t("misReservas.detalle.tituloHeader", { defaultValue: "Detalle de Reserva" })}
+        onVolver={irAMisReservas}
+      />
 
       <ScrollView
         style={{ backgroundColor: c.bg }}
@@ -340,30 +330,119 @@ export default function PagoRespuestaScreen() {
         />
       </View>
 
-      <TouchableOpacity
-        style={[styles.btnWrap, { marginBottom: 12 }, !contratoActual && { opacity: 0.5 }]}
-        onPress={handleDescargarPdf}
-        activeOpacity={0.85}
-        disabled={generandoPdf || !contratoActual}
-      >
-        <LinearGradient
-          colors={GRADIENTES.boton.colors}
-          start={GRADIENTES.boton.start}
-          end={GRADIENTES.boton.end}
-          style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 }]}
-        >
-          {generandoPdf ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Ionicons name="document-text-outline" size={18} color="#FFFFFF" />
-          )}
-          <Text style={styles.btnTexto}>
-            {generandoPdf ? t("misReservas.generandoPdf") : t("misReservas.descargarContrato")}
+      {contratoActual && !claveDesbloqueada ? (
+        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
+          <Ionicons name="lock-closed-outline" size={32} color={c.textMuted} style={{ marginBottom: 10 }} />
+          <Text style={[styles.tituloCandado, { color: c.textPrimary }]}>
+            {t("misReservas.contratoBloqueadoTitulo")}
           </Text>
-        </LinearGradient>
-      </TouchableOpacity>
+          <Text style={[styles.textoCandado, { color: c.textSecondary }]}>
+            {t("misReservas.contratoBloqueadoTexto")}
+          </Text>
+          <View style={{ width: "100%", marginTop: 12 }}>
+            <PasswordInput
+              label={t("misReservas.claveContrato")}
+              placeholder={t("misReservas.claveContratoPlaceholder")}
+              value={claveIngresada}
+              onChangeText={(v) => {
+                setClaveIngresada(v);
+                if (errorClave) setErrorClave("");
+              }}
+              error={errorClave}
+              keyboardType="number-pad"
+            />
+          </View>
+          <TouchableOpacity style={[styles.btnWrap, { marginTop: 4 }]} onPress={handleValidarClave} activeOpacity={0.85}>
+            <LinearGradient
+              colors={GRADIENTES.boton.colors}
+              start={GRADIENTES.boton.start}
+              end={GRADIENTES.boton.end}
+              style={styles.btn}
+            >
+              <Text style={styles.btnTexto}>{t("misReservas.verContrato")}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={[styles.btnWrap, { marginBottom: 12 }, !contratoActual && { opacity: 0.5 }]}
+          onPress={handleDescargarPdf}
+          activeOpacity={0.85}
+          disabled={generandoPdf || !contratoActual}
+        >
+          <LinearGradient
+            colors={GRADIENTES.boton.colors}
+            start={GRADIENTES.boton.start}
+            end={GRADIENTES.boton.end}
+            style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 }]}
+          >
+            {generandoPdf ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Ionicons name="document-text-outline" size={18} color="#FFFFFF" />
+            )}
+            <Text style={styles.btnTexto}>
+              {generandoPdf ? t("misReservas.generandoPdf") : t("misReservas.descargarContrato")}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
 
     </ScrollView>
+    </View>
+  );
+}
+
+function HeaderDetalle({
+  insets,
+  c,
+  titulo,
+  onVolver,
+}: {
+  insets: { top: number };
+  c: ReturnType<typeof useTemaColores>;
+  titulo: string;
+  onVolver: () => void;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingTop: insets.top,
+        height: insets.top + 56,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: c.border,
+        backgroundColor: c.bgHeader,
+      }}
+    >
+      <TouchableOpacity
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: c.bgInput,
+        }}
+        onPress={onVolver}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="arrow-back" size={20} color={c.textPrimary} />
+      </TouchableOpacity>
+      <Text
+        style={{
+          fontSize: 16,
+          fontWeight: "700",
+          color: c.textPrimary,
+          marginLeft: 12,
+          flexShrink: 1,
+        }}
+        numberOfLines={1}
+      >
+        {titulo}
+      </Text>
     </View>
   );
 }
@@ -434,6 +513,8 @@ const styles = StyleSheet.create({
   btnWrap: { width: "100%", borderRadius: 12 },
   btn: { paddingVertical: 15, borderRadius: 12, alignItems: "center" },
   btnTexto: { color: "#fff", fontSize: 14.5, fontWeight: "800" },
+  tituloCandado: { fontSize: 15.5, fontWeight: "800", textAlign: "center" },
+  textoCandado: { fontSize: 12.5, textAlign: "center", marginTop: 6, lineHeight: 18 },
   btnDescargarWrap: {
     width: "100%",
     flexDirection: "row",
