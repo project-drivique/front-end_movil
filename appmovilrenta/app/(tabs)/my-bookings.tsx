@@ -84,7 +84,6 @@ export default function MisReservasScreen() {
   const [filtroGrupo, setFiltroGrupo] = useState<GrupoReserva | "todas">("todas");
   const [modalMesVisible, setModalMesVisible] = useState(false);
   const [filtroMes, setFiltroMes] = useState<string | null>(null);
-  const [anioVisible, setAnioVisible] = useState(new Date().getFullYear());
 
   useFocusEffect(
     useCallback(() => {
@@ -111,37 +110,21 @@ export default function MisReservasScreen() {
 
   const locale = LOCALE_POR_IDIOMA[idiomaActual] ?? "es-CO";
 
-  // Años para elegir en el modal: el actual, más cualquier año en el que
-  // ya haya reservas (por si hay datos de demo de años anteriores).
-  const aniosDisponibles = useMemo(() => {
-    const anioActual = new Date().getFullYear();
-    const anios = new Set<number>([anioActual]);
-    for (const r of reservas) {
-      const fecha = r.fechaRetiro ? String(r.fechaRetiro) : r.fechaReserva;
-      if (fecha) anios.add(Number(fecha.slice(0, 4)));
-    }
-    return Array.from(anios).sort((a, b) => b - a);
-  }, [reservas]);
-
-  // Los 12 meses del año que se está mostrando en el modal (siempre los
-  // 12, tenga o no reservas, para poder filtrar por cualquier mes).
-  const mesesDelAnioVisible = useMemo(() => {
+  // Los 12 meses del año actual (siempre los 12, tenga o no reservas, para
+  // poder filtrar por cualquier mes).
+  const anioActual = new Date().getFullYear();
+  const mesesDelAnio = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
-      const clave = `${anioVisible}-${String(i + 1).padStart(2, "0")}`;
+      const clave = `${anioActual}-${String(i + 1).padStart(2, "0")}`;
       return { clave, etiqueta: etiquetaMesCorto(clave, locale) };
     });
-  }, [anioVisible, locale]);
+  }, [anioActual, locale]);
 
   const hayReservaEnMes = (claveDelMes: string) =>
     reservas.some((r) => {
       const fecha = r.fechaRetiro ? String(r.fechaRetiro) : r.fechaReserva;
       return !!fecha && claveMes(fecha) === claveDelMes;
     });
-
-  const abrirModalMes = () => {
-    if (filtroMes) setAnioVisible(Number(filtroMes.slice(0, 4)));
-    setModalMesVisible(true);
-  };
 
   const seleccionarMes = (clave: string | null) => {
     setFiltroMes(clave);
@@ -217,7 +200,7 @@ export default function MisReservasScreen() {
 
             <TouchableOpacity
               style={[styles.chipMes, { backgroundColor: filtroMes ? c.primaryBg : c.bgInput }]}
-              onPress={abrirModalMes}
+              onPress={() => setModalMesVisible(true)}
               activeOpacity={0.75}
             >
               <Ionicons name="calendar-outline" size={13} color={filtroMes ? c.primary : c.textSecondary} />
@@ -250,23 +233,8 @@ export default function MisReservasScreen() {
               <Pressable style={[styles.modalCard, { backgroundColor: c.bgCard }]} onPress={() => {}}>
                 <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>{t("misReservas.filtrarPorMes")}</Text>
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.aniosFila}>
-                  {aniosDisponibles.map((anio) => (
-                    <TouchableOpacity
-                      key={anio}
-                      style={[styles.chipAnio, { backgroundColor: anioVisible === anio ? COLOR_MARCA : c.bgInput }]}
-                      onPress={() => setAnioVisible(anio)}
-                      activeOpacity={0.75}
-                    >
-                      <Text style={[styles.chipAnioTexto, { color: anioVisible === anio ? "#fff" : c.textSecondary }]}>
-                        {anio}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-
                 <View style={styles.mesesGrid}>
-                  {mesesDelAnioVisible.map((m) => (
+                  {mesesDelAnio.map((m) => (
                     <TouchableOpacity
                       key={m.clave}
                       style={[styles.celdaMes, { backgroundColor: filtroMes === m.clave ? COLOR_MARCA : c.bgInput }]}
@@ -587,13 +555,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalTitulo: { fontSize: 16, fontWeight: "800", marginBottom: 14 },
-  aniosFila: { gap: 8, paddingBottom: 14 },
-  chipAnio: {
-    borderRadius: 999,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  chipAnioTexto: { fontSize: 13, fontWeight: "700" },
   mesesGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
