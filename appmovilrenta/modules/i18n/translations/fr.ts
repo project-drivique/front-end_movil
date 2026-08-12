@@ -66,7 +66,7 @@ export default {
       invitado: "Continuer en tant qu'invité",
       exitoMsg: 'Bienvenue ! Connexion en cours...',
       bloqueado: 'Compte bloqué',
-      hintBloqueado: 'Compte bloqué après 3 tentatives. Utilisez Mot de passe oublié ?',
+      sinPermisosAcceso: "Vous n'avez pas la permission d'accéder. Contactez l'administrateur principal.",
       crearCuenta: 'Créer un nouveau compte',
       separador: 'ou',
       iniciarSesion: 'Se connecter',

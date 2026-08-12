@@ -83,23 +83,32 @@ export default function LoginScreen() {
           correo: usuarioEncontrado.correo,
           nombres: usuarioEncontrado.nombres,
           apellidos: usuarioEncontrado.apellidos,
-          rol: usuarioEncontrado.rol as
-            | "cliente"
-            | "administrador"
-            | "operador"
-            | "supervisor",
+          rol: usuarioEncontrado.rol,
+          activo: usuarioEncontrado.activo,
+          permisosValidos: usuarioEncontrado.permisosValidos,
+          sucursalId: usuarioEncontrado.sucursalId,
+          sucursalNombre: usuarioEncontrado.sucursalNombre,
         },
         "token-demo",
       );
-      // Solo el correo es dato de perfil garantizado en login/registro.
-      // TODO backend real: reemplazar por obtenerPerfil(token) para
-      // hidratar el perfil completo (perfilService.ts ya existe para esto).
       actualizarUsuarioGlobal({
         id: usuarioEncontrado.id,
         correo: usuarioEncontrado.correo,
+        nombres: usuarioEncontrado.nombres,
+        apellidos: usuarioEncontrado.apellidos,
       });
+
       setLoginExitoso(true);
-      setTimeout(() => router.replace("/(tabs)/catalog"), 1500);
+
+      setTimeout(() => {
+        if (usuarioEncontrado.rol === "administrador") {
+          router.replace("/(admin)/dashboard");
+        } else if (usuarioEncontrado.rol === "encargado_sucursal") {
+          router.replace("/(admin)/branch-dashboard");
+        } else {
+          router.replace("/(tabs)/catalog");
+        }
+      }, 1200);
     });
   }
 

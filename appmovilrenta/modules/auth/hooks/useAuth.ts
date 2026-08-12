@@ -2,8 +2,9 @@ import { useRef, useState } from 'react';
 import { LoginForm, RegistroForm, OlvideContrasenaForm, AuthError } from '../types/auth.types';
 import { buscarUsuarioDemo, UsuarioDemo } from '../../../mocks/demoUsers';
 import { esCorreoValido as validarCorreo, esContrasenaSegura as validarContrasenaSegura } from '@/utils/validators';
+import { useAuditStore } from '@/store/auditStore';
 
-// ── useLogin (RF43) ──────────────────────────────────────────────────────────
+// ── useLogin (RF43 / HU-07) ──────────────────────────────────────────────────
 
 export function useLogin() {
   const [form, setForm] = useState<LoginForm>({ correo: '', contrasena: '' });
@@ -30,25 +31,68 @@ export function useLogin() {
   }
 
   async function iniciarSesion(onExito: (usuario: UsuarioDemo) => void) {
+    const registrarAuditoria = useAuditStore.getState().registrarAcceso;
+    const ipSimulada = `192.168.1.${Math.floor(10 + Math.random() * 80)}`;
+
     if (bloqueado) {
+      registrarAuditoria({
+        correo: form.correo || "desconocido@drivique.com",
+        rol: "desconocido",
+        ip: ipSimulada,
+        resultado: "Fallido - Cuenta bloqueada",
+      });
       setErrores([{ mensaje: 'Cuenta bloqueada tras 3 intentos fallidos. Intenta más tarde.' }]);
       return;
     }
+
     if (!validar()) return;
 
     setCargando(true);
     try {
       await new Promise(r => setTimeout(r, 1000));
 
-      // Mock: valida contra los usuarios de prueba — en producción se reemplaza por llamada real
       const usuario = buscarUsuarioDemo(form.correo, form.contrasena);
 
       if (usuario) {
+        // Verificar si la cuenta está activa y con permisos válidos (Criterio de aceptación HU-07)
+        if (!usuario.activo || !usuario.permisosValidos) {
+          registrarAuditoria({
+            correo: usuario.correo,
+            rol: usuario.rol,
+            ip: ipSimulada,
+            resultado: "Fallido - Sin permisos / Inactivo",
+            sucursal: usuario.sucursalNombre || "No asignada",
+          });
+          setErrores([
+            {
+              mensaje: "No tienes permisos para acceder. Contacta al administrador principal.",
+            },
+          ]);
+          return;
+        }
+
+        // Acceso exitoso
         setIntentosFallidos(0);
+        registrarAuditoria({
+          correo: usuario.correo,
+          rol: usuario.rol,
+          ip: ipSimulada,
+          resultado: "Exitoso",
+          sucursal: usuario.sucursalNombre || "General / Central",
+        });
+
         onExito(usuario);
       } else {
         const intentos = intentosFallidos + 1;
         setIntentosFallidos(intentos);
+
+        registrarAuditoria({
+          correo: form.correo.trim(),
+          rol: "desconocido",
+          ip: ipSimulada,
+          resultado: "Fallido - Credenciales incorrectas",
+        });
+
         if (intentos >= 3) {
           setBloqueado(true);
           setErrores([{ mensaje: 'Cuenta bloqueada tras 3 intentos fallidos.' }]);

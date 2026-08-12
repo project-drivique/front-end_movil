@@ -66,7 +66,7 @@ export default {
       invitado: 'Continue as guest',
       exitoMsg: 'Welcome! Logging in...',
       bloqueado: 'Account locked',
-      hintBloqueado: 'Account locked after 3 attempts. Use Forgot your password?',
+      sinPermisosAcceso: 'You do not have permission to access. Contact the main administrator.',
       crearCuenta: 'Create new account',
       separador: 'or',
       iniciarSesion: 'Sign in',
