@@ -464,6 +464,7 @@ export default function FirmaContrato({
           </Seccion>
 
           <TouchableOpacity
+            nativeID="contrato-acciones-descarga"
             style={styles.firmarBtnWrap}
             onPress={soloLectura ? onDescargar : handleFirmar}
             disabled={soloLectura ? descargando : firmando}

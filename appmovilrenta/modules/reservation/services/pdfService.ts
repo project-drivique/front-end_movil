@@ -351,7 +351,12 @@ export async function descargarContratoVisible(nombre: string) {
       margin: 8,
       filename: nombre,
       image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        ignoreElements: (element: Element) => element.id === "contrato-acciones-descarga",
+      },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       pagebreak: { mode: ["css", "legacy"] },
     })
