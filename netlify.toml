@@ -1,0 +1,9 @@
+[build]
+  # Carpeta base del proyecto donde se encuentra package.json
+  base = "appmovilrenta"
+
+  # Comando para compilar el proyecto para la web
+  command = "npm run build"
+
+  # Directorio generado que contiene los archivos estáticos listos para subir (relativo a la carpeta base)
+  publish = "dist"
