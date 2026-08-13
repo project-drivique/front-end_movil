@@ -1,10 +1,9 @@
 export const TAWK_CONFIG = {
-  // Puedes pegar directamente tu enlace de chat directo de Tawk.to (Ejemplo: "https://tawk.to/chat/65xxxxxx/1xxxxxx")
+  // Direct Chat Link o IDs de la propiedad Drivique en Tawk.to
   directChatLink: "",
 
-  // O ingresar tus IDs individuales de Tawk.to
-  propertyId: "PROPERTY_ID",
-  widgetId: "WIDGET_ID",
+  propertyId: "6a7e126a561ef61d48515d98",
+  widgetId: "default",
 
   get chatUrl() {
     if (this.directChatLink && this.directChatLink.trim().length > 0) {
