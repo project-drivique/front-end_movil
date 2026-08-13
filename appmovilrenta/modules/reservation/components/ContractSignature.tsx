@@ -239,7 +239,10 @@ export default function FirmaContrato({
       contentContainerStyle={styles.scroll}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+      <View
+        nativeID={soloLectura ? "contrato-legal-visible" : undefined}
+        style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}
+      >
         <LinearGradient
           colors={["#1e3a8a", "#2563eb", "#93c5fd"]}
           start={{ x: 0, y: 0 }}
