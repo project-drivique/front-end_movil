@@ -21,6 +21,7 @@ export type EstadoReserva =
 
 export interface ReservaGuardada {
   referencia: string;
+  usuarioId?: string;
   vehiculoId: number | string;
   vehiculoNombre: string;
   estado: EstadoReserva;
@@ -114,6 +115,30 @@ async function leer(): Promise<ReservaGuardada[]> {
 
 export const reservaPersistService = {
   getReservas: leer,
+
+  getReservasUsuario: async (usuario: {
+    id?: string;
+    correo?: string;
+    numeroDocumento?: string;
+  }): Promise<ReservaGuardada[]> => {
+    const reservas = await leer();
+    const id = usuario.id?.trim();
+    const correo = usuario.correo?.trim().toLowerCase();
+    const documento = usuario.numeroDocumento?.replace(/\D/g, "");
+
+    return reservas.filter((reserva) => {
+      if (reserva.usuarioId) return !!id && reserva.usuarioId === id;
+
+      // Compatibilidad con reservas creadas antes de guardar usuarioId.
+      const datos = reserva.datosPersonalesSnapshot as
+        | { correo?: string; numeroDocumento?: string }
+        | undefined;
+      const correoReserva = datos?.correo?.trim().toLowerCase();
+      const documentoReserva = datos?.numeroDocumento?.replace(/\D/g, "");
+      return (!!correo && correoReserva === correo) ||
+        (!!documento && documentoReserva === documento);
+    });
+  },
 
   /**
    * Guarda una reserva nueva. Si el método de pago es "efectivo", calcula y

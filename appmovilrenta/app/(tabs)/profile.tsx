@@ -126,25 +126,9 @@ export default function PerfilScreen() {
   };
 
   const handleCerrarSesion = () => {
-    Alert.alert(
-      t("perfil.cerrarSesionTitulo"),
-      t("perfil.cerrarSesionMsg"),
-      [
-        { text: t("perfil.cancelar"), style: "cancel" },
-        {
-          text: t("perfil.confirmarCerrar"),
-          style: "destructive",
-          onPress: () => {
-            // RF43.9 — Cerrar sesión segura
-            // En producción esto además invalida el token en el backend;
-            // por ahora limpiamos ambos stores locales y volvemos al login.
-            cerrarSesionAuth();
-            limpiarUsuario();
-            router.replace("/(auth)/login");
-          },
-        },
-      ]
-    );
+    cerrarSesionAuth();
+    limpiarUsuario();
+    router.replace("/(auth)/login");
   };
 
   // El usuario navega en modo invitado cuando no hay sesión iniciada
