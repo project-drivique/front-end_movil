@@ -534,6 +534,11 @@ export default {
     historialSub: 'Ver suas reservas anteriores',
     seguridad: 'Segurança e Senha',
     seguridadSub: 'Alterar e-mail ou senha',
+    cambiarContrasena: {
+      titulo: 'Alterar senha', subtitulo: 'Proteja o acesso à sua conta', actual: 'Senha atual', nueva: 'Nova senha', confirmar: 'Confirmar nova senha', cancelar: 'Cancelar', actualizar: 'Atualizar senha',
+      actualRequerida: 'Digite sua senha atual.', actualIncorrecta: 'A senha atual está incorreta.', nuevaInsegura: 'A nova senha não atende aos critérios de segurança.', confirmacionRequerida: 'Confirme a nova senha.', noCoinciden: 'As senhas não coincidem.', debeSerDiferente: 'A nova senha deve ser diferente da atual.',
+      exitoTitulo: 'Senha atualizada', exitoMensaje: 'Sua senha foi atualizada com sucesso.', errorTitulo: 'Não foi possível atualizar', errorMensaje: 'Verifique a senha atual e tente novamente.', notificacionTitulo: 'Senha atualizada', notificacionMensaje: 'A senha da sua conta foi alterada com sucesso.',
+    },
     tarjetas: 'Meus cartões de pagamento',
     tarjetasSub: 'Gerencie seus métodos de pagamento',
     cerrarSesion: 'Sair',
