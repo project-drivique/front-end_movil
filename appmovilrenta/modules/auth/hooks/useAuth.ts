@@ -65,7 +65,7 @@ export function useLogin() {
           });
           setErrores([
             {
-              mensaje: "No tienes permisos para acceder. Contacta al administrador principal.",
+              mensaje: "No tienes permisos para acceder. Contacta a soporte.",
             },
           ]);
           return;
