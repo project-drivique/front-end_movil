@@ -27,6 +27,7 @@ import { IdiomaKey, IDIOMAS } from "@/modules/i18n";
 import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { usePerfil } from "@/modules/profile/hooks/useProfile";
 import { ModalCambiarCorreo } from "@/modules/profile/components/ChangeEmailModal";
+import { ChangePasswordModal } from "@/modules/profile/components/ChangePasswordModal";
 import { FormCompletarPerfil } from "@/modules/profile/components/CompleteProfileForm";
 import { perfilStyles as styles } from "@/modules/profile/styles/profile.styles";
 import { useAuthStore } from "@/store/authStore";
@@ -42,6 +43,7 @@ import CampoSelectorLista from "@/modules/reservation/components/ListSelectorFie
 import { useMoneda } from "@/hooks/useCurrency";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { Moneda } from "@/utils/currencyUtils";
+import { useNotificationStore } from "@/store/notificationStore";
 
 const OPCIONES_NACIONALIDAD = NACIONALIDADES.map((n) => ({
   id: n.nombre,
@@ -60,6 +62,8 @@ export default function PerfilScreen() {
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState("");
+  const [mostrarCambioContrasena, setMostrarCambioContrasena] = useState(false);
+  const [resultadoContrasena, setResultadoContrasena] = useState<"exito" | "error" | null>(null);
 
   // Al elegir USD, la moneda solo cambia la referencia visual de los
   // precios; el cobro real con Wompi siempre se hace en COP. Se avisa
@@ -70,8 +74,10 @@ export default function PerfilScreen() {
   };
 
   const authUsuario = useAuthStore((s) => s.usuario);
+  const authToken = useAuthStore((s) => s.token);
   const cerrarSesionAuth = useAuthStore((s) => s.cerrarSesion);
   const limpiarUsuario = useUsuarioStore((s) => s.limpiarUsuario);
+  const agregarNotificacion = useNotificationStore((s) => s.agregarNotificacion);
 
   const {
     usuario,
@@ -85,7 +91,6 @@ export default function PerfilScreen() {
     guardarCambios,
     cancelarEdicion,
     mostrarModalCorreo,
-    setMostrarModalCorreo,
     guardarCambioCorreo,
     cerrarModalCorreo,
     marcarPerfilCompleto,
@@ -137,6 +142,17 @@ export default function PerfilScreen() {
   const esInvitado = !authUsuario;
 
   const irARegistro = () => router.push("/(auth)/register");
+
+  const cambioContrasenaExitoso = () => {
+    setMostrarCambioContrasena(false);
+    setResultadoContrasena("exito");
+    agregarNotificacion({
+      tipo: "general",
+      titulo: t("perfil.cambiarContrasena.notificacionTitulo"),
+      mensaje: t("perfil.cambiarContrasena.notificacionMensaje"),
+      icono: "shield-checkmark-outline",
+    });
+  };
 
   // Sección de Tema / Idioma / Moneda — se reutiliza igual en la vista
   // normal y en la vista reducida de modo invitado.
@@ -555,7 +571,7 @@ export default function PerfilScreen() {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => setMostrarModalCorreo(true)}
+            onPress={() => setMostrarCambioContrasena(true)}
           >
             <View style={[styles.menuIconWrap, { backgroundColor: c.primaryBg }]}>
               <Ionicons name="lock-closed-outline" size={18} color={c.primary} />
@@ -601,6 +617,30 @@ export default function PerfilScreen() {
         onCambiar={actualizarCampoCorreo}
         onGuardar={handleGuardarCorreo}
         onCerrar={cerrarModalCorreo}
+      />
+
+      <ChangePasswordModal
+        visible={mostrarCambioContrasena}
+        correo={authUsuario?.correo || usuario.correo}
+        token={authToken}
+        onCerrar={() => setMostrarCambioContrasena(false)}
+        onExito={cambioContrasenaExitoso}
+        onError={() => setResultadoContrasena("error")}
+      />
+
+      <AlertModal
+        visible={resultadoContrasena === "exito"}
+        icono="checkmark-circle-outline"
+        titulo={t("perfil.cambiarContrasena.exitoTitulo")}
+        mensaje={t("perfil.cambiarContrasena.exitoMensaje")}
+        onCerrar={() => setResultadoContrasena(null)}
+      />
+      <AlertModal
+        visible={resultadoContrasena === "error"}
+        icono="alert-circle-outline"
+        titulo={t("perfil.cambiarContrasena.errorTitulo")}
+        mensaje={t("perfil.cambiarContrasena.errorMensaje")}
+        onCerrar={() => setResultadoContrasena(null)}
       />
 
       {/* Aviso al elegir USD: el cobro real siempre se hace en COP */}

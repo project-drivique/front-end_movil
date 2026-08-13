@@ -534,6 +534,11 @@ export default {
     historialSub: 'Ver as suas reservas anteriores',
     seguridad: 'Segurança e Palavra-passe',
     seguridadSub: 'Alterar e-mail ou palavra-passe',
+    cambiarContrasena: {
+      titulo: 'Alterar palavra-passe', subtitulo: 'Proteja o acesso à sua conta', actual: 'Palavra-passe atual', nueva: 'Nova palavra-passe', confirmar: 'Confirmar nova palavra-passe', cancelar: 'Cancelar', actualizar: 'Atualizar palavra-passe',
+      actualRequerida: 'Introduza a palavra-passe atual.', actualIncorrecta: 'A palavra-passe atual está incorreta.', nuevaInsegura: 'A nova palavra-passe não cumpre os critérios de segurança.', confirmacionRequerida: 'Confirme a nova palavra-passe.', noCoinciden: 'As palavras-passe não coincidem.', debeSerDiferente: 'A nova palavra-passe deve ser diferente da atual.',
+      exitoTitulo: 'Palavra-passe atualizada', exitoMensaje: 'A palavra-passe foi atualizada com sucesso.', errorTitulo: 'Não foi possível atualizar', errorMensaje: 'Verifique a palavra-passe atual e tente novamente.', notificacionTitulo: 'Palavra-passe atualizada', notificacionMensaje: 'A palavra-passe da sua conta foi alterada com sucesso.',
+    },
     tarjetas: 'Os meus cartões de pagamento',
     tarjetasSub: 'Gerir os seus métodos de pagamento',
     cerrarSesion: 'Terminar sessão',
