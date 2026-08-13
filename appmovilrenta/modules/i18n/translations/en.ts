@@ -447,6 +447,7 @@ export default {
       cancelada: 'Cancelled',
     },
     filtrarPorEstado: 'Filter by status',
+    filtros: 'Filters',
     todas: 'All',
     filtrarPorFecha: 'Filter by date',
     desde: 'From',

@@ -21,6 +21,7 @@ import { ResenaGuardada, resenaService } from "../services/resenaService";
 interface Props {
   visible: boolean;
   referenciaReserva: string;
+  usuarioId: string;
   valorInicial?: ResenaGuardada | null;
   onCerrar: () => void;
   onGuardado: (resena: ResenaGuardada) => void;
@@ -29,6 +30,7 @@ interface Props {
 export function ModalCalificar({
   visible,
   referenciaReserva,
+  usuarioId,
   valorInicial,
   onCerrar,
   onGuardado,
@@ -47,7 +49,7 @@ export function ModalCalificar({
 
   const handleGuardar = async () => {
     if (calificacion < 1) return;
-    const resena = await resenaService.guardar(referenciaReserva, { calificacion, comentario });
+    const resena = await resenaService.guardar(referenciaReserva, usuarioId, { calificacion, comentario });
     onGuardado(resena);
   };
 

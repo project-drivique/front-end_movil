@@ -447,6 +447,7 @@ export default {
       cancelada: 'Annulée',
     },
     filtrarPorEstado: 'Filtrer par statut',
+    filtros: 'Filtres',
     todas: 'Toutes',
     filtrarPorFecha: 'Filtrer par date',
     desde: 'Du',

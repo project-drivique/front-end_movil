@@ -210,6 +210,8 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
         html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["css", "legacy"], avoid: [".grid", ".firmas", ".firma-card", ".footer"] },
+      } as Parameters<ReturnType<typeof modulo.default>["set"]>[0] & {
+        pagebreak: { mode: string[]; avoid: string[] };
       })
       .from(html)
       .outputPdf("datauristring");
@@ -290,7 +292,7 @@ export async function descargarContratoVisible(nombre: string) {
   if (!contrato) throw new Error("No se encontró el contrato completo visible");
   const modulo = await import("html2pdf.js");
   await modulo.default()
-    .set({
+      .set({
       margin: 8,
       filename: nombre,
       image: { type: "jpeg", quality: 0.98 },
@@ -305,7 +307,9 @@ export async function descargarContratoVisible(nombre: string) {
         mode: ["css", "legacy"],
         avoid: ['[data-pdf-section="true"]'],
       },
-    })
+      } as Parameters<ReturnType<typeof modulo.default>["set"]>[0] & {
+        pagebreak: { mode: string[]; avoid: string[] };
+      })
     .from(contrato)
     .save();
 }

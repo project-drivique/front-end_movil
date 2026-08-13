@@ -10,6 +10,7 @@ const STORAGE_KEY = "drivique_resenas";
 
 export interface ResenaGuardada {
   referenciaReserva: string;
+  usuarioId: string;
   calificacion: number; // 1 a 5
   comentario: string;
   fecha: string;
@@ -31,25 +32,38 @@ async function guardarTodas(data: Record<string, ResenaGuardada>) {
 
 export const resenaService = {
   obtenerPorReserva: async (
-    referenciaReserva: string | null | undefined
+    referenciaReserva: string | null | undefined,
+    usuarioId: string
   ): Promise<ResenaGuardada | null> => {
     if (!referenciaReserva) return null;
     const todas = await leerTodas();
-    return todas[referenciaReserva] || null;
+    const claveUsuario = `${usuarioId}:${referenciaReserva}`;
+    if (todas[claveUsuario]) return todas[claveUsuario];
+
+    // Migra una reseña creada con la estructura anterior al usuario actual.
+    const anterior = todas[referenciaReserva];
+    if (!anterior) return null;
+    const migrada = { ...anterior, usuarioId };
+    todas[claveUsuario] = migrada;
+    delete todas[referenciaReserva];
+    await guardarTodas(todas);
+    return migrada;
   },
 
   guardar: async (
     referenciaReserva: string,
+    usuarioId: string,
     datos: { calificacion: number; comentario: string }
   ): Promise<ResenaGuardada> => {
     const todas = await leerTodas();
     const resena: ResenaGuardada = {
       referenciaReserva,
+      usuarioId,
       calificacion: datos.calificacion,
       comentario: datos.comentario,
       fecha: new Date().toISOString(),
     };
-    todas[referenciaReserva] = resena;
+    todas[`${usuarioId}:${referenciaReserva}`] = resena;
     await guardarTodas(todas);
     return resena;
   },
