@@ -27,6 +27,22 @@ interface Punto {
   y: number;
 }
 
+type Html2PdfConfig = {
+  margin: number;
+  filename: string;
+  image: { type: "jpeg"; quality: number };
+  html2canvas: Record<string, unknown>;
+  jsPDF: { unit: string; format: string; orientation: "portrait" };
+  pagebreak: { mode: string[]; avoid: string[] };
+};
+
+type Html2PdfWorkerCompatible = {
+  set(options: Html2PdfConfig): Html2PdfWorkerCompatible;
+  from(source: string | HTMLElement): Html2PdfWorkerCompatible;
+  outputPdf(type: "datauristring"): Promise<string>;
+  save(): Promise<void>;
+};
+
 function trazosASvgPaths(firmaTrazosJson: string): string {
   try {
     const trazos: Punto[][] = JSON.parse(firmaTrazosJson);
@@ -202,7 +218,8 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
 
   if (Platform.OS === "web") {
     const modulo = await import("html2pdf.js");
-    return modulo.default()
+    const worker = modulo.default() as unknown as Html2PdfWorkerCompatible;
+    return worker
       .set({
         margin: 8,
         filename: `contrato-${referencia}.pdf`,
@@ -210,8 +227,6 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
         html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["css", "legacy"], avoid: [".grid", ".firmas", ".firma-card", ".footer"] },
-      } as Parameters<ReturnType<typeof modulo.default>["set"]>[0] & {
-        pagebreak: { mode: string[]; avoid: string[] };
       })
       .from(html)
       .outputPdf("datauristring");
@@ -291,7 +306,8 @@ export async function descargarContratoVisible(nombre: string) {
   const contrato = document.getElementById("contrato-legal-visible");
   if (!contrato) throw new Error("No se encontró el contrato completo visible");
   const modulo = await import("html2pdf.js");
-  await modulo.default()
+  const worker = modulo.default() as unknown as Html2PdfWorkerCompatible;
+  await worker
       .set({
       margin: 8,
       filename: nombre,
@@ -307,8 +323,6 @@ export async function descargarContratoVisible(nombre: string) {
         mode: ["css", "legacy"],
         avoid: ['[data-pdf-section="true"]'],
       },
-      } as Parameters<ReturnType<typeof modulo.default>["set"]>[0] & {
-        pagebreak: { mode: string[]; avoid: string[] };
       })
     .from(contrato)
     .save();
