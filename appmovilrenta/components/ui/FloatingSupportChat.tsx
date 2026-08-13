@@ -12,10 +12,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import {
   ChatMessage,
-  OpcionesIniciales,
+  obtenerOpcionesIniciales,
+  obtenerMensajeBienvenida,
   obtenerHoraActual,
   procesarMensajeChatbot,
 } from "@/modules/support/services/chatbotEngine";
@@ -27,18 +28,20 @@ export function FloatingSupportChat() {
 
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
+  const { idiomaActual } = useIdioma();
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // Historial inicial de mensajes
+  // Historial inicial de mensajes según idioma activo
   const [mensajes, setMensajes] = useState<ChatMessage[]>([
-    {
-      id: "msg-welcome-1",
-      sender: "bot",
-      text: "¡Hola! 👋 Soy **Drivibot**, tu asistente virtual de **Drivique**.\n\n¿En qué puedo ayudarte hoy sobre nuestros alquileres de vehículos?",
-      timestamp: obtenerHoraActual(),
-      options: OpcionesIniciales,
-    },
+    obtenerMensajeBienvenida(idiomaActual),
   ]);
+
+  // Actualizar bienvenida si el usuario cambia de idioma
+  useEffect(() => {
+    if (mensajes.length === 1 && mensajes[0].sender === "bot") {
+      setMensajes([obtenerMensajeBienvenida(idiomaActual)]);
+    }
+  }, [idiomaActual]);
 
   // Scroll automático al último mensaje
   useEffect(() => {
@@ -63,9 +66,9 @@ export function FloatingSupportChat() {
     setInputText("");
     setIsTyping(true);
 
-    // Simulación de respuesta natural del bot
+    // Respuesta inteligente del motor con contexto multilenguaje y de negocio
     setTimeout(() => {
-      const botResponse = procesarMensajeChatbot(actionValue || texto);
+      const botResponse = procesarMensajeChatbot(actionValue || texto, idiomaActual);
       const botMsg: ChatMessage = {
         ...botResponse,
         id: `bot-${Date.now()}`,
@@ -77,15 +80,7 @@ export function FloatingSupportChat() {
   };
 
   const reiniciarChat = () => {
-    setMensajes([
-      {
-        id: `msg-welcome-${Date.now()}`,
-        sender: "bot",
-        text: "¡Chat reiniciado! 👋 ¿En qué más puedo orientarte sobre Drivique?",
-        timestamp: obtenerHoraActual(),
-        options: OpcionesIniciales,
-      },
-    ]);
+    setMensajes([obtenerMensajeBienvenida(idiomaActual)]);
   };
 
   return (
@@ -96,7 +91,7 @@ export function FloatingSupportChat() {
           style={[
             styles.fab,
             {
-              bottom: insets.bottom + 85, // Posicionado arriba de la barra de navegación (tabs)
+              bottom: insets.bottom + 85, // Posicionado arriba de las pestañas de navegación
               backgroundColor: c.oscuro ? "#3B82F6" : "#2563EB",
               shadowColor: c.oscuro ? "#000" : "#2563EB",
             },
@@ -108,7 +103,7 @@ export function FloatingSupportChat() {
         </TouchableOpacity>
       )}
 
-      {/* Contenedor del Chat (Se oculta fuera de pantalla para mantener el historial vivo) */}
+      {/* Contenedor del Chat (Se oculta fuera de pantalla para mantener la sesión viva) */}
       <View
         style={[
           styles.chatContainer,
@@ -132,12 +127,12 @@ export function FloatingSupportChat() {
               </View>
               <View style={{ marginLeft: 10 }}>
                 <Text style={[styles.headerTitle, { color: c.textPrimary }]}>
-                  Asistente Virtual Drivique
+                  Drivibot — Soporte Drivique
                 </Text>
                 <View style={styles.statusRow}>
                   <View style={styles.onlineDot} />
                   <Text style={[styles.headerSubtitle, { color: c.textSecondary }]}>
-                    En línea (Respuesta instantánea)
+                    En línea · {idiomaActual.toUpperCase()}
                   </Text>
                 </View>
               </View>
@@ -260,7 +255,7 @@ export function FloatingSupportChat() {
                 >
                   <ActivityIndicator size="small" color="#2563EB" />
                   <Text style={[styles.typingText, { color: c.textSecondary, marginLeft: 8 }]}>
-                    Drivibot está escribiendo...
+                    Drivibot respondiendo...
                   </Text>
                 </View>
               </View>
@@ -287,7 +282,7 @@ export function FloatingSupportChat() {
                   borderColor: c.border,
                 },
               ]}
-              placeholder="Escribe tu duda aquí..."
+              placeholder="Escribe tu consulta aquí..."
               placeholderTextColor={c.textMuted}
               value={inputText}
               onChangeText={setInputText}
