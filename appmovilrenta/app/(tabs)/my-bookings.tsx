@@ -1,11 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Image,
-  ScrollView,
-  SectionList,
+  Modal,
+  Pressable,
+  FlatList,
   StatusBar,
   StyleSheet,
   Text,
@@ -16,16 +18,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { GRADIENTES } from "@/constants/gradients";
 import { COLOR_MARCA } from "@/modules/catalog/constants/catalog.constants";
-import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { IdiomaKey } from "@/modules/i18n";
+import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import {
   GrupoReserva,
   ReservaGuardada,
   calcularGrupoReserva,
   reservaPersistService,
 } from "@/modules/reservation/services/reservationPersistService";
+import { ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
+import { ModalCalificar } from "@/modules/reservation/components/ModalCalificar";
 import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
-import { DateField } from "@/components/ui/DateField";
+import { AlertModal } from "@/components/ui/AlertModal";
+import { useUsuarioStore } from "@/store/userStore";
 
 const COLOR_GRUPO: Record<GrupoReserva, string> = {
   pendiente: "#f59e0b",
@@ -37,69 +43,118 @@ const COLOR_GRUPO: Record<GrupoReserva, string> = {
 
 const ORDEN_GRUPOS: GrupoReserva[] = ["pendiente", "confirmada", "en_curso", "finalizada", "cancelada"];
 
-interface Seccion {
-  grupo: GrupoReserva;
-  data: ReservaGuardada[];
+// Mapa de idioma de la app -> locale BCP-47 para nombres de mes localizados
+const LOCALE_POR_IDIOMA: Record<IdiomaKey, string> = {
+  es: "es-CO",
+  en: "en-US",
+  fr: "fr-FR",
+  pt: "pt-PT",
+  br: "pt-BR",
+};
+
+function claveMes(fecha: string): string {
+  return fecha.slice(0, 7); // "YYYY-MM"
+}
+
+function etiquetaMes(claveYYYYMM: string, locale: string): string {
+  const fecha = new Date(claveYYYYMM + "-01T00:00:00");
+  const texto = fecha.toLocaleDateString(locale, { month: "long", year: "numeric" });
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+function etiquetaMesCorto(claveYYYYMM: string, locale: string): string {
+  const fecha = new Date(claveYYYYMM + "-01T00:00:00");
+  const texto = fecha.toLocaleDateString(locale, { month: "short" }).replace(".", "");
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 export default function MisReservasScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t } = useTranslation();
+  const { idiomaActual } = useIdioma();
+  const usuario = useUsuarioStore((state) => state.usuario);
+  const usuarioId = usuario.id;
+  const usuarioCorreo = usuario.correo;
+  const usuarioDocumento = usuario.numeroDocumento;
+  const usuarioKey = usuarioId || usuarioCorreo || usuarioDocumento;
   const [reservas, setReservas] = useState<ReservaGuardada[]>([]);
   const [cargando, setCargando] = useState(true);
 
   const [filtroGrupo, setFiltroGrupo] = useState<GrupoReserva | "todas">("todas");
-  const [mostrarFiltroFecha, setMostrarFiltroFecha] = useState(false);
-  const [fechaDesde, setFechaDesde] = useState("");
-  const [fechaHasta, setFechaHasta] = useState("");
+  const [modalEstadoVisible, setModalEstadoVisible] = useState(false);
+  const [modalMesVisible, setModalMesVisible] = useState(false);
+  const [filtroMes, setFiltroMes] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       let activo = true;
       (async () => {
-        const data = await reservaPersistService.getReservas();
+        const data = await reservaPersistService.getReservasUsuario({
+          id: usuarioId,
+          correo: usuarioCorreo,
+          numeroDocumento: usuarioDocumento,
+        });
         if (activo) {
-          setReservas([...data].reverse());
+          setReservas(
+            [...data].sort((a, b) => {
+              const fechaA = String(a.fechaRetiro || a.fechaReserva || "");
+              const fechaB = String(b.fechaRetiro || b.fechaReserva || "");
+              return fechaB.localeCompare(fechaA);
+            })
+          );
           setCargando(false);
         }
       })();
       return () => {
         activo = false;
       };
-    }, [])
+    }, [usuarioId, usuarioCorreo, usuarioDocumento])
   );
 
-  const hayFiltrosActivos = filtroGrupo !== "todas" || !!fechaDesde || !!fechaHasta;
+  const hayFiltrosActivos = filtroGrupo !== "todas" || !!filtroMes;
 
   const limpiarFiltros = () => {
     setFiltroGrupo("todas");
-    setFechaDesde("");
-    setFechaHasta("");
+    setFiltroMes(null);
+  };
+
+  const locale = LOCALE_POR_IDIOMA[idiomaActual] ?? "es-CO";
+
+  // Los 12 meses del año actual (siempre los 12, tenga o no reservas, para
+  // poder filtrar por cualquier mes).
+  const anioActual = new Date().getFullYear();
+  const mesesDelAnio = useMemo(() => {
+    return Array.from({ length: 12 }, (_, i) => {
+      const clave = `${anioActual}-${String(i + 1).padStart(2, "0")}`;
+      return { clave, etiqueta: etiquetaMesCorto(clave, locale) };
+    });
+  }, [anioActual, locale]);
+
+  const hayReservaEnMes = (claveDelMes: string) =>
+    reservas.some((r) => {
+      const fecha = r.fechaRetiro ? String(r.fechaRetiro) : r.fechaReserva;
+      return !!fecha && claveMes(fecha) === claveDelMes;
+    });
+
+  const seleccionarMes = (clave: string | null) => {
+    setFiltroMes(clave);
+    setModalMesVisible(false);
+    if (clave && !hayReservaEnMes(clave)) {
+      Alert.alert(t("misReservas.sinResultadosFiltroTitulo"), t("misReservas.sinReservasEnMes", { mes: etiquetaMes(clave, locale) }));
+    }
   };
 
   const reservasFiltradas = useMemo(() => {
     return reservas.filter((r) => {
       if (filtroGrupo !== "todas" && calcularGrupoReserva(r) !== filtroGrupo) return false;
-      const fecha = r.fechaRetiro ? String(r.fechaRetiro) : null;
-      if (fechaDesde && (!fecha || fecha < fechaDesde)) return false;
-      if (fechaHasta && (!fecha || fecha > fechaHasta)) return false;
+      if (filtroMes) {
+        const fecha = r.fechaRetiro ? String(r.fechaRetiro) : r.fechaReserva;
+        if (!fecha || claveMes(fecha) !== filtroMes) return false;
+      }
       return true;
     });
-  }, [reservas, filtroGrupo, fechaDesde, fechaHasta]);
-
-  const secciones: Seccion[] = useMemo(() => {
-    const porGrupo = new Map<GrupoReserva, ReservaGuardada[]>();
-    for (const r of reservasFiltradas) {
-      const g = calcularGrupoReserva(r);
-      if (!porGrupo.has(g)) porGrupo.set(g, []);
-      porGrupo.get(g)!.push(r);
-    }
-    return ORDEN_GRUPOS.filter((g) => porGrupo.get(g)?.length).map((g) => ({
-      grupo: g,
-      data: porGrupo.get(g)!,
-    }));
-  }, [reservasFiltradas]);
+  }, [reservas, filtroGrupo, filtroMes]);
 
   const irADetalle = (referencia: string) =>
     router.push(`/payment-response?ref=${encodeURIComponent(referencia)}`);
@@ -120,83 +175,113 @@ export default function MisReservasScreen() {
       </LinearGradient>
 
       {!cargando && reservas.length > 0 && (
-        <View style={[styles.filtrosWrap, { borderBottomColor: c.border, backgroundColor: c.bgHeader }]}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsFila}>
-            <FiltroChip
-              label={t("misReservas.todas")}
-              activo={filtroGrupo === "todas"}
-              onPress={() => setFiltroGrupo("todas")}
-              c={c}
-            />
-            {ORDEN_GRUPOS.map((g) => (
-              <FiltroChip
-                key={g}
-                label={t(`misReservas.grupos.${g}`)}
-                activo={filtroGrupo === g}
-                color={COLOR_GRUPO[g]}
-                onPress={() => setFiltroGrupo(g)}
-                c={c}
-              />
-            ))}
-            <TouchableOpacity
-              style={[styles.chipFecha, { borderColor: c.border, backgroundColor: mostrarFiltroFecha ? c.primaryBg : c.bgCard }]}
-              onPress={() => setMostrarFiltroFecha((v) => !v)}
-            >
-              <Ionicons name="calendar-outline" size={13} color={mostrarFiltroFecha ? c.primary : c.textSecondary} />
-              <Text style={[styles.chipTexto, { color: mostrarFiltroFecha ? c.primary : c.textSecondary }]}>
-                {t("misReservas.filtrarPorFecha")}
-              </Text>
-            </TouchableOpacity>
+        <View style={[styles.filtrosWrap, { borderColor: c.border, backgroundColor: c.bgCard }]}>
+          <View style={styles.filtrosCabecera}>
+            <View style={[styles.filtrosIcono, { backgroundColor: c.primaryBg }]}>
+              <Ionicons name="options-outline" size={18} color={c.primary} />
+            </View>
+            <Text style={[styles.filtrosTitulo, { color: c.textPrimary }]}>{t("misReservas.filtros")}</Text>
             {hayFiltrosActivos && (
-              <TouchableOpacity style={styles.limpiarBtn} onPress={limpiarFiltros}>
+              <TouchableOpacity onPress={limpiarFiltros} activeOpacity={0.7}>
                 <Text style={[styles.limpiarBtnTexto, { color: c.primary }]}>{t("misReservas.limpiarFiltros")}</Text>
               </TouchableOpacity>
             )}
-          </ScrollView>
+          </View>
 
-          {mostrarFiltroFecha && (
-            <View style={styles.fechasFila}>
-              <View style={styles.fechaCampo}>
-                <DateField
-                  label={t("misReservas.desde")}
-                  value={fechaDesde}
-                  onChange={setFechaDesde}
-                  colores={c}
-                />
-              </View>
-              <View style={styles.fechaCampo}>
-                <DateField
-                  label={t("misReservas.hasta")}
-                  value={fechaHasta}
-                  onChange={setFechaHasta}
-                  colores={c}
-                />
-              </View>
-            </View>
-          )}
+          <View style={styles.selectoresFila}>
+            <SelectorFiltro
+              icono="flag-outline"
+              etiqueta={t("misReservas.filtrarPorEstado")}
+              valor={filtroGrupo === "todas" ? t("misReservas.todas") : t(`misReservas.grupos.${filtroGrupo}`)}
+              activo={filtroGrupo !== "todas"}
+              onPress={() => setModalEstadoVisible(true)}
+              c={c}
+            />
+            <SelectorFiltro
+              icono="calendar-outline"
+              etiqueta={t("misReservas.filtrarPorMes")}
+              valor={filtroMes ? etiquetaMes(filtroMes, locale) : t("misReservas.todosLosMeses")}
+              activo={!!filtroMes}
+              onPress={() => setModalMesVisible(true)}
+              c={c}
+            />
+          </View>
+
+          <Modal visible={modalEstadoVisible} transparent animationType="fade" onRequestClose={() => setModalEstadoVisible(false)}>
+            <Pressable style={styles.modalOverlay} onPress={() => setModalEstadoVisible(false)}>
+              <Pressable style={[styles.modalCard, { backgroundColor: c.bgCard }]} onPress={() => {}}>
+                <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>{t("misReservas.filtrarPorEstado")}</Text>
+                {(["todas", ...ORDEN_GRUPOS] as const).map((grupo) => {
+                  const activo = filtroGrupo === grupo;
+                  return (
+                    <TouchableOpacity
+                      key={grupo}
+                      style={[styles.opcionEstado, { borderBottomColor: c.border }]}
+                      onPress={() => { setFiltroGrupo(grupo); setModalEstadoVisible(false); }}
+                    >
+                      <Text style={[styles.opcionEstadoTexto, { color: activo ? c.primary : c.textPrimary }]}>
+                        {grupo === "todas" ? t("misReservas.todas") : t(`misReservas.grupos.${grupo}`)}
+                      </Text>
+                      {activo && <Ionicons name="checkmark-circle" size={20} color={c.primary} />}
+                    </TouchableOpacity>
+                  );
+                })}
+              </Pressable>
+            </Pressable>
+          </Modal>
+
+          <Modal
+            visible={modalMesVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setModalMesVisible(false)}
+          >
+            <Pressable style={styles.modalOverlay} onPress={() => setModalMesVisible(false)}>
+              <Pressable style={[styles.modalCard, { backgroundColor: c.bgCard }]} onPress={() => {}}>
+                <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>{t("misReservas.filtrarPorMes")}</Text>
+
+                <View style={styles.mesesGrid}>
+                  {mesesDelAnio.map((m) => (
+                    <TouchableOpacity
+                      key={m.clave}
+                      style={[styles.celdaMes, { backgroundColor: filtroMes === m.clave ? COLOR_MARCA : c.bgInput }]}
+                      onPress={() => seleccionarMes(m.clave)}
+                      activeOpacity={0.75}
+                    >
+                      <Text style={[styles.celdaMesTexto, { color: filtroMes === m.clave ? "#fff" : c.textPrimary }]}>
+                        {m.etiqueta}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <TouchableOpacity style={styles.todosMesesBtn} onPress={() => seleccionarMes(null)} activeOpacity={0.7}>
+                  <Text
+                    style={[
+                      styles.todosMesesTexto,
+                      { color: !filtroMes ? c.primary : c.textSecondary, fontWeight: !filtroMes ? "800" : "600" },
+                    ]}
+                  >
+                    {t("misReservas.todosLosMeses")}
+                  </Text>
+                  {!filtroMes && <Ionicons name="checkmark" size={16} color={c.primary} />}
+                </TouchableOpacity>
+              </Pressable>
+            </Pressable>
+          </Modal>
         </View>
       )}
 
-      {!cargando && reservas.length > 0 && secciones.length > 0 && (
-        <SectionList
-          sections={secciones}
+      {!cargando && reservas.length > 0 && reservasFiltradas.length > 0 && (
+        <FlatList
+          data={reservasFiltradas}
           keyExtractor={(item) => item.referencia}
           contentContainerStyle={styles.lista}
-          stickySectionHeadersEnabled={false}
-          renderSectionHeader={({ section }) => (
-            <View style={styles.seccionHeaderFila}>
-              <View style={[styles.seccionDot, { backgroundColor: COLOR_GRUPO[section.grupo] }]} />
-              <Text style={[styles.seccionHeaderTexto, { color: c.textPrimary }]}>
-                {t(`misReservas.grupos.${section.grupo}`)}
-              </Text>
-              <Text style={[styles.seccionHeaderCount, { color: c.textMuted }]}>{section.data.length}</Text>
-            </View>
-          )}
-          renderItem={({ item }) => <TarjetaReserva reserva={item} c={c} t={t} onPress={() => irADetalle(item.referencia)} />}
+          renderItem={({ item }) => <TarjetaReserva reserva={item} usuarioId={usuarioKey} c={c} t={t} onPress={() => irADetalle(item.referencia)} />}
         />
       )}
 
-      {!cargando && reservas.length > 0 && secciones.length === 0 && (
+      {!cargando && reservas.length > 0 && reservasFiltradas.length === 0 && (
         <View style={styles.vacioContainer}>
           <Ionicons name="search-outline" size={40} color={c.textMuted} />
           <Text style={[styles.vacioTitulo, { color: c.textPrimary }]}>{t("misReservas.sinResultadosFiltroTitulo")}</Text>
@@ -237,42 +322,54 @@ export default function MisReservasScreen() {
   );
 }
 
-function FiltroChip({
-  label,
+function SelectorFiltro({
+  icono,
+  etiqueta,
+  valor,
   activo,
   onPress,
   c,
-  color,
 }: {
-  label: string;
+  icono: React.ComponentProps<typeof Ionicons>["name"];
+  etiqueta: string;
+  valor: string;
   activo: boolean;
   onPress: () => void;
   c: ReturnType<typeof useTemaColores>;
-  color?: string;
 }) {
-  const colorActivo = color ?? COLOR_MARCA;
   return (
     <TouchableOpacity
       style={[
-        styles.chip,
-        { borderColor: activo ? colorActivo : c.border, backgroundColor: activo ? `${colorActivo}1A` : c.bgCard },
+        styles.selectorFiltro,
+        {
+          backgroundColor: activo ? c.primaryBg : c.bgInput,
+          borderColor: activo ? c.primary : c.border,
+        },
       ]}
       onPress={onPress}
+      activeOpacity={0.8}
     >
-      <Text style={[styles.chipTexto, { color: activo ? colorActivo : c.textSecondary, fontWeight: activo ? "700" : "600" }]}>
-        {label}
-      </Text>
+      <View style={styles.selectorFiltroSuperior}>
+        <Ionicons name={icono} size={14} color={activo ? c.primary : c.textMuted} />
+        <Text style={[styles.selectorFiltroEtiqueta, { color: c.textMuted }]} numberOfLines={1}>{etiqueta}</Text>
+      </View>
+      <View style={styles.selectorFiltroInferior}>
+        <Text style={[styles.selectorFiltroValor, { color: activo ? c.primary : c.textPrimary }]} numberOfLines={1}>{valor}</Text>
+        <Ionicons name="chevron-down" size={14} color={activo ? c.primary : c.textMuted} />
+      </View>
     </TouchableOpacity>
   );
 }
 
 function TarjetaReserva({
   reserva,
+  usuarioId,
   c,
   t,
   onPress,
 }: {
   reserva: ReservaGuardada;
+  usuarioId: string;
   c: ReturnType<typeof useTemaColores>;
   t: (key: string, opts?: any) => string;
   onPress: () => void;
@@ -280,6 +377,21 @@ function TarjetaReserva({
   const grupo = calcularGrupoReserva(reserva);
   const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
   const foto = vehiculoSnap?.imagenes?.[0];
+
+  const [resena, setResena] = useState<ResenaGuardada | null>(null);
+  const [modalCalificarVisible, setModalCalificarVisible] = useState(false);
+  const [alertGuardadoVisible, setAlertGuardadoVisible] = useState(false);
+
+  useEffect(() => {
+    if (grupo !== "finalizada") return;
+    let activo = true;
+    resenaService.obtenerPorReserva(reserva.referencia, usuarioId).then((r) => {
+      if (activo) setResena(r);
+    });
+    return () => {
+      activo = false;
+    };
+  }, [grupo, reserva.referencia, usuarioId]);
 
   return (
     <TouchableOpacity
@@ -332,7 +444,7 @@ function TarjetaReserva({
                 params: {
                   reservaId: reserva.referencia,
                   vehiculoNombre: reserva.vehiculoNombre,
-                  placa: vehiculoSnap?.placa || "KLS-849",
+                  ...(vehiculoSnap?.placa ? { placa: vehiculoSnap.placa } : {}),
                 },
               } as any);
             }}
@@ -343,8 +455,68 @@ function TarjetaReserva({
               {t("tabs.hacerReporte")}
             </Text>
           </TouchableOpacity>
+
+          {grupo === "finalizada" && (
+            <TouchableOpacity
+              style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
+              onPress={(e) => {
+                e.stopPropagation();
+                setModalCalificarVisible(true);
+              }}
+              activeOpacity={0.8}
+            >
+              {resena ? (
+                <>
+                  <View style={{ flexDirection: "row", gap: 1 }}>
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Ionicons
+                        key={i}
+                        name={i < resena.calificacion ? "star" : "star-outline"}
+                        size={13}
+                        color="#F59E0B"
+                      />
+                    ))}
+                  </View>
+                  <Text style={[styles.reportarBtnText, { color: c.primary }]} numberOfLines={1}>
+                    {t("misReservas.editarCalificacion")}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="star-outline" size={13} color={c.primary} />
+                  <Text style={[styles.reportarBtnText, { color: c.primary }]}>
+                    {t("misReservas.calificarViaje")}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
       </View>
+
+      {grupo === "finalizada" && (
+        <>
+          <ModalCalificar
+            visible={modalCalificarVisible}
+            referenciaReserva={reserva.referencia}
+            usuarioId={usuarioId}
+            valorInicial={resena}
+            onCerrar={() => setModalCalificarVisible(false)}
+            onGuardado={(nuevaResena) => {
+              setResena(nuevaResena);
+              setModalCalificarVisible(false);
+              setAlertGuardadoVisible(true);
+            }}
+          />
+          <AlertModal
+            visible={alertGuardadoVisible}
+            icono="checkmark-circle-outline"
+            titulo={t("misReservas.calificacionGuardadaTitulo")}
+            mensaje={t("misReservas.calificacionGuardadaMensaje")}
+            onCerrar={() => setAlertGuardadoVisible(false)}
+          />
+        </>
+      )}
     </TouchableOpacity>
   );
 }
@@ -360,46 +532,70 @@ const styles = StyleSheet.create({
   headerTitulo: { fontSize: 20, fontWeight: "800" },
   headerSubtitulo: { fontSize: 13, marginTop: 4 },
 
-  filtrosWrap: { borderBottomWidth: 1, paddingVertical: 10 },
-  chipsFila: { paddingHorizontal: 16, gap: 8, alignItems: "center" },
-  chip: {
+  filtrosWrap: {
+    marginHorizontal: 16,
+    marginTop: 14,
+    marginBottom: 2,
+    padding: 14,
     borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    borderRadius: 16,
   },
-  chipFecha: {
+  filtrosCabecera: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
+  filtrosIcono: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  filtrosTitulo: { flex: 1, marginLeft: 9, fontSize: 14, fontWeight: "800" },
+  limpiarBtnTexto: { fontSize: 12, fontWeight: "700" },
+  selectoresFila: { flexDirection: "row", gap: 10 },
+  selectorFiltro: { flex: 1, minWidth: 0, borderWidth: 1, borderRadius: 12, padding: 10 },
+  selectorFiltroSuperior: { flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 5 },
+  selectorFiltroInferior: { flexDirection: "row", alignItems: "center", gap: 4 },
+  selectorFiltroEtiqueta: { flex: 1, fontSize: 10, fontWeight: "600" },
+  selectorFiltroValor: { flex: 1, fontSize: 12, fontWeight: "800" },
+  opcionEstado: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    justifyContent: "space-between",
+    minHeight: 46,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  chipTexto: { fontSize: 12 },
-  limpiarBtn: { paddingHorizontal: 8, paddingVertical: 7 },
-  limpiarBtnTexto: { fontSize: 12, fontWeight: "700" },
-  fechasFila: {
+  opcionEstadoTexto: { fontSize: 14, fontWeight: "700" },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 340,
+    borderRadius: 16,
+    padding: 20,
+  },
+  modalTitulo: { fontSize: 16, fontWeight: "800", marginBottom: 14 },
+  mesesGrid: {
     flexDirection: "row",
-    gap: 10,
-    paddingHorizontal: 16,
-    marginTop: 10,
+    flexWrap: "wrap",
+    gap: 8,
   },
-  fechaCampo: { flex: 1 },
+  celdaMes: {
+    width: "31%",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  celdaMesTexto: { fontSize: 13, fontWeight: "700" },
+  todosMesesBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 16,
+    paddingVertical: 10,
+  },
+  todosMesesTexto: { fontSize: 13.5 },
 
   lista: { padding: 16, paddingBottom: 40 },
-  seccionHeaderFila: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 18,
-    marginBottom: 10,
-  },
-  seccionDot: { width: 8, height: 8, borderRadius: 4 },
-  seccionHeaderTexto: { fontSize: 14.5, fontWeight: "800", flex: 1 },
-  seccionHeaderCount: { fontSize: 12, fontWeight: "700" },
-
   tarjeta: {
     borderRadius: 14,
     borderWidth: 1,

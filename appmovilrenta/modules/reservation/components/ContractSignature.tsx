@@ -5,10 +5,11 @@
 // mismas 6 cláusulas, el mismo código de contrato autogenerado y la misma
 // firma táctil del usuario. La firma de la plataforma se muestra como un
 // sello de texto en vez de una imagen (acá no existe el PNG de la firma).
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Alert,
   Image,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -35,6 +36,7 @@ import { fmt } from "./BookingSummaryModal.pieces";
 import { contratoService, ContratoGuardado } from "../services/contractService";
 import * as DocumentPicker from "expo-document-picker";
 import CampoSubidaDocumento from "./DocumentUploadField";
+import { crearTextosContrato, generarContratoPdf, leerPdfOriginalBase64 } from "../services/pdfService";
 
 const LOCALES_FECHA: Record<string, string> = {
   es: "es-CO",
@@ -59,6 +61,10 @@ interface Props {
   total: number;
   referencia: string;
   onFirmado: (contrato: ContratoGuardado | null) => void;
+  soloLectura?: boolean;
+  contratoFirmado?: ContratoGuardado | null;
+  onDescargar?: () => void;
+  descargando?: boolean;
 }
 
 export default function FirmaContrato({
@@ -70,6 +76,10 @@ export default function FirmaContrato({
   total,
   referencia,
   onFirmado,
+  soloLectura = false,
+  contratoFirmado = null,
+  onDescargar,
+  descargando = false,
 }: Props) {
   const { t, i18n } = useTranslation();
   const c = useTemaColores();
@@ -183,13 +193,39 @@ export default function FirmaContrato({
     setFirmando(true);
 
     try {
+      const archivoOriginalBase64 = await leerPdfOriginalBase64(pdfFirma.uri);
       const contrato = await contratoService.guardarFirma(referencia, {
         codigo: codigoContrato,
         firmaTrazos: pdfFirma.uri,
+        archivoOriginalUri: pdfFirma.uri,
+        archivoOriginalNombre: pdfFirma.nombre,
+        archivoOriginalBase64,
         ciudad: ciudadSucursal,
         fecha: new Date().toISOString(),
       });
-      onFirmado?.(contrato);
+      if (!contrato) throw new Error("No fue posible guardar el contrato firmado");
+
+      const uriContrato = await generarContratoPdf({
+        contrato,
+        vehiculo,
+        datosPersonales,
+        datosDocumentos,
+        fechasLugar,
+        planes,
+        total,
+        referencia,
+        formatPrecio: fmt,
+        formatearFecha,
+        tipoDocumentoTexto,
+        textos: crearTextosContrato((key) => t(key)),
+      });
+      const contratoPdfBase64 = await leerPdfOriginalBase64(uriContrato);
+      const contratoCompleto = await contratoService.guardarPdfContrato(
+        referencia,
+        contratoPdfBase64,
+        `contrato-${referencia}.pdf`
+      );
+      onFirmado?.(contratoCompleto);
     } catch (error) {
       console.error("[FirmaContrato] Error al guardar la firma", error);
       Alert.alert(t("reserva.confirmacion.errorPagoTitulo"), t("reserva.confirmacion.errorPagoMensaje"));
@@ -204,7 +240,10 @@ export default function FirmaContrato({
       contentContainerStyle={styles.scroll}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+      <View
+        nativeID={soloLectura ? "contrato-legal-visible" : undefined}
+        style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}
+      >
         <LinearGradient
           colors={["#1e3a8a", "#2563eb", "#93c5fd"]}
           start={{ x: 0, y: 0 }}
@@ -235,7 +274,11 @@ export default function FirmaContrato({
               <Text style={styles.badgeLabelTexto}>{t("reserva.contrato.badgeLabel")}</Text>
             </View>
             <MetaLinea label={t("reserva.contrato.contractCode")} valor={codigoContrato} c={c} />
-            <MetaLinea label={t("reserva.contrato.status")} valor={t("reserva.contrato.statusPending")} c={c} />
+            <MetaLinea
+              label={t("reserva.contrato.status")}
+              valor={t(soloLectura ? "reserva.contrato.statusSigned" : "reserva.contrato.statusPending")}
+              c={c}
+            />
             <MetaLinea label={t("reserva.contrato.generationDate")} valor={fechaGeneracion} c={c} />
             <MetaLinea label={t("reserva.contrato.reservationCode")} valor={referencia} c={c} />
           </View>
@@ -359,15 +402,33 @@ export default function FirmaContrato({
 
             <View style={styles.firmasFila}>
               <View style={[styles.firmaTarjeta, { backgroundColor: c.bgInput, borderColor: c.border }]}>
-                <CampoSubidaDocumento
-                  etiqueta={t("reserva.contrato.userSignature")}
-                  ayuda={t("reserva.contrato.uploadSignaturePdfHelp") || "Anexe un documento PDF firmado"}
-                  archivo={pdfFirma}
-                  cargando={cargandoFirma}
-                  error={errorFirma}
-                  onSeleccionar={seleccionarPdfFirma}
-                  onQuitar={() => setPdfFirma(null)}
-                />
+                {soloLectura ? (
+                  <View>
+                    <Text style={[styles.firmaTitulo, { color: c.textPrimary }]}>
+                      {t("reserva.contrato.userSignature")}
+                    </Text>
+                    <View style={[styles.selloPlataforma, { backgroundColor: c.bgCard }]}>
+                      <Ionicons name="document-attach-outline" size={34} color="#1e3a8a" />
+                      <Text style={[styles.firmaDato, { color: c.textPrimary, textAlign: "center" }]}>
+                        {contratoFirmado?.archivoOriginalNombre || t("reserva.contrato.digitallySigned")}
+                      </Text>
+                      <View style={styles.selloBadge}>
+                        <Ionicons name="checkmark-circle" size={14} color="#1e3a8a" />
+                        <Text style={styles.selloBadgeTexto}>{t("reserva.contrato.statusSigned")}</Text>
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <CampoSubidaDocumento
+                    etiqueta={t("reserva.contrato.userSignature")}
+                    ayuda={t("reserva.contrato.uploadSignaturePdfHelp") || "Anexe un documento PDF firmado"}
+                    archivo={pdfFirma}
+                    cargando={cargandoFirma}
+                    error={errorFirma}
+                    onSeleccionar={seleccionarPdfFirma}
+                    onQuitar={() => setPdfFirma(null)}
+                  />
+                )}
                 <View style={{ marginTop: 12 }}>
                   <Text style={[styles.firmaDato, { color: c.textPrimary }]}>
                     <Text style={styles.clausulaNegrita}>{t("reserva.contrato.fullName")}:</Text>{" "}
@@ -403,10 +464,11 @@ export default function FirmaContrato({
             </View>
           </Seccion>
 
+          <View nativeID="contrato-acciones-descarga">
           <TouchableOpacity
             style={styles.firmarBtnWrap}
-            onPress={handleFirmar}
-            disabled={firmando}
+            onPress={soloLectura ? onDescargar : handleFirmar}
+            disabled={soloLectura ? descargando : firmando}
             activeOpacity={0.85}
           >
             <LinearGradient
@@ -415,12 +477,19 @@ export default function FirmaContrato({
               end={GRADIENTES.boton.end}
               style={styles.firmarBtn}
             >
-              <Ionicons name={firmando ? "hourglass-outline" : "create-outline"} size={18} color="#fff" />
+              <Ionicons
+                name={(soloLectura ? descargando : firmando) ? "hourglass-outline" : soloLectura ? "download-outline" : "create-outline"}
+                size={18}
+                color="#fff"
+              />
               <Text style={styles.firmarBtnTexto}>
-                {firmando ? t("reserva.contrato.signing") : t("reserva.contrato.signAndContinue")}
+                {soloLectura
+                  ? descargando ? t("misReservas.generandoPdf") : t("misReservas.descargarContrato")
+                  : firmando ? t("reserva.contrato.signing") : t("reserva.contrato.signAndContinue")}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
+          </View>
 
           <View style={[styles.footer, { borderTopColor: c.border }]}>
             <Text style={[styles.footerTexto, { color: c.textMuted }]}>{t("reserva.contrato.footerNote1")}</Text>
@@ -456,7 +525,10 @@ function Seccion({
   children: React.ReactNode;
 }) {
   return (
-    <View style={styles.seccion}>
+    <View
+      style={styles.seccion}
+      {...(Platform.OS === "web" ? ({ "data-pdf-section": "true" } as object) : {})}
+    >
       <Text style={[styles.seccionTitulo, { color: c.textPrimary }]}>{titulo}</Text>
       {children}
     </View>

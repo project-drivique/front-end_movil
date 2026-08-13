@@ -7,6 +7,8 @@
 // FirmaCanvas.
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system/legacy";
+import { Platform } from "react-native";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import {
   DatosDocumentos,
@@ -24,6 +26,22 @@ interface Punto {
   x: number;
   y: number;
 }
+
+type Html2PdfConfig = {
+  margin: number;
+  filename: string;
+  image: { type: "jpeg"; quality: number };
+  html2canvas: Record<string, unknown>;
+  jsPDF: { unit: string; format: string; orientation: "portrait" };
+  pagebreak: { mode: string[]; avoid: string[] };
+};
+
+type Html2PdfWorkerCompatible = {
+  set(options: Html2PdfConfig): Html2PdfWorkerCompatible;
+  from(source: string | HTMLElement): Html2PdfWorkerCompatible;
+  outputPdf(type: "datauristring"): Promise<string>;
+  save(): Promise<void>;
+};
 
 function trazosASvgPaths(firmaTrazosJson: string): string {
   try {
@@ -108,7 +126,7 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
         .meta { font-size: 11.5px; margin: 3px 0; }
         .meta b { font-weight: 700; }
         .intro { font-size: 12.5px; line-height: 1.6; margin: 16px 0; }
-        h2 { font-size: 14px; margin: 22px 0 10px; }
+        h2 { font-size: 14px; margin: 22px 0 10px; break-after: avoid; page-break-after: avoid; }
         .grid { display: flex; flex-wrap: wrap; gap: 8px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:10px; }
         .campo { width: 47%; background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:9px 10px; }
         .campo-label { font-size: 9px; text-transform: uppercase; letter-spacing:.4px; font-weight:700; color:#6b7280; margin-bottom:4px; }
@@ -124,6 +142,7 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
         .sello-texto { font-size:26px; font-weight:800; font-style:italic; color:#1e3a8a; }
         .sello-badge { font-size:10.5px; font-weight:700; color:#1e3a8a; }
         .footer { margin-top: 20px; padding-top: 12px; border-top:1px solid #e5e7eb; font-size:10px; color:#6b7280; line-height:1.5; }
+        .grid, .firmas, .firma-card, .footer { break-inside: avoid; page-break-inside: avoid; }
       </style>
     </head>
     <body>
@@ -197,11 +216,36 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
     </body>
   </html>`;
 
-  const { uri } = await Print.printToFileAsync({ html, base64: false });
-  return uri;
+  if (Platform.OS === "web") {
+    const modulo = await import("html2pdf.js");
+    const worker = modulo.default() as unknown as Html2PdfWorkerCompatible;
+    return worker
+      .set({
+        margin: 8,
+        filename: `contrato-${referencia}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css", "legacy"], avoid: [".grid", ".firmas", ".firma-card", ".footer"] },
+      })
+      .from(html)
+      .outputPdf("datauristring");
+  }
+  const resultado = await Print.printToFileAsync({ html, base64: false });
+  if (!resultado?.uri) throw new Error("No fue posible generar el contrato en PDF");
+  return resultado.uri;
 }
 
-export async function compartirContratoPdf(uri: string) {
+export async function compartirContratoPdf(uri: string, nombre = "contrato-firmado.pdf") {
+  if (Platform.OS === "web" && typeof document !== "undefined") {
+    const enlace = document.createElement("a");
+    enlace.href = uri;
+    enlace.download = nombre;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    return uri;
+  }
   const disponible = await Sharing.isAvailableAsync();
   if (disponible) {
     await Sharing.shareAsync(uri, {
@@ -210,4 +254,76 @@ export async function compartirContratoPdf(uri: string) {
     });
   }
   return uri;
+}
+
+const CLAVES_CONTRATO = [
+  "title", "subtitle", "autoGenNote", "badgeLabel", "contractCode", "status", "statusSigned",
+  "generationDate", "reservationCode", "intro", "userDataTitle", "fullName", "document", "email",
+  "phone", "address", "license", "notProvided", "reservationTitle", "vehicle", "plate", "color", "year",
+  "branch", "branchCity", "branchAddress", "startDate", "endDate", "paymentMethod", "totalValue",
+  "additionalServices", "protectionPlan", "domicileDelivery", "deliveryAddress", "deliveryNeighborhood",
+  "deliveryReferences", "returnAtDomicile", "returnAtDomicileValue", "clausesTitle", "clause1Title",
+  "clause1Text", "clause2Title", "clause2Text", "clause3Title", "clause3Item1", "clause3Item2",
+  "clause3Item3", "clause3Item4", "clause4Title", "clause4Text", "clause5Title", "clause5Text",
+  "clause6Title", "clause6Text", "signaturesTitle", "signCity", "signDate", "userSignature",
+  "platformSignature", "digitallySigned", "responsible", "role", "platformResponsible", "platformRole",
+  "footerNote1", "footerNote2", "paymentMethodCash", "paymentMethodWompi", "noneAdded",
+] as const;
+
+export function crearTextosContrato(t: (key: string) => string): Record<string, string> {
+  return CLAVES_CONTRATO.reduce<Record<string, string>>((textos, clave) => {
+    textos[clave] = t(`reserva.contrato.${clave}`);
+    return textos;
+  }, {});
+}
+
+export async function leerPdfOriginalBase64(uri: string): Promise<string> {
+  if (uri.startsWith("data:")) return uri.split(",", 2)[1] || "";
+  if (Platform.OS === "web") {
+    const blob = await (await fetch(uri)).blob();
+    return new Promise((resolve, reject) => {
+      const lector = new FileReader();
+      lector.onload = () => resolve(String(lector.result).split(",", 2)[1] || "");
+      lector.onerror = () => reject(lector.error);
+      lector.readAsDataURL(blob);
+    });
+  }
+  return FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+}
+
+export async function compartirPdfOriginal(base64: string, nombre = "contrato-firmado.pdf") {
+  if (Platform.OS === "web") return compartirContratoPdf(`data:application/pdf;base64,${base64}`, nombre);
+  const uri = `${FileSystem.cacheDirectory}${nombre.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+  await FileSystem.writeAsStringAsync(uri, base64, { encoding: FileSystem.EncodingType.Base64 });
+  return compartirContratoPdf(uri, nombre);
+}
+
+/** Exporta el contrato completo que se visualiza; nunca usa la plantilla resumen. */
+export async function descargarContratoVisible(nombre: string) {
+  if (Platform.OS !== "web" || typeof document === "undefined") {
+    throw new Error("Disponible únicamente en web");
+  }
+  const contrato = document.getElementById("contrato-legal-visible");
+  if (!contrato) throw new Error("No se encontró el contrato completo visible");
+  const modulo = await import("html2pdf.js");
+  const worker = modulo.default() as unknown as Html2PdfWorkerCompatible;
+  await worker
+      .set({
+      margin: 8,
+      filename: nombre,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        ignoreElements: (element: Element) => element.id === "contrato-acciones-descarga",
+      },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      pagebreak: {
+        mode: ["css", "legacy"],
+        avoid: ['[data-pdf-section="true"]'],
+      },
+      })
+    .from(contrato)
+    .save();
 }
