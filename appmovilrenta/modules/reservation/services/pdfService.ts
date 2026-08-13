@@ -240,8 +240,25 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
     </body>
   </html>`;
 
-  const { uri } = await Print.printToFileAsync({ html, base64: false });
-  return uri;
+  if (Platform.OS === "web") {
+    const modulo = await import("html2pdf.js");
+    const html2pdf = modulo.default;
+    return html2pdf()
+      .set({
+        margin: 8,
+        filename: `contrato-${referencia}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css", "legacy"] },
+      })
+      .from(html)
+      .outputPdf("datauristring");
+  }
+
+  const resultado = await Print.printToFileAsync({ html, base64: false });
+  if (!resultado?.uri) throw new Error("No fue posible generar el contrato en PDF");
+  return resultado.uri;
 }
 
 export async function compartirContratoPdf(uri: string, nombre = "contrato-firmado.pdf") {
