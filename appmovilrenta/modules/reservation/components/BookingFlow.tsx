@@ -1,5 +1,5 @@
 // modules/reserva/components/FlujoReserva.tsx
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
