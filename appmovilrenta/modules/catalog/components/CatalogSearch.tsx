@@ -180,58 +180,39 @@ export default function BuscadorCatalogo({
 
   return (
     <View style={[styles.containerGeneral, { backgroundColor: c.bgHeader }]}>
-      <View style={[styles.barraInput, { backgroundColor: c.bgInput, borderColor: c.border }]}>
-        <Ionicons
-          name="search-outline"
-          size={18}
-          color={c.textMuted}
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={[styles.textInput, { color: c.textPrimary }]}
-          placeholder={t("catalogo.buscador.placeholder")}
-          placeholderTextColor={c.textMuted}
-          value={textBusqueda}
-          onChangeText={setTextBusqueda}
-        />
-      </View>
+      <View style={styles.searchRow}>
+        <View style={[styles.barraInput, { backgroundColor: c.bgInput, borderColor: c.border }]}>
+          <Ionicons
+            name="search-outline"
+            size={18}
+            color={c.textMuted}
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={[styles.textInput, { color: c.textPrimary }]}
+            placeholder={t("catalogo.buscador.placeholder")}
+            placeholderTextColor={c.textMuted}
+            value={textBusqueda}
+            onChangeText={setTextBusqueda}
+          />
+        </View>
 
-      <TouchableOpacity
-        style={[
-          styles.fechasBarraBtn,
-          { backgroundColor: c.bgInput, borderColor: c.border },
-          disabled && { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6" },
-          tieneBusquedaActiva && { borderColor: c.oscuro ? "#3B82F6" : "#BFDBFE", backgroundColor: c.primaryBg },
-        ]}
-        activeOpacity={0.7}
-        onPress={handlePressFechas}
-      >
-        <Ionicons
-          name={
-            disabled
-              ? "lock-closed-outline"
-              : tieneBusquedaActiva
-                ? "calendar"
-                : "calendar-outline"
-          }
-          size={16}
-          color={
-            disabled ? c.textMuted : tieneBusquedaActiva ? primaryAccent : c.textMuted
-          }
-          style={{ marginRight: 8 }}
-        />
-        <Text
+        <TouchableOpacity
           style={[
-            styles.fechasBarraBtnText,
-            { color: c.textMuted },
-            tieneBusquedaActiva && { color: primaryAccent, fontWeight: "600" },
+            styles.calendarIconBtn,
+            { backgroundColor: c.bgInput, borderColor: c.border },
+            tieneBusquedaActiva && { borderColor: primaryAccent, backgroundColor: c.primaryBg },
           ]}
-          numberOfLines={1}
+          activeOpacity={0.7}
+          onPress={handlePressFechas}
         >
-          {fechaBtnLabel}
-        </Text>
-        <Ionicons name="chevron-forward" size={14} color={c.textMuted} />
-      </TouchableOpacity>
+          <Ionicons
+            name={tieneBusquedaActiva ? "calendar" : "calendar-outline"}
+            size={20}
+            color={tieneBusquedaActiva ? primaryAccent : c.textSecondary}
+          />
+        </TouchableOpacity>
+      </View>
 
       <Modal
         visible={modalFormVisible}
@@ -461,15 +442,29 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 8,
   },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   barraInput: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F9FAFB",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    height: 48,
+    height: 44,
     paddingHorizontal: 12,
+  },
+  calendarIconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   searchIcon: { marginRight: 8 },
   textInput: { flex: 1, fontSize: 14, color: "#1F2937", height: "100%" },

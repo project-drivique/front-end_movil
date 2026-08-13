@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/authStore";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
+import { useNotificationStore } from "@/store/notificationStore";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -28,6 +29,7 @@ export default function TabLayout() {
   const [alertVisible, setAlertVisible] = useState(false);
   const c = useTemaColores();
   const { t } = useTranslation();
+  const unreadCount = useNotificationStore((s) => s.notificaciones.filter((n) => !n.leido).length);
 
   const tabBarHeight =
     Platform.OS === "android" ? 58 + insets.bottom : 60 + insets.bottom;
@@ -115,6 +117,7 @@ export default function TabLayout() {
             tabBarIcon: ({ focused }) => (
               <TabIcon name="menu" focused={focused} c={c} />
             ),
+            tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           }}
         />
 

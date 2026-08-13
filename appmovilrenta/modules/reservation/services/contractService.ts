@@ -19,6 +19,14 @@ export interface ContratoGuardado {
    * solo cambia el formato de almacenamiento interno.
    */
   firmaTrazos: string;
+  /** Archivo PDF original que el usuario adjuntó como contrato firmado. */
+  archivoOriginalUri?: string;
+  archivoOriginalNombre?: string;
+  /** Contenido exacto del PDF adjuntado, persistido para futuras descargas. */
+  archivoOriginalBase64?: string;
+  /** PDF legal completo generado para esta reserva. Nunca es el PDF de la firma. */
+  contratoPdfBase64?: string;
+  contratoPdfNombre?: string;
   ciudad: string;
   fecha: string;
   estado: "FIRMADO";
@@ -81,7 +89,15 @@ export const contratoService = {
    */
   guardarFirma: async (
     referenciaReserva: string,
-    datos: { codigo?: string; firmaTrazos: string; ciudad?: string; fecha?: string }
+    datos: {
+      codigo?: string;
+      firmaTrazos: string;
+      archivoOriginalUri?: string;
+      archivoOriginalNombre?: string;
+      archivoOriginalBase64?: string;
+      ciudad?: string;
+      fecha?: string;
+    }
   ): Promise<ContratoGuardado | null> => {
     if (!referenciaReserva) return null;
     const todos = await leerTodos();
@@ -90,6 +106,9 @@ export const contratoService = {
       codigo: datos.codigo || generarCodigoContrato(),
       referenciaReserva,
       firmaTrazos: datos.firmaTrazos,
+      archivoOriginalUri: datos.archivoOriginalUri,
+      archivoOriginalNombre: datos.archivoOriginalNombre,
+      archivoOriginalBase64: datos.archivoOriginalBase64,
       ciudad: datos.ciudad || "",
       fecha: datos.fecha || new Date().toISOString(),
       estado: "FIRMADO",
@@ -99,5 +118,19 @@ export const contratoService = {
     todos[referenciaReserva] = contrato;
     await guardarTodos(todos);
     return contrato;
+  },
+
+  guardarPdfContrato: async (
+    referenciaReserva: string,
+    base64: string,
+    nombre: string
+  ): Promise<ContratoGuardado | null> => {
+    const todos = await leerTodos();
+    const contrato = todos[referenciaReserva];
+    if (!contrato) return null;
+    const actualizado = { ...contrato, contratoPdfBase64: base64, contratoPdfNombre: nombre };
+    todos[referenciaReserva] = actualizado;
+    await guardarTodos(todos);
+    return actualizado;
   },
 };
