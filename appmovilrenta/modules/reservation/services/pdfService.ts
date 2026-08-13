@@ -290,7 +290,7 @@ export async function descargarContratoVisible(nombre: string) {
   if (!contrato) throw new Error("No se encontró el contrato completo visible");
   const modulo = await import("html2pdf.js");
   await (modulo.default() as any)
-      .set({
+    .set({
       margin: 8,
       filename: nombre,
       image: { type: "jpeg", quality: 0.98 },
@@ -305,9 +305,7 @@ export async function descargarContratoVisible(nombre: string) {
         mode: ["css", "legacy"],
         avoid: ['[data-pdf-section="true"]'],
       },
-      } as Parameters<ReturnType<typeof modulo.default>["set"]>[0] & {
-        pagebreak: { mode: string[]; avoid: string[] };
-      })
+    })
     .from(contrato)
     .save();
 }
