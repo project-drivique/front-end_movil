@@ -33,24 +33,6 @@ export function FloatingSupportChat() {
   const { idiomaActual } = useIdioma();
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // Ocultar chat en pantallas de inicio de sesión, registro, recuperación y onboarding inicial
-  const isAuthRoute =
-    pathname.includes("login") ||
-    pathname.includes("register") ||
-    pathname.includes("forgot") ||
-    pathname.includes("verify") ||
-    pathname.includes("auth");
-
-  const isOnboardingRoute =
-    pathname.includes("onboarding") ||
-    pathname === "/" ||
-    pathname === "/index" ||
-    pathname === "";
-
-  if (isAuthRoute || isOnboardingRoute) {
-    return null;
-  }
-
   // Historial inicial de mensajes según idioma activo
   const [mensajes, setMensajes] = useState<ChatMessage[]>([
     obtenerMensajeBienvenida(idiomaActual),
@@ -71,6 +53,24 @@ export function FloatingSupportChat() {
       }, 100);
     }
   }, [isOpen, mensajes, isTyping]);
+
+  // Ocultar chat en pantallas de inicio de sesión, registro, recuperación y onboarding inicial
+  const isAuthRoute =
+    pathname.includes("login") ||
+    pathname.includes("register") ||
+    pathname.includes("forgot") ||
+    pathname.includes("verify") ||
+    pathname.includes("auth");
+
+  const isOnboardingRoute =
+    pathname.includes("onboarding") ||
+    pathname === "/" ||
+    pathname === "/index" ||
+    pathname === "";
+
+  if (isAuthRoute || isOnboardingRoute) {
+    return null;
+  }
 
   const enviarMensaje = (texto: string, actionValue?: string) => {
     if (!texto.trim()) return;
