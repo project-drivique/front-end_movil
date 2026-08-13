@@ -39,7 +39,12 @@ import {
 } from "@/modules/reservation/types/reservation.types";
 import { fechaCorta, fmt } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { contratoService, ContratoGuardado } from "@/modules/reservation/services/contractService";
-import { compartirPdfOriginal } from "@/modules/reservation/services/pdfService";
+import {
+  compartirPdfOriginal,
+  crearTextosContrato,
+  generarContratoPdf,
+  leerPdfOriginalBase64,
+} from "@/modules/reservation/services/pdfService";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 
 export default function PagoRespuestaScreen() {
@@ -208,13 +213,39 @@ export default function PagoRespuestaScreen() {
     }
     setGenerandoPdf(true);
     try {
-      if (!contratoActual.archivoOriginalBase64) {
+      if (!vehiculoSnap || !datosPersonalesSnap || !fechasLugarSnap || !planesSnap) {
         Alert.alert(t("misReservas.contratoNoDisponibleTitulo"), t("misReservas.contratoNoDisponible"));
         return;
       }
+      let pdfBase64 = contratoActual.contratoPdfBase64;
+      let pdfNombre = contratoActual.contratoPdfNombre || `contrato-${reserva.referencia}.pdf`;
+
+      // Migra contratos antiguos: genera una sola vez el documento legal completo y lo conserva.
+      if (!pdfBase64) {
+        const tipoDocumentoTexto = datosPersonalesSnap.tipoDocumento
+          ? t(`reserva.datosPersonales.tiposDocumento.${datosPersonalesSnap.tipoDocumento === "Doc. Extranjero" ? "DocExtranjero" : datosPersonalesSnap.tipoDocumento}`, { defaultValue: datosPersonalesSnap.tipoDocumento })
+          : "";
+        const uriContrato = await generarContratoPdf({
+          contrato: contratoActual,
+          vehiculo: vehiculoSnap,
+          datosPersonales: datosPersonalesSnap,
+          datosDocumentos: datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null },
+          fechasLugar: fechasLugarSnap,
+          planes: planesSnap,
+          total: reserva.total,
+          referencia: reserva.referencia,
+          formatPrecio: fmt,
+          formatearFecha: (iso) => (iso ? fechaCorta(iso) : "—"),
+          tipoDocumentoTexto,
+          textos: crearTextosContrato((key) => t(key)),
+        });
+        pdfBase64 = await leerPdfOriginalBase64(uriContrato);
+        const actualizado = await contratoService.guardarPdfContrato(reserva.referencia, pdfBase64, pdfNombre);
+        if (actualizado) setContratoActual(actualizado);
+      }
       await compartirPdfOriginal(
-        contratoActual.archivoOriginalBase64,
-        contratoActual.archivoOriginalNombre || `contrato-${reserva.referencia}.pdf`
+        pdfBase64,
+        pdfNombre
       );
     } catch (error) {
       console.error("[pago-respuesta] Error generando el PDF", error);

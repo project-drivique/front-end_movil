@@ -35,7 +35,7 @@ import { fmt } from "./BookingSummaryModal.pieces";
 import { contratoService, ContratoGuardado } from "../services/contractService";
 import * as DocumentPicker from "expo-document-picker";
 import CampoSubidaDocumento from "./DocumentUploadField";
-import { leerPdfOriginalBase64 } from "../services/pdfService";
+import { crearTextosContrato, generarContratoPdf, leerPdfOriginalBase64 } from "../services/pdfService";
 
 const LOCALES_FECHA: Record<string, string> = {
   es: "es-CO",
@@ -202,7 +202,29 @@ export default function FirmaContrato({
         ciudad: ciudadSucursal,
         fecha: new Date().toISOString(),
       });
-      onFirmado?.(contrato);
+      if (!contrato) throw new Error("No fue posible guardar el contrato firmado");
+
+      const uriContrato = await generarContratoPdf({
+        contrato,
+        vehiculo,
+        datosPersonales,
+        datosDocumentos,
+        fechasLugar,
+        planes,
+        total,
+        referencia,
+        formatPrecio: fmt,
+        formatearFecha,
+        tipoDocumentoTexto,
+        textos: crearTextosContrato((key) => t(key)),
+      });
+      const contratoPdfBase64 = await leerPdfOriginalBase64(uriContrato);
+      const contratoCompleto = await contratoService.guardarPdfContrato(
+        referencia,
+        contratoPdfBase64,
+        `contrato-${referencia}.pdf`
+      );
+      onFirmado?.(contratoCompleto);
     } catch (error) {
       console.error("[FirmaContrato] Error al guardar la firma", error);
       Alert.alert(t("reserva.confirmacion.errorPagoTitulo"), t("reserva.confirmacion.errorPagoMensaje"));

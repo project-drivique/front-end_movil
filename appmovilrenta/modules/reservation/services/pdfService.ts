@@ -266,6 +266,27 @@ export async function compartirContratoPdf(uri: string, nombre = "contrato-firma
   return uri;
 }
 
+const CLAVES_CONTRATO = [
+  "title", "subtitle", "autoGenNote", "badgeLabel", "contractCode", "status", "statusSigned",
+  "generationDate", "reservationCode", "intro", "userDataTitle", "fullName", "document", "email",
+  "phone", "address", "license", "notProvided", "reservationTitle", "vehicle", "plate", "color", "year",
+  "branch", "branchCity", "branchAddress", "startDate", "endDate", "paymentMethod", "totalValue",
+  "additionalServices", "protectionPlan", "domicileDelivery", "deliveryAddress", "deliveryNeighborhood",
+  "deliveryReferences", "returnAtDomicile", "returnAtDomicileValue", "clausesTitle", "clause1Title",
+  "clause1Text", "clause2Title", "clause2Text", "clause3Title", "clause3Item1", "clause3Item2",
+  "clause3Item3", "clause3Item4", "clause4Title", "clause4Text", "clause5Title", "clause5Text",
+  "clause6Title", "clause6Text", "signaturesTitle", "signCity", "signDate", "userSignature",
+  "platformSignature", "digitallySigned", "responsible", "role", "platformResponsible", "platformRole",
+  "footerNote1", "footerNote2", "paymentMethodCash", "paymentMethodWompi", "noneAdded",
+] as const;
+
+export function crearTextosContrato(t: (key: string) => string): Record<string, string> {
+  return CLAVES_CONTRATO.reduce<Record<string, string>>((textos, clave) => {
+    textos[clave] = t(`reserva.contrato.${clave}`);
+    return textos;
+  }, {});
+}
+
 /** Lee el PDF seleccionado sin modificarlo para conservar el contrato original. */
 export async function leerPdfOriginalBase64(uri: string): Promise<string> {
   if (uri.startsWith("data:")) return uri.split(",", 2)[1] || "";

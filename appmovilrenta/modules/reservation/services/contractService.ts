@@ -24,6 +24,9 @@ export interface ContratoGuardado {
   archivoOriginalNombre?: string;
   /** Contenido exacto del PDF adjuntado, persistido para futuras descargas. */
   archivoOriginalBase64?: string;
+  /** PDF legal completo generado para esta reserva. Nunca es el PDF de la firma. */
+  contratoPdfBase64?: string;
+  contratoPdfNombre?: string;
   ciudad: string;
   fecha: string;
   estado: "FIRMADO";
@@ -115,5 +118,19 @@ export const contratoService = {
     todos[referenciaReserva] = contrato;
     await guardarTodos(todos);
     return contrato;
+  },
+
+  guardarPdfContrato: async (
+    referenciaReserva: string,
+    base64: string,
+    nombre: string
+  ): Promise<ContratoGuardado | null> => {
+    const todos = await leerTodos();
+    const contrato = todos[referenciaReserva];
+    if (!contrato) return null;
+    const actualizado = { ...contrato, contratoPdfBase64: base64, contratoPdfNombre: nombre };
+    todos[referenciaReserva] = actualizado;
+    await guardarTodos(todos);
+    return actualizado;
   },
 };
