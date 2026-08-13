@@ -5,6 +5,7 @@ import "react-native-reanimated";
 import { I18nextProvider } from "react-i18next";
 import i18n from "@/modules/i18n";
 import { useIdioma } from "@/modules/i18n/hooks/useLanguage";
+import { FloatingSupportChat } from "@/components/ui/FloatingSupportChat";
 
 export default function RootLayout() {
   const { temaActual } = useIdioma();
@@ -22,6 +23,7 @@ export default function RootLayout() {
         </Stack>
 
         <StatusBar style={temaActual === "oscuro" ? "light" : "dark"} /> 
+        <FloatingSupportChat />
       </ThemeProvider>
     </I18nextProvider>
   );
