@@ -550,6 +550,11 @@ export default {
     historialSub: 'Ver tus reservas anteriores',
     seguridad: 'Seguridad y Contraseña',
     seguridadSub: 'Cambiar correo o contraseña',
+    cambiarContrasena: {
+      titulo: 'Cambiar contraseña', subtitulo: 'Protege el acceso a tu cuenta', actual: 'Contraseña actual', nueva: 'Nueva contraseña', confirmar: 'Confirmar nueva contraseña', cancelar: 'Cancelar', actualizar: 'Actualizar contraseña',
+      actualRequerida: 'Ingresa tu contraseña actual.', actualIncorrecta: 'La contraseña actual es incorrecta.', nuevaInsegura: 'La nueva contraseña no cumple los criterios de seguridad.', confirmacionRequerida: 'Confirma la nueva contraseña.', noCoinciden: 'Las contraseñas no coinciden.', debeSerDiferente: 'La nueva contraseña debe ser diferente a la actual.',
+      exitoTitulo: 'Contraseña actualizada', exitoMensaje: 'Tu contraseña se actualizó correctamente.', errorTitulo: 'No se pudo actualizar', errorMensaje: 'Verifica la contraseña actual e inténtalo nuevamente.', notificacionTitulo: 'Contraseña actualizada', notificacionMensaje: 'La contraseña de tu cuenta fue modificada correctamente.',
+    },
     tarjetas: 'Mis tarjetas de pago',
     tarjetasSub: 'Gestiona tus métodos de pago',
     cerrarSesion: 'Cerrar sesión',

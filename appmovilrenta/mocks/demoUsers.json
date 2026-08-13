@@ -1,0 +1,7 @@
+[
+  { "correo": "cliente@drivique.com", "contrasena": "Cliente123*", "id": "1", "nombres": "Cliente", "apellidos": "Demo", "rol": "cliente", "activo": true, "permisosValidos": true },
+  { "correo": "admin@drivique.com", "contrasena": "Admin123*", "id": "2", "nombres": "Administrador", "apellidos": "Principal", "rol": "administrador", "activo": true, "permisosValidos": true },
+  { "correo": "encargado.neiva@drivique.com", "contrasena": "Encargado123*", "id": "3", "nombres": "Encargado", "apellidos": "Sucursal Neiva", "rol": "encargado_sucursal", "activo": true, "permisosValidos": true, "sucursalId": "suc-neiva", "sucursalNombre": "Sucursal Neiva - Centro" },
+  { "correo": "encargado.bogota@drivique.com", "contrasena": "Encargado123*", "id": "4", "nombres": "Encargado", "apellidos": "Sucursal Bogotá", "rol": "encargado_sucursal", "activo": true, "permisosValidos": true, "sucursalId": "suc-bogota", "sucursalNombre": "Sucursal Bogotá - Aeropuerto" },
+  { "correo": "inactivo@drivique.com", "contrasena": "Inactivo123*", "id": "5", "nombres": "Usuario", "apellidos": "Sin Permisos", "rol": "encargado_sucursal", "activo": false, "permisosValidos": false, "sucursalId": "suc-cali", "sucursalNombre": "Sucursal Cali" }
+]
