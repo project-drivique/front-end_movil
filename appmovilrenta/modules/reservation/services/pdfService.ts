@@ -202,7 +202,7 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
 
   if (Platform.OS === "web") {
     const modulo = await import("html2pdf.js");
-    return modulo.default()
+    return (modulo.default() as any)
       .set({
         margin: 8,
         filename: `contrato-${referencia}.pdf`,
@@ -210,8 +210,6 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
         html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["css", "legacy"], avoid: [".grid", ".firmas", ".firma-card", ".footer"] },
-      } as Parameters<ReturnType<typeof modulo.default>["set"]>[0] & {
-        pagebreak: { mode: string[]; avoid: string[] };
       })
       .from(html)
       .outputPdf("datauristring");
@@ -291,7 +289,7 @@ export async function descargarContratoVisible(nombre: string) {
   const contrato = document.getElementById("contrato-legal-visible");
   if (!contrato) throw new Error("No se encontró el contrato completo visible");
   const modulo = await import("html2pdf.js");
-  await modulo.default()
+  await (modulo.default() as any)
       .set({
       margin: 8,
       filename: nombre,

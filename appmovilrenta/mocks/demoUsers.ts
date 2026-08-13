@@ -6,7 +6,7 @@ export interface UsuarioDemo {
   id: string;
   nombres: string;
   apellidos: string;
-  rol: "cliente" | "administrador" | "encargado_sucursal" | "operador" | "supervisor";
+  rol: "cliente";
   activo: boolean;
   permisosValidos: boolean;
   sucursalId?: string;

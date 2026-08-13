@@ -28,29 +28,11 @@ const LOGS_INICIALES: EventoAuditoria[] = [
   {
     id: "AUD-8910",
     fechaHora: "2026-08-11T19:30:00Z",
-    correo: "admin@drivique.com",
-    rol: "administrador",
+    correo: "cliente@drivique.com",
+    rol: "cliente",
     ip: "192.168.1.10",
     resultado: "Exitoso",
     sucursal: "Central",
-  },
-  {
-    id: "AUD-8911",
-    fechaHora: "2026-08-11T20:15:00Z",
-    correo: "encargado.neiva@drivique.com",
-    rol: "encargado_sucursal",
-    ip: "192.168.1.25",
-    resultado: "Exitoso",
-    sucursal: "Sucursal Neiva - Centro",
-  },
-  {
-    id: "AUD-8912",
-    fechaHora: "2026-08-11T20:45:00Z",
-    correo: "inactivo@drivique.com",
-    rol: "encargado_sucursal",
-    ip: "192.168.1.88",
-    resultado: "Fallido - Sin permisos / Inactivo",
-    sucursal: "Sucursal Cali",
   },
 ];
 

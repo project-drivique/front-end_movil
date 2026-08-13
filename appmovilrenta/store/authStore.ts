@@ -1,12 +1,7 @@
 import { create } from "zustand";
 import { useUsuarioStore } from "./userStore";
 
-export type RolUsuario =
-  | "cliente"
-  | "administrador"
-  | "encargado_sucursal"
-  | "operador"
-  | "supervisor";
+export type RolUsuario = "cliente";
 
 export interface Usuario {
   id: string;

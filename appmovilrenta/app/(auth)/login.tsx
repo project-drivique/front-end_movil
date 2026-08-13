@@ -101,13 +101,7 @@ export default function LoginScreen() {
       setLoginExitoso(true);
 
       setTimeout(() => {
-        if (usuarioEncontrado.rol === "administrador") {
-          router.replace("/(admin)/dashboard");
-        } else if (usuarioEncontrado.rol === "encargado_sucursal") {
-          router.replace("/(admin)/branch-dashboard");
-        } else {
-          router.replace("/(tabs)/catalog");
-        }
+        router.replace("/(tabs)/catalog");
       }, 1200);
     });
   }
