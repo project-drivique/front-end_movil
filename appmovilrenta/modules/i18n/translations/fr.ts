@@ -534,6 +534,11 @@ export default {
     historialSub: 'Voir vos réservations précédentes',
     seguridad: 'Sécurité et Mot de passe',
     seguridadSub: 'Changer e-mail ou mot de passe',
+    cambiarContrasena: {
+      titulo: 'Changer le mot de passe', subtitulo: "Protégez l’accès à votre compte", actual: 'Mot de passe actuel', nueva: 'Nouveau mot de passe', confirmar: 'Confirmer le nouveau mot de passe', cancelar: 'Annuler', actualizar: 'Mettre à jour',
+      actualRequerida: 'Saisissez votre mot de passe actuel.', actualIncorrecta: 'Le mot de passe actuel est incorrect.', nuevaInsegura: 'Le nouveau mot de passe ne respecte pas les critères de sécurité.', confirmacionRequerida: 'Confirmez le nouveau mot de passe.', noCoinciden: 'Les mots de passe ne correspondent pas.', debeSerDiferente: 'Le nouveau mot de passe doit être différent de l’actuel.',
+      exitoTitulo: 'Mot de passe mis à jour', exitoMensaje: 'Votre mot de passe a été mis à jour.', errorTitulo: 'Échec de la mise à jour', errorMensaje: 'Vérifiez votre mot de passe actuel et réessayez.', notificacionTitulo: 'Mot de passe mis à jour', notificacionMensaje: 'Le mot de passe de votre compte a été modifié.',
+    },
     tarjetas: 'Mes cartes de paiement',
     tarjetasSub: 'Gérez vos moyens de paiement',
     cerrarSesion: 'Se déconnecter',

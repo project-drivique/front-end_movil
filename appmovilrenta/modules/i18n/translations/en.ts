@@ -536,6 +536,11 @@ export default {
     historialSub: 'View your previous bookings',
     seguridad: 'Security & Password',
     seguridadSub: 'Change email or password',
+    cambiarContrasena: {
+      titulo: 'Change password', subtitulo: 'Protect access to your account', actual: 'Current password', nueva: 'New password', confirmar: 'Confirm new password', cancelar: 'Cancel', actualizar: 'Update password',
+      actualRequerida: 'Enter your current password.', actualIncorrecta: 'The current password is incorrect.', nuevaInsegura: 'The new password does not meet the security requirements.', confirmacionRequerida: 'Confirm the new password.', noCoinciden: 'Passwords do not match.', debeSerDiferente: 'The new password must be different from the current one.',
+      exitoTitulo: 'Password updated', exitoMensaje: 'Your password was updated successfully.', errorTitulo: 'Update failed', errorMensaje: 'Check your current password and try again.', notificacionTitulo: 'Password updated', notificacionMensaje: 'Your account password was changed successfully.',
+    },
     tarjetas: 'My payment cards',
     tarjetasSub: 'Manage your payment methods',
     cerrarSesion: 'Log out',
