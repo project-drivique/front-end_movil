@@ -22,6 +22,8 @@ export interface ContratoGuardado {
   /** Archivo PDF original que el usuario adjuntó como contrato firmado. */
   archivoOriginalUri?: string;
   archivoOriginalNombre?: string;
+  /** Contenido exacto del PDF adjuntado, persistido para futuras descargas. */
+  archivoOriginalBase64?: string;
   ciudad: string;
   fecha: string;
   estado: "FIRMADO";
@@ -89,6 +91,7 @@ export const contratoService = {
       firmaTrazos: string;
       archivoOriginalUri?: string;
       archivoOriginalNombre?: string;
+      archivoOriginalBase64?: string;
       ciudad?: string;
       fecha?: string;
     }
@@ -102,6 +105,7 @@ export const contratoService = {
       firmaTrazos: datos.firmaTrazos,
       archivoOriginalUri: datos.archivoOriginalUri,
       archivoOriginalNombre: datos.archivoOriginalNombre,
+      archivoOriginalBase64: datos.archivoOriginalBase64,
       ciudad: datos.ciudad || "",
       fecha: datos.fecha || new Date().toISOString(),
       estado: "FIRMADO",

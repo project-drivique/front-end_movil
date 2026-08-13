@@ -35,6 +35,7 @@ import { fmt } from "./BookingSummaryModal.pieces";
 import { contratoService, ContratoGuardado } from "../services/contractService";
 import * as DocumentPicker from "expo-document-picker";
 import CampoSubidaDocumento from "./DocumentUploadField";
+import { leerPdfOriginalBase64 } from "../services/pdfService";
 
 const LOCALES_FECHA: Record<string, string> = {
   es: "es-CO",
@@ -191,11 +192,13 @@ export default function FirmaContrato({
     setFirmando(true);
 
     try {
+      const archivoOriginalBase64 = await leerPdfOriginalBase64(pdfFirma.uri);
       const contrato = await contratoService.guardarFirma(referencia, {
         codigo: codigoContrato,
         firmaTrazos: pdfFirma.uri,
         archivoOriginalUri: pdfFirma.uri,
         archivoOriginalNombre: pdfFirma.nombre,
+        archivoOriginalBase64,
         ciudad: ciudadSucursal,
         fecha: new Date().toISOString(),
       });

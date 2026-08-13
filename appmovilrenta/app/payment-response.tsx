@@ -37,9 +37,8 @@ import {
   DatosPersonales,
   DatosPlanes,
 } from "@/modules/reservation/types/reservation.types";
-import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { contratoService, ContratoGuardado } from "@/modules/reservation/services/contractService";
-import { generarContratoPdf, compartirContratoPdf } from "@/modules/reservation/services/pdfService";
+import { compartirPdfOriginal } from "@/modules/reservation/services/pdfService";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 
 export default function PagoRespuestaScreen() {
@@ -208,46 +207,14 @@ export default function PagoRespuestaScreen() {
     }
     setGenerandoPdf(true);
     try {
-      if (!vehiculoSnap || !datosPersonalesSnap || !fechasLugarSnap || !planesSnap) {
-        Alert.alert(t("misReservas.errorPdfTitulo"), t("misReservas.errorPdfMensaje"));
+      if (!contratoActual.archivoOriginalBase64) {
+        Alert.alert(t("misReservas.contratoNoDisponibleTitulo"), t("misReservas.contratoNoDisponible"));
         return;
       }
-
-      const clavesTexto = [
-        "title", "subtitle", "autoGenNote", "badgeLabel", "contractCode", "status", "statusSigned",
-        "generationDate", "reservationCode", "intro", "userDataTitle", "fullName", "document", "email",
-        "phone", "address", "license", "notProvided", "reservationTitle", "vehicle", "plate", "color", "year",
-        "branch", "branchCity", "branchAddress", "startDate", "endDate", "paymentMethod", "totalValue",
-        "additionalServices", "protectionPlan", "domicileDelivery", "deliveryAddress", "deliveryNeighborhood",
-        "deliveryReferences", "returnAtDomicile", "returnAtDomicileValue", "clausesTitle", "clause1Title",
-        "clause1Text", "clause2Title", "clause2Text", "clause3Title", "clause3Item1", "clause3Item2",
-        "clause3Item3", "clause3Item4", "clause4Title", "clause4Text", "clause5Title", "clause5Text",
-        "clause6Title", "clause6Text", "signaturesTitle", "signCity", "signDate", "userSignature",
-        "platformSignature", "digitallySigned", "responsible", "role", "platformResponsible", "platformRole",
-        "footerNote1", "footerNote2", "paymentMethodCash", "paymentMethodWompi", "noneAdded",
-      ];
-      const textos = clavesTexto.reduce<Record<string, string>>((acc, key) => {
-        acc[key] = t(`reserva.contrato.${key}`);
-        return acc;
-      }, {});
-
-      const uri = await generarContratoPdf({
-        contrato: contratoActual,
-        vehiculo: vehiculoSnap,
-        datosPersonales: datosPersonalesSnap,
-        datosDocumentos: datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null },
-        fechasLugar: fechasLugarSnap,
-        planes: planesSnap,
-        total: reserva.total,
-        referencia: reserva.referencia,
-        formatPrecio: fmt,
-        formatearFecha: (iso) => (iso ? fechaCorta(iso) : "—"),
-        tipoDocumentoTexto: datosPersonalesSnap.tipoDocumento
-          ? t(`reserva.datosPersonales.tiposDocumento.${datosPersonalesSnap.tipoDocumento === "Doc. Extranjero" ? "DocExtranjero" : datosPersonalesSnap.tipoDocumento}`, { defaultValue: datosPersonalesSnap.tipoDocumento })
-          : "",
-        textos,
-      });
-      await compartirContratoPdf(uri, `contrato-${reserva.referencia}.pdf`);
+      await compartirPdfOriginal(
+        contratoActual.archivoOriginalBase64,
+        contratoActual.archivoOriginalNombre || `contrato-${reserva.referencia}.pdf`
+      );
     } catch (error) {
       console.error("[pago-respuesta] Error generando el PDF", error);
       Alert.alert(t("misReservas.errorPdfTitulo"), t("misReservas.errorPdfMensaje"));

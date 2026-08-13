@@ -7,6 +7,7 @@
 // FirmaCanvas.
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import {
@@ -263,4 +264,37 @@ export async function compartirContratoPdf(uri: string, nombre = "contrato-firma
     });
   }
   return uri;
+}
+
+/** Lee el PDF seleccionado sin modificarlo para conservar el contrato original. */
+export async function leerPdfOriginalBase64(uri: string): Promise<string> {
+  if (uri.startsWith("data:")) return uri.split(",", 2)[1] || "";
+
+  if (Platform.OS === "web") {
+    const respuesta = await fetch(uri);
+    if (!respuesta.ok) throw new Error("No fue posible leer el PDF original");
+    const blob = await respuesta.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const lector = new FileReader();
+      lector.onload = () => resolve(String(lector.result).split(",", 2)[1] || "");
+      lector.onerror = () => reject(lector.error ?? new Error("No fue posible leer el PDF original"));
+      lector.readAsDataURL(blob);
+    });
+  }
+
+  return FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+}
+
+/** Descarga/abre exactamente el PDF adjuntado al firmar, sin regenerarlo. */
+export async function compartirPdfOriginal(base64: string, nombre = "contrato-firmado.pdf") {
+  if (!base64) throw new Error("El contrato original no tiene contenido guardado");
+  const dataUri = `data:application/pdf;base64,${base64}`;
+  if (Platform.OS === "web") return compartirContratoPdf(dataUri, nombre);
+
+  const directorio = FileSystem.cacheDirectory;
+  if (!directorio) throw new Error("No hay un directorio disponible para descargar el contrato");
+  const nombreSeguro = nombre.replace(/[^a-zA-Z0-9._-]/g, "-");
+  const uriTemporal = `${directorio}${nombreSeguro}`;
+  await FileSystem.writeAsStringAsync(uriTemporal, base64, { encoding: FileSystem.EncodingType.Base64 });
+  return compartirContratoPdf(uriTemporal, nombreSeguro);
 }
