@@ -37,6 +37,7 @@ import {
   DatosPersonales,
   DatosPlanes,
 } from "@/modules/reservation/types/reservation.types";
+import { fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { contratoService, ContratoGuardado } from "@/modules/reservation/services/contractService";
 import { compartirPdfOriginal } from "@/modules/reservation/services/pdfService";
 import { PasswordInput } from "@/components/ui/PasswordInput";
