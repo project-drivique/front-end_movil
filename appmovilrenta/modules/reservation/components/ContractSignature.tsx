@@ -240,6 +240,7 @@ export default function FirmaContrato({
       keyboardShouldPersistTaps="handled"
     >
       <View
+        nativeID={soloLectura ? "contrato-legal-visible" : undefined}
         style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}
       >
         <LinearGradient
@@ -463,6 +464,7 @@ export default function FirmaContrato({
           </Seccion>
 
           <TouchableOpacity
+            nativeID="contrato-acciones-descarga"
             style={styles.firmarBtnWrap}
             onPress={soloLectura ? onDescargar : handleFirmar}
             disabled={soloLectura ? descargando : firmando}
@@ -521,7 +523,7 @@ function Seccion({
   children: React.ReactNode;
 }) {
   return (
-    <View style={styles.seccion}>
+    <View style={styles.seccion} dataSet={{ pdfSection: "true" }}>
       <Text style={[styles.seccionTitulo, { color: c.textPrimary }]}>{titulo}</Text>
       {children}
     </View>

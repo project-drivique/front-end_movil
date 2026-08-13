@@ -280,3 +280,32 @@ export async function compartirPdfOriginal(base64: string, nombre = "contrato-fi
   await FileSystem.writeAsStringAsync(uri, base64, { encoding: FileSystem.EncodingType.Base64 });
   return compartirContratoPdf(uri, nombre);
 }
+
+/** Exporta el contrato completo que se visualiza; nunca usa la plantilla resumen. */
+export async function descargarContratoVisible(nombre: string) {
+  if (Platform.OS !== "web" || typeof document === "undefined") {
+    throw new Error("Disponible únicamente en web");
+  }
+  const contrato = document.getElementById("contrato-legal-visible");
+  if (!contrato) throw new Error("No se encontró el contrato completo visible");
+  const modulo = await import("html2pdf.js");
+  await modulo.default()
+    .set({
+      margin: 8,
+      filename: nombre,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        ignoreElements: (element: Element) => element.id === "contrato-acciones-descarga",
+      },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      pagebreak: {
+        mode: ["css", "legacy"],
+        avoid: ['[data-pdf-section="true"]'],
+      },
+    })
+    .from(contrato)
+    .save();
+}
