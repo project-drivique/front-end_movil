@@ -199,7 +199,7 @@ export default function SupportScreen() {
         end={{ x: 1, y: 0 }}
         style={[styles.header, { paddingTop: insets.top + 12 }]}
       >
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.replace("/(tabs)/my-bookings")}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t("tabs.soporte")}</Text>
