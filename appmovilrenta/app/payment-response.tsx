@@ -306,52 +306,67 @@ export default function PagoRespuestaScreen() {
         {reserva.vehiculoNombre}
       </Text>
 
-      <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+      <View style={[styles.card, styles.detalleCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+        <LinearGradient
+          colors={[c.primary, "#60A5FA"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.detalleFranja}
+        />
         <FilaDetalle
+          icono="car-sport-outline"
           label={t("reserva.confirmacion.respuesta.vehiculo")}
           valor={reserva.vehiculoNombre}
           c={c}
         />
         <FilaDetalle
+          icono="calendar-outline"
           label={t("misReservas.detalle.fechaInicio")}
           valor={reserva.fechaRetiro ? fechaCorta(String(reserva.fechaRetiro)) : "—"}
           c={c}
         />
         <FilaDetalle
+          icono="calendar-number-outline"
           label={t("misReservas.detalle.fechaFin")}
           valor={reserva.fechaDevolucion ? fechaCorta(String(reserva.fechaDevolucion)) : "—"}
           c={c}
         />
         <FilaDetalle
+          icono="location-outline"
           label={t("misReservas.detalle.lugar")}
           valor={String(reserva.lugarRetiro ?? "—")}
           c={c}
         />
         {reserva.proteccion ? (
           <FilaDetalle
+            icono="shield-checkmark-outline"
             label={t("misReservas.detalle.proteccion")}
             valor={t(`reserva.planes.nombreSeguro.${reserva.proteccion}`, { defaultValue: String(reserva.proteccion) })}
             c={c}
           />
         ) : null}
         <FilaDetalle
+          icono="receipt-outline"
           label={t("reserva.confirmacion.respuesta.referencia")}
           valor={reserva.referencia}
           c={c}
         />
         {reserva.paymentId ? (
           <FilaDetalle
+            icono="card-outline"
             label={t("reserva.confirmacion.respuesta.idTransaccion")}
             valor={String(reserva.paymentId)}
             c={c}
           />
         ) : null}
         <FilaDetalle
+          icono="cash-outline"
           label={t("reserva.confirmacion.respuesta.total")}
           valor={fmt(reserva.total)}
           c={c}
         />
         <FilaDetalle
+          icono="checkmark-circle-outline"
           label={t("reserva.confirmacion.respuesta.estado")}
           valor={estadoTexto}
           c={c}
@@ -478,19 +493,30 @@ function HeaderDetalle({
 }
 
 function FilaDetalle({
+  icono,
   label,
   valor,
   c,
   ultima,
 }: {
+  icono: keyof typeof Ionicons.glyphMap;
   label: string;
   valor: string;
   c: ReturnType<typeof useTemaColores>;
   ultima?: boolean;
 }) {
   return (
-    <View style={[filaS.fila, !ultima && { borderBottomWidth: 1, borderBottomColor: c.border }]}>
-      <Text style={[filaS.label, { color: c.textMuted }]}>{label}</Text>
+    <View
+      style={[
+        filaS.fila,
+        { backgroundColor: c.bgInput, borderColor: c.border },
+        ultima && { backgroundColor: c.primaryBg, borderColor: `${c.primary}35` },
+      ]}
+    >
+      <View style={[filaS.iconoWrap, { backgroundColor: c.primaryBg }]}>
+        <Ionicons name={icono} size={17} color={ultima ? c.success : c.primary} />
+      </View>
+      <Text style={[filaS.label, { color: c.textSecondary }]}>{label}</Text>
       <Text style={[filaS.valor, { color: c.textPrimary }]} numberOfLines={1}>
         {valor}
       </Text>
@@ -503,11 +529,16 @@ const filaS = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
-    gap: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 12,
+    marginBottom: 8,
   },
-  label: { fontSize: 12.5 },
-  valor: { fontSize: 12.5, fontWeight: "700", flexShrink: 1, textAlign: "right" },
+  iconoWrap: { width: 32, height: 32, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  label: { fontSize: 12.5, flex: 1 },
+  valor: { fontSize: 12.5, fontWeight: "800", maxWidth: "52%", flexShrink: 1, textAlign: "right" },
 });
 
 const styles = StyleSheet.create({
@@ -540,6 +571,8 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
   },
+  detalleCard: { padding: 12, paddingTop: 18, overflow: "hidden" },
+  detalleFranja: { position: "absolute", top: 0, left: 0, right: 0, height: 6 },
   btnWrap: { width: "100%", borderRadius: 12 },
   btn: { paddingVertical: 15, borderRadius: 12, alignItems: "center" },
   btnTexto: { color: "#fff", fontSize: 14.5, fontWeight: "800" },
