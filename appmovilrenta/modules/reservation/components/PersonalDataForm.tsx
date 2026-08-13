@@ -208,6 +208,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
     await reservaPersistService.guardarReserva({
       referencia,
+      usuarioId: usuarioGlobal.id,
       vehiculoId: vehiculo.id,
       vehiculoNombre: vehiculo.nombre,
       metodoPago,

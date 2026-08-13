@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,6 +26,7 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { GRADIENTES } from "@/constants/gradients";
 import { COLOR_MARCA } from "@/modules/catalog/constants/catalog.constants";
 import {
+  calcularGrupoReserva,
   ReservaGuardada,
   reservaPersistService,
 } from "@/modules/reservation/services/reservationPersistService";
@@ -36,10 +38,16 @@ import {
   DatosPersonales,
   DatosPlanes,
 } from "@/modules/reservation/types/reservation.types";
-import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
+import { fechaCorta, fmt } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { contratoService, ContratoGuardado } from "@/modules/reservation/services/contractService";
-import { generarContratoPdf, compartirContratoPdf } from "@/modules/reservation/services/pdfService";
-import { calcularGrupoReserva } from "@/modules/reservation/services/reservationPersistService";
+import {
+  compartirPdfOriginal,
+  crearTextosContrato,
+  descargarContratoVisible,
+  generarContratoPdf,
+  leerPdfOriginalBase64,
+} from "@/modules/reservation/services/pdfService";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 
 export default function PagoRespuestaScreen() {
   const insets = useSafeAreaInsets();
@@ -52,6 +60,9 @@ export default function PagoRespuestaScreen() {
   const [contratoFirmado, setContratoFirmado] = useState(false);
   const [contratoActual, setContratoActual] = useState<ContratoGuardado | null>(null);
   const [generandoPdf, setGenerandoPdf] = useState(false);
+  const [claveDesbloqueada, setClaveDesbloqueada] = useState(false);
+  const [claveIngresada, setClaveIngresada] = useState("");
+  const [errorClave, setErrorClave] = useState("");
 
   useEffect(() => {
     let activo = true;
@@ -125,25 +136,28 @@ export default function PagoRespuestaScreen() {
 
     if (vehiculoSnap && datosPersonalesSnap && fechasLugarSnap && planesSnap) {
       return (
-        <FirmaContrato
-          vehiculo={vehiculoSnap}
-          datosPersonales={datosPersonalesSnap}
-          datosDocumentos={
-            datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null }
-          }
-          fechasLugar={fechasLugarSnap}
-          planes={planesSnap}
-          total={reserva.total}
-          referencia={reserva.referencia}
-          onFirmado={async () => {
-            await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
-            const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
-            const contratoNuevo = await contratoService.obtenerPorReserva(reserva.referencia);
-            setReserva(actualizada ?? null);
-            setContratoActual(contratoNuevo);
-            setContratoFirmado(true);
-          }}
-        />
+        <View style={{ flex: 1, backgroundColor: c.bg }}>
+          <HeaderDetalle insets={insets} c={c} titulo={t("reserva.contrato.title")} onVolver={irAMisReservas} />
+          <FirmaContrato
+            vehiculo={vehiculoSnap}
+            datosPersonales={datosPersonalesSnap}
+            datosDocumentos={
+              datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null }
+            }
+            fechasLugar={fechasLugarSnap}
+            planes={planesSnap}
+            total={reserva.total}
+            referencia={reserva.referencia}
+            onFirmado={async () => {
+              await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
+              const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
+              const contratoNuevo = await contratoService.obtenerPorReserva(reserva.referencia);
+              setReserva(actualizada ?? null);
+              setContratoActual(contratoNuevo);
+              setContratoFirmado(true);
+            }}
+          />
+        </View>
       );
     }
   }
@@ -176,54 +190,69 @@ export default function PagoRespuestaScreen() {
   const encabezado = encabezadoPorGrupo[grupo];
 
   const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
+  const datosPersonalesSnap = reserva.datosPersonalesSnapshot as DatosPersonales | undefined;
+  const datosDocumentosSnap = reserva.datosDocumentosSnapshot as DatosDocumentos | undefined;
+  const fechasLugarSnap = reserva.fechasLugarSnapshot as DatosFechasLugar | undefined;
+  const planesSnap = reserva.planesSnapshot as DatosPlanes | undefined;
   const foto = vehiculoSnap?.imagenes?.[0];
+
+  const handleValidarClave = () => {
+    const datosPersonalesSnap = reserva?.datosPersonalesSnapshot as DatosPersonales | undefined;
+    const numeroDocumento = datosPersonalesSnap?.numeroDocumento?.replace(/\D/g, "");
+    const claveNormalizada = claveIngresada.replace(/\D/g, "");
+    if (numeroDocumento && claveNormalizada === numeroDocumento) {
+      setErrorClave("");
+      setClaveDesbloqueada(true);
+    } else {
+      setErrorClave(t("misReservas.claveIncorrecta"));
+    }
+  };
 
   const handleDescargarPdf = async () => {
     if (!contratoActual) {
       Alert.alert(t("misReservas.contratoNoDisponibleTitulo"), t("misReservas.contratoNoDisponible"));
       return;
     }
-    const datosPersonalesSnap = reserva.datosPersonalesSnapshot as DatosPersonales | undefined;
-    const datosDocumentosSnap = reserva.datosDocumentosSnapshot as DatosDocumentos | undefined;
-    const fechasLugarSnap = reserva.fechasLugarSnapshot as DatosFechasLugar | undefined;
-    const planesSnap = reserva.planesSnapshot as DatosPlanes | undefined;
-
-    if (!vehiculoSnap || !datosPersonalesSnap || !fechasLugarSnap || !planesSnap) {
-      Alert.alert(t("misReservas.errorPdfTitulo"), t("misReservas.errorPdfMensaje"));
-      return;
-    }
-
     setGenerandoPdf(true);
     try {
-      const textos = [
-        "title", "subtitle", "autoGenNote", "badgeLabel", "contractCode", "status", "statusSigned",
-        "generationDate", "reservationCode", "intro", "userDataTitle", "fullName", "document", "email",
-        "phone", "reservationTitle", "vehicle", "plate", "branch", "branchCity", "branchAddress",
-        "startDate", "endDate", "totalValue", "protectionPlan", "domicileDelivery", "signaturesTitle",
-        "userSignature", "platformSignature", "digitallySigned", "responsible", "role",
-        "platformResponsible", "platformRole", "footerNote1", "footerNote2",
-      ].reduce<Record<string, string>>((acc, key) => {
-        acc[key] = t(`reserva.contrato.${key}`);
-        return acc;
-      }, {});
+      if (Platform.OS === "web") {
+        await descargarContratoVisible(`contrato-${reserva.referencia}.pdf`);
+        return;
+      }
+      if (!vehiculoSnap || !datosPersonalesSnap || !fechasLugarSnap || !planesSnap) {
+        Alert.alert(t("misReservas.contratoNoDisponibleTitulo"), t("misReservas.contratoNoDisponible"));
+        return;
+      }
+      let pdfBase64 = contratoActual.contratoPdfBase64;
+      let pdfNombre = contratoActual.contratoPdfNombre || `contrato-${reserva.referencia}.pdf`;
 
-      const uri = await generarContratoPdf({
-        contrato: contratoActual,
-        vehiculo: vehiculoSnap,
-        datosPersonales: datosPersonalesSnap,
-        datosDocumentos: datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null },
-        fechasLugar: fechasLugarSnap,
-        planes: planesSnap,
-        total: reserva.total,
-        referencia: reserva.referencia,
-        formatPrecio: fmt,
-        formatearFecha: (iso) => (iso ? fechaCorta(iso) : "—"),
-        tipoDocumentoTexto: datosPersonalesSnap.tipoDocumento
+      // Migra contratos antiguos: genera una sola vez el documento legal completo y lo conserva.
+      if (!pdfBase64) {
+        const tipoDocumentoTexto = datosPersonalesSnap.tipoDocumento
           ? t(`reserva.datosPersonales.tiposDocumento.${datosPersonalesSnap.tipoDocumento === "Doc. Extranjero" ? "DocExtranjero" : datosPersonalesSnap.tipoDocumento}`, { defaultValue: datosPersonalesSnap.tipoDocumento })
-          : "",
-        textos,
-      });
-      await compartirContratoPdf(uri);
+          : "";
+        const uriContrato = await generarContratoPdf({
+          contrato: contratoActual,
+          vehiculo: vehiculoSnap,
+          datosPersonales: datosPersonalesSnap,
+          datosDocumentos: datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null },
+          fechasLugar: fechasLugarSnap,
+          planes: planesSnap,
+          total: reserva.total,
+          referencia: reserva.referencia,
+          formatPrecio: fmt,
+          formatearFecha: (iso) => (iso ? fechaCorta(iso) : "—"),
+          tipoDocumentoTexto,
+          textos: crearTextosContrato((key) => t(key)),
+        });
+        pdfBase64 = await leerPdfOriginalBase64(uriContrato);
+        const actualizado = await contratoService.guardarPdfContrato(reserva.referencia, pdfBase64, pdfNombre);
+        if (actualizado) setContratoActual(actualizado);
+      }
+      await compartirPdfOriginal(
+        pdfBase64,
+        pdfNombre
+      );
     } catch (error) {
       console.error("[pago-respuesta] Error generando el PDF", error);
       Alert.alert(t("misReservas.errorPdfTitulo"), t("misReservas.errorPdfMensaje"));
@@ -234,41 +263,31 @@ export default function PagoRespuestaScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
-      {/* Header */}
-      <View style={{
-        flexDirection: "row",
-        alignItems: "center",
-        paddingTop: insets.top,
-        height: insets.top + 56,
-        paddingHorizontal: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: c.border,
-        backgroundColor: c.bgHeader,
-      }}>
-        <TouchableOpacity
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: c.bgInput,
-          }}
-          onPress={irAMisReservas}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="arrow-back" size={20} color={c.textPrimary} />
-        </TouchableOpacity>
-        <Text style={{
-          fontSize: 16,
-          fontWeight: "700",
-          color: c.textPrimary,
-          marginLeft: 12,
-        }}>
-          {t("misReservas.detalle.tituloHeader", { defaultValue: "Detalle de Reserva" })}
-        </Text>
-      </View>
+      <HeaderDetalle
+        insets={insets}
+        c={c}
+        titulo={t("misReservas.detalle.tituloHeader", { defaultValue: "Detalle de Reserva" })}
+        onVolver={irAMisReservas}
+      />
 
+      {contratoActual && claveDesbloqueada && vehiculoSnap && datosPersonalesSnap && fechasLugarSnap && planesSnap ? (
+        <FirmaContrato
+          vehiculo={vehiculoSnap}
+          datosPersonales={datosPersonalesSnap}
+          datosDocumentos={
+            datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null }
+          }
+          fechasLugar={fechasLugarSnap}
+          planes={planesSnap}
+          total={reserva.total}
+          referencia={reserva.referencia}
+          onFirmado={() => {}}
+          soloLectura
+          contratoFirmado={contratoActual}
+          onDescargar={handleDescargarPdf}
+          descargando={generandoPdf}
+        />
+      ) : (
       <ScrollView
         style={{ backgroundColor: c.bg }}
         contentContainerStyle={[styles.scroll, { paddingTop: 24 }]}
@@ -287,52 +306,67 @@ export default function PagoRespuestaScreen() {
         {reserva.vehiculoNombre}
       </Text>
 
-      <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+      <View style={[styles.card, styles.detalleCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+        <LinearGradient
+          colors={[c.primary, "#60A5FA"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.detalleFranja}
+        />
         <FilaDetalle
+          icono="car-sport-outline"
           label={t("reserva.confirmacion.respuesta.vehiculo")}
           valor={reserva.vehiculoNombre}
           c={c}
         />
         <FilaDetalle
+          icono="calendar-outline"
           label={t("misReservas.detalle.fechaInicio")}
           valor={reserva.fechaRetiro ? fechaCorta(String(reserva.fechaRetiro)) : "—"}
           c={c}
         />
         <FilaDetalle
+          icono="calendar-number-outline"
           label={t("misReservas.detalle.fechaFin")}
           valor={reserva.fechaDevolucion ? fechaCorta(String(reserva.fechaDevolucion)) : "—"}
           c={c}
         />
         <FilaDetalle
+          icono="location-outline"
           label={t("misReservas.detalle.lugar")}
           valor={String(reserva.lugarRetiro ?? "—")}
           c={c}
         />
         {reserva.proteccion ? (
           <FilaDetalle
+            icono="shield-checkmark-outline"
             label={t("misReservas.detalle.proteccion")}
             valor={t(`reserva.planes.nombreSeguro.${reserva.proteccion}`, { defaultValue: String(reserva.proteccion) })}
             c={c}
           />
         ) : null}
         <FilaDetalle
+          icono="receipt-outline"
           label={t("reserva.confirmacion.respuesta.referencia")}
           valor={reserva.referencia}
           c={c}
         />
         {reserva.paymentId ? (
           <FilaDetalle
+            icono="card-outline"
             label={t("reserva.confirmacion.respuesta.idTransaccion")}
             valor={String(reserva.paymentId)}
             c={c}
           />
         ) : null}
         <FilaDetalle
+          icono="cash-outline"
           label={t("reserva.confirmacion.respuesta.total")}
           valor={fmt(reserva.total)}
           c={c}
         />
         <FilaDetalle
+          icono="checkmark-circle-outline"
           label={t("reserva.confirmacion.respuesta.estado")}
           valor={estadoTexto}
           c={c}
@@ -340,48 +374,149 @@ export default function PagoRespuestaScreen() {
         />
       </View>
 
-      <TouchableOpacity
-        style={[styles.btnWrap, { marginBottom: 12 }, !contratoActual && { opacity: 0.5 }]}
-        onPress={handleDescargarPdf}
-        activeOpacity={0.85}
-        disabled={generandoPdf || !contratoActual}
-      >
-        <LinearGradient
-          colors={GRADIENTES.boton.colors}
-          start={GRADIENTES.boton.start}
-          end={GRADIENTES.boton.end}
-          style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 }]}
-        >
-          {generandoPdf ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Ionicons name="document-text-outline" size={18} color="#FFFFFF" />
-          )}
-          <Text style={styles.btnTexto}>
-            {generandoPdf ? t("misReservas.generandoPdf") : t("misReservas.descargarContrato")}
+      {contratoActual && !claveDesbloqueada ? (
+        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
+          <Ionicons name="lock-closed-outline" size={32} color={c.textMuted} style={{ marginBottom: 10 }} />
+          <Text style={[styles.tituloCandado, { color: c.textPrimary }]}>
+            {t("misReservas.contratoBloqueadoTitulo")}
           </Text>
-        </LinearGradient>
-      </TouchableOpacity>
+          <Text style={[styles.textoCandado, { color: c.textSecondary }]}>
+            {t("misReservas.contratoBloqueadoTexto")}
+          </Text>
+          <View style={{ width: "100%", marginTop: 12 }}>
+            <PasswordInput
+              label={t("misReservas.claveContrato")}
+              placeholder={t("misReservas.claveContratoPlaceholder")}
+              value={claveIngresada}
+              onChangeText={(v) => {
+                setClaveIngresada(v);
+                if (errorClave) setErrorClave("");
+              }}
+              error={errorClave}
+              keyboardType="number-pad"
+            />
+          </View>
+          <TouchableOpacity style={[styles.btnWrap, { marginTop: 4 }]} onPress={handleValidarClave} activeOpacity={0.85}>
+            <LinearGradient
+              colors={GRADIENTES.boton.colors}
+              start={GRADIENTES.boton.start}
+              end={GRADIENTES.boton.end}
+              style={styles.btn}
+            >
+              <Text style={styles.btnTexto}>{t("misReservas.verContrato")}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      ) : !contratoActual ? (
+        <TouchableOpacity
+          style={[styles.btnWrap, { marginBottom: 12 }, !contratoActual && { opacity: 0.5 }]}
+          onPress={handleDescargarPdf}
+          activeOpacity={0.85}
+          disabled={generandoPdf || !contratoActual}
+        >
+          <LinearGradient
+            colors={GRADIENTES.boton.colors}
+            start={GRADIENTES.boton.start}
+            end={GRADIENTES.boton.end}
+            style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 }]}
+          >
+            {generandoPdf ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Ionicons name="document-text-outline" size={18} color="#FFFFFF" />
+            )}
+            <Text style={styles.btnTexto}>
+              {generandoPdf ? t("misReservas.generandoPdf") : t("misReservas.descargarContrato")}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      ) : null}
 
     </ScrollView>
+      )}
+    </View>
+  );
+}
+
+function HeaderDetalle({
+  insets,
+  c,
+  titulo,
+  onVolver,
+}: {
+  insets: { top: number };
+  c: ReturnType<typeof useTemaColores>;
+  titulo: string;
+  onVolver: () => void;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingTop: insets.top,
+        height: insets.top + 56,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: c.border,
+        backgroundColor: c.bgHeader,
+      }}
+    >
+      <TouchableOpacity
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: c.bgInput,
+        }}
+        onPress={onVolver}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="arrow-back" size={20} color={c.textPrimary} />
+      </TouchableOpacity>
+      <Text
+        style={{
+          fontSize: 16,
+          fontWeight: "700",
+          color: c.textPrimary,
+          marginLeft: 12,
+          flexShrink: 1,
+        }}
+        numberOfLines={1}
+      >
+        {titulo}
+      </Text>
     </View>
   );
 }
 
 function FilaDetalle({
+  icono,
   label,
   valor,
   c,
   ultima,
 }: {
+  icono: keyof typeof Ionicons.glyphMap;
   label: string;
   valor: string;
   c: ReturnType<typeof useTemaColores>;
   ultima?: boolean;
 }) {
   return (
-    <View style={[filaS.fila, !ultima && { borderBottomWidth: 1, borderBottomColor: c.border }]}>
-      <Text style={[filaS.label, { color: c.textMuted }]}>{label}</Text>
+    <View
+      style={[
+        filaS.fila,
+        { backgroundColor: c.bgInput, borderColor: c.border },
+        ultima && { backgroundColor: c.primaryBg, borderColor: `${c.primary}35` },
+      ]}
+    >
+      <View style={[filaS.iconoWrap, { backgroundColor: c.primaryBg }]}>
+        <Ionicons name={icono} size={17} color={ultima ? c.success : c.primary} />
+      </View>
+      <Text style={[filaS.label, { color: c.textSecondary }]}>{label}</Text>
       <Text style={[filaS.valor, { color: c.textPrimary }]} numberOfLines={1}>
         {valor}
       </Text>
@@ -394,11 +529,16 @@ const filaS = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
-    gap: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 12,
+    marginBottom: 8,
   },
-  label: { fontSize: 12.5 },
-  valor: { fontSize: 12.5, fontWeight: "700", flexShrink: 1, textAlign: "right" },
+  iconoWrap: { width: 32, height: 32, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  label: { fontSize: 12.5, flex: 1 },
+  valor: { fontSize: 12.5, fontWeight: "800", maxWidth: "52%", flexShrink: 1, textAlign: "right" },
 });
 
 const styles = StyleSheet.create({
@@ -431,9 +571,13 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
   },
+  detalleCard: { padding: 12, paddingTop: 18, overflow: "hidden" },
+  detalleFranja: { position: "absolute", top: 0, left: 0, right: 0, height: 6 },
   btnWrap: { width: "100%", borderRadius: 12 },
   btn: { paddingVertical: 15, borderRadius: 12, alignItems: "center" },
   btnTexto: { color: "#fff", fontSize: 14.5, fontWeight: "800" },
+  tituloCandado: { fontSize: 15.5, fontWeight: "800", textAlign: "center" },
+  textoCandado: { fontSize: 12.5, textAlign: "center", marginTop: 6, lineHeight: 18 },
   btnDescargarWrap: {
     width: "100%",
     flexDirection: "row",
