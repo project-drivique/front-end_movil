@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   Text,
   Dimensions,
-  SafeAreaView,
   Platform,
 } from "react-native";
 import { WebView } from "react-native-webview";
@@ -13,8 +12,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { TAWK_CONFIG } from "@/modules/support/constants/tawk.config";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export function FloatingSupportChat() {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,7 +29,7 @@ export function FloatingSupportChat() {
           style={[
             styles.fab,
             {
-              bottom: insets.bottom + 85, // Sits above the tab bar (which is approx 60 + safe area)
+              bottom: insets.bottom + 85, // Posicionado arriba de la barra de navegación (tabs)
               backgroundColor: c.oscuro ? "#3B82F6" : "#2563EB",
               shadowColor: c.oscuro ? "#000" : "#2563EB",
             },
@@ -44,7 +41,7 @@ export function FloatingSupportChat() {
         </TouchableOpacity>
       )}
 
-      {/* Contenedor del Chat (se oculta offscreen para no desmontar el WebView y no perder el historial) */}
+      {/* Contenedor del Chat (se oculta offscreen para no desmontar la vista y no perder el historial) */}
       <View
         style={[
           styles.chatContainer,
@@ -77,15 +74,26 @@ export function FloatingSupportChat() {
           </TouchableOpacity>
         </View>
 
-        {/* WebView con el Chat */}
+        {/* Vista con el Chat: iframe en Web, WebView en nativo (Android/iOS) */}
         <View style={styles.webviewWrapper}>
-          <WebView
-            source={{ uri: chatUrl }}
-            style={styles.webview}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            startInLoadingState={true}
-          />
+          {Platform.OS === "web" ? (
+            React.createElement("iframe", {
+              src: chatUrl,
+              style: {
+                width: "100%",
+                height: "100%",
+                border: "none",
+              },
+            })
+          ) : (
+            <WebView
+              source={{ uri: chatUrl }}
+              style={styles.webview}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              startInLoadingState={true}
+            />
+          )}
         </View>
       </View>
     </>
@@ -109,8 +117,12 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     position: "absolute",
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: "100%",
+    height: "100%",
     zIndex: 1000,
     borderWidth: 1,
     shadowColor: "#000",
@@ -120,15 +132,10 @@ const styles = StyleSheet.create({
     elevation: 24,
   },
   chatOpen: {
-    top: 0,
-    left: 0,
+    display: "flex",
   },
   chatClosed: {
-    top: -99999,
-    left: -99999,
-    height: 1,
-    width: 1,
-    opacity: 0,
+    display: "none",
   },
   header: {
     flexDirection: "row",
@@ -146,7 +153,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: "#10B981", // Emerald green
+    backgroundColor: "#10B981", // Verde esmeralda (En línea)
     marginRight: 10,
   },
   headerTitle: {
