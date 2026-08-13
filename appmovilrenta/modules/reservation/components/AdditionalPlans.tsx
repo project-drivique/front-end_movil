@@ -195,7 +195,11 @@ export default function PlanesAdicionales({ vehiculo, onContinuar }: Props) {
           <View style={styles.kmFila}>
             {kmLimitado && (
               <TouchableOpacity
-                style={[styles.kmOpcionCard, { borderColor: c.border }, planes.tipoKilometraje === "limitado" && [styles.opcionCardActiva, { backgroundColor: c.primaryBg }]]}
+                style={[
+                  styles.kmOpcionCard,
+                  { borderColor: c.border, backgroundColor: c.bgInput },
+                  planes.tipoKilometraje === "limitado" && [styles.opcionCardActiva, { backgroundColor: c.primaryBg, borderColor: COLOR_MARCA }],
+                ]}
                 onPress={() => actualizarPlanes({ tipoKilometraje: "limitado" })}
                 activeOpacity={0.8}
               >
@@ -232,7 +236,11 @@ export default function PlanesAdicionales({ vehiculo, onContinuar }: Props) {
 
             {kmIlimitado && (
               <TouchableOpacity
-                style={[styles.kmOpcionCard, { borderColor: c.border }, planes.tipoKilometraje === "ilimitado" && [styles.opcionCardActiva, { backgroundColor: c.primaryBg }]]}
+                style={[
+                  styles.kmOpcionCard,
+                  { borderColor: c.border, backgroundColor: c.bgInput },
+                  planes.tipoKilometraje === "ilimitado" && [styles.opcionCardActiva, { backgroundColor: c.primaryBg, borderColor: COLOR_MARCA }],
+                ]}
                 onPress={() => actualizarPlanes({ tipoKilometraje: "ilimitado" })}
                 activeOpacity={0.8}
               >
@@ -410,14 +418,14 @@ const styles = StyleSheet.create({
   },
 
   opcionCard: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 8,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
   },
   opcionCardActiva: {
     borderColor: COLOR_MARCA,
-    borderWidth: 1.5,
+    borderWidth: 2,
   },
   kmFila: {
     flexDirection: "column",
@@ -425,9 +433,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   kmOpcionCard: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 14,
+    marginVertical: 4,
   },
   opcionHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   opcionTitulo: { fontSize: 12.5, fontWeight: "700" },
