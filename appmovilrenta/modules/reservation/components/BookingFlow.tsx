@@ -27,6 +27,7 @@ export default function FlujoReserva({ vehiculo }: Props) {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t } = useTranslation();
+  const scrollRef = useRef<ScrollView>(null);
 
   const fechasLugar = useReservaStore((s) => s.fechasLugar);
   const planes = useReservaStore((s) => s.planes);
@@ -45,6 +46,11 @@ export default function FlujoReserva({ vehiculo }: Props) {
     datos: false,
   });
 
+  // Auto-scroll al inicio de la página cada vez que cambia de sección o se completan fechas
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  }, [seccionActiva, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion]);
+
   const puedeContinuarAPlanes =
     !!fechasLugar.fechaRetiro && !!fechasLugar.fechaDevolucion && !!fechasLugar.metodoPago;
 
@@ -60,6 +66,7 @@ export default function FlujoReserva({ vehiculo }: Props) {
   const irASeccion = (seccion: SeccionReserva) => {
     setSeccionActiva(seccion);
     setSeccionesAlcanzadas((prev) => (prev[seccion] ? prev : { ...prev, [seccion]: true }));
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
 
   const handleVolver = () => {
@@ -117,6 +124,7 @@ export default function FlujoReserva({ vehiculo }: Props) {
 
       <View style={styles.scrollClip}>
         <ScrollView
+          ref={scrollRef}
           style={styles.scroll}
           contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
           showsVerticalScrollIndicator={false}

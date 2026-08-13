@@ -568,10 +568,10 @@ function Clausula({
 }
 
 const styles = StyleSheet.create({
-  scroll: { padding: 16, paddingBottom: 40 },
-  card: { borderRadius: 20, borderWidth: 1, overflow: "hidden" },
+  scroll: { paddingHorizontal: 8, paddingVertical: 16, paddingBottom: 40, width: "100%", maxWidth: 1040, alignSelf: "center" },
+  card: { width: "100%", borderRadius: 20, borderWidth: 1, overflow: "hidden" },
   franjaSuperior: { height: 6 },
-  encabezado: { padding: 20, gap: 16 },
+  encabezado: { padding: 16, gap: 16 },
   encabezadoFila: { flexDirection: "row", gap: 14, alignItems: "flex-start" },
   logoWrap: {
     width: 56,
@@ -597,23 +597,24 @@ const styles = StyleSheet.create({
   },
   badgeLabelTexto: { color: "#1e3a8a", fontSize: 10.5, fontWeight: "800", textTransform: "uppercase" },
   metaLinea: { fontSize: 12.5, marginVertical: 3, lineHeight: 18 },
-  contenido: { paddingHorizontal: 20, paddingBottom: 24 },
+  contenido: { paddingHorizontal: 14, paddingBottom: 24 },
   intro: { fontSize: 13.5, lineHeight: 21, marginBottom: 8 },
   seccion: { marginTop: 22 },
   seccionTitulo: { fontSize: 15.5, fontWeight: "800", marginBottom: 12 },
   grid: {
     borderRadius: 16,
     borderWidth: 1,
-    padding: 12,
+    padding: 14,
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
+    gap: 12,
   },
   campo: {
-    width: "48%",
+    flex: 1,
+    minWidth: 160,
     borderRadius: 12,
     borderWidth: 1,
-    padding: 11,
+    padding: 12,
     minHeight: 60,
   },
   campoLabel: { fontSize: 10, textTransform: "uppercase", letterSpacing: 0.4, fontWeight: "800", marginBottom: 6 },
