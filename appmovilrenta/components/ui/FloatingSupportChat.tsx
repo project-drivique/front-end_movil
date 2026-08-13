@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { usePathname } from "expo-router";
 import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import {
   ChatMessage,
@@ -22,6 +23,7 @@ import {
 } from "@/modules/support/services/chatbotEngine";
 
 export function FloatingSupportChat() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -30,6 +32,24 @@ export function FloatingSupportChat() {
   const c = useTemaColores();
   const { idiomaActual } = useIdioma();
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // Ocultar chat en pantallas de inicio de sesión, registro, recuperación y onboarding inicial
+  const isAuthRoute =
+    pathname.includes("login") ||
+    pathname.includes("register") ||
+    pathname.includes("forgot") ||
+    pathname.includes("verify") ||
+    pathname.includes("auth");
+
+  const isOnboardingRoute =
+    pathname.includes("onboarding") ||
+    pathname === "/" ||
+    pathname === "/index" ||
+    pathname === "";
+
+  if (isAuthRoute || isOnboardingRoute) {
+    return null;
+  }
 
   // Historial inicial de mensajes según idioma activo
   const [mensajes, setMensajes] = useState<ChatMessage[]>([
