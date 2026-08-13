@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -43,7 +42,6 @@ import { contratoService, ContratoGuardado } from "@/modules/reservation/service
 import {
   compartirPdfOriginal,
   crearTextosContrato,
-  descargarContratoVisible,
   generarContratoPdf,
   leerPdfOriginalBase64,
 } from "@/modules/reservation/services/pdfService";
@@ -215,10 +213,6 @@ export default function PagoRespuestaScreen() {
     }
     setGenerandoPdf(true);
     try {
-      if (Platform.OS === "web") {
-        await descargarContratoVisible(`contrato-${reserva.referencia}.pdf`);
-        return;
-      }
       if (!vehiculoSnap || !datosPersonalesSnap || !fechasLugarSnap || !planesSnap) {
         Alert.alert(t("misReservas.contratoNoDisponibleTitulo"), t("misReservas.contratoNoDisponible"));
         return;

@@ -78,7 +78,6 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
     contrato,
     vehiculo,
     datosPersonales,
-    datosDocumentos,
     fechasLugar,
     planes,
     total,
@@ -96,14 +95,6 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
   const direccionSucursal = sucursalRetiroNombre ? getDireccionSucursal(sucursalRetiroNombre) ?? "" : "";
 
   const svgFirma = trazosASvgPaths(contrato.firmaTrazos);
-  const metodoPagoTexto = fechasLugar.metodoPago === "efectivo" ? tx.paymentMethodCash : tx.paymentMethodWompi;
-  const serviciosTexto = (vehiculo?.servicios || [])
-    .filter((servicio) => planes.serviciosSeleccionados.includes(servicio.nombre))
-    .map((servicio) => servicio.nombre)
-    .join(", ") || tx.noneAdded;
-  const direccionCompleta = esDomicilioRetiro
-    ? `${fechasLugar.direccionRetiro || ""}, ${fechasLugar.barrioRetiro || ""}, ${ciudadSucursal}`
-    : tx.notProvided;
 
   const html = `
   <html>
@@ -119,7 +110,7 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
         .meta { font-size: 11.5px; margin: 3px 0; }
         .meta b { font-weight: 700; }
         .intro { font-size: 12.5px; line-height: 1.6; margin: 16px 0; }
-        h2 { font-size: 14px; margin: 22px 0 10px; }
+        h2 { font-size: 14px; margin: 22px 0 10px; break-after: avoid; page-break-after: avoid; }
         .grid { display: flex; flex-wrap: wrap; gap: 8px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:10px; }
         .campo { width: 47%; background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:9px 10px; }
         .campo-label { font-size: 9px; text-transform: uppercase; letter-spacing:.4px; font-weight:700; color:#6b7280; margin-bottom:4px; }
@@ -135,6 +126,7 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
         .sello-texto { font-size:26px; font-weight:800; font-style:italic; color:#1e3a8a; }
         .sello-badge { font-size:10.5px; font-weight:700; color:#1e3a8a; }
         .footer { margin-top: 20px; padding-top: 12px; border-top:1px solid #e5e7eb; font-size:10px; color:#6b7280; line-height:1.5; }
+        .grid, .firmas, .firma-card, .footer { break-inside: avoid; page-break-inside: avoid; }
       </style>
     </head>
     <body>
@@ -164,54 +156,22 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
         <div class="campo"><div class="campo-label">${esc(tx.document)}</div><div class="campo-valor">${esc(tipoDocumentoTexto)} ${esc(datosPersonales.numeroDocumento)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.email)}</div><div class="campo-valor">${esc(datosPersonales.correo)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.phone)}</div><div class="campo-valor">${esc(datosPersonales.celular)}</div></div>
-        <div class="campo"><div class="campo-label">${esc(tx.address)}</div><div class="campo-valor">${esc(direccionCompleta)}</div></div>
-        <div class="campo"><div class="campo-label">${esc(tx.license)}</div><div class="campo-valor">${esc(datosDocumentos.licenciaConduccion?.nombre || tx.notProvided)}</div></div>
       </div>
 
       <h2>${esc(tx.reservationTitle)}</h2>
       <div class="grid">
         <div class="campo"><div class="campo-label">${esc(tx.vehicle)}</div><div class="campo-valor">${esc(marca)} ${esc(modelo)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.plate)}</div><div class="campo-valor">${esc(vehiculo?.placa)}</div></div>
-        <div class="campo"><div class="campo-label">${esc(tx.color)}</div><div class="campo-valor">${esc(vehiculo?.color)}</div></div>
-        <div class="campo"><div class="campo-label">${esc(tx.year)}</div><div class="campo-valor">${esc(vehiculo?.año)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.branch)}</div><div class="campo-valor">${esc(esDomicilioRetiro ? tx.domicileDelivery : fechasLugar.lugarRetiro)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.branchCity)}</div><div class="campo-valor">${esc(ciudadSucursal)}</div></div>
         ${!esDomicilioRetiro ? `<div class="campo"><div class="campo-label">${esc(tx.branchAddress)}</div><div class="campo-valor">${esc(direccionSucursal)}</div></div>` : ""}
         <div class="campo"><div class="campo-label">${esc(tx.startDate)}</div><div class="campo-valor">${esc(formatearFecha(fechasLugar.fechaRetiro))}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.endDate)}</div><div class="campo-valor">${esc(formatearFecha(fechasLugar.fechaDevolucion))}</div></div>
-        <div class="campo"><div class="campo-label">${esc(tx.paymentMethod)}</div><div class="campo-valor">${esc(metodoPagoTexto)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.totalValue)}</div><div class="campo-valor">${esc(formatPrecio(total))}</div></div>
-        <div class="campo"><div class="campo-label">${esc(tx.additionalServices)}</div><div class="campo-valor">${esc(serviciosTexto)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx.protectionPlan)}</div><div class="campo-valor">${esc(planes.proteccion)}</div></div>
-        ${esDomicilioRetiro ? `
-          <div class="campo"><div class="campo-label">${esc(tx.deliveryAddress)}</div><div class="campo-valor">${esc(fechasLugar.direccionRetiro)}</div></div>
-          <div class="campo"><div class="campo-label">${esc(tx.deliveryNeighborhood)}</div><div class="campo-valor">${esc(fechasLugar.barrioRetiro)}</div></div>
-          <div class="campo"><div class="campo-label">${esc(tx.deliveryReferences)}</div><div class="campo-valor">${esc(fechasLugar.referenciasRetiro)}</div></div>
-        ` : ""}
-      </div>
-
-      <h2>${esc(tx.clausesTitle)}</h2>
-      <div class="clausulas">
-        <p><b>${esc(tx.clause1Title)}</b> ${esc(tx.clause1Text
-          .replace("{{marca}}", marca)
-          .replace("{{modelo}}", modelo)
-          .replace("{{placa}}", vehiculo?.placa || "")
-          .replace("{{inicio}}", formatearFecha(fechasLugar.fechaRetiro))
-          .replace("{{fin}}", formatearFecha(fechasLugar.fechaDevolucion)))}</p>
-        <p><b>${esc(tx.clause2Title)}</b> ${esc(tx.clause2Text)}</p>
-        <p><b>${esc(tx.clause3Title)}</b></p>
-        <ul>
-          <li>${esc(tx.clause3Item1)}</li><li>${esc(tx.clause3Item2)}</li>
-          <li>${esc(tx.clause3Item3)}</li><li>${esc(tx.clause3Item4)}</li>
-        </ul>
-        <p><b>${esc(tx.clause4Title)}</b> ${esc(tx.clause4Text)}</p>
-        <p><b>${esc(tx.clause5Title)}</b> ${esc(tx.clause5Text)}</p>
-        <p><b>${esc(tx.clause6Title)}</b> ${esc(tx.clause6Text)}</p>
       </div>
 
       <h2>${esc(tx.signaturesTitle)}</h2>
-      <div class="meta"><b>${esc(tx.signCity)}:</b> ${esc(ciudadSucursal)}</div>
-      <div class="meta"><b>${esc(tx.signDate)}:</b> ${esc(formatearFecha(contrato.fecha.slice(0, 10)))}</div>
       <div class="firmas">
         <div class="firma-card">
           <div class="firma-titulo">${esc(tx.userSignature)}</div>
@@ -242,20 +202,18 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<stri
 
   if (Platform.OS === "web") {
     const modulo = await import("html2pdf.js");
-    const html2pdf = modulo.default;
-    return html2pdf()
+    return modulo.default()
       .set({
         margin: 8,
         filename: `contrato-${referencia}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css", "legacy"] },
+        pagebreak: { mode: ["css", "legacy"], avoid: [".grid", ".firmas", ".firma-card", ".footer"] },
       })
       .from(html)
       .outputPdf("datauristring");
   }
-
   const resultado = await Print.printToFileAsync({ html, base64: false });
   if (!resultado?.uri) throw new Error("No fue posible generar el contrato en PDF");
   return resultado.uri;
@@ -266,13 +224,11 @@ export async function compartirContratoPdf(uri: string, nombre = "contrato-firma
     const enlace = document.createElement("a");
     enlace.href = uri;
     enlace.download = nombre;
-    enlace.rel = "noopener";
     document.body.appendChild(enlace);
     enlace.click();
     enlace.remove();
     return uri;
   }
-
   const disponible = await Sharing.isAvailableAsync();
   if (disponible) {
     await Sharing.shareAsync(uri, {
@@ -304,62 +260,23 @@ export function crearTextosContrato(t: (key: string) => string): Record<string, 
   }, {});
 }
 
-/** Lee el PDF seleccionado sin modificarlo para conservar el contrato original. */
 export async function leerPdfOriginalBase64(uri: string): Promise<string> {
   if (uri.startsWith("data:")) return uri.split(",", 2)[1] || "";
-
   if (Platform.OS === "web") {
-    const respuesta = await fetch(uri);
-    if (!respuesta.ok) throw new Error("No fue posible leer el PDF original");
-    const blob = await respuesta.blob();
-    return await new Promise<string>((resolve, reject) => {
+    const blob = await (await fetch(uri)).blob();
+    return new Promise((resolve, reject) => {
       const lector = new FileReader();
       lector.onload = () => resolve(String(lector.result).split(",", 2)[1] || "");
-      lector.onerror = () => reject(lector.error ?? new Error("No fue posible leer el PDF original"));
+      lector.onerror = () => reject(lector.error);
       lector.readAsDataURL(blob);
     });
   }
-
   return FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
 }
 
-/** Descarga/abre exactamente el PDF adjuntado al firmar, sin regenerarlo. */
 export async function compartirPdfOriginal(base64: string, nombre = "contrato-firmado.pdf") {
-  if (!base64) throw new Error("El contrato original no tiene contenido guardado");
-  const dataUri = `data:application/pdf;base64,${base64}`;
-  if (Platform.OS === "web") return compartirContratoPdf(dataUri, nombre);
-
-  const directorio = FileSystem.cacheDirectory;
-  if (!directorio) throw new Error("No hay un directorio disponible para descargar el contrato");
-  const nombreSeguro = nombre.replace(/[^a-zA-Z0-9._-]/g, "-");
-  const uriTemporal = `${directorio}${nombreSeguro}`;
-  await FileSystem.writeAsStringAsync(uriTemporal, base64, { encoding: FileSystem.EncodingType.Base64 });
-  return compartirContratoPdf(uriTemporal, nombreSeguro);
-}
-
-/** Descarga en web exactamente el contrato que el usuario está visualizando. */
-export async function descargarContratoVisible(nombre: string) {
-  if (Platform.OS !== "web" || typeof document === "undefined") {
-    throw new Error("La descarga de la vista del contrato solo está disponible en web");
-  }
-  const contratoVisible = document.getElementById("contrato-legal-visible");
-  if (!contratoVisible) throw new Error("No se encontró el contrato visible");
-
-  const modulo = await import("html2pdf.js");
-  await modulo.default()
-    .set({
-      margin: 8,
-      filename: nombre,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        ignoreElements: (element: Element) => element.id === "contrato-acciones-descarga",
-      },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["css", "legacy"] },
-    })
-    .from(contratoVisible)
-    .save();
+  if (Platform.OS === "web") return compartirContratoPdf(`data:application/pdf;base64,${base64}`, nombre);
+  const uri = `${FileSystem.cacheDirectory}${nombre.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+  await FileSystem.writeAsStringAsync(uri, base64, { encoding: FileSystem.EncodingType.Base64 });
+  return compartirContratoPdf(uri, nombre);
 }

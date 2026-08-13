@@ -240,7 +240,6 @@ export default function FirmaContrato({
       keyboardShouldPersistTaps="handled"
     >
       <View
-        nativeID={soloLectura ? "contrato-legal-visible" : undefined}
         style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}
       >
         <LinearGradient
@@ -464,7 +463,6 @@ export default function FirmaContrato({
           </Seccion>
 
           <TouchableOpacity
-            nativeID="contrato-acciones-descarga"
             style={styles.firmarBtnWrap}
             onPress={soloLectura ? onDescargar : handleFirmar}
             disabled={soloLectura ? descargando : firmando}
