@@ -20,7 +20,7 @@ Aplicación móvil del sistema de alquiler de vehículos **RentaMovil**, desarro
 
 ```bash
 git clone https://github.com/tu-org/rentamovil-frontend.git
-cd appmovilrenta
+cd app-drivique
 npm install
 npm run android
 ```
@@ -40,7 +40,7 @@ npm run reset-project  # Limpiar y resetear proyecto
 ---
 
 ##  Estructura
-appmovilrenta/
+app-drivique/
 ├── app/              # Pantallas (Expo Router)
 │   └── (tabs)/       # Navegación por tabs
 ├── components/       # Componentes reutilizables
