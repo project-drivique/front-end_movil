@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "appmovilrenta",
-    "slug": "appmovilrenta",
+    "name": "app-drivique",
+    "slug": "app-drivique",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "appmovilrenta",
+    "scheme": "app-drivique",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
