@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { LoginForm, RegistroForm, OlvideContrasenaForm, AuthError } from '../types/auth.types';
-import { buscarUsuarioDemo, UsuarioDemo } from '../../../mocks/demoUsers';
+import { buscarUsuarioDemo, UsuarioDemo, USUARIOS_DEMO } from '../../../mocks/demoUsers';
 import { esCorreoValido as validarCorreo, esContrasenaSegura as validarContrasenaSegura } from '@/utils/validators';
 import { useAuditStore } from '@/store/auditStore';
 
@@ -222,9 +222,10 @@ export function useOlvideContrasena() {
     setCargando(true);
     try {
       await new Promise(r => setTimeout(r, 1000));
-      // Mock de validación de correo registrado
-      if (form.correo.toLowerCase() !== 'admin@drivique.com') {
-        setErrores([{ mensaje: 'correo_no_registrado' }]); // usamos esto como flag para mostrar la alerta
+      // Mock de validación de correo registrado usando la base de datos de demo
+      const correoExiste = USUARIOS_DEMO.some(u => u.correo.toLowerCase() === form.correo.trim().toLowerCase());
+      if (!correoExiste) {
+        setErrores([{ campo: 'correo', mensaje: 'No encontramos ninguna cuenta asociada a este correo.' }]);
         return;
       }
       
@@ -253,19 +254,20 @@ export function useOlvideContrasena() {
     }
   }
 
-  async function cambiarContrasena() {
+  async function cambiarContrasena(onSuccess?: () => void) {
     if (!validarFase3()) return;
     setCargando(true);
     try {
       await new Promise(r => setTimeout(r, 1000));
       // Éxito
-      setFase(4);
+      if (onSuccess) onSuccess();
+      else setFase(4);
     } finally {
       setCargando(false);
     }
   }
 
-  return { form, errores, cargando, fase, setFase, actualizarCampo, enviarEnlace, validarCodigo, cambiarContrasena };
+  return { form, errores, setErrores, cargando, fase, setFase, actualizarCampo, enviarEnlace, validarCodigo, cambiarContrasena };
 }
 
 // ── useVerificarCorreo (HU: verificación de correo tras registro) ────────────

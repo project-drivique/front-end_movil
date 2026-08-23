@@ -2,7 +2,7 @@ import { InputField } from "@/components/ui/InputField";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { OtpInput } from "@/components/ui/OtpInput";
-import { AlertModal } from "@/components/ui/AlertModal";
+import { PasswordRequirements } from "@/modules/auth/components/PasswordRequirements";
 import { useOlvideContrasena } from "@/modules/auth/hooks/useAuth";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -19,41 +19,32 @@ import {
 } from "react-native";
 import { olvideStyles as styles } from "@/modules/auth/styles/forgot-password.styles";
 
-const SEGUNDOS_ESPERA = 30;
+const SEGUNDOS_ESPERA = 300;
 
 export default function OlvideContrasenaScreen() {
   const { t } = useTranslation();
-  const { form, errores, cargando, fase, setFase, actualizarCampo, enviarEnlace, validarCodigo, cambiarContrasena } =
+  const { form, errores, setErrores, cargando, fase, setFase, actualizarCampo, enviarEnlace, validarCodigo, cambiarContrasena } =
     useOlvideContrasena();
 
   const [contador, setContador] = useState(0);
   const [puedeReenviar, setPuedeReenviar] = useState(false);
-  const [alertaVisible, setAlertaVisible] = useState(false);
   const intervaloRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (errores.some(e => e.mensaje === 'correo_no_registrado')) {
-      setAlertaVisible(true);
-    }
-  }, [errores]);
 
   useEffect(() => {
     if (fase === 2) {
       iniciarContador();
     }
-    return () => {
-      if (intervaloRef.current) clearInterval(intervaloRef.current);
-    };
+    return limpiarContador;
   }, [fase]);
 
   function iniciarContador() {
-    setPuedeReenviar(false);
     setContador(SEGUNDOS_ESPERA);
+    setPuedeReenviar(false);
     if (intervaloRef.current) clearInterval(intervaloRef.current);
     intervaloRef.current = setInterval(() => {
       setContador((prev) => {
         if (prev <= 1) {
-          clearInterval(intervaloRef.current!);
+          limpiarContador();
           setPuedeReenviar(true);
           return 0;
         }
@@ -62,50 +53,47 @@ export default function OlvideContrasenaScreen() {
     }, 1000);
   }
 
+  function limpiarContador() {
+    if (intervaloRef.current) {
+      clearInterval(intervaloRef.current);
+      intervaloRef.current = null;
+    }
+  }
+
   function handleReenviar() {
-    // Simulamos el reenvío
+    // Aquí podrías disparar enviarEnlace nuevamente si es necesario, 
+    // pero como mínimo reiniciamos el contador:
     iniciarContador();
   }
 
-  // ── Pantalla de éxito (Fase 4) ───────────────────────────────
-  if (fase === 4) {
-    return (
-      <View style={styles.contenedorExito}>
-        <Text style={styles.iconoExito}>🎉</Text>
-        <Text style={styles.tituloExito}>{t("auth.olvide.exitoTitulo")}</Text>
-        <Text style={styles.mensajeExito}>{t("auth.olvide.exitoMsg")}</Text>
-        <PrimaryButton
-          titulo={t("auth.olvide.volverLogin")}
-          onPress={() => router.replace("/(auth)/login")}
-          redondeado
-        />
-      </View>
-    );
-  }
+  // Formato mm:ss para el contador
+  const min = Math.floor(contador / 60);
+  const sec = contador % 60;
+  const tiempoFormateado = `${min}:${sec < 10 ? '0' : ''}${sec}`;
 
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior="padding"
     >
       <ScrollView
         contentContainerStyle={styles.contenedor}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        bounces={false}
+        overScrollMode="never"
       >
-        <TouchableOpacity
-          onPress={() => {
-            if (fase > 1) {
-              setFase((prev) => (prev - 1) as 1 | 2 | 3 | 4);
-            } else {
+        {fase === 1 && (
+          <TouchableOpacity
+            onPress={() => {
               router.canGoBack() ? router.back() : router.replace("/(auth)/login");
-            }
-          }}
-          style={styles.botonVolver}
-        >
-          <Feather name="arrow-left" size={18} color="#374151" />
-          <Text style={styles.textoVolver}>{t("auth.olvide.volver")}</Text>
-        </TouchableOpacity>
+            }}
+            style={styles.botonVolver}
+          >
+            <Feather name="arrow-left" size={18} color="#374151" />
+            <Text style={styles.textoVolver}>{t("auth.olvide.volver")}</Text>
+          </TouchableOpacity>
+        )}
 
         <View style={styles.tarjeta}>
           <View style={styles.logoWrapper}>
@@ -146,7 +134,6 @@ export default function OlvideContrasenaScreen() {
                   value={form.correo}
                   onChangeText={(val) => actualizarCampo('correo', val)}
                   error={errores.find((e) => e.campo === "correo")?.mensaje}
-                  pill
                 />
                 <PrimaryButton
                   titulo={t("auth.olvide.btnEnviar")}
@@ -192,7 +179,7 @@ export default function OlvideContrasenaScreen() {
                     </TouchableOpacity>
                   ) : (
                     <Text style={styles.textoContador}>
-                      {t("auth.olvide.reenviarEn", { seg: contador })}
+                      {t("auth.olvide.reenviarEn", { tiempo: tiempoFormateado })}
                     </Text>
                   )}
                 </View>
@@ -208,6 +195,7 @@ export default function OlvideContrasenaScreen() {
                   onChangeText={(val) => actualizarCampo('nuevaContrasena', val)}
                   error={errores.find((e) => e.campo === "nuevaContrasena")?.mensaje}
                 />
+                <PasswordRequirements password={form.nuevaContrasena || ''} />
                 <PasswordInput
                   label={t("auth.olvide.confirmarContra")}
                   placeholder="********"
@@ -217,7 +205,9 @@ export default function OlvideContrasenaScreen() {
                 />
                 <PrimaryButton
                   titulo={t("auth.olvide.btnRestablecer")}
-                  onPress={cambiarContrasena}
+                  onPress={() => cambiarContrasena(() => {
+                    router.replace({ pathname: "/(auth)/login", params: { success: "password_reset" } });
+                  })}
                   cargando={cargando}
                   redondeado
                   estiloExtra={{ marginTop: 12 }}
@@ -236,25 +226,6 @@ export default function OlvideContrasenaScreen() {
           </View>
         )}
       </ScrollView>
-
-      {/* ── ALERTA DE CORREO NO REGISTRADO ── */}
-      <AlertModal
-        visible={alertaVisible}
-        icono="alert-circle-outline"
-        titulo={t("auth.olvide.correoNoRegistradoTitulo")}
-        mensaje={t("auth.olvide.correoNoRegistradoMsg")}
-        botones={[
-          {
-            texto: t("catalogo.alertas.entendido") || 'Aceptar',
-            variante: "primario",
-            onPress: () => {
-              setAlertaVisible(false);
-              // Podríamos limpiar el error del hook aquí si es necesario
-            },
-          },
-        ]}
-        onCerrar={() => setAlertaVisible(false)}
-      />
     </KeyboardAvoidingView>
   );
 }

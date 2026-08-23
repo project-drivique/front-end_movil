@@ -12,9 +12,9 @@ import { useAuthStore } from "@/store/authStore";
 import { useUsuarioStore } from "@/store/userStore";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Image,
@@ -26,6 +26,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Animated,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -58,6 +59,31 @@ export default function LoginScreen() {
   const actualizarUsuarioGlobal = useUsuarioStore((s) => s.actualizarUsuario);
   const errorGlobal = errores.find((e) => !e.campo)?.mensaje;
   const [loginExitoso, setLoginExitoso] = useState(false);
+
+  // ── Toast para restablecimiento de contraseña ─────────────────
+  const { success } = useLocalSearchParams<{ success?: string }>();
+  const [toastVisible, setToastVisible] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (success === "password_reset") {
+      setToastVisible(true);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+
+      const timer = setTimeout(() => {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setToastVisible(false));
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
 
   // ── Control de las alertas tipo modal ─────────────────────────
   const [alertaErrorVisible, setAlertaErrorVisible] = useState(false);
@@ -114,12 +140,22 @@ export default function LoginScreen() {
     <View style={styles.flex}>
       <StatusBar barStyle="light-content" backgroundColor={GRADIENTES.heroOscuro.colors[0]} />
 
+      {/* ── Toast de éxito (Restablecer contraseña) ── */}
+      {toastVisible && (
+        <Animated.View style={[
+          styles.toastContainer, 
+          { opacity: fadeAnim, top: insets.top + 10, backgroundColor: '#10B981' }
+        ]}>
+          <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <Text style={styles.toastText}>Contraseña actualizada correctamente</Text>
+        </Animated.View>
+      )}
+
       <View style={{ height: insets.top, backgroundColor: GRADIENTES.heroOscuro.colors[0] }} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
+        behavior="padding"
       >
         <ScrollView
           contentContainerStyle={styles.scrollContenedor}

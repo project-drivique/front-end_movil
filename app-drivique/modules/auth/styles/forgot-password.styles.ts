@@ -8,10 +8,10 @@ export const olvideStyles = StyleSheet.create({
   contenedor: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 56,
-    paddingBottom: 48,
-    alignItems: 'center', // Para centrar la tarjeta
+    paddingTop: 60,
+    paddingBottom: 80,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   // Botón volver estilo tarjeta
   botonVolver: {

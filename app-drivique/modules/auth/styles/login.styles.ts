@@ -217,4 +217,26 @@ export const loginStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
+  
+  // ── Toast ──────────────────────────────────────────────────────
+  toastContainer: {
+    position: "absolute",
+    left: 20,
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+    zIndex: 999,
+  },
+  toastText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+  }
 });
