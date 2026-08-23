@@ -195,7 +195,7 @@ export default function LoginScreen() {
                   {/* LOGO A CABALLO ENTRE EL HEADER Y LA CARD */}
                   <View style={styles.logoBadge}>
                     <Image
-                      source={require("@/assets/images/logo.png")}
+                      source={require("@/assets/images/logocatalog.png")}
                       style={styles.logoBadgeImg}
                     />
                   </View>
@@ -283,7 +283,7 @@ export default function LoginScreen() {
                 <View style={styles.cardWrapper}>
                   <View style={styles.logoBadge}>
                     <Image
-                      source={require("@/assets/images/logo.png")}
+                      source={require("@/assets/images/logocatalog.png")}
                       style={styles.logoBadgeImg}
                     />
                   </View>
@@ -333,7 +333,7 @@ export default function LoginScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <View style={{ height: insets.bottom, backgroundColor: "#1E3A8A" }} />
+      <View style={{ height: insets.bottom, backgroundColor: "#F9FAFB" }} />
 
       {/* ── ALERTA DE ERROR (mismo diseño y color que catálogo) ── */}
       <AlertModal

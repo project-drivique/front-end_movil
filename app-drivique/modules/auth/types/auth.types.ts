@@ -12,6 +12,9 @@ export interface RegistroForm {
 
 export interface OlvideContrasenaForm {
   correo: string;
+  codigo?: string;
+  nuevaContrasena?: string;
+  confirmarContrasena?: string;
 }
 
 export interface AuthError {

@@ -3,11 +3,12 @@ import { StyleSheet } from "react-native";
 export const loginStyles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: "#1E3A8A",
+    backgroundColor: "#F9FAFB",
   },
   scrollContenedor: {
     flexGrow: 1,
     justifyContent: "space-between",
+    paddingBottom: 40,
   },
 
   // ── Header (azul gradiente) ──────────────────────────────────────
@@ -79,7 +80,7 @@ export const loginStyles = StyleSheet.create({
 
   // ── Cuerpo (donde flota la card) ───────────────────────────────
   cuerpo: {
-    backgroundColor: "#1E3A8A",
+    backgroundColor: "#F9FAFB",
     paddingHorizontal: 16,
     paddingTop: 36,
     paddingBottom: 24,
@@ -206,13 +207,13 @@ export const loginStyles = StyleSheet.create({
 
   // ── Footer copyright ───────────────────────────────────────────
   footer: {
-    backgroundColor: "#1E3A8A",
+    backgroundColor: "#F9FAFB",
     paddingTop: 14,
     paddingBottom: 28,
     alignItems: "center",
   },
   footerTexto: {
-    color: "#FFFFFF",
+    color: "#6B7280",
     fontSize: 12,
     fontWeight: "600",
   },

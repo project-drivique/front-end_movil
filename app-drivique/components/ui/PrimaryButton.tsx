@@ -10,6 +10,8 @@ interface Props {
   cargando?: boolean;
   deshabilitado?: boolean;
   variante?: 'primario' | 'secundario' | 'texto';
+  redondeado?: boolean;
+  estiloExtra?: object;
 }
 
 export function PrimaryButton({
@@ -18,6 +20,8 @@ export function PrimaryButton({
   cargando = false,
   deshabilitado = false,
   variante = 'primario',
+  redondeado = false,
+  estiloExtra,
 }: Props) {
   const estaDeshabilitado = deshabilitado || cargando;
 
@@ -46,6 +50,8 @@ export function PrimaryButton({
           styles.botonSombra,
           !estaDeshabilitado && SOMBRA_BOTON_GRADIENTE,
           estaDeshabilitado && styles.botonDeshabilitado,
+          redondeado && { borderRadius: 30 },
+          estiloExtra,
         ]}
         onPress={onPress}
         disabled={estaDeshabilitado}
@@ -55,7 +61,7 @@ export function PrimaryButton({
           colors={GRADIENTES.boton.colors}
           start={GRADIENTES.boton.start}
           end={GRADIENTES.boton.end}
-          style={styles.boton}
+          style={[styles.boton, redondeado && { borderRadius: 30 }]}
         >
           {contenido}
         </LinearGradient>
