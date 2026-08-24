@@ -27,6 +27,22 @@ interface Punto {
   y: number;
 }
 
+type Html2PdfConfig = {
+  margin: number;
+  filename: string;
+  image: { type: "jpeg"; quality: number };
+  html2canvas: Record<string, unknown>;
+  jsPDF: { unit: string; format: string; orientation: "portrait" };
+  pagebreak: { mode: string[]; avoid: string[] };
+};
+
+type Html2PdfWorkerCompatible = {
+  set(options: Html2PdfConfig): Html2PdfWorkerCompatible;
+  from(source: string | HTMLElement): Html2PdfWorkerCompatible;
+  outputPdf(type: "datauristring"): Promise<string>;
+  save(): Promise<void>;
+};
+
 function trazosASvgPaths(firmaTrazosJson: string): string {
   try {
     const trazos: Punto[][] = JSON.parse(firmaTrazosJson);
