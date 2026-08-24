@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import {
   Modal,
   ScrollView,
@@ -12,6 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { useTranslation } from "react-i18next";
 import { LinearGradient } from "expo-linear-gradient";
 import { GRADIENTES } from "@/constants/gradients";
 import { COLOR_MARCA } from "@/modules/catalog/constants/catalog.constants";
@@ -31,6 +32,7 @@ export function CashPaymentSuccessModal({
 }: Props) {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
+  const { t } = useTranslation();
   const [copiado, setCopiado] = useState(false);
 
   const handleCopiar = () => {
@@ -43,6 +45,14 @@ export function CashPaymentSuccessModal({
 
   if (!visible) return null;
 
+  const pasos: Array<[keyof typeof Ionicons.glyphMap, string]> = [
+    ["navigate-outline", t("reserva.confirmacion.modalEfectivo.paso1")],
+    ["cash-outline",     t("reserva.confirmacion.modalEfectivo.paso2")],
+    ["qr-code-outline",  t("reserva.confirmacion.modalEfectivo.paso3")],
+    ["mail-outline",     t("reserva.confirmacion.modalEfectivo.paso4")],
+    ["document-text-outline", t("reserva.confirmacion.modalEfectivo.paso5")],
+  ];
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleFinalizar}>
       <View style={[styles.container, { paddingTop: Platform.OS === "android" ? insets.top : 0 }]}>
@@ -54,19 +64,19 @@ export function CashPaymentSuccessModal({
               <Ionicons name="cash-outline" size={44} color={COLOR_MARCA} />
             </View>
             <Text style={[styles.title, { color: c.textPrimary }]}>
-              !Reserva Registrada!
+              {t("reserva.confirmacion.modalEfectivo.titulo")}
             </Text>
             <Text style={[styles.subtitle, { color: c.textSecondary }]}>
-              Tu reserva esta{" "}
-              <Text style={styles.pendienteText}>Pendiente de Pago</Text>.{"\n"}
-              Acercate a la sucursal para completarla.
+              {t("reserva.confirmacion.modalEfectivo.subtitulo")}
+              <Text style={styles.pendienteText}>{t("reserva.confirmacion.modalEfectivo.pendienteText")}</Text>
+              {t("reserva.confirmacion.modalEfectivo.subtitulo2")}
             </Text>
           </View>
 
           {/* Tarjeta con codigo de verificacion */}
           <View style={styles.card}>
             <Text style={[styles.codeLabel, { color: c.textMuted }]}>
-              Codigo de Verificacion
+              {t("reserva.confirmacion.modalEfectivo.codigoLabel")}
             </Text>
             <View style={styles.codeRow}>
               <Text style={[styles.codeValue, { color: COLOR_MARCA }]}>
@@ -79,22 +89,26 @@ export function CashPaymentSuccessModal({
                   color={copiado ? "#16a34a" : COLOR_MARCA}
                 />
                 <Text style={[styles.copyBtnText, { color: copiado ? "#16a34a" : COLOR_MARCA }]}>
-                  {copiado ? "Copiado" : "Copiar"}
+                  {copiado
+                    ? t("reserva.confirmacion.modalEfectivo.copiado")
+                    : t("reserva.confirmacion.modalEfectivo.copiar")}
                 </Text>
               </TouchableOpacity>
             </View>
             <View style={styles.warningContainer}>
               <Ionicons name="time-outline" size={18} color="#dc2626" />
               <Text style={styles.warningText}>
-                Tienes <Text style={styles.boldText}>72 horas</Text> para acercarte a pagar. De lo contrario la reserva se cancelara automaticamente.
+                {t("reserva.confirmacion.modalEfectivo.advertencia")}
               </Text>
             </View>
           </View>
 
           {/* Sucursal de pago fija */}
-          <Text style={[styles.sectionTitle, { color: c.textPrimary }]}>Donde pagar?</Text>
+          <Text style={[styles.sectionTitle, { color: c.textPrimary }]}>
+            {t("reserva.confirmacion.modalEfectivo.dondePagarTitulo")}
+          </Text>
           <Text style={[styles.sectionDesc, { color: c.textMuted }]}>
-            El pago debe realizarse en la misma sucursal donde se encuentra el vehiculo reservado.
+            {t("reserva.confirmacion.modalEfectivo.dondePagarDesc")}
           </Text>
 
           <View style={styles.sucursalCard}>
@@ -104,29 +118,27 @@ export function CashPaymentSuccessModal({
                 <Ionicons name="storefront-outline" size={22} color="#b45309" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.sucursalLabel}>Sucursal de pago</Text>
+                <Text style={styles.sucursalLabel}>
+                  {t("reserva.confirmacion.modalEfectivo.sucursalLabel")}
+                </Text>
                 <Text style={styles.sucursalNombre}>
-                  {lugarPago ?? "Sucursal del vehiculo"}
+                  {lugarPago ?? t("reserva.confirmacion.modalEfectivo.sucursalDefault")}
                 </Text>
               </View>
             </View>
             <View style={styles.sucursalInfoRow}>
               <Ionicons name="information-circle-outline" size={14} color="#6b7280" />
               <Text style={styles.sucursalInfoTexto}>
-                Muestra tu codigo de verificacion al encargado al momento de pagar.
+                {t("reserva.confirmacion.modalEfectivo.sucursalInfo")}
               </Text>
             </View>
           </View>
 
           {/* Pasos */}
-          <Text style={[styles.sectionTitle, { color: c.textPrimary, marginTop: 8 }]}>Pasos a seguir</Text>
-          {([
-            ["navigate-outline", "Ve a la sucursal donde se encuentra el vehiculo."],
-            ["cash-outline", "Realiza el pago en efectivo al encargado."],
-            ["qr-code-outline", "Muestra tu codigo de verificacion."],
-            ["mail-outline", "Recibiras un correo con el link para firmar el contrato."],
-            ["document-text-outline", "Firma el contrato desde la app para confirmar tu reserva."],
-          ] as const).map(([icono, texto], i) => (
+          <Text style={[styles.sectionTitle, { color: c.textPrimary, marginTop: 8 }]}>
+            {t("reserva.confirmacion.modalEfectivo.pasosTitulo")}
+          </Text>
+          {pasos.map(([icono, texto], i) => (
             <View key={i} style={styles.pasoRow}>
               <View style={styles.pasoNumero}>
                 <Text style={styles.pasoNumeroTexto}>{i + 1}</Text>
@@ -149,7 +161,9 @@ export function CashPaymentSuccessModal({
               style={styles.finishBtn}
             >
               <Ionicons name="receipt-outline" size={20} color="#fff" />
-              <Text style={styles.finishBtnText}>Ver en Mis Reservas</Text>
+              <Text style={styles.finishBtnText}>
+                {t("reserva.confirmacion.modalEfectivo.boton")}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -178,7 +192,6 @@ const styles = StyleSheet.create({
   copyBtnText: { fontSize: 12, fontWeight: "700" },
   warningContainer: { flexDirection: "row", alignItems: "center", backgroundColor: "#fef2f2", borderWidth: 1, borderColor: "#fecaca", padding: 12, borderRadius: 12, gap: 10, width: "100%" },
   warningText: { flex: 1, fontSize: 12, color: "#7f1d1d", lineHeight: 18 },
-  boldText: { fontWeight: "800" },
   sectionTitle: { fontSize: 18, fontWeight: "800", marginBottom: 6 },
   sectionDesc: { fontSize: 13, lineHeight: 20, marginBottom: 16 },
   sucursalCard: {
