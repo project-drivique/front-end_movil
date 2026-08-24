@@ -128,7 +128,7 @@ export default function VerificarCorreoScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.flex, { backgroundColor: c.bg }]}
+      style={[styles.flex, { backgroundColor: c.oscuro ? c.bg : "#FFFFFF" }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
@@ -136,24 +136,10 @@ export default function VerificarCorreoScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.logoWrap}>
-          <Image source={require("@/assets/images/logo.png")} style={styles.logo} />
-        </View>
-
         <View style={styles.cardWrap}>
-          <LinearGradient
-            colors={GRADIENTES.boton.colors}
-            start={GRADIENTES.boton.start}
-            end={GRADIENTES.boton.end}
-            style={styles.barraSuperior}
-          />
           <View style={[styles.card, { backgroundColor: c.bgCard }]}>
-            <View style={[styles.iconoWrap, { backgroundColor: c.primaryBg }]}>
-              <Ionicons
-                name={codigoEnviado ? "mail-open-outline" : "mail-outline"}
-                size={34}
-                color={c.primary}
-              />
+            <View style={styles.iconoWrap}>
+              <Image source={require("@/assets/images/logo.png")} style={styles.logo} />
             </View>
 
             <Text style={[styles.titulo, { color: c.textPrimary }]}>
