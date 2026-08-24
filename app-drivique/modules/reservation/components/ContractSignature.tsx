@@ -464,7 +464,7 @@ export default function FirmaContrato({
           </Seccion>
 
           <TouchableOpacity
-            nativeID="contrato-acciones-descarga"
+            testID="contrato-acciones-descarga"
             style={styles.firmarBtnWrap}
             onPress={soloLectura ? onDescargar : handleFirmar}
             disabled={soloLectura ? descargando : firmando}
@@ -523,7 +523,7 @@ function Seccion({
   children: React.ReactNode;
 }) {
   return (
-    <View style={styles.seccion} dataSet={{ pdfSection: "true" }}>
+    <View style={styles.seccion}>
       <Text style={[styles.seccionTitulo, { color: c.textPrimary }]}>{titulo}</Text>
       {children}
     </View>
