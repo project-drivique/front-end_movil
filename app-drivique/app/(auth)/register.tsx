@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -41,6 +42,14 @@ export default function RegistroScreen() {
   const [modalTerminos, setModalTerminos] = useState(false);
   const [terminosLeidos, setTerminosLeidos] = useState(false);
   const [correoTocado, setCorreoTocado] = useState(false);
+  const [modalBienvenida, setModalBienvenida] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setModalBienvenida(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const errorCorreo = getError('correo') ??
     (correoTocado && form.correo.length > 0 && !form.correo.includes('@')
@@ -304,6 +313,40 @@ export default function RegistroScreen() {
             </View>
           </View>
         </View>
+      </Modal>
+
+      {/* ── Modal: Bienvenida / Info ──────────────────────── */}
+      <Modal visible={modalBienvenida} transparent animationType="fade" onRequestClose={() => setModalBienvenida(false)}>
+        <TouchableOpacity 
+          style={styles.modalBienvenidaOverlay} 
+          activeOpacity={1} 
+          onPress={() => setModalBienvenida(false)}
+        >
+          <TouchableOpacity activeOpacity={1} style={[styles.modalBienvenidaContenedor, { backgroundColor: c.bgCard }]}>
+            <Text style={[styles.modalBienvenidaTitulo, { color: c.textPrimary }]}>
+              {t('auth.registro.bienvenidaTitulo')}
+            </Text>
+            
+            <View style={styles.modalBienvenidaLista}>
+              <View style={[styles.modalBienvenidaItem, { borderColor: c.oscuro ? '#374151' : '#E5E7EB' }]}>
+                <Ionicons name="checkmark-circle-outline" size={20} color={c.primary} style={styles.modalBienvenidaItemIcono} />
+                <Text style={[styles.modalBienvenidaItemTexto, { color: c.textPrimary }]}>{t('auth.registro.bienvenidaItem1')}</Text>
+              </View>
+              <View style={[styles.modalBienvenidaItem, { borderColor: c.oscuro ? '#374151' : '#E5E7EB' }]}>
+                <Ionicons name="card-outline" size={20} color={c.primary} style={styles.modalBienvenidaItemIcono} />
+                <Text style={[styles.modalBienvenidaItemTexto, { color: c.textPrimary }]}>{t('auth.registro.bienvenidaItem2')}</Text>
+              </View>
+              <View style={[styles.modalBienvenidaItem, { borderColor: c.oscuro ? '#374151' : '#E5E7EB' }]}>
+                <Ionicons name="document-text-outline" size={20} color={c.primary} style={styles.modalBienvenidaItemIcono} />
+                <Text style={[styles.modalBienvenidaItemTexto, { color: c.textPrimary }]}>{t('auth.registro.bienvenidaItem3')}</Text>
+              </View>
+              <View style={[styles.modalBienvenidaItem, { borderColor: c.oscuro ? '#374151' : '#E5E7EB' }]}>
+                <Ionicons name="headset-outline" size={20} color={c.primary} style={styles.modalBienvenidaItemIcono} />
+                <Text style={[styles.modalBienvenidaItemTexto, { color: c.textPrimary }]}>{t('auth.registro.bienvenidaItem4')}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
     </View>
