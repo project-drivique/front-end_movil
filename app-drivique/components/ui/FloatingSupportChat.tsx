@@ -16,7 +16,6 @@ import { usePathname } from "expo-router";
 import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import {
   ChatMessage,
-  obtenerOpcionesIniciales,
   obtenerMensajeBienvenida,
   obtenerHoraActual,
   procesarMensajeChatbot,
@@ -43,7 +42,7 @@ export function FloatingSupportChat() {
     if (mensajes.length === 1 && mensajes[0].sender === "bot") {
       setMensajes([obtenerMensajeBienvenida(idiomaActual)]);
     }
-  }, [idiomaActual]);
+  }, [idiomaActual, mensajes]);
 
   // Scroll automático al último mensaje
   useEffect(() => {

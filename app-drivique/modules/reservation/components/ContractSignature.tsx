@@ -5,10 +5,11 @@
 // mismas 6 cláusulas, el mismo código de contrato autogenerado y la misma
 // firma táctil del usuario. La firma de la plataforma se muestra como un
 // sello de texto en vez de una imagen (acá no existe el PNG de la firma).
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Alert,
   Image,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -463,8 +464,9 @@ export default function FirmaContrato({
             </View>
           </Seccion>
 
+          <View nativeID="contrato-acciones-descarga">
           <TouchableOpacity
-            testID="contrato-acciones-descarga"
+
             style={styles.firmarBtnWrap}
             onPress={soloLectura ? onDescargar : handleFirmar}
             disabled={soloLectura ? descargando : firmando}
@@ -488,6 +490,7 @@ export default function FirmaContrato({
               </Text>
             </LinearGradient>
           </TouchableOpacity>
+          </View>
 
           <View style={[styles.footer, { borderTopColor: c.border }]}>
             <Text style={[styles.footerTexto, { color: c.textMuted }]}>{t("reserva.contrato.footerNote1")}</Text>
@@ -523,7 +526,10 @@ function Seccion({
   children: React.ReactNode;
 }) {
   return (
-    <View style={styles.seccion}>
+    <View
+      style={styles.seccion}
+      {...(Platform.OS === "web" ? ({ "data-pdf-section": "true" } as object) : {})}
+    >
       <Text style={[styles.seccionTitulo, { color: c.textPrimary }]}>{titulo}</Text>
       {children}
     </View>
