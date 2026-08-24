@@ -7,108 +7,124 @@ export const registroStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  contenedor: {
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  headerTitleContainer: { flex: 1 },
+  headerTitleText: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#1E40AF",
+    letterSpacing: -0.5,
+  },
+  guestBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: "#1E40AF",
+  },
+  guestBtnTexto: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1E40AF",
+  },
+  scrollContenedor: {
     flexGrow: 1,
+    paddingBottom: 40,
+  },
+  header: {
+    position: "relative",
+    paddingHorizontal: 20,
+    paddingTop: 32,
+    paddingBottom: 20,
+  },
+  marcaTagline: {
+    fontSize: 10,
+    color: "#93A5D1",
+    letterSpacing: 1.1,
+    marginTop: 2,
+    textTransform: "uppercase",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  cuerpo: {
+    paddingHorizontal: 16,
+    paddingTop: 32,
+    paddingBottom: 24,
+  },
+  cardWrapper: {
+    position: 'relative',
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
     paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 48,
+    paddingTop: 32,
+    paddingBottom: 28,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
   },
-
-  // ── Encabezado ──────────────────────────────────────────────
   encabezado: {
-    alignItems: 'center',
-    marginBottom: 28,
-  },
-  logoWrapper: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#EFF6FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  logo: {
-    width: 65,
-    height: 65,
-    resizeMode: 'contain',
-  },
-  marca: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#1D4ED8',
-    marginBottom: 4,
-    textAlign: 'center',
+    alignItems: "center",
+    marginBottom: 22,
   },
   titulo: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#111827',
-    marginBottom: 4,
-    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#111827",
+    marginBottom: 6,
+    textAlign: "center",
   },
   subtitulo: {
     fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 20,
   },
-
-  // ── Secciones ───────────────────────────────────────────────
-  seccionLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#1D4ED8',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 14,
-    marginTop: 8,
+  formulario: {
+    gap: 0, 
   },
-  seccionHint: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 14,
-    marginTop: -8,
-    lineHeight: 18,
+  acciones: {
+    marginTop: 24, 
   },
-
-  // ── Términos y condiciones ───────────────────────────────────
-  filaTerminos: {
+  filaTerminosBox: {
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  checkboxWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginTop: 8,
-    marginBottom: 4,
     gap: 12,
   },
   checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 7,
+    width: 20,
+    height: 20,
     borderWidth: 1.5,
     borderColor: '#D1D5DB',
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    marginTop: 1,
-    flexShrink: 0,
+    marginTop: 2,
   },
   checkboxActivo: {
-    backgroundColor: '#1D4ED8',
-    borderColor: '#1D4ED8',
-  },
-  checkmark: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800',
-    lineHeight: 16,
+    backgroundColor: '#1E40AF',
+    borderColor: '#1E40AF',
   },
   textoTerminos: {
     fontSize: 13,
-    color: '#374151',
-    flex: 1,
     lineHeight: 20,
   },
   enlaceTerminos: {
-    color: '#1D4ED8',
+    color: '#1E40AF',
     fontWeight: '700',
     textDecorationLine: 'underline',
   },
@@ -118,47 +134,17 @@ export const registroStyles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 4,
   },
-
-  // ── Pie del formulario ───────────────────────────────────────
-  pieFormulario: {
-    marginTop: 20,
-  },
-  botonVolver: {
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    marginBottom: 8,
-  },
-  textoVolver: {
-    color: '#1D4ED8',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-
-  // ── Pantalla de éxito ────────────────────────────────────────
-  contenedorExito: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
+  loginRow: {
+    flexDirection: 'row',
     justifyContent: 'center',
-    paddingHorizontal: 28,
+    marginTop: 24,
   },
-  iconoExito: {
-    fontSize: 72,
-    marginBottom: 20,
+  loginTexto: {
+    fontSize: 14,
   },
-  tituloExito: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#111827',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  mensajeExito: {
-    fontSize: 15,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 24,
+  loginLink: {
+    fontSize: 14,
+    fontWeight: '700',
   },
 
   // ── Modal de términos ────────────────────────────────────────
@@ -230,9 +216,78 @@ export const registroStyles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 8,
   },
-  modalBotonAceptarWrap: {
+  modalFooterTexto: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 16,
+    fontStyle: 'italic',
+  },
+  modalBotonesRow: {
+    flexDirection: 'row',
     marginHorizontal: 24,
     marginTop: 16,
+    gap: 12,
+  },
+  modalBotonCerrarSecundario: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingVertical: 14,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+  },
+  modalBotonCerrarSecundarioTexto: {
+    color: '#4B5563',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  modalBienvenidaOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalBienvenidaContenedor: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalBienvenidaTitulo: {
+    fontSize: 15,
+    textAlign: 'center',
+    color: '#374151',
+    marginBottom: 16,
+    lineHeight: 22,
+  },
+  modalBienvenidaLista: {
+    width: '100%',
+  },
+  modalBienvenidaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  modalBienvenidaItemIcono: {
+    marginRight: 12,
+  },
+  modalBienvenidaItemTexto: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  modalBotonAceptarWrap: {
+    flex: 2,
     borderRadius: 12,
   },
   modalBotonAceptar: {

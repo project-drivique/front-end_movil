@@ -97,7 +97,6 @@ export function SocialAuthButtons({
 
 const s = StyleSheet.create({
   wrap: {
-    marginTop: 8,
     gap: 12,
   },
   btn: {
