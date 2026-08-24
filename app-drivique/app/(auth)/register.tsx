@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
   KeyboardAvoidingView,
-  Platform,
   Modal,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
+
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -38,7 +38,16 @@ export default function RegistroScreen() {
   } = useRegistro();
 
   const [modalTerminos, setModalTerminos] = useState(false);
+  const [terminosLeidos, setTerminosLeidos] = useState(false);
   const [correoTocado, setCorreoTocado] = useState(false);
+  const [modalBienvenida, setModalBienvenida] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setModalBienvenida(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const errorCorreo = getError('correo') ??
     (correoTocado && form.correo.length > 0 && !form.correo.includes('@')
@@ -47,145 +56,174 @@ export default function RegistroScreen() {
 
   function handleRegistrar() {
     registrar(
-      // La verificación de correo (HU aparte) es la pantalla intermedia
-      // obligatoria tras registrarse — ya no se va directo a login.
       () => router.replace(`/(auth)/verify-email?correo=${encodeURIComponent(form.correo)}`),
       () => {}
     );
   }
 
-  return (
-    <KeyboardAvoidingView
-      style={[styles.flex, { backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      {/* ── Header ───────────────────────────── */}
-      <LinearGradient
-        colors={c.oscuro ? [c.bg, c.bg] : GRADIENTES.heroOscuro.colors}
-        locations={c.oscuro ? [0, 1] : GRADIENTES.heroOscuro.locations}
-        start={c.oscuro ? { x: 0, y: 0 } : GRADIENTES.heroOscuro.start}
-        end={c.oscuro ? { x: 0, y: 1 } : GRADIENTES.heroOscuro.end}
-        style={[
-          newS.header, 
-          { paddingTop: insets.top + 12 },
-          c.oscuro && { borderTopWidth: 1, borderBottomWidth: 1, borderColor: c.border }
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => router.canGoBack() ? router.back() : router.replace('/(auth)/login')}
-          style={[newS.backBtn, c.oscuro && { backgroundColor: c.bgCard, borderWidth: 1, borderColor: c.border }]}
-        >
-          <Ionicons name="chevron-back" size={20} color={c.oscuro ? c.textPrimary : "#FFFFFF"} />
-        </TouchableOpacity>
-        <Text style={[newS.titulo, c.oscuro && { color: c.textPrimary }]}>{t('auth.registro.titulo')}</Text>
-        <Text style={[newS.subtitulo, c.oscuro && { color: c.textSecondary }]}>{t('auth.registro.subtitulo')}</Text>
-      </LinearGradient>
+  function handleScrollTerminos(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const isAtBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+    if (isAtBottom && !terminosLeidos) {
+      setTerminosLeidos(true);
+    }
+  }
 
-      {/* ── Sheet blanca con card flotante (mismo lenguaje visual del login) ── */}
-      <View style={[newS.sheet, { backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }]}>
+  function handleAceptarTerminos() {
+    actualizarCampo('aceptaTerminos', true);
+    setModalTerminos(false);
+  }
+
+  return (
+    <View style={[styles.flex, { backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }]}>
+      <View style={{ height: insets.top, backgroundColor: c.bgHeader }} />
+      
+      {/* ── TOP BAR (Como en login/catálogo) ── */}
+      <View style={[styles.topBar, { backgroundColor: c.bgHeader, borderBottomColor: c.border }]}>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitleText}>Drivique</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.guestBtn}
+          onPress={() => router.replace('/(tabs)/catalog')}
+        >
+          <Text style={styles.guestBtnTexto}>{t("auth.login.modoInvitado", "Modo Invitado")}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+      >
         <ScrollView
-          contentContainerStyle={newS.sheetScroll}
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scrollContenedor}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          bounces={false}
+          overScrollMode="never"
         >
-          <View style={newS.cardWrapper}>
-            <View style={[
-              newS.card, 
-              { backgroundColor: c.bgCard },
-              c.oscuro && { borderWidth: 1, borderColor: c.border }
-            ]}>
-              {/* Datos de acceso */}
-              <View style={newS.seccion}>
-                <View style={newS.seccionHeader}>
-                  <View style={[newS.seccionIcono, { backgroundColor: c.primaryBg }]}>
-                    <Ionicons name="person-outline" size={14} color={c.primary} />
+          <View>
+            <LinearGradient
+              colors={c.oscuro ? [c.bg, c.bg] : GRADIENTES.heroOscuro.colors}
+              locations={c.oscuro ? [0, 1] : GRADIENTES.heroOscuro.locations}
+              start={c.oscuro ? { x: 0, y: 0 } : GRADIENTES.heroOscuro.start}
+              end={c.oscuro ? { x: 0, y: 1 } : GRADIENTES.heroOscuro.end}
+              style={[
+                styles.header,
+                c.oscuro && { borderTopWidth: 1, borderBottomWidth: 1, borderColor: c.border }
+              ]}
+            >
+              <Text style={[styles.marcaTagline, c.oscuro && { color: c.textSecondary }]}>
+                {t("auth.login.tagline", "TU LIBERTAD SOBRE RUEDAS COMIENZA AQUÍ")}
+              </Text>
+            </LinearGradient>
+
+            {/* CUERPO CON CARD FLOTANTE */}
+            <View style={[styles.cuerpo, { backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }]}>
+              <View style={styles.cardWrapper}>
+                <View style={[
+                  styles.card, 
+                  { backgroundColor: c.bgCard },
+                  c.oscuro && { borderWidth: 1, borderColor: c.border }
+                ]}>
+                  <View style={styles.encabezado}>
+                    <Text style={[styles.titulo, c.oscuro && { color: c.textPrimary }]}>
+                      {t('auth.registro.titulo')}
+                    </Text>
+                    <Text style={[styles.subtitulo, c.oscuro && { color: c.textSecondary }]}>
+                      {t('auth.registro.subtitulo')}
+                    </Text>
                   </View>
-                  <Text style={[newS.seccionTitulo, { color: c.textPrimary }]}>Datos de acceso</Text>
+
+                  <View style={styles.formulario}>
+                    <InputField
+                      label={t('auth.registro.correo')}
+                      placeholder={t('auth.registro.correoPlaceholder', 'Escribe tu correo')}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      value={form.correo}
+                      onChangeText={val => actualizarCampo('correo', val)}
+                      onBlur={() => setCorreoTocado(true)}
+                      error={errorCorreo}
+                    />
+                    <PasswordInput
+                      label={t('auth.registro.contrasena')}
+                      placeholder={t('auth.registro.contrasenaPlaceholder', 'Escribe tu contraseña')}
+                      value={form.contrasena}
+                      onChangeText={val => actualizarCampo('contrasena', val)}
+                      error={getError('contrasena')}
+                    />
+                    <PasswordRequirements password={form.contrasena} />
+                    <PasswordInput
+                      label={t('auth.registro.confirmarContrasena')}
+                      placeholder={t('auth.registro.confirmarContrasenaPlaceholder', 'Confirma tu contraseña')}
+                      value={form.confirmarContrasena}
+                      onChangeText={val => actualizarCampo('confirmarContrasena', val)}
+                      error={getError('confirmarContrasena')}
+                    />
+
+                    {/* Términos y condiciones */}
+                    <View style={styles.filaTerminosBox}>
+                      <TouchableOpacity
+                        style={styles.checkboxWrapper}
+                        onPress={() => {
+                          if (!form.aceptaTerminos) {
+                            setModalTerminos(true);
+                            setTerminosLeidos(false); // Resetear al abrir
+                          } else {
+                            actualizarCampo('aceptaTerminos', false);
+                          }
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <View style={[styles.checkbox, form.aceptaTerminos && styles.checkboxActivo]}>
+                          {form.aceptaTerminos ? <Ionicons name="checkmark" size={14} color="#FFFFFF" /> : null}
+                        </View>
+                        <Text style={[styles.textoTerminos, { color: c.textSecondary, flex: 1 }]}>
+                          {t('auth.registro.terminosPart1', 'Acepto los ')}
+                          <Text style={styles.enlaceTerminos} onPress={() => { setModalTerminos(true); setTerminosLeidos(false); }}>
+                            {t('auth.registro.terminosLink1', 'términos y condiciones')}
+                          </Text>
+                          {t('auth.registro.terminosPart2', ' y el tratamiento de mis datos personales según la ')}
+                          <Text style={styles.enlaceTerminos} onPress={() => { setModalTerminos(true); setTerminosLeidos(false); }}>
+                            {t('auth.registro.terminosLink2', 'Ley 1581 de 2012.')}
+                          </Text>
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                    {getError('aceptaTerminos') ? (
+                      <Text style={styles.errorTerminos}>{getError('aceptaTerminos')}</Text>
+                    ) : null}
+
+                    {/* Acciones */}
+                    <View style={styles.acciones}>
+                      <PrimaryButton
+                        titulo={t('auth.registro.btnCrear')}
+                        onPress={handleRegistrar}
+                        cargando={cargando}
+                      />
+                      <View style={{ marginTop: 6 }}>
+                        <SocialAuthButtons
+                          onGoogle={() => console.log('Google registro')}
+                          onFacebook={() => console.log('Facebook registro')}
+                        />
+                      </View>
+                    </View>
+
+                    <View style={styles.loginRow}>
+                      <Text style={[styles.loginTexto, { color: c.textSecondary }]}>¿Ya tiene una cuenta? </Text>
+                      <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
+                        <Text style={[styles.loginLink, { color: c.primary }]}>Inicie sesión aquí</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
                 </View>
-
-                <InputField
-                  label={t('auth.registro.correo')}
-                  placeholder="ejemplo@correo.com"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  value={form.correo}
-                  onChangeText={val => actualizarCampo('correo', val)}
-                  onBlur={() => setCorreoTocado(true)}
-                  error={errorCorreo}
-                />
-              </View>
-
-              {/* Seguridad */}
-              <View style={newS.seccion}>
-                <View style={newS.seccionHeader}>
-                  <View style={[newS.seccionIcono, { backgroundColor: c.primaryBg }]}>
-                    <Ionicons name="lock-closed-outline" size={14} color={c.primary} />
-                  </View>
-                  <Text style={[newS.seccionTitulo, { color: c.textPrimary }]}>Seguridad</Text>
-                </View>
-
-                <PasswordInput
-                  label={t('auth.registro.contrasena')}
-                  placeholder={t('auth.registro.contrasena')}
-                  value={form.contrasena}
-                  onChangeText={val => actualizarCampo('contrasena', val)}
-                  error={getError('contrasena')}
-                />
-                <PasswordRequirements password={form.contrasena} />
-                <PasswordInput
-                  label={t('auth.registro.confirmarContrasena')}
-                  placeholder={t('auth.registro.confirmarContrasena')}
-                  value={form.confirmarContrasena}
-                  onChangeText={val => actualizarCampo('confirmarContrasena', val)}
-                  error={getError('confirmarContrasena')}
-                />
-              </View>
-
-              {/* Términos */}
-              <View style={[styles.filaTerminos, newS.filaTerminosBox, { backgroundColor: c.primaryBg }]}>
-                <TouchableOpacity
-                  onPress={() => actualizarCampo('aceptaTerminos', !form.aceptaTerminos)}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.checkbox, form.aceptaTerminos && styles.checkboxActivo]}>
-                    {form.aceptaTerminos ? <Ionicons name="checkmark" size={14} color="#FFFFFF" /> : null}
-                  </View>
-                </TouchableOpacity>
-                <Text style={[styles.textoTerminos, { color: c.textSecondary }]}>
-                  {t('auth.registro.terminosAcepto')}{' '}
-                  <Text style={styles.enlaceTerminos} onPress={() => setModalTerminos(true)}>
-                    {t('auth.registro.terminosLink')}
-                  </Text>
-                  {' '}{t('auth.registro.terminosDel')}
-                </Text>
-              </View>
-              {getError('aceptaTerminos') ? (
-                <Text style={styles.errorTerminos}>{getError('aceptaTerminos')}</Text>
-              ) : null}
-
-              {/* Botón */}
-              <View style={styles.pieFormulario}>
-                <PrimaryButton
-                  titulo={t('auth.registro.btnCrear')}
-                  onPress={handleRegistrar}
-                  cargando={cargando}
-                />
-                <SocialAuthButtons
-                  onGoogle={() => console.log('Google registro')}
-                  onFacebook={() => console.log('Facebook registro')}
-                />
-              </View>
-
-              <View style={newS.loginRow}>
-                <Text style={[newS.loginTexto, { color: c.textSecondary }]}>¿Ya tienes cuenta? </Text>
-                <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
-                  <Text style={[newS.loginLink, { color: c.primary }]}>Inicia sesión</Text>
-                </TouchableOpacity>
               </View>
             </View>
           </View>
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
 
       {/* ── Modal: Términos y condiciones ──────────────────────── */}
       <Modal visible={modalTerminos} transparent animationType="slide">
@@ -201,7 +239,12 @@ export default function RegistroScreen() {
                 <Ionicons name="close" size={16} color="#6B7280" />
               </TouchableOpacity>
             </View>
-            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+              style={styles.modalScroll} 
+              showsVerticalScrollIndicator={true}
+              onScroll={handleScrollTerminos}
+              scrollEventThrottle={16}
+            >
               <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc1Titulo')}</Text>
               <Text style={styles.modalTexto}>{t('auth.registro.tc1Texto')}</Text>
               <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc2Titulo')}</Text>
@@ -214,135 +257,97 @@ export default function RegistroScreen() {
               <Text style={styles.modalTexto}>{t('auth.registro.tc5Texto')}</Text>
               <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc6Titulo')}</Text>
               <Text style={styles.modalTexto}>{t('auth.registro.tc6Texto')}</Text>
+              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc7Titulo')}</Text>
+              <Text style={styles.modalTexto}>{t('auth.registro.tc7Texto')}</Text>
+              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc8Titulo')}</Text>
+              <Text style={styles.modalTexto}>{t('auth.registro.tc8Texto')}</Text>
+              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc9Titulo')}</Text>
+              <Text style={styles.modalTexto}>{t('auth.registro.tc9Texto')}</Text>
+              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc10Titulo')}</Text>
+              <Text style={styles.modalTexto}>{t('auth.registro.tc10Texto')}</Text>
+              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc11Titulo')}</Text>
+              <Text style={styles.modalTexto}>{t('auth.registro.tc11Texto')}</Text>
+              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc12Titulo')}</Text>
+              <Text style={styles.modalTexto}>{t('auth.registro.tc12Texto')}</Text>
+              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc13Titulo')}</Text>
+              <Text style={styles.modalTexto}>{t('auth.registro.tc13Texto')}</Text>
+              
+              {t('auth.registro.tcFooter') !== 'auth.registro.tcFooter' && (
+                <Text style={styles.modalFooterTexto}>{t('auth.registro.tcFooter')}</Text>
+              )}
             </ScrollView>
-            <TouchableOpacity
-              style={styles.modalBotonAceptarWrap}
-              onPress={() => setModalTerminos(false)}
-              activeOpacity={0.85}
-            >
-              <LinearGradient
-                colors={GRADIENTES.boton.colors}
-                start={GRADIENTES.boton.start}
-                end={GRADIENTES.boton.end}
-                style={styles.modalBotonAceptar}
+            
+            <View style={styles.modalBotonesRow}>
+              {/* Botón Cerrar Secundario */}
+              <TouchableOpacity
+                onPress={() => setModalTerminos(false)}
+                style={styles.modalBotonCerrarSecundario}
+                activeOpacity={0.7}
               >
-                <Text style={styles.modalBotonAceptarTexto}>{t('auth.registro.modalAceptar')}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+                <Text style={styles.modalBotonCerrarSecundarioTexto}>
+                  Cerrar
+                </Text>
+              </TouchableOpacity>
+
+              {/* Botón Aceptar Principal */}
+              <View style={styles.modalBotonAceptarWrap}>
+                <TouchableOpacity
+                  onPress={terminosLeidos ? handleAceptarTerminos : undefined}
+                  activeOpacity={terminosLeidos ? 0.85 : 1}
+                  style={{ width: '100%' }}
+                >
+                  <LinearGradient
+                    colors={terminosLeidos ? GRADIENTES.boton.colors : ['#E5E7EB', '#D1D5DB']}
+                    start={GRADIENTES.boton.start}
+                    end={GRADIENTES.boton.end}
+                    style={styles.modalBotonAceptar}
+                  >
+                    <Text style={[styles.modalBotonAceptarTexto, !terminosLeidos && { color: '#9CA3AF' }]}>
+                      {t('auth.registro.modalAceptar', 'Acepto los términos')}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
 
-    </KeyboardAvoidingView>
+      {/* ── Modal: Bienvenida / Info ──────────────────────── */}
+      <Modal visible={modalBienvenida} transparent animationType="fade" onRequestClose={() => setModalBienvenida(false)}>
+        <TouchableOpacity 
+          style={styles.modalBienvenidaOverlay} 
+          activeOpacity={1} 
+          onPress={() => setModalBienvenida(false)}
+        >
+          <TouchableOpacity activeOpacity={1} style={[styles.modalBienvenidaContenedor, { backgroundColor: c.bgCard }]}>
+            <Text style={[styles.modalBienvenidaTitulo, { color: c.textPrimary }]}>
+              {t('auth.registro.bienvenidaTitulo')}
+            </Text>
+            
+            <View style={styles.modalBienvenidaLista}>
+              <View style={[styles.modalBienvenidaItem, { borderColor: c.oscuro ? '#374151' : '#E5E7EB' }]}>
+                <Ionicons name="checkmark-circle-outline" size={20} color={c.primary} style={styles.modalBienvenidaItemIcono} />
+                <Text style={[styles.modalBienvenidaItemTexto, { color: c.textPrimary }]}>{t('auth.registro.bienvenidaItem1')}</Text>
+              </View>
+              <View style={[styles.modalBienvenidaItem, { borderColor: c.oscuro ? '#374151' : '#E5E7EB' }]}>
+                <Ionicons name="card-outline" size={20} color={c.primary} style={styles.modalBienvenidaItemIcono} />
+                <Text style={[styles.modalBienvenidaItemTexto, { color: c.textPrimary }]}>{t('auth.registro.bienvenidaItem2')}</Text>
+              </View>
+              <View style={[styles.modalBienvenidaItem, { borderColor: c.oscuro ? '#374151' : '#E5E7EB' }]}>
+                <Ionicons name="document-text-outline" size={20} color={c.primary} style={styles.modalBienvenidaItemIcono} />
+                <Text style={[styles.modalBienvenidaItemTexto, { color: c.textPrimary }]}>{t('auth.registro.bienvenidaItem3')}</Text>
+              </View>
+              <View style={[styles.modalBienvenidaItem, { borderColor: c.oscuro ? '#374151' : '#E5E7EB' }]}>
+                <Ionicons name="headset-outline" size={20} color={c.primary} style={styles.modalBienvenidaItemIcono} />
+                <Text style={[styles.modalBienvenidaItemTexto, { color: c.textPrimary }]}>{t('auth.registro.bienvenidaItem4')}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+    </View>
   );
 }
 
-const newS = StyleSheet.create({
-  header: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  titulo: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 6,
-  },
-  subtitulo: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.75)',
-    lineHeight: 20,
-  },
-  sheet: {
-    flex: 1,
-  },
-  sheetScroll: {
-    paddingHorizontal: 16,
-    paddingTop: 24, // adjusted
-    paddingBottom: 32,
-  },
-  cardWrapper: {
-    position: 'relative',
-  },
-  logoBadge: {
-    position: 'absolute',
-    top: -34,
-    right: 24,
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  logoBadgeImg: {
-    width: 42,
-    height: 42,
-    resizeMode: 'contain',
-  },
-  card: {
-    borderRadius: 24,
-    paddingHorizontal: 22,
-    paddingTop: 32, // adjusted
-    paddingBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  seccion: {
-    marginBottom: 18,
-  },
-  seccionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  seccionIcono: {
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  seccionTitulo: {
-    fontSize: 13,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  filaTerminosBox: {
-    borderRadius: 14,
-    padding: 14,
-    marginTop: 4,
-  },
-  loginRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 18,
-  },
-  loginTexto: {
-    fontSize: 13.5,
-  },
-  loginLink: {
-    fontSize: 13.5,
-    fontWeight: '700',
-  },
-});
