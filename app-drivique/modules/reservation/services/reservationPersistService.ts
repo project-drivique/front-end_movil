@@ -9,7 +9,7 @@ const STORAGE_KEY = "drivique_reservas";
 
 // Tiempo que tiene el usuario para acercarse a la sucursal a pagar en
 // efectivo antes de que la reserva se cancele automáticamente.
-export const HORAS_LIMITE_PAGO_EFECTIVO = 4;
+export const HORAS_LIMITE_PAGO_EFECTIVO = 72;
 
 export type EstadoReserva =
   | "PENDIENTE"
@@ -31,6 +31,7 @@ export interface ReservaGuardada {
   fechaLimitePago?: string | null;
   horasLimitePago?: number | null;
   paymentId?: string | null;
+  codigoVerificacionEfectivo?: string;
   [extra: string]: unknown;
 }
 
@@ -162,6 +163,7 @@ export const reservaPersistService = {
     if (esEfectivo) {
       reservaFinal.fechaLimitePago = calcularFechaLimitePago();
       reservaFinal.horasLimitePago = HORAS_LIMITE_PAGO_EFECTIVO;
+      reservaFinal.codigoVerificacionEfectivo = `CASH-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     }
 
     reservas.push(reservaFinal);
@@ -194,5 +196,14 @@ export const reservaPersistService = {
 
   cancelarReserva: async (referencia: string): Promise<boolean> => {
     return reservaPersistService.actualizarEstado(referencia, "CANCELADA");
+  },
+
+  // ---- MÉTODOS MOCK PARA QA/TESTING DE PAGO EN EFECTIVO ---- //
+  simularConfirmacionEfectivo: async (referencia: string): Promise<boolean> => {
+    return reservaPersistService.actualizarEstado(referencia, "CONFIRMADA");
+  },
+
+  simularVencimientoEfectivo: async (referencia: string): Promise<boolean> => {
+    return reservaPersistService.actualizarEstado(referencia, "CANCELADA_POR_TIEMPO");
   },
 };

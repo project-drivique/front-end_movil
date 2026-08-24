@@ -12,6 +12,9 @@ export interface Notificacion {
   expiracion?: string;
   /** Icono de Ionicons a mostrar (opcional, por defecto se infiere del tipo/titulo) */
   icono?: string;
+  /** Ruta interna de la app a la que navegar cuando el usuario toca la notificacion.
+   * Simula el link de redireccion que llega por correo electrónico. */
+  enlace?: string;
 }
 
 interface NotificationState {

@@ -53,7 +53,10 @@ export default function PagoRespuestaScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t } = useTranslation();
-  const { ref } = useLocalSearchParams<{ ref?: string }>();
+  const { ref, from } = useLocalSearchParams<{ ref?: string; from?: string }>();
+  // `from="flow"` indica que se llega desde el checkout de Wompi (flujo de pago activo).
+  // Sin ese parámetro el usuario llega desde Mis Reservas y no debe ver el contrato automáticamente.
+  const vieneDeFlujo = from === "flow";
 
   const [cargando, setCargando] = useState(true);
   const [reserva, setReserva] = useState<ReservaGuardada | null>(null);
@@ -63,6 +66,7 @@ export default function PagoRespuestaScreen() {
   const [claveDesbloqueada, setClaveDesbloqueada] = useState(false);
   const [claveIngresada, setClaveIngresada] = useState("");
   const [errorClave, setErrorClave] = useState("");
+  const [mostrarFirmaManual, setMostrarFirmaManual] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -126,8 +130,19 @@ export default function PagoRespuestaScreen() {
   // la firma del contrato (eso pasa después de volver del checkout, igual
   // que en la web). Reconstruimos todo lo necesario a partir del snapshot
   // que se guardó junto con la reserva.
-  const estadosQueRequierenFirma = ["PENDIENTE", "PENDIENTE_VALIDACION", "PENDIENTE_EFECTIVO"];
-  if (!contratoFirmado && estadosQueRequierenFirma.includes(reserva.estado)) {
+  // El contrato se muestra automáticamente SOLO si el usuario viene del flujo de pago
+  // Wompi (parámetro from="flow") y el estado requiere firma. Para pagos en efectivo
+  // (PENDIENTE_EFECTIVO) el usuario primero debe pagar en sucursal; el contrato se
+  // firma después, cuando el encargado confirma el pago y el estado cambia a CONFIRMADA.
+  // PENDIENTE / PENDIENTE_VALIDACION: vienen del checkout de Wompi.
+  // CONFIRMADA: viene del link del correo después que el admin confirma pago en sucursal.
+  const estadosQueRequierenFirmaAutomatic = ["PENDIENTE", "PENDIENTE_VALIDACION", "CONFIRMADA"];
+
+  if (
+    vieneDeFlujo &&
+    !contratoFirmado &&
+    estadosQueRequierenFirmaAutomatic.includes(reserva.estado)
+  ) {
     const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
     const datosPersonalesSnap = reserva.datosPersonalesSnapshot as DatosPersonales | undefined;
     const datosDocumentosSnap = reserva.datosDocumentosSnapshot as DatosDocumentos | undefined;
@@ -261,15 +276,25 @@ export default function PagoRespuestaScreen() {
     }
   };
 
+  // Firma manual: para CONFIRMADA sin contrato firmado cuando viene desde Mis Reservas
+  const puedeIniciarFirmaManual =
+    !contratoFirmado &&
+    reserva.estado === "CONFIRMADA" &&
+    vehiculoSnap && datosPersonalesSnap && fechasLugarSnap && planesSnap;
+
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <HeaderDetalle
         insets={insets}
         c={c}
         titulo={t("misReservas.detalle.tituloHeader", { defaultValue: "Detalle de Reserva" })}
-        onVolver={irAMisReservas}
+        onVolver={() => {
+          if (mostrarFirmaManual) setMostrarFirmaManual(false);
+          else irAMisReservas();
+        }}
       />
 
+      {/* Vista de contrato en solo lectura (con clave desbloqueada) */}
       {contratoActual && claveDesbloqueada && vehiculoSnap && datosPersonalesSnap && fechasLugarSnap && planesSnap ? (
         <FirmaContrato
           vehiculo={vehiculoSnap}
@@ -286,6 +311,28 @@ export default function PagoRespuestaScreen() {
           contratoFirmado={contratoActual}
           onDescargar={handleDescargarPdf}
           descargando={generandoPdf}
+        />
+      ) : mostrarFirmaManual && vehiculoSnap && datosPersonalesSnap && fechasLugarSnap && planesSnap ? (
+        /* Firma manual para reservas CONFIRMADA desde Mis Reservas */
+        <FirmaContrato
+          vehiculo={vehiculoSnap}
+          datosPersonales={datosPersonalesSnap}
+          datosDocumentos={
+            datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null }
+          }
+          fechasLugar={fechasLugarSnap}
+          planes={planesSnap}
+          total={reserva.total}
+          referencia={reserva.referencia}
+          onFirmado={async () => {
+            await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
+            const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
+            const contratoNuevo = await contratoService.obtenerPorReserva(reserva.referencia);
+            setReserva(actualizada ?? null);
+            setContratoActual(contratoNuevo);
+            setContratoFirmado(true);
+            setMostrarFirmaManual(false);
+          }}
         />
       ) : (
       <ScrollView
@@ -306,9 +353,10 @@ export default function PagoRespuestaScreen() {
         {reserva.vehiculoNombre}
       </Text>
 
+      {/* Tarjeta principal de detalles de la reserva */}
       <View style={[styles.card, styles.detalleCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
         <LinearGradient
-          colors={[c.primary, "#60A5FA"]}
+          colors={[encabezado.color, `${encabezado.color}88`]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.detalleFranja}
@@ -374,63 +422,115 @@ export default function PagoRespuestaScreen() {
         />
       </View>
 
-      {contratoActual && !claveDesbloqueada ? (
-        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
-          <Ionicons name="lock-closed-outline" size={32} color={c.textMuted} style={{ marginBottom: 10 }} />
-          <Text style={[styles.tituloCandado, { color: c.textPrimary }]}>
-            {t("misReservas.contratoBloqueadoTitulo")}
-          </Text>
-          <Text style={[styles.textoCandado, { color: c.textSecondary }]}>
-            {t("misReservas.contratoBloqueadoTexto")}
-          </Text>
-          <View style={{ width: "100%", marginTop: 12 }}>
-            <PasswordInput
-              label={t("misReservas.claveContrato")}
-              placeholder={t("misReservas.claveContratoPlaceholder")}
-              value={claveIngresada}
-              onChangeText={(v) => {
-                setClaveIngresada(v);
-                if (errorClave) setErrorClave("");
-              }}
-              error={errorClave}
-              keyboardType="number-pad"
-            />
+      {/* Tarjeta de Pago Pendiente en Sucursal (solo para PENDIENTE_EFECTIVO) */}
+      {reserva.estado === "PENDIENTE_EFECTIVO" && reserva.codigoVerificacionEfectivo ? (
+        <View style={[styles.card, styles.efectivoCard, { backgroundColor: "#ffffff" }]}>
+          {/* Franja amarilla superior */}
+          <View style={styles.efectivoFranja} />
+          
+          <View style={styles.efectivoHeaderRow}>
+            <View style={styles.efectivoIconoWrap}>
+              <Ionicons name="cash-outline" size={22} color="#b45309" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.efectivoTarjetaTitulo}>Pago Pendiente en Sucursal</Text>
+              <Text style={styles.efectivoTarjetaSubtitulo}>Preséntate en cualquier sucursal autorizada</Text>
+            </View>
           </View>
-          <TouchableOpacity style={[styles.btnWrap, { marginTop: 4 }]} onPress={handleValidarClave} activeOpacity={0.85}>
-            <LinearGradient
-              colors={GRADIENTES.boton.colors}
-              start={GRADIENTES.boton.start}
-              end={GRADIENTES.boton.end}
-              style={styles.btn}
-            >
-              <Text style={styles.btnTexto}>{t("misReservas.verContrato")}</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-      ) : !contratoActual ? (
-        <TouchableOpacity
-          style={[styles.btnWrap, { marginBottom: 12 }, !contratoActual && { opacity: 0.5 }]}
-          onPress={handleDescargarPdf}
-          activeOpacity={0.85}
-          disabled={generandoPdf || !contratoActual}
-        >
-          <LinearGradient
-            colors={GRADIENTES.boton.colors}
-            start={GRADIENTES.boton.start}
-            end={GRADIENTES.boton.end}
-            style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 }]}
-          >
-            {generandoPdf ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Ionicons name="document-text-outline" size={18} color="#FFFFFF" />
-            )}
-            <Text style={styles.btnTexto}>
-              {generandoPdf ? t("misReservas.generandoPdf") : t("misReservas.descargarContrato")}
+
+          <View style={styles.efectivoCodigoBox}>
+            <Text style={styles.efectivoCodigoLabel}>CÓDIGO DE VERIFICACIÓN</Text>
+            <Text style={styles.efectivoCodigoValor}>{reserva.codigoVerificacionEfectivo}</Text>
+            <Text style={styles.efectivoCopyHint}>Muestra este código en sucursal</Text>
+          </View>
+
+          <View style={styles.efectivoAlertaRow}>
+            <Ionicons name="time-outline" size={15} color="#dc2626" />
+            <Text style={styles.efectivoAlertaTexto}>
+              Tu reserva se cancela automáticamente si no pagas en {reserva.horasLimitePago ?? 72} horas
             </Text>
-          </LinearGradient>
-        </TouchableOpacity>
+          </View>
+
+          <View style={[styles.efectivoInfoRow, { borderTopColor: "#f3f4f6" }]}>
+            <Ionicons name="information-circle-outline" size={14} color="#6b7280" />
+            <Text style={styles.efectivoInfoTexto}>
+              Después del pago, el encargado de la sucursal confirmará tu reserva. Recibirás una notificación para firmar el contrato.
+            </Text>
+          </View>
+        </View>
       ) : null}
+
+      {/* Sección de contrato (solo si NO es pago en efectivo pendiente) */}
+      {reserva.estado !== "PENDIENTE_EFECTIVO" && (
+        <>
+          {contratoActual && !claveDesbloqueada ? (
+            <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
+              <Ionicons name="lock-closed-outline" size={32} color={c.textMuted} style={{ marginBottom: 10 }} />
+              <Text style={[styles.tituloCandado, { color: c.textPrimary }]}>
+                {t("misReservas.contratoBloqueadoTitulo")}
+              </Text>
+              <Text style={[styles.textoCandado, { color: c.textSecondary }]}>
+                {t("misReservas.contratoBloqueadoTexto")}
+              </Text>
+              <View style={{ width: "100%", marginTop: 12 }}>
+                <PasswordInput
+                  label={t("misReservas.claveContrato")}
+                  placeholder={t("misReservas.claveContratoPlaceholder")}
+                  value={claveIngresada}
+                  onChangeText={(v) => {
+                    setClaveIngresada(v);
+                    if (errorClave) setErrorClave("");
+                  }}
+                  error={errorClave}
+                  keyboardType="number-pad"
+                />
+              </View>
+              <TouchableOpacity style={[styles.btnWrap, { marginTop: 4 }]} onPress={handleValidarClave} activeOpacity={0.85}>
+                <LinearGradient
+                  colors={GRADIENTES.boton.colors}
+                  start={GRADIENTES.boton.start}
+                  end={GRADIENTES.boton.end}
+                  style={styles.btn}
+                >
+                  <Text style={styles.btnTexto}>{t("misReservas.verContrato")}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          ) : puedeIniciarFirmaManual && !mostrarFirmaManual ? (
+            /* Botón para iniciar firma desde Mis Reservas (CONFIRMADA sin contrato) */
+            <View style={[styles.card, { backgroundColor: "#fffbeb", borderColor: "#f59e0b", alignItems: "center" }]}>
+              <Ionicons name="document-text-outline" size={32} color="#b45309" style={{ marginBottom: 10 }} />
+              <Text style={[styles.tituloCandado, { color: "#92400e" }]}>Tu reserva está confirmada</Text>
+              <Text style={[styles.textoCandado, { color: "#78350f" }]}>
+                Ya puedes firmar el contrato de arrendamiento para completar el proceso.
+              </Text>
+              <TouchableOpacity
+                style={[styles.btnWrap, { marginTop: 14 }]}
+                onPress={() => setMostrarFirmaManual(true)}
+                activeOpacity={0.85}
+              >
+                <LinearGradient
+                  colors={GRADIENTES.boton.colors}
+                  start={GRADIENTES.boton.start}
+                  end={GRADIENTES.boton.end}
+                  style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 }]}
+                >
+                  <Ionicons name="create-outline" size={17} color="#fff" />
+                  <Text style={styles.btnTexto}>Firmar Contrato</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          ) : null}
+        </>
+      )}
+
+      {/* Botón de Volver a Mis Reservas */}
+      <TouchableOpacity style={[styles.btnWrap, { marginTop: 8, marginBottom: 8 }]} onPress={irAMisReservas} activeOpacity={0.85}>
+        <View style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8, backgroundColor: c.bgInput, borderWidth: 1, borderColor: c.border }]}>
+          <Ionicons name="arrow-back-outline" size={17} color={c.textPrimary} />
+          <Text style={[styles.btnTexto, { color: c.textPrimary }]}>Mis Reservas</Text>
+        </View>
+      </TouchableOpacity>
 
     </ScrollView>
       )}
@@ -590,4 +690,99 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   btnDescargarTexto: { fontSize: 14, fontWeight: "700" },
+
+  // ---- Tarjeta de Pago Pendiente en Sucursal (PENDIENTE_EFECTIVO) ----
+  efectivoCard: {
+    overflow: "hidden",
+    borderWidth: 1.5,
+    borderColor: "#fbbf24",
+    padding: 0,
+  },
+  efectivoFranja: {
+    height: 5,
+    backgroundColor: "#f59e0b",
+    width: "100%",
+  },
+  efectivoHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 16,
+    paddingBottom: 12,
+  },
+  efectivoIconoWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#fef3c7",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  efectivoTarjetaTitulo: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#92400e",
+  },
+  efectivoTarjetaSubtitulo: {
+    fontSize: 11.5,
+    color: "#b45309",
+    marginTop: 2,
+  },
+  efectivoCodigoBox: {
+    marginHorizontal: 16,
+    backgroundColor: "#fffbeb",
+    borderWidth: 1.5,
+    borderColor: "#fde68a",
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  efectivoCodigoLabel: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: "#b45309",
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  efectivoCodigoValor: {
+    fontSize: 26,
+    fontWeight: "900",
+    color: "#78350f",
+    letterSpacing: 2,
+  },
+  efectivoCopyHint: {
+    fontSize: 10.5,
+    color: "#b45309",
+    marginTop: 6,
+  },
+  efectivoAlertaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginHorizontal: 16,
+    marginBottom: 12,
+  },
+  efectivoAlertaTexto: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#dc2626",
+    flex: 1,
+    lineHeight: 16,
+  },
+  efectivoInfoRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 6,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  efectivoInfoTexto: {
+    fontSize: 11.5,
+    color: "#6b7280",
+    flex: 1,
+    lineHeight: 16,
+  },
 });
