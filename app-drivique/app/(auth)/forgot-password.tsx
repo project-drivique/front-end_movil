@@ -36,7 +36,8 @@ export default function OlvideContrasenaScreen() {
       iniciarContador();
     }
     return limpiarContador;
-  }, [fase, iniciarContador]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fase]);
 
   function iniciarContador() {
     setContador(SEGUNDOS_ESPERA);
