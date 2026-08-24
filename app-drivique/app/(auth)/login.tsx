@@ -12,9 +12,9 @@ import { useAuthStore } from "@/store/authStore";
 import { useUsuarioStore } from "@/store/userStore";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Image,
@@ -26,15 +26,16 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Animated,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Tab = "login" | "bienvenida";
 
 const ICONOS_ACCESOS: { icono: string }[] = [
-  { icono: "calendar-outline" },
-  { icono: "card-outline" },
-  { icono: "document-text-outline" },
+  { icono: "calendar" },
+  { icono: "card" },
+  { icono: "document-text" },
 ];
 
 export default function LoginScreen() {
@@ -58,6 +59,31 @@ export default function LoginScreen() {
   const actualizarUsuarioGlobal = useUsuarioStore((s) => s.actualizarUsuario);
   const errorGlobal = errores.find((e) => !e.campo)?.mensaje;
   const [loginExitoso, setLoginExitoso] = useState(false);
+
+  // ── Toast para restablecimiento de contraseña ─────────────────
+  const { success } = useLocalSearchParams<{ success?: string }>();
+  const [toastVisible, setToastVisible] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (success === "password_reset") {
+      setToastVisible(true);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+
+      const timer = setTimeout(() => {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setToastVisible(false));
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
 
   // ── Control de las alertas tipo modal ─────────────────────────
   const [alertaErrorVisible, setAlertaErrorVisible] = useState(false);
@@ -111,15 +137,42 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={styles.flex}>
-      <StatusBar barStyle="light-content" backgroundColor={GRADIENTES.heroOscuro.colors[0]} />
+    <View style={[styles.flex, { backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }]}>
+      <StatusBar
+        barStyle={c.oscuro ? "light-content" : "dark-content"}
+        backgroundColor={c.bgHeader}
+        translucent={true}
+      />
 
-      <View style={{ height: insets.top, backgroundColor: GRADIENTES.heroOscuro.colors[0] }} />
+      {/* ── Toast de éxito (Restablecer contraseña) ── */}
+      {toastVisible && (
+        <Animated.View style={[
+          styles.toastContainer, 
+          { opacity: fadeAnim, top: insets.top + 10, backgroundColor: '#10B981' }
+        ]}>
+          <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <Text style={styles.toastText}>{t("auth.login.toastContrasenaActualizada")}</Text>
+        </Animated.View>
+      )}
+
+      <View style={{ height: insets.top, backgroundColor: c.bgHeader }} />
+      
+      {/* ── TOP BAR (Como en catálogo) ── */}
+      <View style={[styles.topBar, { backgroundColor: c.bgHeader, borderBottomColor: c.border }]}>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Drivique</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.guestBtn}
+          onPress={handleInvitado}
+        >
+          <Text style={styles.guestBtnTexto}>{t("auth.login.modoInvitado")}</Text>
+        </TouchableOpacity>
+      </View>
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
+        behavior="padding"
       >
         <ScrollView
           contentContainerStyle={styles.scrollContenedor}
@@ -129,41 +182,35 @@ export default function LoginScreen() {
           overScrollMode="never"
         >
           <View>
-            {/* HEADER AZUL GRADIENTE */}
             <LinearGradient
-              colors={GRADIENTES.heroOscuro.colors}
-              locations={GRADIENTES.heroOscuro.locations}
-              start={GRADIENTES.heroOscuro.start}
-              end={GRADIENTES.heroOscuro.end}
-              style={styles.header}
+              colors={c.oscuro ? [c.bg, c.bg] : GRADIENTES.heroOscuro.colors}
+              locations={c.oscuro ? [0, 1] : GRADIENTES.heroOscuro.locations}
+              start={c.oscuro ? { x: 0, y: 0 } : GRADIENTES.heroOscuro.start}
+              end={c.oscuro ? { x: 0, y: 1 } : GRADIENTES.heroOscuro.end}
+              style={[
+                styles.header,
+                c.oscuro && { borderTopWidth: 1, borderBottomWidth: 1, borderColor: c.border }
+              ]}
             >
-              <TouchableOpacity
-                style={styles.invitadoBtn}
-                onPress={handleInvitado}
-              >
-                <Text style={styles.invitadoBtnTexto}>{t("auth.login.modoInvitado")}</Text>
-              </TouchableOpacity>
-
-              <View style={styles.marcaWrapper}>
-                <Text style={styles.marca}>Drivique</Text>
-                <Text style={styles.marcaTagline}>
-                  {t("auth.login.tagline")}
-                </Text>
-              </View>
+              <Text style={[styles.marcaTagline, c.oscuro && { color: c.textSecondary }]}>
+                {t("auth.login.tagline")}
+              </Text>
 
               {/* SWITCH DE PESTAÑAS */}
-              <View style={styles.tabsWrapper}>
+              <View style={[styles.tabsWrapper, c.oscuro && { backgroundColor: c.bgInput }]}>
                 <TouchableOpacity
                   style={[
                     styles.tabBtn,
                     tab === "login" && styles.tabBtnActivo,
+                    tab === "login" && c.oscuro && { backgroundColor: c.bgCard },
                   ]}
                   onPress={() => setTab("login")}
                 >
                   <Text
                     style={[
-                      styles.tabBtnTexto,
+                      styles.tabBtnTexto, c.oscuro && { color: c.textSecondary },
                       tab === "login" && styles.tabBtnTextoActivo,
+                      tab === "login" && c.oscuro && { color: c.textPrimary },
                     ]}
                   >
                     {t("auth.login.tabIniciarSesion")}
@@ -173,13 +220,15 @@ export default function LoginScreen() {
                   style={[
                     styles.tabBtn,
                     tab === "bienvenida" && styles.tabBtnActivo,
+                    tab === "bienvenida" && c.oscuro && { backgroundColor: c.bgCard },
                   ]}
                   onPress={() => setTab("bienvenida")}
                 >
                   <Text
                     style={[
-                      styles.tabBtnTexto,
+                      styles.tabBtnTexto, c.oscuro && { color: c.textSecondary },
                       tab === "bienvenida" && styles.tabBtnTextoActivo,
+                      tab === "bienvenida" && c.oscuro && { color: c.textPrimary },
                     ]}
                   >
                     {t("auth.login.tabBienvenida")}
@@ -189,18 +238,16 @@ export default function LoginScreen() {
             </LinearGradient>
 
             {/* CUERPO CON CARD FLOTANTE */}
-            <View style={styles.cuerpo}>
+            <View style={[styles.cuerpo, { backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }]}>
               {tab === "login" ? (
                 <View style={styles.cardWrapper}>
-                  {/* LOGO A CABALLO ENTRE EL HEADER Y LA CARD */}
-                  <View style={styles.logoBadge}>
-                    <Image
-                      source={require("@/assets/images/logo.png")}
-                      style={styles.logoBadgeImg}
-                    />
-                  </View>
+                  {/* LOGO REMOVED AS PER USER REQUEST */}
 
-                  <View style={[styles.card, { backgroundColor: c.bgCard }]}>
+                  <View style={[
+                    styles.card, 
+                    { backgroundColor: c.bgCard },
+                    c.oscuro && { borderWidth: 1, borderColor: c.border }
+                  ]}>
                     <View style={styles.encabezado}>
                       <Text style={[styles.titulo, { color: c.textPrimary }]}>{t("auth.login.titulo")}</Text>
                       <Text style={[styles.subtitulo, { color: c.textSecondary }]}>
@@ -211,7 +258,7 @@ export default function LoginScreen() {
                     <View style={styles.formulario}>
                       <InputField
                         label={`${t("auth.login.correo")} *`}
-                        placeholder="ejemplo@correo.com"
+                        placeholder={t("auth.login.placeholderCorreo")}
                         keyboardType="email-address"
                         autoCapitalize="none"
                         value={form.correo}
@@ -250,7 +297,7 @@ export default function LoginScreen() {
                         }
                         onPress={handleLogin}
                         cargando={cargando}
-                        deshabilitado={bloqueado}
+                        deshabilitado={bloqueado || cargando}
                       />
 
                       {bloqueado ? (
@@ -265,14 +312,14 @@ export default function LoginScreen() {
                       />
                     </View>
 
-                    <View style={loginLocalS.registroRow}>
-                      <Text style={[loginLocalS.registroTexto, { color: c.textSecondary }]}>
+                    <View style={styles.registroRow}>
+                      <Text style={[styles.registroTexto, { color: c.textSecondary }]}>
                         {t("auth.login.noTienesCuenta")}
                       </Text>
                       <TouchableOpacity
                         onPress={() => router.push("/(auth)/register")}
                       >
-                        <Text style={[loginLocalS.registroLink, { color: c.primary }]}>
+                        <Text style={[styles.registroLink, { color: c.primary }]}>
                           {t("auth.login.registrateAqui")}
                         </Text>
                       </TouchableOpacity>
@@ -281,43 +328,45 @@ export default function LoginScreen() {
                 </View>
               ) : (
                 <View style={styles.cardWrapper}>
-                  <View style={styles.logoBadge}>
-                    <Image
-                      source={require("@/assets/images/logo.png")}
-                      style={styles.logoBadgeImg}
-                    />
-                  </View>
-
-                  <View style={[styles.card, { backgroundColor: c.bgCard }]}>
+                  <View style={[
+                    styles.card, 
+                    styles.cardBienvenida, 
+                    { backgroundColor: c.bgCard },
+                    c.oscuro && { borderWidth: 1, borderColor: c.border }
+                  ]}>
                     <View style={styles.encabezado}>
-                      <Text style={[styles.titulo, { color: c.textPrimary }]}>{t("auth.login.bienvenidoDeVuelta")}</Text>
-                      <Text style={[styles.subtitulo, { color: c.textSecondary }]}>
+                      <Text style={[styles.subtituloBienvenida, { color: c.textSecondary }]}>
                         {t("auth.login.gestionaDesde")}
                       </Text>
                     </View>
 
                     <View style={styles.accesosRow}>
                       {ACCESOS.map((a) => (
-                        <TouchableOpacity
-                          key={a.texto}
-                          style={styles.accesoBtn}
-                          onPress={() => setTab("login")}
-                        >
-                          <Ionicons
-                            name={a.icono as any}
-                            size={22}
-                            color="#FFFFFF"
-                          />
-                          <Text style={styles.accesoBtnTexto}>{a.texto}</Text>
-                        </TouchableOpacity>
+                          <TouchableOpacity
+                            key={a.texto}
+                            style={[styles.accesoBtnBienvenida, { backgroundColor: c.bgCard, borderColor: c.border }]}
+                            onPress={() => setTab("login")}
+                          >
+                            <Ionicons
+                              name={a.icono as any}
+                              size={24}
+                              color={c.primary}
+                            />
+                            <Text style={[styles.accesoBtnTextoBienvenida, { color: c.primary }]}>{a.texto}</Text>
+                          </TouchableOpacity>
                       ))}
                     </View>
 
-                    <View style={styles.beneficiosCol}>
+                    <View style={[styles.dividerBienvenida, { backgroundColor: c.border }]} />
+
+                    <View style={styles.beneficiosColBienvenida}>
                       {BENEFICIOS.map((b) => (
-                        <Text key={b} style={[styles.beneficioTexto, { color: c.textPrimary }]}>
-                          {b}
-                        </Text>
+                        <View key={b} style={styles.beneficioRow}>
+                          <Ionicons name="checkmark-sharp" size={18} color="#60A5FA" />
+                          <Text style={[styles.beneficioTextoBienvenida, { color: c.textPrimary }]}>
+                            {b}
+                          </Text>
+                        </View>
                       ))}
                     </View>
                   </View>
@@ -327,13 +376,13 @@ export default function LoginScreen() {
           </View>
 
           {/* FOOTER */}
-          <View style={styles.footer}>
-            <Text style={styles.footerTexto}>Drivique © 2026</Text>
+          <View style={[styles.footer, { backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }]}>
+            <Text style={[styles.footerTexto, { color: c.textSecondary }]}>{t("auth.login.footerDerechos")}</Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <View style={{ height: insets.bottom, backgroundColor: "#1E3A8A" }} />
+      <View style={{ height: insets.bottom, backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }} />
 
       {/* ── ALERTA DE ERROR (mismo diseño y color que catálogo) ── */}
       <AlertModal
@@ -363,20 +412,3 @@ export default function LoginScreen() {
     </View>
   );
 }
-
-const loginLocalS = StyleSheet.create({
-  registroRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  registroTexto: {
-    fontSize: 13.5,
-    color: "#6B7280",
-  },
-  registroLink: {
-    fontSize: 13.5,
-    color: "#1D4ED8",
-    fontWeight: "700",
-  },
-});

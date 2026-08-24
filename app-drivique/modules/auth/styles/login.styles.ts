@@ -3,46 +3,49 @@ import { StyleSheet } from "react-native";
 export const loginStyles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: "#1E3A8A",
+    backgroundColor: "#F9FAFB",
   },
   scrollContenedor: {
     flexGrow: 1,
     justifyContent: "space-between",
+    paddingBottom: 40,
+  },
+
+  // ── Top Bar (Nuevo Panel superior) ────────────────────────────────
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  headerTitleContainer: { flex: 1 },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#1E40AF",
+    letterSpacing: -0.5,
+  },
+  guestBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: "#1E40AF",
+  },
+  guestBtnTexto: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1E40AF",
   },
 
   // ── Header (azul gradiente) ──────────────────────────────────────
   header: {
     position: "relative",
     paddingHorizontal: 20,
-    paddingTop: 48,
+    paddingTop: 32,
     paddingBottom: 20,
-  },
-  invitadoBtn: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.4)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    zIndex: 1,
-  },
-  invitadoBtnTexto: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
-  marcaWrapper: {
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  marca: {
-    fontSize: 19,
-    fontWeight: "800",
-    color: "#FFFFFF",
-    letterSpacing: 0.3,
   },
   marcaTagline: {
     fontSize: 10,
@@ -50,6 +53,8 @@ export const loginStyles = StyleSheet.create({
     letterSpacing: 1.1,
     marginTop: 2,
     textTransform: "uppercase",
+    textAlign: "center",
+    marginBottom: 16,
   },
 
   // ── Switch de pestañas ─────────────────────────────────────────
@@ -79,9 +84,8 @@ export const loginStyles = StyleSheet.create({
 
   // ── Cuerpo (donde flota la card) ───────────────────────────────
   cuerpo: {
-    backgroundColor: "#1E3A8A",
     paddingHorizontal: 16,
-    paddingTop: 36,
+    paddingTop: 32, // adjusted
     paddingBottom: 24,
   },
 
@@ -119,7 +123,7 @@ export const loginStyles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 24,
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 32, // adjusted
     paddingBottom: 28,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
@@ -137,6 +141,21 @@ export const loginStyles = StyleSheet.create({
     color: "#111827",
     marginBottom: 6,
     textAlign: "center",
+  },
+  loginBtnCard: {
+    width: "100%",
+    paddingVertical: 7, // same as guestBtn
+    borderRadius: 8, // same as guestBtn
+    borderWidth: 1.5, // same as guestBtn
+    borderColor: "#1E40AF", // same as guestBtn
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+  },
+  loginBtnCardTexto: {
+    fontSize: 13, // same as guestBtnTexto
+    fontWeight: "700", // same as guestBtnTexto
+    color: "#1E40AF", // same as guestBtnTexto
   },
   subtitulo: {
     fontSize: 14,
@@ -206,14 +225,127 @@ export const loginStyles = StyleSheet.create({
 
   // ── Footer copyright ───────────────────────────────────────────
   footer: {
-    backgroundColor: "#1E3A8A",
+    backgroundColor: "#F9FAFB",
     paddingTop: 14,
     paddingBottom: 28,
     alignItems: "center",
   },
   footerTexto: {
-    color: "#FFFFFF",
+    color: "#6B7280",
     fontSize: 12,
     fontWeight: "600",
+  },
+  
+  // ── Toast ──────────────────────────────────────────────────────
+  toastContainer: {
+    position: "absolute",
+    left: 20,
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+    zIndex: 999,
+  },
+  toastText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  // ── Bienvenida (Diseño Blanco) ──────────────────────────────────
+  cardBienvenida: {
+    paddingTop: 32,
+    paddingHorizontal: 24,
+    paddingBottom: 36,
+  },
+  logoWrapperBienvenida: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginBottom: 32, // Increased spacing
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.05, 
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  logoBienvenida: {
+    width: 50,
+    height: 50,
+    resizeMode: "contain",
+  },
+  subtituloBienvenida: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#374151",
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  accesoBtnBienvenida: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingVertical: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  accesoBtnTextoBienvenida: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: "#1E3A8A",
+    textAlign: "center",
+  },
+  dividerBienvenida: {
+    height: 1,
+    backgroundColor: "#F1F5F9",
+    marginVertical: 24,
+  },
+  beneficiosColBienvenida: {
+    gap: 16,
+    paddingLeft: 8,
+  },
+  beneficioRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  beneficioTextoBienvenida: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#374151",
+  },
+  registroRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  registroTexto: {
+    fontSize: 13.5,
+    color: "#6B7280",
+  },
+  registroLink: {
+    fontSize: 13.5,
+    color: "#1D4ED8",
+    fontWeight: "700",
   },
 });

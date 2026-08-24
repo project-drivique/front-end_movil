@@ -90,5 +90,7 @@ const s = StyleSheet.create({
     borderRadius: 12,
     fontSize: 20,
     fontWeight: "700",
+    padding: 0,
+    includeFontPadding: false,
   },
 });
