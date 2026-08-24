@@ -151,7 +151,7 @@ export default function LoginScreen() {
           { opacity: fadeAnim, top: insets.top + 10, backgroundColor: '#10B981' }
         ]}>
           <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-          <Text style={styles.toastText}>Contraseña actualizada correctamente</Text>
+          <Text style={styles.toastText}>{t("auth.login.toastContrasenaActualizada")}</Text>
         </Animated.View>
       )}
 
@@ -258,7 +258,7 @@ export default function LoginScreen() {
                     <View style={styles.formulario}>
                       <InputField
                         label={`${t("auth.login.correo")} *`}
-                        placeholder="ejemplo@correo.com"
+                        placeholder={t("auth.login.placeholderCorreo")}
                         keyboardType="email-address"
                         autoCapitalize="none"
                         value={form.correo}
@@ -377,7 +377,7 @@ export default function LoginScreen() {
 
           {/* FOOTER */}
           <View style={[styles.footer, { backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }]}>
-            <Text style={[styles.footerTexto, { color: c.textSecondary }]}>Drivique © 2026</Text>
+            <Text style={[styles.footerTexto, { color: c.textSecondary }]}>{t("auth.login.footerDerechos")}</Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

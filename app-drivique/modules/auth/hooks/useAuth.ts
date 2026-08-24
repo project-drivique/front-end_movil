@@ -3,6 +3,7 @@ import { LoginForm, RegistroForm, OlvideContrasenaForm, AuthError } from '../typ
 import { buscarUsuarioDemo, UsuarioDemo, USUARIOS_DEMO } from '../../../mocks/demoUsers';
 import { esCorreoValido as validarCorreo, esContrasenaSegura as validarContrasenaSegura } from '@/utils/validators';
 import { useAuditStore } from '@/store/auditStore';
+import i18n from '@/modules/i18n';
 
 // ── useLogin (RF43 / HU-07) ──────────────────────────────────────────────────
 
@@ -193,10 +194,10 @@ export function useOlvideContrasena() {
 
   function validarFase1(): boolean {
     const e: AuthError[] = [];
-    if (!form.correo.trim())
-      e.push({ campo: 'correo', mensaje: 'El correo es obligatorio' });
+    if (!form.correo)
+      e.push({ campo: 'correo', mensaje: i18n.t("auth.registro.errorRequerido") || 'El correo es obligatorio' });
     else if (!validarCorreo(form.correo))
-      e.push({ campo: 'correo', mensaje: 'Formato de correo inválido' });
+      e.push({ campo: 'correo', mensaje: i18n.t("auth.registro.errorCorreo") || 'Formato de correo inválido' });
     setErrores(e);
     return e.length === 0;
   }
@@ -204,14 +205,14 @@ export function useOlvideContrasena() {
   function validarFase3(): boolean {
     const e: AuthError[] = [];
     if (!form.nuevaContrasena)
-      e.push({ campo: 'nuevaContrasena', mensaje: 'La contraseña es obligatoria' });
+      e.push({ campo: 'nuevaContrasena', mensaje: i18n.t("auth.registro.errorRequerido") || 'La contraseña es obligatoria' });
     else if (!validarContrasenaSegura(form.nuevaContrasena))
-      e.push({ campo: 'nuevaContrasena', mensaje: 'Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo (@$!%*?&)' });
+      e.push({ campo: 'nuevaContrasena', mensaje: i18n.t("auth.registro.errorContrasena") || 'Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo (@$!%*?&)' });
     
     if (!form.confirmarContrasena)
-      e.push({ campo: 'confirmarContrasena', mensaje: 'Debes confirmar tu contraseña' });
+      e.push({ campo: 'confirmarContrasena', mensaje: i18n.t("auth.registro.errorRequerido") || 'Debes confirmar tu contraseña' });
     else if (form.nuevaContrasena !== form.confirmarContrasena)
-      e.push({ campo: 'confirmarContrasena', mensaje: 'Las contraseñas no coinciden' });
+      e.push({ campo: 'confirmarContrasena', mensaje: i18n.t("auth.registro.errorNoCoincide") || 'Las contraseñas no coinciden' });
 
     setErrores(e);
     return e.length === 0;
@@ -225,7 +226,7 @@ export function useOlvideContrasena() {
       // Mock de validación de correo registrado usando la base de datos de demo
       const correoExiste = USUARIOS_DEMO.some(u => u.correo.toLowerCase() === form.correo.trim().toLowerCase());
       if (!correoExiste) {
-        setErrores([{ campo: 'correo', mensaje: 'No encontramos ninguna cuenta asociada a este correo.' }]);
+        setErrores([{ campo: 'correo', mensaje: i18n.t("auth.olvide.correoNoRegistradoMsg") }]);
         return;
       }
       
@@ -238,7 +239,7 @@ export function useOlvideContrasena() {
 
   async function validarCodigo() {
     if (!form.codigo || form.codigo.length < 6) {
-      setErrores([{ campo: 'codigo', mensaje: 'El código debe tener 6 dígitos' }]);
+      setErrores([{ campo: 'codigo', mensaje: i18n.t("auth.registro.errorRequerido") || 'El código debe tener 6 dígitos' }]);
       return;
     }
     setCargando(true);
@@ -247,7 +248,7 @@ export function useOlvideContrasena() {
       if (form.codigo === CODIGO_MOCK) {
         setFase(3);
       } else {
-        setErrores([{ campo: 'codigo', mensaje: 'Código incorrecto o expirado' }]);
+        setErrores([{ campo: 'codigo', mensaje: i18n.t("auth.olvide.codigoIncorrecto") }]);
       }
     } finally {
       setCargando(false);

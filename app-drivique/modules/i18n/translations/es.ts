@@ -91,6 +91,9 @@ export default {
       errorTitulo: 'No pudimos iniciar sesión',
       errorMensajeDefault: 'Revisa tus credenciales e inténtalo de nuevo.',
       exitoTitulo: '¡Bienvenido de nuevo!',
+      placeholderCorreo: 'ejemplo@correo.com',
+      toastContrasenaActualizada: 'Contraseña actualizada correctamente',
+      footerDerechos: 'Drivique © 2026',
     },
     registro: {
       titulo: 'Crear cuenta',
