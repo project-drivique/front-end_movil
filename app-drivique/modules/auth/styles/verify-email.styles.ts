@@ -13,14 +13,9 @@ export const verificarCorreoStyles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  // ── Logo ────────────────────────────────────────────────────
-  logoWrap: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
   logo: {
-    width: 130,
-    height: 40,
+    width: 50,
+    height: 50,
     resizeMode: "contain",
   },
 
@@ -29,31 +24,30 @@ export const verificarCorreoStyles = StyleSheet.create({
     width: "100%",
     maxWidth: 380,
   },
-  barraSuperior: {
-    height: 5,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-  },
   card: {
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    paddingHorizontal: 28,
-    paddingTop: 32,
-    paddingBottom: 28,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 24,
-    elevation: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12 },
+      android: { elevation: 4 },
+    }),
   },
   iconoWrap: {
-    width: 76,
-    height: 76,
-    borderRadius: 22,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: 24,
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4 },
+      android: { elevation: 2 },
+    }),
   },
   titulo: {
     fontSize: 21,
