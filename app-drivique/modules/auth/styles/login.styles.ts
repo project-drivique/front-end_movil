@@ -82,7 +82,7 @@ export const loginStyles = StyleSheet.create({
   cuerpo: {
     backgroundColor: "#F9FAFB",
     paddingHorizontal: 16,
-    paddingTop: 36,
+    paddingTop: 56,
     paddingBottom: 24,
   },
 
@@ -238,5 +238,96 @@ export const loginStyles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "700",
-  }
+  },
+
+  // ── Bienvenida (Diseño Blanco) ──────────────────────────────────
+  cardBienvenida: {
+    paddingTop: 32,
+    paddingHorizontal: 24,
+    paddingBottom: 36,
+  },
+  logoWrapperBienvenida: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginBottom: 32, // Increased spacing
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.05, 
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  logoBienvenida: {
+    width: 50,
+    height: 50,
+    resizeMode: "contain",
+  },
+  subtituloBienvenida: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#374151",
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  accesoBtnBienvenida: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingVertical: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  accesoBtnTextoBienvenida: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: "#1E3A8A",
+    textAlign: "center",
+  },
+  dividerBienvenida: {
+    height: 1,
+    backgroundColor: "#F1F5F9",
+    marginVertical: 24,
+  },
+  beneficiosColBienvenida: {
+    gap: 16,
+    paddingLeft: 8,
+  },
+  beneficioRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  beneficioTextoBienvenida: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#374151",
+  },
+  registroRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  registroTexto: {
+    fontSize: 13.5,
+    color: "#6B7280",
+  },
+  registroLink: {
+    fontSize: 13.5,
+    color: "#1D4ED8",
+    fontWeight: "700",
+  },
 });

@@ -33,9 +33,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 type Tab = "login" | "bienvenida";
 
 const ICONOS_ACCESOS: { icono: string }[] = [
-  { icono: "calendar-outline" },
-  { icono: "card-outline" },
-  { icono: "document-text-outline" },
+  { icono: "calendar" },
+  { icono: "card" },
+  { icono: "document-text" },
 ];
 
 export default function LoginScreen() {
@@ -301,14 +301,14 @@ export default function LoginScreen() {
                       />
                     </View>
 
-                    <View style={loginLocalS.registroRow}>
-                      <Text style={[loginLocalS.registroTexto, { color: c.textSecondary }]}>
+                    <View style={styles.registroRow}>
+                      <Text style={[styles.registroTexto, { color: c.textSecondary }]}>
                         {t("auth.login.noTienesCuenta")}
                       </Text>
                       <TouchableOpacity
                         onPress={() => router.push("/(auth)/register")}
                       >
-                        <Text style={[loginLocalS.registroLink, { color: c.primary }]}>
+                        <Text style={[styles.registroLink, { color: c.primary }]}>
                           {t("auth.login.registrateAqui")}
                         </Text>
                       </TouchableOpacity>
@@ -317,17 +317,9 @@ export default function LoginScreen() {
                 </View>
               ) : (
                 <View style={styles.cardWrapper}>
-                  <View style={styles.logoBadge}>
-                    <Image
-                      source={require("@/assets/images/logocatalog.png")}
-                      style={styles.logoBadgeImg}
-                    />
-                  </View>
-
-                  <View style={[styles.card, { backgroundColor: c.bgCard }]}>
+                  <View style={[styles.card, styles.cardBienvenida]}>
                     <View style={styles.encabezado}>
-                      <Text style={[styles.titulo, { color: c.textPrimary }]}>{t("auth.login.bienvenidoDeVuelta")}</Text>
-                      <Text style={[styles.subtitulo, { color: c.textSecondary }]}>
+                      <Text style={styles.subtituloBienvenida}>
                         {t("auth.login.gestionaDesde")}
                       </Text>
                     </View>
@@ -336,24 +328,29 @@ export default function LoginScreen() {
                       {ACCESOS.map((a) => (
                         <TouchableOpacity
                           key={a.texto}
-                          style={styles.accesoBtn}
+                          style={styles.accesoBtnBienvenida}
                           onPress={() => setTab("login")}
                         >
                           <Ionicons
                             name={a.icono as any}
-                            size={22}
-                            color="#FFFFFF"
+                            size={24}
+                            color="#1E3A8A"
                           />
-                          <Text style={styles.accesoBtnTexto}>{a.texto}</Text>
+                          <Text style={styles.accesoBtnTextoBienvenida}>{a.texto}</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
 
-                    <View style={styles.beneficiosCol}>
+                    <View style={styles.dividerBienvenida} />
+
+                    <View style={styles.beneficiosColBienvenida}>
                       {BENEFICIOS.map((b) => (
-                        <Text key={b} style={[styles.beneficioTexto, { color: c.textPrimary }]}>
-                          {b}
-                        </Text>
+                        <View key={b} style={styles.beneficioRow}>
+                          <Ionicons name="checkmark-sharp" size={18} color="#60A5FA" />
+                          <Text style={styles.beneficioTextoBienvenida}>
+                            {b}
+                          </Text>
+                        </View>
                       ))}
                     </View>
                   </View>
@@ -399,20 +396,3 @@ export default function LoginScreen() {
     </View>
   );
 }
-
-const loginLocalS = StyleSheet.create({
-  registroRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  registroTexto: {
-    fontSize: 13.5,
-    color: "#6B7280",
-  },
-  registroLink: {
-    fontSize: 13.5,
-    color: "#1D4ED8",
-    fontWeight: "700",
-  },
-});
