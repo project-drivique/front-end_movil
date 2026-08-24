@@ -83,8 +83,13 @@ export default function NotificationsScreen() {
     setActiveAppliedCoupon(coupon);
   };
 
-  const handleGeneralPress = (id: string) => {
-    marcarComoLeida(id);
+  const handleGeneralPress = (notif: Notificacion) => {
+    marcarComoLeida(notif.id);
+    // Si la notificacion tiene un enlace (como el correo de confirmacion de pago),
+    // redirigir al usuario a esa pantalla de la app.
+    if (notif.enlace) {
+      router.push(notif.enlace as any);
+    }
   };
 
   // Helper: resolve vehicle images from VEHICULOS_MOCK by category
@@ -159,13 +164,15 @@ export default function NotificationsScreen() {
             borderColor: c.border,
           },
           isUnread && { borderLeftColor: "#2563EB", borderLeftWidth: 4 },
+          // Notificaciones con enlace (tipo correo) tienen borde verde especial
+          item.enlace && { borderLeftColor: "#16a34a", borderLeftWidth: 4 },
         ]}
-        onPress={() => handleGeneralPress(item.id)}
+        onPress={() => handleGeneralPress(item)}
         activeOpacity={0.8}
       >
         <View style={styles.cardHeader}>
-          <View style={[styles.iconWrapper, { backgroundColor: c.bgInput }]}>
-            <Ionicons name={iconName as any} size={22} color={iconColor} />
+          <View style={[styles.iconWrapper, { backgroundColor: item.enlace ? "#dcfce7" : c.bgInput }]}>
+            <Ionicons name={iconName as any} size={22} color={item.enlace ? "#16a34a" : iconColor} />
           </View>
           <View style={styles.contentWrapper}>
             <Text style={[styles.title, { color: c.textPrimary }, isUnread && styles.unreadText]}>
@@ -199,6 +206,14 @@ export default function NotificationsScreen() {
         <Text style={[styles.body, { color: c.textSecondary }]}>
           {item.mensaje}
         </Text>
+        {/* CTA especial para notificaciones con enlace (ej: correo de pago confirmado) */}
+        {item.enlace && (
+          <View style={styles.enlaceCTA}>
+            <Ionicons name="mail-open-outline" size={14} color="#16a34a" />
+            <Text style={styles.enlaceCTATexto}>Continuar con el contrato</Text>
+            <Ionicons name="arrow-forward-outline" size={14} color="#16a34a" />
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
@@ -484,7 +499,7 @@ export default function NotificationsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
-            <Ionicons name="checkmark-circle-ease" size={54} color="#10B981" style={{ marginBottom: 12 }} />
+            <Ionicons name="checkmark-circle" size={54} color="#10B981" style={{ marginBottom: 12 }} />
             <Text style={[styles.modalTitle, { color: c.textPrimary, textAlign: "center" }]}>
               ¡Cupón Activado con Éxito!
             </Text>
@@ -520,6 +535,7 @@ export default function NotificationsScreen() {
   );
 }
 
+// @ts-ignore — Platform.select spreads create union types incompatible with StyleSheet.create strict inference
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -950,7 +966,7 @@ const styles = StyleSheet.create({
   },
   conditionSectionHeader: {
     fontSize: 13.5,
-    fontWeight: "750",
+    fontWeight: "700",
     marginBottom: 8,
   },
   conditionText: {
@@ -988,4 +1004,25 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 2,
   },
+  // CTA de enlace (correo electrónico simulado)
+  enlaceCTA: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#dcfce7",
+    backgroundColor: "#f0fdf4",
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+    borderRadius: 8,
+  },
+  enlaceCTATexto: {
+    flex: 1,
+    fontSize: 12.5,
+    fontWeight: "800",
+    color: "#16a34a",
+  },
 });
+
