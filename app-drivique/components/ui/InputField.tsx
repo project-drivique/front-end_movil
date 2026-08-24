@@ -16,22 +16,32 @@ interface Props extends TextInputProps {
    *  para tema claro). Pásalo cuando el formulario deba respetar tema
    *  oscuro/claro (ver CompleteProfileForm.tsx). */
   colores?: ColoresTema;
+  iconLeft?: React.ReactNode;
+  pill?: boolean;
 }
 
-export function InputField({ label, error, colores: c, ...props }: Props) {
+export function InputField({ label, error, colores: c, iconLeft, pill, ...props }: Props) {
   return (
     <View style={styles.contenedor}>
       <Text style={[styles.label, c && { color: c.textSecondary }]}>{label}</Text>
-      <TextInput
-        style={[
-          styles.input,
-          c && { borderColor: c.border, backgroundColor: c.bgInput, color: c.textPrimary },
-          error ? styles.inputError : undefined,
-        ]}
-        placeholderTextColor="#9CA3AF"
-        autoCorrect={false}
-        {...props}
-      />
+      <View style={[
+        styles.inputWrapper,
+        c && { borderColor: c.border, backgroundColor: c.bgInput },
+        error ? styles.inputErrorWrapper : undefined,
+        pill ? styles.pillWrapper : undefined,
+      ]}>
+        {iconLeft && <View style={styles.iconContainer}>{iconLeft}</View>}
+        <TextInput
+          style={[
+            styles.input,
+            c && { color: c.textPrimary },
+            iconLeft ? { paddingLeft: 8 } : undefined,
+          ]}
+          placeholderTextColor="#9CA3AF"
+          autoCorrect={false}
+          {...props}
+        />
+      </View>
       {error ? <Text style={styles.textoError}>{error}</Text> : null}
     </View>
   );

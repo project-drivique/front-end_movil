@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
 import { LoginForm, RegistroForm, OlvideContrasenaForm, AuthError } from '../types/auth.types';
-import { buscarUsuarioDemo, UsuarioDemo } from '../../../mocks/demoUsers';
+import { buscarUsuarioDemo, UsuarioDemo, USUARIOS_DEMO } from '../../../mocks/demoUsers';
 import { esCorreoValido as validarCorreo, esContrasenaSegura as validarContrasenaSegura } from '@/utils/validators';
 import { useAuditStore } from '@/store/auditStore';
+import i18n from '@/modules/i18n';
 
 // ── useLogin (RF43 / HU-07) ──────────────────────────────────────────────────
 
@@ -176,38 +177,98 @@ export function useRegistro() {
 // ── useOlvideContrasena (RF43) ────────────────────────────────────────────────
 
 export function useOlvideContrasena() {
-  const [form, setForm] = useState<OlvideContrasenaForm>({ correo: '' });
+  const [form, setForm] = useState<OlvideContrasenaForm>({ correo: '', codigo: '', nuevaContrasena: '', confirmarContrasena: '' });
   const [errores, setErrores] = useState<AuthError[]>([]);
   const [cargando, setCargando] = useState(false);
-  const [enviado, setEnviado] = useState(false);
+  
+  // 1: Correo, 2: Código, 3: Nueva Contraseña, 4: Éxito
+  const [fase, setFase] = useState<1 | 2 | 3 | 4>(1);
 
-  function actualizarCorreo(valor: string) {
-    setForm({ correo: valor });
-    setErrores([]);
+  // Simulamos que el código correcto es 123456 por propósitos del mock
+  const CODIGO_MOCK = "123456";
+
+  function actualizarCampo(campo: keyof OlvideContrasenaForm, valor: string) {
+    setForm(prev => ({ ...prev, [campo]: valor }));
+    setErrores(prev => prev.filter(e => e.campo !== campo));
   }
 
-  function validar(): boolean {
+  function validarFase1(): boolean {
     const e: AuthError[] = [];
-    if (!form.correo.trim())
-      e.push({ campo: 'correo', mensaje: 'El correo es obligatorio' });
+    if (!form.correo)
+      e.push({ campo: 'correo', mensaje: i18n.t("auth.registro.errorRequerido") || 'El correo es obligatorio' });
     else if (!validarCorreo(form.correo))
-      e.push({ campo: 'correo', mensaje: 'Formato de correo inválido' });
+      e.push({ campo: 'correo', mensaje: i18n.t("auth.registro.errorCorreo") || 'Formato de correo inválido' });
+    setErrores(e);
+    return e.length === 0;
+  }
+
+  function validarFase3(): boolean {
+    const e: AuthError[] = [];
+    if (!form.nuevaContrasena)
+      e.push({ campo: 'nuevaContrasena', mensaje: i18n.t("auth.registro.errorRequerido") || 'La contraseña es obligatoria' });
+    else if (!validarContrasenaSegura(form.nuevaContrasena))
+      e.push({ campo: 'nuevaContrasena', mensaje: i18n.t("auth.registro.errorContrasena") || 'Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo (@$!%*?&)' });
+    
+    if (!form.confirmarContrasena)
+      e.push({ campo: 'confirmarContrasena', mensaje: i18n.t("auth.registro.errorRequerido") || 'Debes confirmar tu contraseña' });
+    else if (form.nuevaContrasena !== form.confirmarContrasena)
+      e.push({ campo: 'confirmarContrasena', mensaje: i18n.t("auth.registro.errorNoCoincide") || 'Las contraseñas no coinciden' });
+
     setErrores(e);
     return e.length === 0;
   }
 
   async function enviarEnlace() {
-    if (!validar()) return;
+    if (!validarFase1()) return;
     setCargando(true);
     try {
       await new Promise(r => setTimeout(r, 1000));
-      setEnviado(true);
+      // Mock de validación de correo registrado usando la base de datos de demo
+      const correoExiste = USUARIOS_DEMO.some(u => u.correo.toLowerCase() === form.correo.trim().toLowerCase());
+      if (!correoExiste) {
+        setErrores([{ campo: 'correo', mensaje: i18n.t("auth.olvide.correoNoRegistradoMsg") }]);
+        return;
+      }
+      
+      // Fase 2: Ingresar código
+      setFase(2);
     } finally {
       setCargando(false);
     }
   }
 
-  return { form, errores, cargando, enviado, actualizarCorreo, enviarEnlace };
+  async function validarCodigo() {
+    if (!form.codigo || form.codigo.length < 6) {
+      setErrores([{ campo: 'codigo', mensaje: i18n.t("auth.registro.errorRequerido") || 'El código debe tener 6 dígitos' }]);
+      return;
+    }
+    setCargando(true);
+    try {
+      await new Promise(r => setTimeout(r, 800));
+      if (form.codigo === CODIGO_MOCK) {
+        setFase(3);
+      } else {
+        setErrores([{ campo: 'codigo', mensaje: i18n.t("auth.olvide.codigoIncorrecto") }]);
+      }
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  async function cambiarContrasena(onSuccess?: () => void) {
+    if (!validarFase3()) return;
+    setCargando(true);
+    try {
+      await new Promise(r => setTimeout(r, 1000));
+      // Éxito
+      if (onSuccess) onSuccess();
+      else setFase(4);
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  return { form, errores, setErrores, cargando, fase, setFase, actualizarCampo, enviarEnlace, validarCodigo, cambiarContrasena };
 }
 
 // ── useVerificarCorreo (HU: verificación de correo tras registro) ────────────
