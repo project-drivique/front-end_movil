@@ -56,43 +56,44 @@ export default function RegistroScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.flex, { backgroundColor: '#1e3a8a' }]}
+      style={[styles.flex, { backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* ── Header azul gradiente ───────────────────────────── */}
+      {/* ── Header ───────────────────────────── */}
       <LinearGradient
-        colors={GRADIENTES.heroOscuro.colors}
-        locations={GRADIENTES.heroOscuro.locations}
-        start={GRADIENTES.heroOscuro.start}
-        end={GRADIENTES.heroOscuro.end}
-        style={[newS.header, { paddingTop: insets.top + 12 }]}
+        colors={c.oscuro ? [c.bg, c.bg] : GRADIENTES.heroOscuro.colors}
+        locations={c.oscuro ? [0, 1] : GRADIENTES.heroOscuro.locations}
+        start={c.oscuro ? { x: 0, y: 0 } : GRADIENTES.heroOscuro.start}
+        end={c.oscuro ? { x: 0, y: 1 } : GRADIENTES.heroOscuro.end}
+        style={[
+          newS.header, 
+          { paddingTop: insets.top + 12 },
+          c.oscuro && { borderTopWidth: 1, borderBottomWidth: 1, borderColor: c.border }
+        ]}
       >
         <TouchableOpacity
           onPress={() => router.canGoBack() ? router.back() : router.replace('/(auth)/login')}
-          style={newS.backBtn}
+          style={[newS.backBtn, c.oscuro && { backgroundColor: c.bgCard, borderWidth: 1, borderColor: c.border }]}
         >
-          <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={20} color={c.oscuro ? c.textPrimary : "#FFFFFF"} />
         </TouchableOpacity>
-        <Text style={newS.titulo}>{t('auth.registro.titulo')}</Text>
-        <Text style={newS.subtitulo}>{t('auth.registro.subtitulo')}</Text>
+        <Text style={[newS.titulo, c.oscuro && { color: c.textPrimary }]}>{t('auth.registro.titulo')}</Text>
+        <Text style={[newS.subtitulo, c.oscuro && { color: c.textSecondary }]}>{t('auth.registro.subtitulo')}</Text>
       </LinearGradient>
 
       {/* ── Sheet blanca con card flotante (mismo lenguaje visual del login) ── */}
-      <View style={[newS.sheet, { backgroundColor: '#1e3a8a' }]}>
+      <View style={[newS.sheet, { backgroundColor: c.oscuro ? c.bg : "#F9FAFB" }]}>
         <ScrollView
           contentContainerStyle={newS.sheetScroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <View style={newS.cardWrapper}>
-            <View style={newS.logoBadge}>
-              <Image
-                source={require('@/assets/images/logo.png')}
-                style={newS.logoBadgeImg}
-              />
-            </View>
-
-            <View style={[newS.card, { backgroundColor: c.bgCard }]}>
+            <View style={[
+              newS.card, 
+              { backgroundColor: c.bgCard },
+              c.oscuro && { borderWidth: 1, borderColor: c.border }
+            ]}>
               {/* Datos de acceso */}
               <View style={newS.seccion}>
                 <View style={newS.seccionHeader}>
@@ -266,7 +267,7 @@ const newS = StyleSheet.create({
   },
   sheetScroll: {
     paddingHorizontal: 16,
-    paddingTop: 40,
+    paddingTop: 24, // adjusted
     paddingBottom: 32,
   },
   cardWrapper: {
@@ -297,7 +298,7 @@ const newS = StyleSheet.create({
   card: {
     borderRadius: 24,
     paddingHorizontal: 22,
-    paddingTop: 36,
+    paddingTop: 32, // adjusted
     paddingBottom: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },

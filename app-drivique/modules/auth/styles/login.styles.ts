@@ -11,39 +11,41 @@ export const loginStyles = StyleSheet.create({
     paddingBottom: 40,
   },
 
+  // ── Top Bar (Nuevo Panel superior) ────────────────────────────────
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  headerTitleContainer: { flex: 1 },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#1E40AF",
+    letterSpacing: -0.5,
+  },
+  guestBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: "#1E40AF",
+  },
+  guestBtnTexto: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1E40AF",
+  },
+
   // ── Header (azul gradiente) ──────────────────────────────────────
   header: {
     position: "relative",
     paddingHorizontal: 20,
-    paddingTop: 48,
+    paddingTop: 32,
     paddingBottom: 20,
-  },
-  invitadoBtn: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.4)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    zIndex: 1,
-  },
-  invitadoBtnTexto: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
-  marcaWrapper: {
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  marca: {
-    fontSize: 19,
-    fontWeight: "800",
-    color: "#FFFFFF",
-    letterSpacing: 0.3,
   },
   marcaTagline: {
     fontSize: 10,
@@ -51,6 +53,8 @@ export const loginStyles = StyleSheet.create({
     letterSpacing: 1.1,
     marginTop: 2,
     textTransform: "uppercase",
+    textAlign: "center",
+    marginBottom: 16,
   },
 
   // ── Switch de pestañas ─────────────────────────────────────────
@@ -80,9 +84,8 @@ export const loginStyles = StyleSheet.create({
 
   // ── Cuerpo (donde flota la card) ───────────────────────────────
   cuerpo: {
-    backgroundColor: "#F9FAFB",
     paddingHorizontal: 16,
-    paddingTop: 56,
+    paddingTop: 32, // adjusted
     paddingBottom: 24,
   },
 
@@ -120,7 +123,7 @@ export const loginStyles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 24,
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 32, // adjusted
     paddingBottom: 28,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
@@ -138,6 +141,21 @@ export const loginStyles = StyleSheet.create({
     color: "#111827",
     marginBottom: 6,
     textAlign: "center",
+  },
+  loginBtnCard: {
+    width: "100%",
+    paddingVertical: 7, // same as guestBtn
+    borderRadius: 8, // same as guestBtn
+    borderWidth: 1.5, // same as guestBtn
+    borderColor: "#1E40AF", // same as guestBtn
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+  },
+  loginBtnCardTexto: {
+    fontSize: 13, // same as guestBtnTexto
+    fontWeight: "700", // same as guestBtnTexto
+    color: "#1E40AF", // same as guestBtnTexto
   },
   subtitulo: {
     fontSize: 14,
