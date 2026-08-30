@@ -1,6 +1,6 @@
 [build]
   # Carpeta base del proyecto donde se encuentra package.json
-  base = "appmovilrenta"
+  base = "app-drivique"
 
   # Comando para compilar el proyecto para la web
   command = "npm run build"

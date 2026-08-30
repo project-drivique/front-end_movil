@@ -34,10 +34,10 @@ import BarraTotalConfirmar from "./TotalConfirmBar";
 import CampoSelectorLista from "./ListSelectorField";
 import FirmaContrato from "./ContractSignature";
 import ModalReservaRegistrada from "./BookingRegisteredModal";
+import { BranchCashPaymentModal } from "./BranchCashPaymentModal";
 import { diasEntre } from "./BookingSummaryModal.pieces";
 import TarjetaTerminosCondiciones from "./TermsConditionsCard";
 import TarjetaVerificacionDocumental from "./DocumentVerificationCard";
-import { CashPaymentSuccessModal } from "./CashPaymentSuccessModal";
 
 const OPCIONES_NACIONALIDAD = NACIONALIDADES.map((n) => ({
   id: n.nombre,
@@ -95,14 +95,12 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     };
   }, [usuarioGlobal.id]);
   const [alertaFaltantesVisible, setAlertaFaltantesVisible] = useState(false);
+  const [alertaEfectivoVisible, setAlertaEfectivoVisible] = useState(false);
   const [alertaErrorPagoVisible, setAlertaErrorPagoVisible] = useState(false);
   const [procesandoPago, setProcesandoPago] = useState(false);
   const [referenciaActual, setReferenciaActual] = useState<string | null>(null);
   const [mostrarContrato, setMostrarContrato] = useState(false);
-  
-  // Modal para Efectivo
-  const [modalEfectivoVisible, setModalEfectivoVisible] = useState(false);
-  const [codigoEfectivoGenerado, setCodigoEfectivoGenerado] = useState("");
+  const [modalInstruccionesEfectivoVisible, setModalInstruccionesEfectivoVisible] = useState(false);
 
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
   const brandBg = c.oscuro ? "#3B82F6" : COLOR_MARCA;
@@ -200,6 +198,9 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     const referencia = generarReferenciaUnica();
     const metodoPago = fechasLugar.metodoPago;
 
+    // Si subió un documento nuevo (o todavía no tenía ninguno guardado),
+    // lo dejamos registrado para no volver a pedírselo en la próxima
+    // reserva — igual que en la web.
     if (documentos.cedulaFrente || documentos.licenciaConduccion || !docsVerificados) {
       await documentosService.guardarDocumentos(usuarioGlobal.id, {
         identificacion: documentos.cedulaFrente,
@@ -207,7 +208,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       });
     }
 
-    const reservaFinal = await reservaPersistService.guardarReserva({
+    await reservaPersistService.guardarReserva({
       referencia,
       usuarioId: usuarioGlobal.id,
       vehiculoId: vehiculo.id,
@@ -221,6 +222,9 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       lugarDevolucion: fechasLugar.lugarDevolucion,
       proteccion: planes.proteccion,
       tipoKilometraje: planes.tipoKilometraje,
+      // Snapshot completo para poder reconstruir el contrato en la pantalla
+      // de respuesta de pago, ya que ahí el store de la reserva en curso
+      // (useReservaStore) ya se limpió.
       vehiculoSnapshot: vehiculo,
       datosPersonalesSnapshot: datosPersonales,
       datosDocumentosSnapshot: {
@@ -235,11 +239,16 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     setReferenciaActual(referencia);
 
     if (metodoPago === "efectivo") {
-      setCodigoEfectivoGenerado(reservaFinal.codigoVerificacionEfectivo ?? "");
-      setModalEfectivoVisible(true);
+      setModalInstruccionesEfectivoVisible(true);
     } else {
       setModalReservaVisible(true);
     }
+  };
+
+  const handleCerrarInstruccionesEfectivo = () => {
+    setModalInstruccionesEfectivoVisible(false);
+    limpiarReserva();
+    router.replace("/(tabs)/my-bookings");
   };
 
   const handleContratoFirmado = async () => {
@@ -247,6 +256,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       await reservaPersistService.actualizarEstado(referenciaActual, "CONFIRMADA");
     }
     setMostrarContrato(false);
+    setAlertaEfectivoVisible(true);
   };
 
   const handlePagarWompi = async () => {
@@ -271,17 +281,46 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         const transactionId =
           typeof queryParams?.id === "string" ? queryParams.id : null;
 
+        let nuevoEstado: "PENDIENTE_VALIDACION" | "PENDIENTE_EFECTIVO" | "CONFIRMADA" = "PENDIENTE_VALIDACION";
+
+        if (transactionId) {
+          try {
+            const resp = await fetch(`https://sandbox.wompi.co/v1/transactions/${transactionId}`);
+            const json = await resp.json();
+            if (json?.data) {
+              const methodType = json.data.payment_method_type;
+              const status = json.data.status;
+
+              if (methodType === "BANCOLOMBIA_COLLECT") {
+                nuevoEstado = "PENDIENTE_EFECTIVO";
+              } else if (status === "APPROVED") {
+                nuevoEstado = "CONFIRMADA";
+              } else {
+                nuevoEstado = "PENDIENTE_VALIDACION";
+              }
+            }
+          } catch (error) {
+            console.error("[FormDatosPersonales] Error consultando transaccion de Wompi:", error);
+          }
+        }
+
         await reservaPersistService.actualizarEstado(
           referenciaActual,
-          "PENDIENTE_VALIDACION",
-          transactionId,
+          nuevoEstado,
+          transactionId
         );
 
         limpiarReserva();
-        // `from=flow` le indica a payment-response que viene del checkout de Wompi
-        // y debe mostrar el flujo de firma de contrato automáticamente.
-        router.replace(`/payment-response?ref=${encodeURIComponent(referenciaActual)}&from=flow`);
+
+        if (nuevoEstado === "PENDIENTE_EFECTIVO") {
+          router.replace("/(tabs)/my-bookings");
+        } else {
+          router.replace(`/payment-response?ref=${encodeURIComponent(referenciaActual)}`);
+        }
       } else {
+        // El usuario canceló el checkout o Wompi no completó la redirección.
+        // La reserva queda guardada como PENDIENTE; puede reintentar el
+        // pago volviendo a tocar "Pagar con Wompi".
         setAlertaErrorPagoVisible(true);
         setModalReservaVisible(true);
       }
@@ -453,15 +492,12 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         onCerrar={() => setModalReservaVisible(false)}
       />
 
-      <CashPaymentSuccessModal
-        visible={modalEfectivoVisible}
-        codigoVerificacion={codigoEfectivoGenerado}
-        lugarPago={fechasLugar.lugarRetiro ?? undefined}
-        onFinalizar={(sucursalesSeleccionadas) => {
-          setModalEfectivoVisible(false);
-          limpiarReserva();
-          router.replace("/(tabs)/my-bookings");
-        }}
+      <BranchCashPaymentModal
+        visible={modalInstruccionesEfectivoVisible}
+        referencia={referenciaActual || ""}
+        nombreSucursal={vehiculo.sucursal || ""}
+        total={total}
+        onCerrar={handleCerrarInstruccionesEfectivo}
       />
 
       <AlertModal
@@ -471,6 +507,27 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         mensaje={t("reserva.datosPersonales.alertaFaltantesMensaje")}
         botones={[]}
         onCerrar={() => setAlertaFaltantesVisible(false)}
+      />
+
+      <AlertModal
+        visible={alertaEfectivoVisible}
+        icono="checkmark-circle-outline"
+        titulo={t("reserva.confirmacion.efectivoConfirmadaTitulo")}
+        mensaje={t("reserva.confirmacion.efectivoConfirmadaMensaje", {
+          horas: HORAS_LIMITE_PAGO_EFECTIVO,
+        })}
+        botones={[
+          {
+            texto: t("reserva.confirmacion.entendidoIrAMisReservas"),
+            variante: "primario",
+            onPress: () => {
+              setAlertaEfectivoVisible(false);
+              limpiarReserva();
+              router.replace("/(tabs)/my-bookings");
+            },
+          },
+        ]}
+        onCerrar={() => setAlertaEfectivoVisible(false)}
       />
 
       <AlertModal

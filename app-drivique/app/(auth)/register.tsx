@@ -1,17 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
   KeyboardAvoidingView,
-  Platform,
   Modal,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
