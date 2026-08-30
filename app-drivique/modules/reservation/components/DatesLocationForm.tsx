@@ -72,7 +72,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
   }, [nombreSucursal, esWompi, ciudadInfo]);
 
   useEffect(() => {
-    if (!esWompi) {
+    if (fechasLugar.metodoPago === "efectivo") {
       const actualizacion: Partial<typeof fechasLugar> = {};
       // Con pago en efectivo la única opción válida es la sucursal del
       // vehículo: la seleccionamos automáticamente (no solo cuando ya había
@@ -88,7 +88,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [esWompi, nombreSucursal]);
+  }, [fechasLugar.metodoPago, nombreSucursal]);
 
   const handleElegirSucursal = (value: string) => {
     if (modalTipo === "retiro") actualizarFechasLugar({ lugarRetiro: value });

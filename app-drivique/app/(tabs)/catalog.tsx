@@ -136,8 +136,8 @@ export default function Catalogo() {
   const usuario = useAuthStore((state) => state.usuario);
   const getInitials = () => {
     if (!usuario) return "?";
-    const name = usuario.nombres && usuario.nombres.trim() !== "" 
-      ? usuario.nombres 
+    const name = usuario.nombre && usuario.nombre.trim() !== "" 
+      ? usuario.nombre 
       : (usuario.correo ? usuario.correo.split("@")[0] : "");
     if (!name) return "?";
     const parts = name.trim().split(/\s+/);
