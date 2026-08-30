@@ -9,6 +9,7 @@ import React, { useMemo, useRef, useState } from "react";
 import {
   Alert,
   Image,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -33,9 +34,13 @@ import {
 } from "../types/reservation.types";
 import { fmt } from "./BookingSummaryModal.pieces";
 import { contratoService, ContratoGuardado } from "../services/contractService";
-import * as DocumentPicker from "expo-document-picker";
-import CampoSubidaDocumento from "./DocumentUploadField";
+import FirmaCanvas, { FirmaCanvasHandle } from "./SignatureCanvas";
 import { crearTextosContrato, generarContratoPdf, leerPdfOriginalBase64 } from "../services/pdfService";
+
+interface Punto {
+  x: number;
+  y: number;
+}
 
 const LOCALES_FECHA: Record<string, string> = {
   es: "es-CO",
@@ -82,8 +87,8 @@ export default function FirmaContrato({
 }: Props) {
   const { t, i18n } = useTranslation();
   const c = useTemaColores();
-  const [pdfFirma, setPdfFirma] = useState<{ uri: string; nombre: string; tamanoBytes: number; tipoMime: string } | null>(null);
-  const [cargandoFirma, setCargandoFirma] = useState(false);
+  const firmaRef = React.useRef<FirmaCanvasHandle>(null);
+  const [firmaVacia, setFirmaVacia] = useState(true);
   const [errorFirma, setErrorFirma] = useState("");
   const [firmando, setFirmando] = useState(false);
   const [codigoContrato, setCodigoContrato] = useState("");
@@ -152,53 +157,22 @@ export default function FirmaContrato({
       )
     : "";
 
-  const seleccionarPdfFirma = async () => {
-    setErrorFirma("");
-    try {
-      const resultado = await DocumentPicker.getDocumentAsync({
-        type: "application/pdf",
-        copyToCacheDirectory: true,
-      });
-      if (resultado.canceled) return;
-
-      const archivo = resultado.assets[0];
-      if (archivo.size && archivo.size > 5 * 1024 * 1024) {
-        setErrorFirma(t("reserva.documentos.archivoDemasiadoGrande") || "El archivo supera los 5MB");
-        return;
-      }
-
-      setCargandoFirma(true);
-      setTimeout(() => {
-        setPdfFirma({
-          uri: archivo.uri,
-          nombre: archivo.name,
-          tamanoBytes: archivo.size ?? 0,
-          tipoMime: archivo.mimeType ?? "application/pdf",
-        });
-        setCargandoFirma(false);
-      }, 800);
-    } catch (err) {
-      console.error("Error al seleccionar firma", err);
-      setErrorFirma("Error al seleccionar el archivo");
-    }
-  };
-
   const handleFirmar = async () => {
-    if (!pdfFirma) {
-      setErrorFirma(t("reserva.contrato.signatureRequired") || "Debe anexar un archivo PDF con su firma.");
+    if (firmaRef.current?.estaVacio()) {
+      setErrorFirma(t("reserva.contrato.signatureRequired") || "La firma es obligatoria.");
       return;
     }
     setErrorFirma("");
     setFirmando(true);
 
     try {
-      const archivoOriginalBase64 = await leerPdfOriginalBase64(pdfFirma.uri);
+      const firmaTrazos = firmaRef.current?.obtenerFirmaData() || "[]";
       const contrato = await contratoService.guardarFirma(referencia, {
         codigo: codigoContrato,
-        firmaTrazos: pdfFirma.uri,
-        archivoOriginalUri: pdfFirma.uri,
-        archivoOriginalNombre: pdfFirma.nombre,
-        archivoOriginalBase64,
+        firmaTrazos: firmaTrazos,
+        archivoOriginalUri: "firma_tactil.json",
+        archivoOriginalNombre: "firma_tactil.json",
+        archivoOriginalBase64: "",
         ciudad: ciudadSucursal,
         fecha: new Date().toISOString(),
       });
@@ -406,27 +380,101 @@ export default function FirmaContrato({
                     <Text style={[styles.firmaTitulo, { color: c.textPrimary }]}>
                       {t("reserva.contrato.userSignature")}
                     </Text>
-                    <View style={[styles.selloPlataforma, { backgroundColor: c.bgCard }]}>
-                      <Ionicons name="document-attach-outline" size={34} color="#1e3a8a" />
-                      <Text style={[styles.firmaDato, { color: c.textPrimary, textAlign: "center" }]}>
-                        {contratoFirmado?.archivoOriginalNombre || t("reserva.contrato.digitallySigned")}
-                      </Text>
-                      <View style={styles.selloBadge}>
-                        <Ionicons name="checkmark-circle" size={14} color="#1e3a8a" />
-                        <Text style={styles.selloBadgeTexto}>{t("reserva.contrato.statusSigned")}</Text>
-                      </View>
+                    <View style={[styles.firmaLienzoEstatico, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+                      {(() => {
+                        try {
+                          const trazos: Punto[][] = contratoFirmado?.firmaTrazos ? JSON.parse(contratoFirmado.firmaTrazos) : [];
+                          if (trazos.length === 0) throw new Error("Vacio");
+                          return trazos.map((trazo, i) => (
+                            <React.Fragment key={i}>
+                              {trazo.map((p, j) => (
+                                <React.Fragment key={j}>
+                                  <View
+                                    style={{
+                                      position: "absolute",
+                                      left: p.x - 1.25,
+                                      top: p.y - 1.25,
+                                      width: 2.5,
+                                      height: 2.5,
+                                      borderRadius: 1.25,
+                                      backgroundColor: c.textPrimary,
+                                    }}
+                                  />
+                                  {j > 0 && (() => {
+                                    const p1 = trazo[j - 1];
+                                    const p2 = p;
+                                    const dx = p2.x - p1.x;
+                                    const dy = p2.y - p1.y;
+                                    const largo = Math.sqrt(dx * dx + dy * dy) + 2.5;
+                                    const angulo = (Math.atan2(dy, dx) * 180) / Math.PI;
+                                    const midX = (p1.x + p2.x) / 2;
+                                    const midY = (p1.y + p2.y) / 2;
+
+                                    return (
+                                      <View
+                                        style={{
+                                          position: "absolute",
+                                          left: midX - largo / 2,
+                                          top: midY - 1.25,
+                                          width: largo,
+                                          height: 2.5,
+                                          borderRadius: 1.25,
+                                          backgroundColor: c.textPrimary,
+                                          transform: [{ rotate: `${angulo}deg` }],
+                                        }}
+                                      />
+                                    );
+                                  })()}
+                                </React.Fragment>
+                              ))}
+                            </React.Fragment>
+                          ));
+                        } catch {
+                          return (
+                            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 6 }}>
+                              <Ionicons name="document-attach-outline" size={30} color={c.textSecondary} />
+                              <Text style={[styles.firmaDato, { color: c.textSecondary, fontSize: 11 }]}>
+                                {t("reserva.contrato.digitallySigned")}
+                              </Text>
+                            </View>
+                          );
+                        }
+                      })()}
                     </View>
                   </View>
                 ) : (
-                  <CampoSubidaDocumento
-                    etiqueta={t("reserva.contrato.userSignature")}
-                    ayuda={t("reserva.contrato.uploadSignaturePdfHelp") || "Anexe un documento PDF firmado"}
-                    archivo={pdfFirma}
-                    cargando={cargandoFirma}
-                    error={errorFirma}
-                    onSeleccionar={seleccionarPdfFirma}
-                    onQuitar={() => setPdfFirma(null)}
-                  />
+                  <View>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                      <Text style={[styles.firmaTitulo, { color: c.textPrimary, marginBottom: 0 }]}>
+                        {t("reserva.contrato.userSignature")}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => {
+                          firmaRef.current?.limpiar();
+                          setErrorFirma("");
+                        }}
+                        style={styles.limpiarBtn}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={[styles.limpiarBtnTexto, { color: c.primary }]}>
+                          {t("reserva.contrato.clearSignature", { defaultValue: "Limpiar" })}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <FirmaCanvas ref={firmaRef} onCambiar={(vacia) => {
+                      setFirmaVacia(vacia);
+                      if (!vacia) setErrorFirma("");
+                    }} />
+
+                    {errorFirma ? (
+                      <Text style={[styles.errorFirma, { color: c.error }]}>{errorFirma}</Text>
+                    ) : (
+                      <Text style={[styles.firmaAyuda, { color: c.textSecondary }]}>
+                        {t("reserva.contrato.drawSignatureHelp", { defaultValue: "Dibuje su firma con el dedo en el recuadro." })}
+                      </Text>
+                    )}
+                  </View>
                 )}
                 <View style={{ marginTop: 12 }}>
                   <Text style={[styles.firmaDato, { color: c.textPrimary }]}>
@@ -463,31 +511,32 @@ export default function FirmaContrato({
             </View>
           </Seccion>
 
-          <TouchableOpacity
-            nativeID="contrato-acciones-descarga"
-            style={styles.firmarBtnWrap}
-            onPress={soloLectura ? onDescargar : handleFirmar}
-            disabled={soloLectura ? descargando : firmando}
-            activeOpacity={0.85}
-          >
-            <LinearGradient
-              colors={firmando ? ["#94a3b8", "#94a3b8"] : GRADIENTES.boton.colors}
-              start={GRADIENTES.boton.start}
-              end={GRADIENTES.boton.end}
-              style={styles.firmarBtn}
+          <View nativeID="contrato-acciones-descarga">
+            <TouchableOpacity
+              style={styles.firmarBtnWrap}
+              onPress={soloLectura ? onDescargar : handleFirmar}
+              disabled={soloLectura ? descargando : firmando}
+              activeOpacity={0.85}
             >
-              <Ionicons
-                name={(soloLectura ? descargando : firmando) ? "hourglass-outline" : soloLectura ? "download-outline" : "create-outline"}
-                size={18}
-                color="#fff"
-              />
-              <Text style={styles.firmarBtnTexto}>
-                {soloLectura
-                  ? descargando ? t("misReservas.generandoPdf") : t("misReservas.descargarContrato")
-                  : firmando ? t("reserva.contrato.signing") : t("reserva.contrato.signAndContinue")}
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
+              <LinearGradient
+                colors={firmando ? ["#94a3b8", "#94a3b8"] : GRADIENTES.boton.colors}
+                start={GRADIENTES.boton.start}
+                end={GRADIENTES.boton.end}
+                style={styles.firmarBtn}
+              >
+                <Ionicons
+                  name={(soloLectura ? descargando : firmando) ? "hourglass-outline" : soloLectura ? "download-outline" : "create-outline"}
+                  size={18}
+                  color="#fff"
+                />
+                <Text style={styles.firmarBtnTexto}>
+                  {soloLectura
+                    ? descargando ? t("misReservas.generandoPdf") : t("misReservas.descargarContrato")
+                    : firmando ? t("reserva.contrato.signing") : t("reserva.contrato.signAndContinue")}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
 
           <View style={[styles.footer, { borderTopColor: c.border }]}>
             <Text style={[styles.footerTexto, { color: c.textMuted }]}>{t("reserva.contrato.footerNote1")}</Text>
@@ -523,7 +572,10 @@ function Seccion({
   children: React.ReactNode;
 }) {
   return (
-    <View style={styles.seccion} dataSet={{ pdfSection: "true" }}>
+    <View
+      style={styles.seccion}
+      {...(Platform.OS === "web" ? ({ "data-pdf-section": "true" } as object) : {})}
+    >
       <Text style={[styles.seccionTitulo, { color: c.textPrimary }]}>{titulo}</Text>
       {children}
     </View>
@@ -628,9 +680,24 @@ const styles = StyleSheet.create({
   firmasFila: { gap: 14 },
   firmaTarjeta: { borderRadius: 18, borderWidth: 1, padding: 16 },
   firmaTitulo: { fontSize: 14, fontWeight: "800", marginBottom: 12 },
-  limpiarBtn: { alignSelf: "flex-end", marginTop: 6 },
+  limpiarBtn: { paddingVertical: 4, paddingHorizontal: 8 },
   limpiarBtnTexto: { fontSize: 11.5, fontWeight: "700", textDecorationLine: "underline" },
   errorFirma: { color: "#ef4444", fontSize: 11.5, fontWeight: "700", marginTop: 6 },
+  firmaLienzoEstatico: {
+    height: 150,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#93c5fd",
+    borderStyle: "dashed",
+    overflow: "hidden",
+    position: "relative",
+    marginBottom: 12,
+  },
+  firmaAyuda: {
+    fontSize: 10.5,
+    fontStyle: "italic",
+    marginTop: 6,
+  },
   firmaDato: { fontSize: 12.5, marginVertical: 2 },
   selloPlataforma: {
     height: 150,
