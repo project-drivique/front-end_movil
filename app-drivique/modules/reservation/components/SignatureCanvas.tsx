@@ -109,11 +109,9 @@ const FirmaCanvas = forwardRef<FirmaCanvasHandle, Props>(({ onCambiar }, ref) =>
       },
       onPanResponderRelease: () => {
         if (trazoActualRef.current.length > 0) {
-          setTrazos((prev) => {
-            const siguiente = [...prev, trazoActualRef.current];
-            onCambiar?.(false);
-            return siguiente;
-          });
+          const trazo = trazoActualRef.current;
+          setTrazos((prev) => [...prev, trazo]);
+          onCambiar?.(false);
         }
         trazoActualRef.current = [];
       },
@@ -124,19 +122,21 @@ const FirmaCanvas = forwardRef<FirmaCanvasHandle, Props>(({ onCambiar }, ref) =>
 
   return (
     <View
-      style={[styles.lienzo, { backgroundColor: c.bgInput, borderColor: c.border }]}
+      style={[styles.lienzo, { backgroundColor: c.bgInput, borderColor: "#93c5fd" }]}
       {...panResponder.panHandlers}
     >
-      {todosLosTrazos.map((trazo, i) => (
-        <React.Fragment key={i}>
-          {trazo.map((p, j) => (
-            <React.Fragment key={j}>
-              <Punto_ p={p} />
-              {j > 0 && <Segmento p1={trazo[j - 1]} p2={p} />}
-            </React.Fragment>
-          ))}
-        </React.Fragment>
-      ))}
+      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        {todosLosTrazos.map((trazo, i) => (
+          <React.Fragment key={i}>
+            {trazo.map((p, j) => (
+              <React.Fragment key={j}>
+                <Punto_ p={p} />
+                {j > 0 && <Segmento p1={trazo[j - 1]} p2={p} />}
+              </React.Fragment>
+            ))}
+          </React.Fragment>
+        ))}
+      </View>
     </View>
   );
 });
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   lienzo: {
     height: 160,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 2,
     borderStyle: "dashed",
     overflow: "hidden",
   },
