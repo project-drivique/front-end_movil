@@ -17,12 +17,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Image,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StatusBar,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -83,7 +80,7 @@ export default function LoginScreen() {
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [success]);
+  }, [success, fadeAnim]);
 
   // ── Control de las alertas tipo modal ─────────────────────────
   const [alertaErrorVisible, setAlertaErrorVisible] = useState(false);

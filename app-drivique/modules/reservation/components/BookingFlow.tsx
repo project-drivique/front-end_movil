@@ -46,10 +46,10 @@ export default function FlujoReserva({ vehiculo }: Props) {
     datos: false,
   });
 
-  // Auto-scroll al inicio de la página cada vez que cambia de sección o se completan fechas
+  // Auto-scroll al inicio de la página cada vez que cambia de sección
   useEffect(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
-  }, [seccionActiva, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion]);
+  }, [seccionActiva]);
 
   const puedeContinuarAPlanes =
     !!fechasLugar.fechaRetiro && !!fechasLugar.fechaDevolucion && !!fechasLugar.metodoPago;

@@ -12,7 +12,6 @@ import { Feather } from "@expo/vector-icons";
 import {
   Image,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -25,7 +24,7 @@ const SEGUNDOS_ESPERA = 300;
 export default function OlvideContrasenaScreen() {
   const { t } = useTranslation();
   const c = useTemaColores();
-  const { form, errores, setErrores, cargando, fase, setFase, actualizarCampo, enviarEnlace, validarCodigo, cambiarContrasena } =
+  const { form, errores, cargando, fase, actualizarCampo, enviarEnlace, validarCodigo, cambiarContrasena } =
     useOlvideContrasena();
 
   const [contador, setContador] = useState(0);
@@ -37,6 +36,7 @@ export default function OlvideContrasenaScreen() {
       iniciarContador();
     }
     return limpiarContador;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fase]);
 
   function iniciarContador() {
@@ -88,7 +88,11 @@ export default function OlvideContrasenaScreen() {
         {fase === 1 && (
           <TouchableOpacity
             onPress={() => {
-              router.canGoBack() ? router.back() : router.replace("/(auth)/login");
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace("/(auth)/login");
+              }
             }}
             style={[
               styles.botonVolver, 

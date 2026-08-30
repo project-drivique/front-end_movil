@@ -24,7 +24,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { GRADIENTES } from "@/constants/gradients";
-import { COLOR_MARCA } from "@/modules/catalog/constants/catalog.constants";
+import { COLOR_MARCA, getCiudadPorSucursal, getDireccionSucursal } from "@/modules/catalog/constants/catalog.constants";
 import {
   calcularGrupoReserva,
   ReservaGuardada,
@@ -53,10 +53,7 @@ export default function PagoRespuestaScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t } = useTranslation();
-  const { ref, from } = useLocalSearchParams<{ ref?: string; from?: string }>();
-  // `from="flow"` indica que se llega desde el checkout de Wompi (flujo de pago activo).
-  // Sin ese parámetro el usuario llega desde Mis Reservas y no debe ver el contrato automáticamente.
-  const vieneDeFlujo = from === "flow";
+  const { ref } = useLocalSearchParams<{ ref?: string }>();
 
   const [cargando, setCargando] = useState(true);
   const [reserva, setReserva] = useState<ReservaGuardada | null>(null);
@@ -66,7 +63,6 @@ export default function PagoRespuestaScreen() {
   const [claveDesbloqueada, setClaveDesbloqueada] = useState(false);
   const [claveIngresada, setClaveIngresada] = useState("");
   const [errorClave, setErrorClave] = useState("");
-  const [mostrarFirmaManual, setMostrarFirmaManual] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -90,6 +86,17 @@ export default function PagoRespuestaScreen() {
   }, [ref]);
 
   const irAMisReservas = () => router.replace("/(tabs)/my-bookings");
+
+  const handleSimularPagoCaja = async () => {
+    if (!reserva) return;
+    await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
+    const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
+    setReserva(actualizada ?? null);
+  };
+
+  const sucursalNombre = reserva?.lugarRetiro || (reserva?.fechasLugarSnapshot as any)?.lugarRetiro || "";
+  const ciudadSucursal = sucursalNombre ? getCiudadPorSucursal(String(sucursalNombre)) : "";
+  const direccionSucursal = sucursalNombre ? getDireccionSucursal(String(sucursalNombre)) : "";
 
   if (cargando) {
     return (
@@ -130,19 +137,13 @@ export default function PagoRespuestaScreen() {
   // la firma del contrato (eso pasa después de volver del checkout, igual
   // que en la web). Reconstruimos todo lo necesario a partir del snapshot
   // que se guardó junto con la reserva.
-  // El contrato se muestra automáticamente SOLO si el usuario viene del flujo de pago
-  // Wompi (parámetro from="flow") y el estado requiere firma. Para pagos en efectivo
-  // (PENDIENTE_EFECTIVO) el usuario primero debe pagar en sucursal; el contrato se
-  // firma después, cuando el encargado confirma el pago y el estado cambia a CONFIRMADA.
-  // PENDIENTE / PENDIENTE_VALIDACION: vienen del checkout de Wompi.
-  // CONFIRMADA: viene del link del correo después que el admin confirma pago en sucursal.
-  const estadosQueRequierenFirmaAutomatic = ["PENDIENTE", "PENDIENTE_VALIDACION", "CONFIRMADA"];
+  const requiereFirma = !contratoFirmado && (
+    reserva.metodoPago === "efectivo"
+      ? reserva.estado === "CONFIRMADA"
+      : ["PENDIENTE", "PENDIENTE_VALIDACION"].includes(reserva.estado)
+  );
 
-  if (
-    vieneDeFlujo &&
-    !contratoFirmado &&
-    estadosQueRequierenFirmaAutomatic.includes(reserva.estado)
-  ) {
+  if (requiereFirma) {
     const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
     const datosPersonalesSnap = reserva.datosPersonalesSnapshot as DatosPersonales | undefined;
     const datosDocumentosSnap = reserva.datosDocumentosSnapshot as DatosDocumentos | undefined;
@@ -276,25 +277,15 @@ export default function PagoRespuestaScreen() {
     }
   };
 
-  // Firma manual: para CONFIRMADA sin contrato firmado cuando viene desde Mis Reservas
-  const puedeIniciarFirmaManual =
-    !contratoFirmado &&
-    reserva.estado === "CONFIRMADA" &&
-    vehiculoSnap && datosPersonalesSnap && fechasLugarSnap && planesSnap;
-
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <HeaderDetalle
         insets={insets}
         c={c}
         titulo={t("misReservas.detalle.tituloHeader", { defaultValue: "Detalle de Reserva" })}
-        onVolver={() => {
-          if (mostrarFirmaManual) setMostrarFirmaManual(false);
-          else irAMisReservas();
-        }}
+        onVolver={irAMisReservas}
       />
 
-      {/* Vista de contrato en solo lectura (con clave desbloqueada) */}
       {contratoActual && claveDesbloqueada && vehiculoSnap && datosPersonalesSnap && fechasLugarSnap && planesSnap ? (
         <FirmaContrato
           vehiculo={vehiculoSnap}
@@ -311,28 +302,6 @@ export default function PagoRespuestaScreen() {
           contratoFirmado={contratoActual}
           onDescargar={handleDescargarPdf}
           descargando={generandoPdf}
-        />
-      ) : mostrarFirmaManual && vehiculoSnap && datosPersonalesSnap && fechasLugarSnap && planesSnap ? (
-        /* Firma manual para reservas CONFIRMADA desde Mis Reservas */
-        <FirmaContrato
-          vehiculo={vehiculoSnap}
-          datosPersonales={datosPersonalesSnap}
-          datosDocumentos={
-            datosDocumentosSnap ?? { cedulaFrente: null, cedulaReverso: null, licenciaConduccion: null }
-          }
-          fechasLugar={fechasLugarSnap}
-          planes={planesSnap}
-          total={reserva.total}
-          referencia={reserva.referencia}
-          onFirmado={async () => {
-            await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
-            const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
-            const contratoNuevo = await contratoService.obtenerPorReserva(reserva.referencia);
-            setReserva(actualizada ?? null);
-            setContratoActual(contratoNuevo);
-            setContratoFirmado(true);
-            setMostrarFirmaManual(false);
-          }}
         />
       ) : (
       <ScrollView
@@ -353,10 +322,9 @@ export default function PagoRespuestaScreen() {
         {reserva.vehiculoNombre}
       </Text>
 
-      {/* Tarjeta principal de detalles de la reserva */}
       <View style={[styles.card, styles.detalleCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
         <LinearGradient
-          colors={[encabezado.color, `${encabezado.color}88`]}
+          colors={[c.primary, "#60A5FA"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.detalleFranja}
@@ -422,115 +390,210 @@ export default function PagoRespuestaScreen() {
         />
       </View>
 
-      {/* Tarjeta de Pago Pendiente en Sucursal (solo para PENDIENTE_EFECTIVO) */}
-      {reserva.estado === "PENDIENTE_EFECTIVO" && reserva.codigoVerificacionEfectivo ? (
-        <View style={[styles.card, styles.efectivoCard, { backgroundColor: "#ffffff" }]}>
-          {/* Franja amarilla superior */}
-          <View style={styles.efectivoFranja} />
-          
-          <View style={styles.efectivoHeaderRow}>
-            <View style={styles.efectivoIconoWrap}>
-              <Ionicons name="cash-outline" size={22} color="#b45309" />
+      {reserva.estado === "PENDIENTE_EFECTIVO" && (
+        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+          {reserva.metodoPago === "wompi" ? (
+            // Caso: Pago en Corresponsal Bancolombia (Wompi)
+            <>
+              <Text style={[styles.instruccionesTitulo, { color: c.textPrimary, textAlign: "center", marginBottom: 6 }]}>
+                {t("reserva.confirmacion.efectivoConfirmadaTitulo", { defaultValue: "Reserva registrada" })}
+              </Text>
+              <Text style={[styles.instruccionesTexto, { color: c.textSecondary, textAlign: "center", marginBottom: 16 }]}>
+                {t("reserva.confirmacion.wompiEfectivoMensaje", { defaultValue: "Tienes 72 horas para acercarte a cualquier Corresponsal Bancolombia y realizar el pago en efectivo. Si no te presentas a tiempo, la reserva se cancelará automáticamente." })}
+              </Text>
+
+              <View style={[styles.instruccionesCaja, { backgroundColor: c.primaryBg, borderColor: c.border }]}>
+                <Text style={[styles.sucursalNombre, { color: c.textPrimary, textAlign: "center", marginBottom: 12 }]}>
+                  {t("reserva.confirmacion.wompiEfectivoTitulo", { defaultValue: "Pago en efectivo: Corresponsal Bancolombia" })}
+                </Text>
+
+                <View style={styles.instruccionesFila}>
+                  <Text style={[styles.instruccionesEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.confirmacion.respuesta.referencia", { defaultValue: "Referencia" })}:
+                  </Text>
+                  <Text style={[styles.instruccionesValor, { color: c.textPrimary, fontWeight: "800" }]}>
+                    {reserva.referencia}
+                  </Text>
+                </View>
+
+                <View style={styles.instruccionesFila}>
+                  <Text style={[styles.instruccionesEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.confirmacion.puntoPago", { defaultValue: "Punto de Pago" })}:
+                  </Text>
+                  <Text style={[styles.instruccionesValor, { color: c.textPrimary }]}>
+                    {t("reserva.confirmacion.puntoPagoValor", { defaultValue: "Corresponsales Bancolombia" })}
+                  </Text>
+                </View>
+
+                <View style={styles.instruccionesFila}>
+                  <Text style={[styles.instruccionesEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.confirmacion.sucursalRetiro", { defaultValue: "Sucursal de Retiro" })}:
+                  </Text>
+                  <Text style={[styles.instruccionesValor, { color: c.textPrimary }]}>
+                    {sucursalNombre}
+                  </Text>
+                </View>
+
+                <View style={[styles.instruccionesDivisor, { backgroundColor: c.border }]} />
+
+                <View style={styles.instruccionesFila}>
+                  <Text style={[styles.instruccionesEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.confirmacion.totalAPagar", { defaultValue: "TOTAL A PAGAR" })}:
+                  </Text>
+                  <Text style={[styles.instruccionesTotalValor, { color: c.primary }]}>
+                    {fmt(reserva.total)}
+                  </Text>
+                </View>
+
+                <Text style={[styles.instruccionesNota, { color: c.textMuted }]}>
+                  {t("reserva.confirmacion.notaWompiEfectivo", { defaultValue: "*Presenta la referencia anterior en la caja del corresponsal." })}
+                </Text>
+              </View>
+            </>
+          ) : (
+            // Caso: Pago en Sucursal Drivique (Físico en caja de la oficina)
+            <>
+              <Text style={[styles.instruccionesTitulo, { color: c.textPrimary, textAlign: "center", marginBottom: 6 }]}>
+                {t("reserva.confirmacion.efectivoConfirmadaTitulo", { defaultValue: "Reserva registrada" })}
+              </Text>
+              <Text style={[styles.instruccionesTexto, { color: c.textSecondary, textAlign: "center", marginBottom: 16 }]}>
+                {t("reserva.confirmacion.efectivoConfirmadaMensaje", { horas: 72 })}
+              </Text>
+
+              <View style={[styles.instruccionesCaja, { backgroundColor: c.primaryBg, borderColor: c.border }]}>
+                <Text style={[styles.sucursalNombre, { color: c.textPrimary, textAlign: "center", marginBottom: 12 }]}>
+                  {t("reserva.confirmacion.pagoEfectivoTitulo", { defaultValue: "Pago en efectivo: retiro en sucursal" })}
+                </Text>
+
+                <View style={styles.instruccionesFila}>
+                  <Text style={[styles.instruccionesEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.confirmacion.respuesta.referencia", { defaultValue: "Referencia" })}:
+                  </Text>
+                  <Text style={[styles.instruccionesValor, { color: c.textPrimary, fontWeight: "800" }]}>
+                    {reserva.referencia}
+                  </Text>
+                </View>
+
+                <View style={styles.instruccionesFila}>
+                  <Text style={[styles.instruccionesEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.confirmacion.sucursal", { defaultValue: "Sucursal" })}:
+                  </Text>
+                  <Text style={[styles.instruccionesValor, { color: c.textPrimary }]}>
+                    {sucursalNombre}
+                  </Text>
+                </View>
+
+                <View style={styles.instruccionesFila}>
+                  <Text style={[styles.instruccionesEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.confirmacion.ciudad", { defaultValue: "Ciudad" })}
+                  </Text>
+                  <Text style={[styles.instruccionesValor, { color: c.textPrimary }]}>
+                    {ciudadSucursal || t("reserva.confirmacion.sinDefinir")}
+                  </Text>
+                </View>
+
+                <View style={styles.instruccionesFila}>
+                  <Text style={[styles.instruccionesEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.confirmacion.direccion", { defaultValue: "Dirección" })}
+                  </Text>
+                  <Text style={[styles.instruccionesValor, { color: c.textPrimary }]} numberOfLines={2}>
+                    {direccionSucursal || t("reserva.confirmacion.sinDefinir")}
+                  </Text>
+                </View>
+
+                <View style={[styles.instruccionesDivisor, { backgroundColor: c.border }]} />
+
+                <View style={styles.instruccionesFila}>
+                  <Text style={[styles.instruccionesEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.confirmacion.totalAPagar", { defaultValue: "TOTAL A PAGAR" })}:
+                  </Text>
+                  <Text style={[styles.instruccionesTotalValor, { color: c.primary }]}>
+                    {fmt(reserva.total)}
+                  </Text>
+                </View>
+
+                <Text style={[styles.instruccionesNota, { color: c.textMuted }]}>
+                  {t("reserva.confirmacion.notaTotalPagar", { defaultValue: "*Incluye impuestos y cargos administrativos" })}
+                </Text>
+              </View>
+            </>
+          )}
+
+          {/* Banner de Simulación para Sandbox */}
+          <View style={[styles.simuladorCaja, { backgroundColor: c.oscuro ? "#1E293B" : "#FEF3C7", borderColor: "#F59E0B" }]}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
+              <Ionicons name="construct-outline" size={16} color="#D97706" />
+              <Text style={[styles.simuladorTitulo, { color: c.oscuro ? "#FBBF24" : "#B45309" }]}>
+                [Simulador] Confirmación de Pago (Cajero)
+              </Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.efectivoTarjetaTitulo}>Pago Pendiente en Sucursal</Text>
-              <Text style={styles.efectivoTarjetaSubtitulo}>Preséntate en cualquier sucursal autorizada</Text>
-            </View>
-          </View>
-
-          <View style={styles.efectivoCodigoBox}>
-            <Text style={styles.efectivoCodigoLabel}>CÓDIGO DE VERIFICACIÓN</Text>
-            <Text style={styles.efectivoCodigoValor}>{reserva.codigoVerificacionEfectivo}</Text>
-            <Text style={styles.efectivoCopyHint}>Muestra este código en sucursal</Text>
-          </View>
-
-          <View style={styles.efectivoAlertaRow}>
-            <Ionicons name="time-outline" size={15} color="#dc2626" />
-            <Text style={styles.efectivoAlertaTexto}>
-              Tu reserva se cancela automáticamente si no pagas en {reserva.horasLimitePago ?? 72} horas
+            <Text style={[styles.simuladorTexto, { color: c.textSecondary }]}>
+              Simula que el cliente se presenta en la caja de la sucursal y realiza el pago. Al confirmar, el estado cambiará a CONFIRMADA y se habilitará la firma del contrato.
             </Text>
-          </View>
-
-          <View style={[styles.efectivoInfoRow, { borderTopColor: "#f3f4f6" }]}>
-            <Ionicons name="information-circle-outline" size={14} color="#6b7280" />
-            <Text style={styles.efectivoInfoTexto}>
-              Después del pago, el encargado de la sucursal confirmará tu reserva. Recibirás una notificación para firmar el contrato.
-            </Text>
+            <TouchableOpacity style={styles.simuladorBtn} onPress={handleSimularPagoCaja}>
+              <Text style={styles.simuladorBtnTexto}>Confirmar Recepción de Pago</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      ) : null}
-
-      {/* Sección de contrato (solo si NO es pago en efectivo pendiente) */}
-      {reserva.estado !== "PENDIENTE_EFECTIVO" && (
-        <>
-          {contratoActual && !claveDesbloqueada ? (
-            <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
-              <Ionicons name="lock-closed-outline" size={32} color={c.textMuted} style={{ marginBottom: 10 }} />
-              <Text style={[styles.tituloCandado, { color: c.textPrimary }]}>
-                {t("misReservas.contratoBloqueadoTitulo")}
-              </Text>
-              <Text style={[styles.textoCandado, { color: c.textSecondary }]}>
-                {t("misReservas.contratoBloqueadoTexto")}
-              </Text>
-              <View style={{ width: "100%", marginTop: 12 }}>
-                <PasswordInput
-                  label={t("misReservas.claveContrato")}
-                  placeholder={t("misReservas.claveContratoPlaceholder")}
-                  value={claveIngresada}
-                  onChangeText={(v) => {
-                    setClaveIngresada(v);
-                    if (errorClave) setErrorClave("");
-                  }}
-                  error={errorClave}
-                  keyboardType="number-pad"
-                />
-              </View>
-              <TouchableOpacity style={[styles.btnWrap, { marginTop: 4 }]} onPress={handleValidarClave} activeOpacity={0.85}>
-                <LinearGradient
-                  colors={GRADIENTES.boton.colors}
-                  start={GRADIENTES.boton.start}
-                  end={GRADIENTES.boton.end}
-                  style={styles.btn}
-                >
-                  <Text style={styles.btnTexto}>{t("misReservas.verContrato")}</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-          ) : puedeIniciarFirmaManual && !mostrarFirmaManual ? (
-            /* Botón para iniciar firma desde Mis Reservas (CONFIRMADA sin contrato) */
-            <View style={[styles.card, { backgroundColor: "#fffbeb", borderColor: "#f59e0b", alignItems: "center" }]}>
-              <Ionicons name="document-text-outline" size={32} color="#b45309" style={{ marginBottom: 10 }} />
-              <Text style={[styles.tituloCandado, { color: "#92400e" }]}>Tu reserva está confirmada</Text>
-              <Text style={[styles.textoCandado, { color: "#78350f" }]}>
-                Ya puedes firmar el contrato de arrendamiento para completar el proceso.
-              </Text>
-              <TouchableOpacity
-                style={[styles.btnWrap, { marginTop: 14 }]}
-                onPress={() => setMostrarFirmaManual(true)}
-                activeOpacity={0.85}
-              >
-                <LinearGradient
-                  colors={GRADIENTES.boton.colors}
-                  start={GRADIENTES.boton.start}
-                  end={GRADIENTES.boton.end}
-                  style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 }]}
-                >
-                  <Ionicons name="create-outline" size={17} color="#fff" />
-                  <Text style={styles.btnTexto}>Firmar Contrato</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-          ) : null}
-        </>
       )}
 
-      {/* Botón de Volver a Mis Reservas */}
-      <TouchableOpacity style={[styles.btnWrap, { marginTop: 8, marginBottom: 8 }]} onPress={irAMisReservas} activeOpacity={0.85}>
-        <View style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8, backgroundColor: c.bgInput, borderWidth: 1, borderColor: c.border }]}>
-          <Ionicons name="arrow-back-outline" size={17} color={c.textPrimary} />
-          <Text style={[styles.btnTexto, { color: c.textPrimary }]}>Mis Reservas</Text>
+      {contratoActual && !claveDesbloqueada ? (
+        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
+          <Ionicons name="lock-closed-outline" size={32} color={c.textMuted} style={{ marginBottom: 10 }} />
+          <Text style={[styles.tituloCandado, { color: c.textPrimary }]}>
+            {t("misReservas.contratoBloqueadoTitulo")}
+          </Text>
+          <Text style={[styles.textoCandado, { color: c.textSecondary }]}>
+            {t("misReservas.contratoBloqueadoTexto")}
+          </Text>
+          <View style={{ width: "100%", marginTop: 12 }}>
+            <PasswordInput
+              label={t("misReservas.claveContrato")}
+              placeholder={t("misReservas.claveContratoPlaceholder")}
+              value={claveIngresada}
+              onChangeText={(v) => {
+                setClaveIngresada(v);
+                if (errorClave) setErrorClave("");
+              }}
+              error={errorClave}
+              keyboardType="number-pad"
+            />
+          </View>
+          <TouchableOpacity style={[styles.btnWrap, { marginTop: 4 }]} onPress={handleValidarClave} activeOpacity={0.85}>
+            <LinearGradient
+              colors={GRADIENTES.boton.colors}
+              start={GRADIENTES.boton.start}
+              end={GRADIENTES.boton.end}
+              style={styles.btn}
+            >
+              <Text style={styles.btnTexto}>{t("misReservas.verContrato")}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      ) : !contratoActual ? (
+        <TouchableOpacity
+          style={[styles.btnWrap, { marginBottom: 12 }, !contratoActual && { opacity: 0.5 }]}
+          onPress={handleDescargarPdf}
+          activeOpacity={0.85}
+          disabled={generandoPdf || !contratoActual}
+        >
+          <LinearGradient
+            colors={GRADIENTES.boton.colors}
+            start={GRADIENTES.boton.start}
+            end={GRADIENTES.boton.end}
+            style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 }]}
+          >
+            {generandoPdf ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Ionicons name="document-text-outline" size={18} color="#FFFFFF" />
+            )}
+            <Text style={styles.btnTexto}>
+              {generandoPdf ? t("misReservas.generandoPdf") : t("misReservas.descargarContrato")}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      ) : null}
 
     </ScrollView>
       )}
@@ -690,99 +753,86 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   btnDescargarTexto: { fontSize: 14, fontWeight: "700" },
-
-  // ---- Tarjeta de Pago Pendiente en Sucursal (PENDIENTE_EFECTIVO) ----
-  efectivoCard: {
-    overflow: "hidden",
-    borderWidth: 1.5,
-    borderColor: "#fbbf24",
-    padding: 0,
+  instruccionesTitulo: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#1F2937",
   },
-  efectivoFranja: {
-    height: 5,
-    backgroundColor: "#f59e0b",
+  instruccionesTexto: {
+    fontSize: 13,
+    color: "#4B5563",
+    lineHeight: 18,
+  },
+  instruccionesCaja: {
     width: "100%",
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 16,
   },
-  efectivoHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 16,
-    paddingBottom: 12,
-  },
-  efectivoIconoWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#fef3c7",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  efectivoTarjetaTitulo: {
+  sucursalNombre: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#92400e",
-  },
-  efectivoTarjetaSubtitulo: {
-    fontSize: 11.5,
-    color: "#b45309",
-    marginTop: 2,
-  },
-  efectivoCodigoBox: {
-    marginHorizontal: 16,
-    backgroundColor: "#fffbeb",
-    borderWidth: 1.5,
-    borderColor: "#fde68a",
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  efectivoCodigoLabel: {
-    fontSize: 9,
-    fontWeight: "800",
-    color: "#b45309",
-    letterSpacing: 1,
-    marginBottom: 6,
-  },
-  efectivoCodigoValor: {
-    fontSize: 26,
-    fontWeight: "900",
-    color: "#78350f",
-    letterSpacing: 2,
-  },
-  efectivoCopyHint: {
-    fontSize: 10.5,
-    color: "#b45309",
-    marginTop: 6,
-  },
-  efectivoAlertaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginHorizontal: 16,
     marginBottom: 12,
   },
-  efectivoAlertaTexto: {
+  instruccionesFila: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingVertical: 5,
+    gap: 8,
+  },
+  instruccionesEtiqueta: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    flexShrink: 0,
+  },
+  instruccionesValor: {
+    fontSize: 11.5,
+    fontWeight: "600",
+    flex: 1,
+    textAlign: "right",
+  },
+  instruccionesDivisor: {
+    height: 1,
+    marginVertical: 10,
+  },
+  instruccionesTotalValor: {
+    fontSize: 14.5,
+    fontWeight: "800",
+    flex: 1,
+    textAlign: "right",
+  },
+  instruccionesNota: {
+    fontSize: 9.5,
+    fontStyle: "italic",
+    marginTop: 8,
+    textAlign: "center",
+  },
+  simuladorCaja: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 8,
+  },
+  simuladorTitulo: {
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  simuladorTexto: {
+    fontSize: 11,
+    lineHeight: 15,
+    marginBottom: 10,
+  },
+  simuladorBtn: {
+    backgroundColor: "#D97706",
+    paddingVertical: 9,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  simuladorBtnTexto: {
+    color: "#fff",
     fontSize: 12,
     fontWeight: "700",
-    color: "#dc2626",
-    flex: 1,
-    lineHeight: 16,
-  },
-  efectivoInfoRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 6,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    paddingTop: 12,
-    borderTopWidth: 1,
-  },
-  efectivoInfoTexto: {
-    fontSize: 11.5,
-    color: "#6b7280",
-    flex: 1,
-    lineHeight: 16,
   },
 });
