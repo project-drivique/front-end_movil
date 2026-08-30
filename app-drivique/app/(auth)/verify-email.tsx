@@ -15,15 +15,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useVerificarCorreo } from "@/modules/auth/hooks/useAuth";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { OtpInput } from "@/components/ui/OtpInput";
-import { GRADIENTES } from "@/constants/gradients";
 import { useAuthStore } from "@/store/authStore";
 import { useUsuarioStore } from "@/store/userStore";
 import { useAuditoria } from "@/store/auditStore";

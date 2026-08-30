@@ -4,6 +4,7 @@
 // dispositivo (AsyncStorage), igual que la web lo hace con localStorage
 // (src/services/reservaService.js). Esto debería migrarse a un backend.
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import reservasDemoJson from "../../../mocks/reservasDemo.json";
 
 const STORAGE_KEY = "drivique_reservas";
 
@@ -31,7 +32,6 @@ export interface ReservaGuardada {
   fechaLimitePago?: string | null;
   horasLimitePago?: number | null;
   paymentId?: string | null;
-  codigoVerificacionEfectivo?: string;
   [extra: string]: unknown;
 }
 
@@ -102,7 +102,24 @@ function vencerReservasEfectivo(reservas: ReservaGuardada[]): {
 async function leer(): Promise<ReservaGuardada[]> {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEY);
-    const reservas: ReservaGuardada[] = data ? JSON.parse(data) : [];
+    let reservas: ReservaGuardada[] = data ? JSON.parse(data) : [];
+
+    // Cargar reservas del JSON de mocks si no están registradas aún
+    let cambio = false;
+    for (const rDemo of (reservasDemoJson as any[])) {
+      const yaExiste = reservas.some((r) => r.referencia === rDemo.referencia);
+      if (!yaExiste) {
+        reservas.push({
+          ...rDemo,
+          fechaReserva: new Date().toISOString(),
+        } as ReservaGuardada);
+        cambio = true;
+      }
+    }
+    if (cambio) {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reservas));
+    }
+
     const { actualizadas, cambiaron } = vencerReservasEfectivo(reservas);
     if (cambiaron) {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(actualizadas));
@@ -163,7 +180,6 @@ export const reservaPersistService = {
     if (esEfectivo) {
       reservaFinal.fechaLimitePago = calcularFechaLimitePago();
       reservaFinal.horasLimitePago = HORAS_LIMITE_PAGO_EFECTIVO;
-      reservaFinal.codigoVerificacionEfectivo = `CASH-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     }
 
     reservas.push(reservaFinal);
@@ -196,14 +212,5 @@ export const reservaPersistService = {
 
   cancelarReserva: async (referencia: string): Promise<boolean> => {
     return reservaPersistService.actualizarEstado(referencia, "CANCELADA");
-  },
-
-  // ---- MÉTODOS MOCK PARA QA/TESTING DE PAGO EN EFECTIVO ---- //
-  simularConfirmacionEfectivo: async (referencia: string): Promise<boolean> => {
-    return reservaPersistService.actualizarEstado(referencia, "CONFIRMADA");
-  },
-
-  simularVencimientoEfectivo: async (referencia: string): Promise<boolean> => {
-    return reservaPersistService.actualizarEstado(referencia, "CANCELADA_POR_TIEMPO");
   },
 };
