@@ -11,11 +11,18 @@ import {
   Linking,
   Alert,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useUsuarioStore } from "@/store/userStore";
+import {
+  reservaPersistService,
+  ReservaGuardada,
+  calcularGrupoReserva,
+} from "@/modules/reservation/services/reservationPersistService";
+import { fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -59,6 +66,11 @@ export default function SupportScreen() {
   // Acordeón de FAQs
   const [faqsAbiertas, setFaqsAbiertas] = useState<string[]>(["faq-1"]);
 
+  // Reservas activas/confirmadas del usuario
+  const [reservasValidas, setReservasValidas] = useState<ReservaGuardada[]>([]);
+  const [cargandoReservas, setCargandoReservas] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   // Campos del formulario de reporte
   const [reservaId, setReservaId] = useState(params.reservaId || "");
   const [vehiculoNombre, setVehiculoNombre] = useState(params.vehiculoNombre || "");
@@ -79,6 +91,34 @@ export default function SupportScreen() {
     setContactoNombre(nombreCompleto || "Carlos Mendoza");
     setContactoTelefono(usuarioProfile.telefono || "+57 314 478 9702");
     setContactoEmail(usuarioProfile.correo || "carlos.mendoza@email.com");
+  }, [usuarioProfile]);
+
+  // Cargar reservas válidas (confirmadas o en_curso)
+  useEffect(() => {
+    let activo = true;
+    (async () => {
+      try {
+        const data = await reservaPersistService.getReservasUsuario({
+          id: usuarioProfile.id,
+          correo: usuarioProfile.correo,
+          numeroDocumento: usuarioProfile.numeroDocumento,
+        });
+        if (activo) {
+          const filtradas = data.filter((r) => {
+            const grupo = calcularGrupoReserva(r);
+            return grupo === "confirmada" || grupo === "en_curso";
+          });
+          setReservasValidas(filtradas);
+        }
+      } catch (err) {
+        console.error("Error cargando reservas para soporte:", err);
+      } finally {
+        if (activo) setCargandoReservas(false);
+      }
+    })();
+    return () => {
+      activo = false;
+    };
   }, [usuarioProfile]);
 
   // Manejar parámetros de navegación si viene desde "Mis Reservas"
@@ -136,6 +176,9 @@ export default function SupportScreen() {
   const validarYEnviarReporte = () => {
     const nuevosErrores: Record<string, string> = {};
 
+    if (!reservaId || !vehiculoNombre) {
+      nuevosErrores.vehiculoNombre = "Debes asociar una reserva válida para enviar la incidencia.";
+    }
     if (!descripcion.trim() || descripcion.trim().length < 10) {
       nuevosErrores.descripcion = "Escribe una descripción detallada (mínimo 10 caracteres).";
     }
@@ -375,22 +418,64 @@ export default function SupportScreen() {
 
             {/* Vehículo y Placa */}
             <Text style={[styles.inputLabel, { color: c.textPrimary }]}>Vehículo / Reserva asociada</Text>
-            <View style={styles.rowTwoInputs}>
-              <TextInput
-                style={[styles.input, { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary, flex: 1.5 }]}
-                placeholder="Ej: Toyota Prado VX"
-                placeholderTextColor={c.textMuted}
-                value={vehiculoNombre}
-                onChangeText={setVehiculoNombre}
-              />
-              <TextInput
-                style={[styles.input, { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary, flex: 1 }]}
-                placeholder="Placa (ej: KLS-849)"
-                placeholderTextColor={c.textMuted}
-                value={placa}
-                onChangeText={setPlaca}
-              />
-            </View>
+            {!params.reservaId && !cargandoReservas && reservasValidas.length === 0 ? (
+              <View style={[styles.infoBoxModal, { backgroundColor: c.bgInput, marginVertical: 4, padding: 12 }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Ionicons name="warning-outline" size={20} color="#EF4444" />
+                  <Text style={{ color: c.textPrimary, fontSize: 13, fontWeight: "700", flex: 1 }}>
+                    No tienes reservas activas o confirmadas
+                  </Text>
+                </View>
+                <Text style={{ color: c.textSecondary, fontSize: 12, marginTop: 6, lineHeight: 16 }}>
+                  Solo puedes reportar incidencias técnicas si tienes reservas activas o confirmadas en este momento.
+                </Text>
+              </View>
+            ) : params.reservaId ? (
+              // Case A: Preloaded from bookings screen (Read-only view)
+              <View style={styles.rowTwoInputs}>
+                <View style={[styles.input, { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", borderColor: c.border, flex: 1.5, justifyContent: "center" }]}>
+                  <Text style={{ color: c.textSecondary, fontSize: 13.5 }}>{vehiculoNombre}</Text>
+                </View>
+                <View style={[styles.input, { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", borderColor: c.border, flex: 1, justifyContent: "center" }]}>
+                  <Text style={{ color: c.textSecondary, fontSize: 13.5 }}>{placa || "Sin Placa"}</Text>
+                </View>
+              </View>
+            ) : (
+              // Case B: Direct navigation (Dropdown selector + read-only Plate)
+              <View style={{ gap: 10 }}>
+                <View style={styles.rowTwoInputs}>
+                  {/* Vehículo Selector Dropdown */}
+                  <TouchableOpacity
+                    style={[
+                      styles.input,
+                      {
+                        backgroundColor: c.bgInput,
+                        borderColor: errores.vehiculoNombre ? "#EF4444" : c.border,
+                        flex: 1.5,
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      },
+                    ]}
+                    onPress={() => setIsDropdownOpen(true)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={{ color: vehiculoNombre ? c.textPrimary : c.textMuted, fontSize: 13.5 }} numberOfLines={1}>
+                      {vehiculoNombre || "Selecciona un vehículo"}
+                    </Text>
+                    <Ionicons name="chevron-down" size={16} color={c.textSecondary} />
+                  </TouchableOpacity>
+
+                  {/* Plate Read-only Input */}
+                  <View style={[styles.input, { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", borderColor: c.border, flex: 1, justifyContent: "center" }]}>
+                    <Text style={{ color: placa ? c.textPrimary : c.textMuted, fontSize: 13.5 }}>
+                      {placa || "Placa"}
+                    </Text>
+                  </View>
+                </View>
+                {errores.vehiculoNombre && <Text style={styles.errorText}>{errores.vehiculoNombre}</Text>}
+              </View>
+            )}
 
             {/* Selector de Tipo de Incidencia desde JSON */}
             <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 14 }]}>
@@ -556,9 +641,10 @@ export default function SupportScreen() {
 
             {/* Botón de Enviar */}
             <TouchableOpacity
-              style={styles.submitBtn}
-              onPress={validarYEnviarReporte}
+              style={[styles.submitBtn, (!params.reservaId && reservasValidas.length === 0) && { opacity: 0.5 }]}
+              onPress={(!params.reservaId && reservasValidas.length === 0) ? undefined : validarYEnviarReporte}
               activeOpacity={0.88}
+              disabled={!params.reservaId && reservasValidas.length === 0}
             >
               <LinearGradient
                 colors={["#16a34a", "#15803d"]}
@@ -635,6 +721,97 @@ export default function SupportScreen() {
           )}
         </View>
       )}
+
+      {/* MODAL 3: SELECTOR DE VEHÍCULO / RESERVA ACTIVA */}
+      <Modal
+        visible={isDropdownOpen}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsDropdownOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCardLarge, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+            <View style={[styles.modalHeaderRow, { marginBottom: 16 }]}>
+              <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
+                Selecciona tu Vehículo en Alquiler
+              </Text>
+              <TouchableOpacity onPress={() => setIsDropdownOpen(false)}>
+                <Ionicons name="close" size={24} color={c.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            {cargandoReservas ? (
+              <View style={{ paddingVertical: 40, alignItems: "center" }}>
+                <ActivityIndicator size="large" color="#2563EB" />
+                <Text style={{ marginTop: 10, color: c.textSecondary }}>Cargando reservas...</Text>
+              </View>
+            ) : reservasValidas.length === 0 ? (
+              <View style={{ paddingVertical: 40, alignItems: "center", paddingHorizontal: 16 }}>
+                <Ionicons name="warning-outline" size={48} color={c.textMuted} />
+                <Text style={{ fontSize: 15, fontWeight: "800", color: c.textPrimary, marginTop: 12, textAlign: "center" }}>
+                  No tienes reservas activas o confirmadas
+                </Text>
+                <Text style={{ fontSize: 12.5, color: c.textSecondary, marginTop: 6, textAlign: "center", lineHeight: 18 }}>
+                  Solo puedes reportar incidencias técnicas en vehículos con alquileres confirmados o en curso en este momento.
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={reservasValidas}
+                keyExtractor={(item) => item.referencia}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                renderItem={({ item }) => {
+                  const vehSnap = item.vehiculoSnapshot as any;
+                  const esSeleccionada = item.referencia === reservaId;
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        styles.reservaSeleccionCard,
+                        {
+                          backgroundColor: esSeleccionada ? (c.oscuro ? "#1E3A8A44" : "#EFF6FF") : c.bgInput,
+                          borderColor: esSeleccionada ? "#2563EB" : c.border,
+                        },
+                      ]}
+                      onPress={() => {
+                        setReservaId(item.referencia);
+                        setVehiculoNombre(item.vehiculoNombre);
+                        setPlaca(vehSnap?.placa || "Sin placa");
+                        if (errores.vehiculoNombre) {
+                          setErrores((prev) => ({ ...prev, vehiculoNombre: "" }));
+                        }
+                        setIsDropdownOpen(false);
+                      }}
+                      activeOpacity={0.85}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.reservaSeleccionNombre, { color: c.textPrimary }]}>
+                          {item.vehiculoNombre}
+                        </Text>
+                        <Text style={[styles.reservaSeleccionDetalle, { color: c.textSecondary }]}>
+                          Placa: <Text style={{ fontWeight: "700" }}>{vehSnap?.placa || "Sin placa"}</Text> · Ref: {item.referencia}
+                        </Text>
+                        <Text style={[styles.reservaSeleccionFechas, { color: c.textMuted }]}>
+                          {item.fechaRetiro ? fechaCorta(String(item.fechaRetiro)) : ""} - {item.fechaDevolucion ? fechaCorta(String(item.fechaDevolucion)) : ""}
+                        </Text>
+                      </View>
+                      {esSeleccionada && (
+                        <Ionicons name="checkmark-circle" size={22} color="#2563EB" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            )}
+
+            <TouchableOpacity
+              style={[styles.modalCloseBtn, { marginTop: 10 }]}
+              onPress={() => setIsDropdownOpen(false)}
+            >
+              <Text style={styles.modalCloseBtnText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* MODAL 1: CONFIRMACIÓN DE ENVÍO EXITOSO */}
       <Modal
@@ -1171,4 +1348,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   modalCloseBtnText: { color: "#FFF", fontSize: 13.5, fontWeight: "800" },
+  reservaSeleccionCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  reservaSeleccionNombre: { fontSize: 14, fontWeight: "700" },
+  reservaSeleccionDetalle: { fontSize: 12, marginTop: 2 },
+  reservaSeleccionFechas: { fontSize: 11, marginTop: 4 },
 });
