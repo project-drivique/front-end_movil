@@ -90,7 +90,8 @@ export function FloatingSupportChat() {
 
     // Respuesta inteligente del motor con contexto multilenguaje y de negocio
     setTimeout(() => {
-      const botResponse = procesarMensajeChatbot(actionValue || texto, idiomaActual);
+      const currentLang = useIdioma.getState().idiomaActual;
+      const botResponse = procesarMensajeChatbot(actionValue || texto, currentLang);
       const botMsg: ChatMessage = {
         ...botResponse,
         id: `bot-${Date.now()}`,
@@ -102,7 +103,8 @@ export function FloatingSupportChat() {
   };
 
   const reiniciarChat = () => {
-    setMensajes([obtenerMensajeBienvenida(idiomaActual)]);
+    const currentLang = useIdioma.getState().idiomaActual;
+    setMensajes([obtenerMensajeBienvenida(currentLang)]);
   };
 
   return (

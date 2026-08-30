@@ -438,7 +438,7 @@ function TarjetaReserva({
 
 
           {/* Botón para reportar incidencia en el vehículo */}
-          {grupo !== "cancelada" && (
+          {(grupo === "confirmada" || grupo === "en_curso") && (
             <TouchableOpacity
               style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
               onPress={(e) => {
