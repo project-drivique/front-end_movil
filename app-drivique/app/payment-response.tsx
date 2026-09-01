@@ -521,7 +521,7 @@ export default function PagoRespuestaScreen() {
 
           {/* Banner de Simulación para Sandbox (SOLO PARA PAGO EN SUCURSAL) */}
           {reserva.metodoPago === "efectivo" && (
-          <View style={[styles.simuladorCaja, { backgroundColor: c.oscuro ? "#1E293B" : "#FEF3C7", borderColor: "#F59E0B", marginTop: 16 }]}> { backgroundColor: c.oscuro ? "#1E293B" : "#FEF3C7", borderColor: "#F59E0B" }]}>
+            <View style={[styles.simuladorCaja, { backgroundColor: c.oscuro ? "#1E293B" : "#FEF3C7", borderColor: "#F59E0B", marginTop: 16 }]}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
               <Ionicons name="construct-outline" size={16} color="#D97706" />
               <Text style={[styles.simuladorTitulo, { color: c.oscuro ? "#FBBF24" : "#B45309" }]}>

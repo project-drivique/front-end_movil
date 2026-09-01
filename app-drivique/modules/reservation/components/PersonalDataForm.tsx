@@ -270,10 +270,6 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       await reservaPersistService.eliminarReserva(referenciaActual);
     }
   };
-    setModalInstruccionesEfectivoVisible(false);
-    limpiarReserva();
-    router.replace("/(tabs)/my-bookings");
-  };
 
   const handleContratoFirmado = async () => {
     if (referenciaActual) {
