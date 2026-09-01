@@ -648,6 +648,8 @@ export default {
   },
   // Tabs
   tabs: {
+    masCuponesGeniales: `Más cupones geniales`,
+
     inicio: 'Inicio',
     notificaciones: 'Notificaciones',
     misReservas: 'Mis reservas',
@@ -1129,4 +1131,81 @@ export default {
     monedaUsdPesos: 'pesos colombianos (COP)',
     monedaUsdParte4: ', según la tasa de cambio del momento.',
   },
+  coupon: {
+    cancelBtn: 'Cancelar',
+    understoodBtn: 'Entendido',
+    errorMinDays: 'Requiere un mínimo de {{days}} días de alquiler.',
+    errorCategory: 'Solo válido para: {{categories}}.',
+    errorExpired: 'Este cupón ya no es válido.',
+    errorInvalid: 'El código ingresado no existe o ya expiró.',
+    title: 'CUPÓN DE DESCUENTO (OPCIONAL)',
+    placeholder: 'Ingresa un código',
+    applyBtn: 'APLICAR',
+    viewAvailable: 'VER CUPONES DISPONIBLES',
+    modalTitle: 'Cupones Disponibles',
+    empty: 'No tienes cupones disponibles en este momento.',
+    conditionsBtn: 'Condiciones',
+    appliedBtn: '✓ Aplicado',
+    applyAction: 'Aplicar',
+    conditionsTitle: 'Condiciones del Cupón',
+    fallbackDesc: 'Aplica descuento en tu reserva actual.',
+    termsTitle: 'Términos y condiciones:',
+    term1: '• Válido para pagos digitales e iniciales.',
+    term2: '• No transferible a otros usuarios.',
+    term3: '• Solo se puede aplicar un cupón por reserva.',
+    minDays: 'Mínimo de días:',
+    validCategories: 'Categorías válidas:',
+    expires: 'Vence:',
+    understoodBtn: 'Entendido'
+  }
+,
+  simulator: {
+    title: '[Simulador] Confirmación de Pago (Cajero)',
+    desc: 'Simula que el cliente se presenta en la caja de la sucursal y realiza el pago. Al confirmar, el estado cambiará a CONFIRMADA y se habilitará la firma del contrato.',
+    btn: 'Confirmar Recepción de Pago'
+  }
+,
+  mockCoupons: {
+    p1Title: '¡Cupón de bienvenida activo!',
+    p1Msg: 'Usa el cupón A8X2F9 para obtener 15% de descuento en tu próximo alquiler. Aplica en cualquier categoría.',
+    p1Desc: '¡Aprovecha un 15% OFF en tu reserva! Válido exclusivamente en los grupos GY y LY.',
+    p2Title: 'Fin de semana especial',
+    p2Msg: 'Alquila una SUV de viernes a domingo y paga solo 2 días. Válido esta semana. Reserva antes de que se agoten los cupos.',
+    p2Desc: 'Alquila una SUV de viernes a domingo y paga menos.',
+    p3Title: 'Descuento para clientes frecuentes',
+    p3Msg: 'Por ser un cliente frecuente, accedes a un 10% adicional en todos tus alquileres este mes. Se aplica automáticamente.',
+    c1Desc: '15% de descuento en tu primera reserva. Exclusivo para nuevos usuarios.',
+    c2Desc: '20% OFF alquilando fin de semana (mínimo 2 días).',
+    c3Desc: '$50.000 COP de descuento en alquileres mayores a 7 días.',
+    c4Desc: '10% de descuento en categoría LY.'
+  }
+,
+  promoCoupons: {
+    confirmTitle: `Confirmar Activación`,
+    confirmDesc: `¿Deseas desbloquear este cupón y usarlo en tu próxima reserva?`,
+
+    c1Title: 'Primeras 3 reservas',
+    c1Desc: 'Ganaste este cupón especial por haber completado tus primeras 3 reservas en la plataforma.',
+    c1Terms: 'Válido para vehículos SUV y Premium. Requiere reserva mínima de 500.000 COP. Vence en 30 días.',
+    c2Title: 'Recompensa de Fidelidad',
+    c2Desc: 'Otorgado a nuestros clientes más fieles por su continuo soporte y confianza en Drivique.',
+    c2Terms: 'Válido para vehículos Económicos. Requiere mínimo 150.000 COP. No acumulable con otras promociones.',
+    c3Title: 'Bienvenida de Octubre',
+    c3Desc: 'Recompensa otorgada por tu primera interacción este mes en Drivique.',
+    c3Terms: 'Aplica en vehículos Sedán. Sin reserva mínima. Válido un solo uso en octubre.',
+    c4Title: 'Cliente VIP Drivique',
+    c4Desc: 'Ganado por alcanzar el nivel de cliente estrella tras acumular alquileres de larga duración.',
+    c4Terms: 'Otorga 50.000 COP de descuento. Requiere reserva mínima de 200.000 COP. Válido para cualquier categoría.',
+    vp1Title: '¡Volvió! No esperes más',
+    vp1Desc: 'Este vehículo volvió a estar disponible en tu zona. Resérvalo antes de que se agote.',
+    vp2Title: '28% OFF solo hoy',
+    vp2Desc: 'Oferta del día especial. Reserva hoy y obtén 28% de descuento sobre la tarifa estándar.',
+    vp3Title: 'Fin de semana sin precio igual',
+    vp3Desc: 'Alquila este vehículo premium de viernes a domingo y paga solo 2 días.',
+    modalTitle: '¡Cupón Activado con Éxito!',
+    modalSubtitle: 'Has desbloqueado el cupón de recompensa por tus logros en Drivique.',
+    modalInstruction: 'Usa este código en el resumen de reserva para obtener tu descuento.',
+    modalBtn: '¡Excelente!'
+  }
+
 }

@@ -1,0 +1,169 @@
+[
+  {
+    "id": "c1",
+    "codigo": "A8X2F9",
+    "descuentoPorcentaje": 15,
+    "descripcion": "mockCoupons.c1Desc",
+    "estado": "activo",
+    "fechaExpiracion": "2026-12-31T23:59:59Z",
+    "fechaOtorgado": "2026-08-01T09:00:00Z",
+    "tituloPremio": "mockCoupons.p1Title",
+    "recompensaDetalle": "mockCoupons.p1Desc",
+    "condicionesDetalladas": "15% de descuento. Válido exclusivamente en grupos GY y LY.",
+    "descuentoTexto": "15% OFF",
+    "regla": "Solo primera reserva",
+    "reglas": {
+      "soloPrimeraReserva": true,
+      "categoriasValidas": [
+        "GY",
+        "LY",
+        "SUV"
+      ]
+    }
+  },
+  {
+    "id": "c2",
+    "codigo": "W4K7P2",
+    "descuentoPorcentaje": 20,
+    "descripcion": "mockCoupons.c2Desc",
+    "estado": "a_punto_de_agotar",
+    "fechaExpiracion": "2026-09-02T23:59:59Z",
+    "fechaOtorgado": "2026-08-01T09:00:00Z",
+    "tituloPremio": "mockCoupons.p2Title",
+    "recompensaDetalle": "mockCoupons.p2Desc",
+    "condicionesDetalladas": "20% OFF alquilando fin de semana (mínimo 2 días).",
+    "descuentoTexto": "20% OFF",
+    "regla": "Mínimo 2 días",
+    "reglas": {
+      "minimoDias": 2,
+      "categoriasValidas": [
+        "SUV",
+        "PICKUP"
+      ]
+    }
+  },
+  {
+    "id": "c3",
+    "codigo": "Z9M3R1",
+    "descuentoFijo": 50000,
+    "descripcion": "mockCoupons.c3Desc",
+    "estado": "activo",
+    "fechaExpiracion": "2026-11-30T23:59:59Z",
+    "fechaOtorgado": "2026-08-01T09:00:00Z",
+    "tituloPremio": "mockCoupons.p3Title",
+    "recompensaDetalle": "mockCoupons.p3Msg",
+    "condicionesDetalladas": ".000 COP de descuento en alquileres mayores a 7 días.",
+    "descuentoTexto": ".000 OFF",
+    "regla": "Mínimo 5 días",
+    "reglas": {
+      "minimoDias": 5
+    }
+  },
+  {
+    "id": "c4",
+    "codigo": "C3P9X1",
+    "descuentoPorcentaje": 19,
+    "descripcion": "promoCoupons.c1Desc",
+    "estado": "a_punto_de_agotar",
+    "fechaExpiracion": "2026-09-10T23:59:59Z",
+    "fechaOtorgado": "2026-08-10T09:00:00Z",
+    "tituloPremio": "promoCoupons.c1Title",
+    "recompensaDetalle": "promoCoupons.c1Desc",
+    "condicionesDetalladas": "promoCoupons.c1Terms",
+    "descuentoTexto": "19% OFF",
+    "regla": "Reserva minima 500.000",
+    "reglas": {
+      "minimoValor": 500000,
+      "categoriasValidas": [
+        "SUV",
+        "PREMIUM"
+      ]
+    }
+  },
+  {
+    "id": "c5",
+    "codigo": "F1D8L5",
+    "descuentoPorcentaje": 15,
+    "descripcion": "promoCoupons.c2Desc",
+    "estado": "activo",
+    "fechaExpiracion": "2026-10-15T23:59:59Z",
+    "fechaOtorgado": "2026-08-12T10:30:00Z",
+    "tituloPremio": "promoCoupons.c2Title",
+    "recompensaDetalle": "promoCoupons.c2Desc",
+    "condicionesDetalladas": "promoCoupons.c2Terms",
+    "descuentoTexto": "15% OFF",
+    "regla": "Reserva minima 150.000",
+    "reglas": {
+      "minimoValor": 150000,
+      "categoriasValidas": [
+        "ECONOMICO"
+      ]
+    }
+  },
+  {
+    "id": "c6",
+    "codigo": "O2T9N4",
+    "descuentoPorcentaje": 10,
+    "descripcion": "promoCoupons.c3Desc",
+    "estado": "activo",
+    "fechaExpiracion": "2026-10-31T23:59:59Z",
+    "fechaOtorgado": "2026-08-15T08:15:00Z",
+    "tituloPremio": "promoCoupons.c3Title",
+    "recompensaDetalle": "promoCoupons.c3Desc",
+    "condicionesDetalladas": "promoCoupons.c3Terms",
+    "descuentoTexto": "10% OFF",
+    "regla": "Sin minimo",
+    "reglas": {
+      "categoriasValidas": [
+        "SEDAN"
+      ]
+    }
+  },
+  {
+    "id": "c7",
+    "codigo": "V4P8D7",
+    "descuentoFijo": 50000,
+    "descripcion": "promoCoupons.c4Desc",
+    "estado": "activo",
+    "fechaExpiracion": "2026-11-20T23:59:59Z",
+    "fechaOtorgado": "2026-08-18T14:45:00Z",
+    "tituloPremio": "promoCoupons.c4Title",
+    "recompensaDetalle": "promoCoupons.c4Desc",
+    "condicionesDetalladas": "promoCoupons.c4Terms",
+    "descuentoTexto": ".000 OFF",
+    "regla": "Reserva minima 200.000",
+    "reglas": {
+      "minimoValor": 200000
+    }
+  },
+  {
+    "id": "c8",
+    "codigo": "OLD50",
+    "descuentoPorcentaje": 50,
+    "descripcion": "Cupón antiguo expirado",
+    "estado": "expirado",
+    "fechaExpiracion": "2025-01-01T00:00:00Z",
+    "fechaOtorgado": "2024-01-01T00:00:00Z",
+    "tituloPremio": "Cupón expirado",
+    "recompensaDetalle": "Ya no es válido",
+    "condicionesDetalladas": "Expiró en 2025.",
+    "descuentoTexto": "50% OFF",
+    "regla": "Ninguna",
+    "reglas": {}
+  },
+  {
+    "id": "c9",
+    "codigo": "TEST99",
+    "descuentoPorcentaje": 99,
+    "descripcion": "Cupón de prueba 99% sin reglas",
+    "estado": "activo",
+    "fechaExpiracion": "2028-01-01T00:00:00Z",
+    "fechaOtorgado": "2024-01-01T00:00:00Z",
+    "tituloPremio": "Cupón de prueba universal",
+    "recompensaDetalle": "Para verificar el éxito.",
+    "condicionesDetalladas": "Sin condiciones. Se aplica a todo.",
+    "descuentoTexto": "99% OFF",
+    "regla": "Sin reglas",
+    "reglas": {}
+  }
+]

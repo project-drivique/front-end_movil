@@ -524,14 +524,14 @@ export default function PagoRespuestaScreen() {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
               <Ionicons name="construct-outline" size={16} color="#D97706" />
               <Text style={[styles.simuladorTitulo, { color: c.oscuro ? "#FBBF24" : "#B45309" }]}>
-                [Simulador] Confirmación de Pago (Cajero)
+                {t("simulator.title", "[Simulador] Confirmación de Pago (Cajero)")}
               </Text>
             </View>
             <Text style={[styles.simuladorTexto, { color: c.textSecondary }]}>
-              Simula que el cliente se presenta en la caja de la sucursal y realiza el pago. Al confirmar, el estado cambiará a CONFIRMADA y se habilitará la firma del contrato.
+              {t("simulator.desc", "Simula que el cliente se presenta en la caja de la sucursal y realiza el pago. Al confirmar, el estado cambiará a CONFIRMADA y se habilitará la firma del contrato.")}
             </Text>
             <TouchableOpacity style={styles.simuladorBtn} onPress={handleSimularPagoCaja}>
-              <Text style={styles.simuladorBtnTexto}>Confirmar Recepción de Pago</Text>
+              <Text style={styles.simuladorBtnTexto}>{t("simulator.btn", "Confirmar Recepción de Pago")}</Text>
             </TouchableOpacity>
           </View>
         </View>

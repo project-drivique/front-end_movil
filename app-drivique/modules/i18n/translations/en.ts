@@ -612,6 +612,8 @@ export default {
     correoActualizadoMsg: 'Your email was changed successfully.',
   },
   tabs: {
+    masCuponesGeniales: `More awesome coupons`,
+
     inicio: 'Home',
     notificaciones: 'Notifications',
     misReservas: 'My Bookings',
@@ -1092,4 +1094,81 @@ export default {
     monedaUsdPesos: 'Colombian pesos (COP)',
     monedaUsdParte4: ', at the exchange rate at that moment.',
   },
+  coupon: {
+    cancelBtn: 'Cancel',
+    understoodBtn: 'Understood',
+    errorMinDays: 'Requires a minimum of {{days}} rental days.',
+    errorCategory: 'Only valid for: {{categories}}.',
+    errorExpired: 'This coupon is no longer valid.',
+    errorInvalid: 'The entered code does not exist or has expired.',
+    title: 'DISCOUNT COUPON (OPTIONAL)',
+    placeholder: 'Enter a code',
+    applyBtn: 'APPLY',
+    viewAvailable: 'VIEW AVAILABLE COUPONS',
+    modalTitle: 'Available Coupons',
+    empty: 'You have no available coupons at this time.',
+    conditionsBtn: 'Conditions',
+    appliedBtn: '✓ Applied',
+    applyAction: 'Apply',
+    conditionsTitle: 'Coupon Conditions',
+    fallbackDesc: 'Applies discount to your current booking.',
+    termsTitle: 'Terms and conditions:',
+    term1: '• Valid for digital and upfront payments.',
+    term2: '• Non-transferable to other users.',
+    term3: '• Only one coupon can be applied per booking.',
+    minDays: 'Minimum days:',
+    validCategories: 'Valid categories:',
+    expires: 'Expires:',
+    understoodBtn: 'Understood'
+  }
+,
+  simulator: {
+    title: '[Simulator] Cash Payment Confirmation',
+    desc: 'Simulates the customer arriving at the branch counter and making the payment. Upon confirmation, the status will change to CONFIRMED and the contract signature will be enabled.',
+    btn: 'Confirm Payment Receipt'
+  }
+,
+  mockCoupons: {
+    p1Title: 'Welcome coupon active!',
+    p1Msg: 'Use the coupon A8X2F9 to get a 15% discount on your next rental. Applies to any category.',
+    p1Desc: 'Enjoy a 15% OFF on your booking! Valid exclusively for GY and LY groups.',
+    p2Title: 'Special weekend',
+    p2Msg: 'Rent an SUV from Friday to Sunday and pay for only 2 days. Valid this week. Book before it\'s sold out.',
+    p2Desc: 'Rent an SUV from Friday to Sunday and pay less.',
+    p3Title: 'Frequent customer discount',
+    p3Msg: 'As a frequent customer, you get an extra 10% off all your rentals this month. Applied automatically.',
+    c1Desc: '15% off your first booking. Exclusive for new users.',
+    c2Desc: '20% OFF on weekend rentals (minimum 2 days).',
+    c3Desc: '$50,000 COP off on rentals over 7 days.',
+    c4Desc: '10% off on LY category.'
+  }
+,
+  promoCoupons: {
+    confirmTitle: `Confirm Activation`,
+    confirmDesc: `Do you want to unlock this coupon and use it on your next booking?`,
+
+    c1Title: 'First 3 Bookings',
+    c1Desc: 'You earned this special coupon for completing your first 3 bookings on the platform.',
+    c1Terms: 'Valid for SUV and Premium vehicles. Requires a minimum booking of 500,000 COP. Expires in 30 days.',
+    c2Title: 'Loyalty Reward',
+    c2Desc: 'Awarded to our most loyal customers for their continued support and trust in Drivique.',
+    c2Terms: 'Valid for Economy vehicles. Requires a minimum of 150,000 COP. Cannot be combined with other promotions.',
+    c3Title: 'October Welcome',
+    c3Desc: 'Reward granted for your first interaction this month in Drivique.',
+    c3Terms: 'Applies to Sedan vehicles. No minimum booking. Valid for a single use in October.',
+    c4Title: 'Drivique VIP Customer',
+    c4Desc: 'Earned by reaching star customer level after accumulating long-term rentals.',
+    c4Terms: 'Grants 50,000 COP discount. Requires a minimum booking of 200,000 COP. Valid for any category.',
+    vp1Title: 'It\'s back! Don\'t wait',
+    vp1Desc: 'This vehicle is available again in your area. Book it before it sells out.',
+    vp2Title: '28% OFF today only',
+    vp2Desc: 'Special daily offer. Book today and get a 28% discount on the standard rate.',
+    vp3Title: 'Unmatched weekend price',
+    vp3Desc: 'Rent this premium vehicle from Friday to Sunday and pay for only 2 days.',
+    modalTitle: 'Coupon Successfully Activated!',
+    modalSubtitle: 'You have unlocked the reward coupon for your achievements on Drivique.',
+    modalInstruction: 'Use this code at checkout to get your discount.',
+    modalBtn: 'Awesome!'
+  }
+
 }
