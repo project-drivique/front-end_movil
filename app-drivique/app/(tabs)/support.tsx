@@ -56,6 +56,7 @@ export default function SupportScreen() {
     vehiculoNombre?: string;
     placa?: string;
     tab?: string;
+    reporteId?: string;
   }>();
 
   const { reportes, crearReporte } = useSupportStore();
@@ -121,8 +122,16 @@ export default function SupportScreen() {
     };
   }, [usuarioProfile]);
 
-  // Manejar parámetros de navegación si viene desde "Mis Reservas"
+  // Manejar parámetros de navegación si viene desde "Mis Reservas" o notificaciones
   useEffect(() => {
+    if (params.reporteId) {
+      const rep = reportes.find((r) => r.id.toLowerCase() === String(params.reporteId).toLowerCase());
+      if (rep) {
+        setReporteSeleccionado(rep);
+        setActiveTab("mis_reportes");
+        return;
+      }
+    }
     if (params.reservaId || params.vehiculoNombre) {
       setReservaId(params.reservaId || "");
       setVehiculoNombre(params.vehiculoNombre || "");
@@ -133,7 +142,7 @@ export default function SupportScreen() {
     } else if (params.tab === "mis_reportes") {
       setActiveTab("mis_reportes");
     }
-  }, [params.reservaId, params.vehiculoNombre, params.placa, params.tab]);
+  }, [params.reservaId, params.vehiculoNombre, params.placa, params.tab, params.reporteId, reportes]);
 
   // Objeto de tipo de incidencia seleccionado
   const tipoObj = useMemo(
@@ -230,6 +239,44 @@ export default function SupportScreen() {
         return "#10B981";
       default:
         return "#6B7280";
+    }
+  };
+
+  const getHistorialReporte = (rep: ReporteIncidencia | null) => {
+    if (!rep) return [];
+    const lista =
+      rep.historialEstados ||
+      (rep as any).historial ||
+      [];
+    if (Array.isArray(lista) && lista.length > 0) {
+      return lista.map((item: any) => ({
+        estado: (item.estado || item.titulo || item.estadoKey || rep.estado) as EstadoReporte,
+        fecha: item.fecha || item.fechaIso || item.hora || rep.fechaCreacion,
+        comentario: item.comentario || item.descripcion || "",
+      }));
+    }
+    return [
+      {
+        estado: rep.estado,
+        fecha: rep.fechaCreacion || new Date().toISOString(),
+        comentario: "Reporte registrado en el sistema.",
+      },
+    ];
+  };
+
+  const formatearFechaHora = (fechaIso?: string) => {
+    if (!fechaIso) return "";
+    if (fechaIso.length <= 5 && fechaIso.includes(":")) return fechaIso;
+    try {
+      const d = new Date(fechaIso);
+      if (isNaN(d.getTime())) return String(fechaIso);
+      const dia = String(d.getDate()).padStart(2, "0");
+      const mes = String(d.getMonth() + 1).padStart(2, "0");
+      const horas = String(d.getHours()).padStart(2, "0");
+      const minutos = String(d.getMinutes()).padStart(2, "0");
+      return `${dia}/${mes} ${horas}:${minutos}`;
+    } catch {
+      return String(fechaIso);
     }
   };
 
@@ -881,12 +928,13 @@ export default function SupportScreen() {
             </View>
 
             {reporteSeleccionado && (
-              <ScrollView style={{ flex: 1, marginVertical: 10 }}>
+              <ScrollView style={{ flex: 1, marginVertical: 10 }} showsVerticalScrollIndicator={false}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <Text style={{ fontSize: 15, fontWeight: "800", color: "#2563EB" }}>
                     {reporteSeleccionado.tipoIncidencia}
                   </Text>
                   <View style={[styles.estadoBadge, { backgroundColor: `${getEstadoColor(reporteSeleccionado.estado)}18`, borderColor: `${getEstadoColor(reporteSeleccionado.estado)}40` }]}>
+                    <View style={[styles.estadoDot, { backgroundColor: getEstadoColor(reporteSeleccionado.estado) }]} />
                     <Text style={[styles.estadoTexto, { color: getEstadoColor(reporteSeleccionado.estado) }]}>
                       {reporteSeleccionado.estado}
                     </Text>
@@ -896,6 +944,7 @@ export default function SupportScreen() {
                 <Text style={[styles.modalSubHeader, { color: c.textMuted }]}>Vehículo / Reserva:</Text>
                 <Text style={[styles.modalVal, { color: c.textPrimary }]}>
                   {reporteSeleccionado.vehiculoNombre} {reporteSeleccionado.placa ? `(Placa: ${reporteSeleccionado.placa})` : ""}
+                  {reporteSeleccionado.reservaId ? ` · Ref: ${reporteSeleccionado.reservaId}` : ""}
                 </Text>
 
                 <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>Descripción:</Text>
@@ -907,11 +956,28 @@ export default function SupportScreen() {
                 <Text style={[styles.modalVal, { color: c.textPrimary }]}>
                   {reporteSeleccionado.contactoNombre} · {reporteSeleccionado.contactoTelefono}
                 </Text>
+                {!!reporteSeleccionado.contactoEmail && (
+                  <Text style={[styles.modalVal, { color: c.textSecondary, fontSize: 12, marginTop: 1 }]}>
+                    {reporteSeleccionado.contactoEmail}
+                  </Text>
+                )}
 
                 <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>Tiempo estimado de atención:</Text>
                 <Text style={[styles.modalVal, { color: "#D97706", fontWeight: "700" }]}>
                   {reporteSeleccionado.tiempoEstimadoSolucion}
                 </Text>
+
+                {/* Evidencias adjuntas si existen */}
+                {Array.isArray(reporteSeleccionado.evidencias) && reporteSeleccionado.evidencias.length > 0 && (
+                  <View style={{ marginTop: 10 }}>
+                    <Text style={[styles.modalSubHeader, { color: c.textMuted }]}>Evidencias adjuntas:</Text>
+                    <View style={{ flexDirection: "row", gap: 8, marginTop: 6 }}>
+                      {reporteSeleccionado.evidencias.map((url, idx) => (
+                        <Image key={idx} source={{ uri: url }} style={styles.evidenciaThumb} />
+                      ))}
+                    </View>
+                  </View>
+                )}
 
                 {/* Historial de atención del Administrador */}
                 <Text style={[styles.modalSubHeader, { color: c.textPrimary, marginTop: 16, fontWeight: "800", fontSize: 13.5 }]}>
@@ -919,24 +985,33 @@ export default function SupportScreen() {
                 </Text>
 
                 <View style={styles.timelineContainer}>
-                  {reporteSeleccionado.historialEstados.map((h, i) => (
-                    <View key={i} style={styles.timelineItem}>
-                      <View style={[styles.timelineDot, { backgroundColor: getEstadoColor(h.estado) }]} />
-                      <View style={styles.timelineContent}>
-                        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                          <Text style={[styles.timelineEstado, { color: c.textPrimary }]}>{h.estado}</Text>
-                          <Text style={[styles.timelineFecha, { color: c.textMuted }]}>
-                            {new Date(h.fecha).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </Text>
+                  {getHistorialReporte(reporteSeleccionado).map((h, i, arr) => {
+                    const esUltimo = i === arr.length - 1;
+                    const colorPunto = getEstadoColor(h.estado);
+                    return (
+                      <View key={i} style={styles.timelineItem}>
+                        <View style={styles.timelineColumnaPunto}>
+                          <View style={[styles.timelineDot, { backgroundColor: colorPunto }]} />
+                          {!esUltimo && (
+                            <View style={[styles.timelineLinea, { backgroundColor: c.border }]} />
+                          )}
                         </View>
-                        {h.comentario && (
-                          <Text style={[styles.timelineComentario, { color: c.textSecondary }]}>
-                            {h.comentario}
-                          </Text>
-                        )}
+                        <View style={styles.timelineContent}>
+                          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                            <Text style={[styles.timelineEstado, { color: c.textPrimary }]}>{h.estado}</Text>
+                            <Text style={[styles.timelineFecha, { color: c.textMuted }]}>
+                              {formatearFechaHora(h.fecha)}
+                            </Text>
+                          </View>
+                          {!!h.comentario && (
+                            <Text style={[styles.timelineComentario, { color: c.textSecondary }]}>
+                              {h.comentario}
+                            </Text>
+                          )}
+                        </View>
                       </View>
-                    </View>
-                  ))}
+                    );
+                  })}
                 </View>
 
                 {/* Nota informativa de gestión por el Administrador */}
@@ -1311,23 +1386,39 @@ const styles = StyleSheet.create({
   modalSubHeader: { fontSize: 12 },
   modalVal: { fontSize: 13, marginTop: 2 },
 
-  timelineContainer: { marginTop: 10, paddingLeft: 6 },
+  timelineContainer: { marginTop: 12, paddingLeft: 2 },
   timelineItem: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 12,
+    alignItems: "stretch",
+    minHeight: 44,
+  },
+  timelineColumnaPunto: {
+    alignItems: "center",
+    marginRight: 10,
+    width: 14,
   },
   timelineDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginTop: 4,
-    marginRight: 10,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginTop: 3,
   },
-  timelineContent: { flex: 1 },
+  timelineLinea: {
+    width: 2,
+    flex: 1,
+    minHeight: 22,
+    marginVertical: 2,
+  },
+  timelineContent: { flex: 1, paddingBottom: 14 },
   timelineEstado: { fontSize: 13, fontWeight: "800" },
   timelineFecha: { fontSize: 11 },
-  timelineComentario: { fontSize: 12, marginTop: 2, lineHeight: 16 },
+  timelineComentario: { fontSize: 12, marginTop: 3, lineHeight: 16 },
+  evidenciaThumb: {
+    width: 64,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: "#E5E7EB",
+  },
 
   adminNoteBox: {
     flexDirection: "row",

@@ -228,7 +228,7 @@ export default function CouponSection({ vehiculo }: Props) {
                 const ruleLabel = cpx.reglas?.minimoDias ? `Min ${cpx.reglas.minimoDias} días` : "Descuento en tu reserva";
 
                 return (
-                  <View key={cpx.id || cpx.codigo} style={styles.ticketWrapper}>
+                  <View key={cpx.codigo} style={styles.ticketWrapper}>
                     <View style={[styles.couponCard, { backgroundColor: c.bgCard, borderColor: esActivo ? primaryAccent : c.border }, esActivo && { borderWidth: 2 }]}>
                       
                       {/* OUTER notches */}

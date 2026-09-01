@@ -511,6 +511,7 @@ export default {
   },
   perfil: {
     titulo: 'Mon Profil',
+    subtitulo: 'Gérez votre compte et vos préférences',
     validacion: {
       nombresObligatorio: 'Le prénom est obligatoire',
       nombresMinimo: 'Le prénom doit contenir au moins 2 caractères',

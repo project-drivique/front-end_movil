@@ -467,7 +467,10 @@ export default function PerfilScreen() {
           end={GRADIENTES.boton.end}
           style={styles.header}
         >
-          <Text style={[styles.headerTitle, { color: "#ffffff" }]}>{t("perfil.titulo")}</Text>
+          <Text style={[styles.headerTitle, { color: "#ffffff" }]}>{t("perfil.titulo", { defaultValue: "Mi perfil" })}</Text>
+          <Text style={[styles.headerSubtitle, { color: "rgba(255,255,255,0.75)" }]}>
+            {t("perfil.subtitulo", { defaultValue: "Gestiona tu cuenta y preferencias" })}
+          </Text>
         </LinearGradient>
 
         <ScrollView
@@ -506,7 +509,10 @@ export default function PerfilScreen() {
         end={GRADIENTES.boton.end}
         style={styles.header}
       >
-        <Text style={[styles.headerTitle, { color: "#ffffff" }]}>{t("perfil.titulo")}</Text>
+        <Text style={[styles.headerTitle, { color: "#ffffff" }]}>{t("perfil.titulo", { defaultValue: "Mi perfil" })}</Text>
+        <Text style={[styles.headerSubtitle, { color: "rgba(255,255,255,0.75)" }]}>
+          {t("perfil.subtitulo", { defaultValue: "Gestiona tu cuenta y preferencias" })}
+        </Text>
       </LinearGradient>
 
       <ScrollView

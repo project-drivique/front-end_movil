@@ -92,6 +92,16 @@ export default function NotificationsScreen() {
 
   const handleGeneralPress = (id: string) => {
     marcarComoLeida(id);
+    const notif = notificaciones.find((n) => n.id === id);
+    if (notif) {
+      const matchReporte = notif.titulo.match(/REP-\d+/i) || notif.mensaje.match(/REP-\d+/i);
+      if (matchReporte) {
+        router.push({
+          pathname: "/(tabs)/support",
+          params: { tab: "mis_reportes", reporteId: matchReporte[0].toUpperCase() },
+        } as any);
+      }
+    }
   };
 
   // Helper: resolve vehicle images from VEHICULOS_MOCK by category

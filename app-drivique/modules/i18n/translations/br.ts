@@ -511,6 +511,7 @@ export default {
   },
   perfil: {
     titulo: 'Meu Perfil',
+    subtitulo: 'Gerencie sua conta e preferências',
     validacion: {
       nombresObligatorio: 'O nome é obrigatório',
       nombresMinimo: 'O nome deve ter pelo menos 2 caracteres',

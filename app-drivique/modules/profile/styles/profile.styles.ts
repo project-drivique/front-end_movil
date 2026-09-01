@@ -9,18 +9,19 @@ export const perfilStyles = StyleSheet.create({
   },
   // Header
   header: {
-    backgroundColor: "#FFFFFF",
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-    alignItems: "center",
+    paddingBottom: 20,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: "800",
-    color: "#111827",
+    color: "#FFFFFF",
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.75)",
   },
   // Card usuario
   userCard: {
