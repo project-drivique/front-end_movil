@@ -38,6 +38,7 @@ import { BranchCashPaymentModal } from "./BranchCashPaymentModal";
 import { diasEntre } from "./BookingSummaryModal.pieces";
 import TarjetaTerminosCondiciones from "./TermsConditionsCard";
 import TarjetaVerificacionDocumental from "./DocumentVerificationCard";
+import CouponSection from "./CouponSection";
 
 const OPCIONES_NACIONALIDAD = NACIONALIDADES.map((n) => ({
   id: n.nombre,
@@ -77,6 +78,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const fechasLugar = useReservaStore((s) => s.fechasLugar);
   const planes = useReservaStore((s) => s.planes);
   const documentos = useReservaStore((s) => s.documentos);
+  const cuponAplicado = useReservaStore((s) => s.cuponAplicado);
 
   const usuarioGlobal = useUsuarioStore((s) => s.usuario);
   const actualizarUsuarioGlobal = useUsuarioStore((s) => s.actualizarUsuario);
@@ -178,16 +180,27 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       .filter((s) => planes.serviciosSeleccionados.includes(s.nombre))
       .reduce((a, s) => a + s.precio * dias, 0);
     const cargos = Math.round(diarias * PORCENTAJE_CARGOS_ADMINISTRATIVOS);
-    const subtotal =
+    const subtotalBruto =
       diarias +
       proteccion +
       kilometraje +
       servAdic +
       cargos +
       RECARGO_LOGISTICO;
+      
+    let descuentoCupon = 0;
+    if (cuponAplicado) {
+      if (cuponAplicado.descuentoPorcentaje) {
+        descuentoCupon = Math.round(subtotalBruto * (cuponAplicado.descuentoPorcentaje / 100));
+      } else if (cuponAplicado.descuentoFijo) {
+        descuentoCupon = cuponAplicado.descuentoFijo;
+      }
+    }
+    
+    const subtotal = subtotalBruto - descuentoCupon;
     const iva = Math.round(subtotal * PORCENTAJE_IVA);
     return subtotal + iva;
-  }, [vehiculo, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, planes]);
+  }, [vehiculo, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, planes, cuponAplicado]);
 
   const handleConfirmarReserva = async () => {
     if (!datosCompletos) {
@@ -482,6 +495,9 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         tipoDocumento={datosPersonales.tipoDocumento ?? undefined}
         docsVerificados={docsVerificados}
       />
+      
+      <CouponSection vehiculo={vehiculo} />
+      
       <TarjetaTerminosCondiciones />
 
       <BarraTotalConfirmar total={total} onConfirmar={handleConfirmarReserva} />
