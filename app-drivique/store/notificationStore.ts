@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { Cupon } from "@/modules/reservation/types/reservation.types";
 
 export interface Notificacion {
   id: string;
@@ -12,6 +13,8 @@ export interface Notificacion {
   expiracion?: string;
   /** Icono de Ionicons a mostrar (opcional, por defecto se infiere del tipo/titulo) */
   icono?: string;
+  /** Detalles del cupón (solo para tipo "promocion") */
+  cupon?: Cupon;
 }
 
 interface NotificationState {
@@ -47,7 +50,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     {
       id: "g3",
       tipo: "general",
-      titulo: "Documentos verificados ✓",
+      titulo: "Documentos verificados",
       mensaje:
         "Tu licencia de conducción y documento de identidad fueron aprobados por nuestro equipo. Ya puedes continuar con tu reserva.",
       fecha: "2026-08-10T09:20:00Z",
@@ -99,31 +102,46 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     {
       id: "p1",
       tipo: "promocion",
-      titulo: "¡Cupón de bienvenida activo!",
-      mensaje:
-        "Usa el cupón BIENVENIDO15 para obtener 15% de descuento en tu próximo alquiler. Aplica en cualquier categoría.",
+      titulo: "mockCoupons.p1Title",
+      mensaje: "mockCoupons.p1Msg",
       fecha: "2026-08-11T08:00:00Z",
       leido: false,
       icono: "ticket-outline",
       expiracion: "2026-08-31T23:59:59Z",
+      cupon: {
+        codigo: "A8X2F9",
+        descuentoPorcentaje: 15,
+        descripcion: "mockCoupons.p1Desc",
+        reglas: {
+          soloPrimeraReserva: true,
+          categoriasValidas: ["GY", "LY"]
+        }
+      }
     },
     {
       id: "p2",
       tipo: "promocion",
-      titulo: "Fin de semana especial 🚗",
-      mensaje:
-        "Alquila una SUV de viernes a domingo y paga solo 2 días. Válido esta semana. Reserva antes de que se agoten los cupos.",
+      titulo: "mockCoupons.p2Title",
+      mensaje: "mockCoupons.p2Msg",
       fecha: "2026-08-09T10:00:00Z",
       leido: true,
       icono: "calendar-outline",
       expiracion: "2026-08-17T23:59:59Z",
+      cupon: {
+        codigo: "W4K7P2",
+        descuentoPorcentaje: 20,
+        descripcion: "mockCoupons.p2Desc",
+        reglas: {
+          minimoDias: 2,
+          categoriasValidas: ["SUV"]
+        }
+      }
     },
     {
       id: "p3",
       tipo: "promocion",
-      titulo: "Descuento para clientes frecuentes",
-      mensaje:
-        "Por ser un cliente frecuente, accedes a un 10% adicional en todos tus alquileres este mes. Se aplica automáticamente.",
+      titulo: "mockCoupons.p3Title",
+      mensaje: "mockCoupons.p3Msg",
       fecha: "2026-08-08T07:30:00Z",
       leido: true,
       icono: "star-outline",
