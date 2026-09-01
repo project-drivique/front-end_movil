@@ -26,6 +26,7 @@ export interface VehiculoPromoDummy {
   vehiculoId: number;
   titulo: string;
   descripcion: string;
+  descuentoBadge?: string;
   fechaPublicacion: string;
   expiracion?: string;
 }
@@ -101,7 +102,7 @@ export const VEHICULO_PROMOS_DUMMY: VehiculoPromoDummy[] = [
     vehiculoId: 1,
     titulo: 'promoCoupons.vp1Title',
     descripcion: 'promoCoupons.vp1Desc',
-    fechaPublicacion: '2026-08-11T08:00:00Z',
+    fechaPublicacion: '2026-09-01T08:00:00Z',
     expiracion: '2026-09-30T23:59:59Z',
   },
   {
@@ -109,7 +110,8 @@ export const VEHICULO_PROMOS_DUMMY: VehiculoPromoDummy[] = [
     vehiculoId: 2,
     titulo: 'promoCoupons.vp2Title',
     descripcion: 'promoCoupons.vp2Desc',
-    fechaPublicacion: '2026-08-11T06:00:00Z',
+    descuentoBadge: '28% OFF',
+    fechaPublicacion: '2026-09-01T06:00:00Z',
     expiracion: '2026-09-15T23:59:59Z',
   },
   {
@@ -117,7 +119,8 @@ export const VEHICULO_PROMOS_DUMMY: VehiculoPromoDummy[] = [
     vehiculoId: 3,
     titulo: 'promoCoupons.vp3Title',
     descripcion: 'promoCoupons.vp3Desc',
-    fechaPublicacion: '2026-08-10T12:00:00Z',
+    descuentoBadge: '20% OFF',
+    fechaPublicacion: '2026-09-01T12:00:00Z',
     expiracion: '2026-10-31T23:59:59Z',
   },
 ];

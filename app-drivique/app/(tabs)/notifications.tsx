@@ -392,9 +392,21 @@ export default function NotificationsScreen() {
                 <Image source={{ uri: vp.imagen }} style={styles.vehiculoPromoImage} resizeMode="cover" />
               </View>
               <View style={styles.vehiculoPromoContent}>
-                <Text style={[styles.vehiculoPromoTitle, { color: c.textPrimary }]} numberOfLines={2}>
-                  {t(vp.titulo, { defaultValue: vp.titulo })}
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 6 }}>
+                  <Text style={[styles.vehiculoPromoTitle, { color: c.textPrimary, flex: 1 }]} numberOfLines={1}>
+                    {t(vp.titulo, { defaultValue: vp.titulo })}
+                  </Text>
+                  {vp.descuentoBadge ? (
+                    <View style={[styles.descuentoBadge, { backgroundColor: c.oscuro ? "#78350f" : "#FEF3C7", borderColor: c.oscuro ? "#b45309" : "#FDE68A" }]}>
+                      <Text style={[styles.descuentoBadgeText, { color: c.oscuro ? "#fbbf24" : "#B45309" }]}>{vp.descuentoBadge}</Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                <Text style={[styles.vehiculoPromoModelo, { color: primaryAccent }]} numberOfLines={1}>
+                  {vp.marcaModelo}
                 </Text>
+
                 <View style={styles.timeRow}>
                   <Ionicons name="time-outline" size={11} color={c.textMuted} style={{ marginRight: 3 }} />
                   <Text style={[styles.time, { color: c.textMuted }]}>
@@ -407,21 +419,21 @@ export default function NotificationsScreen() {
                   return (
                     <View style={[
                       styles.expiryPill,
-                      { backgroundColor: d <= 2 ? "#FEF2F2" : "#FFFBEB", borderColor: d <= 2 ? "#FECACA" : "#FDE68A" },
+                      { backgroundColor: d <= 2 ? (c.oscuro ? "#450a0a" : "#FEF2F2") : (c.oscuro ? "#451a03" : "#FFFBEB"), borderColor: d <= 2 ? (c.oscuro ? "#7f1d1d" : "#FECACA") : (c.oscuro ? "#78350f" : "#FDE68A") },
                     ]}>
                       <Ionicons
                         name="hourglass-outline"
                         size={10}
-                        color={d <= 2 ? "#DC2626" : "#D97706"}
+                        color={d <= 2 ? "#EF4444" : "#F59E0B"}
                         style={{ marginRight: 3 }}
                       />
-                      <Text style={[styles.expiryPillText, { color: d <= 2 ? "#DC2626" : "#D97706" }]}>
+                      <Text style={[styles.expiryPillText, { color: d <= 2 ? (c.oscuro ? "#f87171" : "#DC2626") : (c.oscuro ? "#fbbf24" : "#D97706") }]}>
                         {d === 1 ? "Vence hoy" : `Vence en ${d} días`}
                       </Text>
                     </View>
                   );
                 })()}
-                <Text style={[styles.promoDesc, { color: c.textSecondary }]} numberOfLines={2}>
+                <Text style={[styles.promoDesc, { color: c.textSecondary, marginTop: 4 }]} numberOfLines={2}>
                   {t(vp.descripcion, { defaultValue: vp.descripcion })}
                 </Text>
               </View>
@@ -945,6 +957,23 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontWeight: "800",
     flex: 1,
+  },
+  vehiculoPromoModelo: {
+    fontSize: 13,
+    fontWeight: "700",
+    marginTop: 2,
+    marginBottom: 4,
+  },
+  descuentoBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignSelf: "flex-start",
+  },
+  descuentoBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
   },
   vehiculoPromoTime: {
     fontSize: 11,
