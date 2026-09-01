@@ -7,6 +7,7 @@ import {
   DatosPersonales,
   DatosPlanes,
   PasoReserva,
+  Cupon,
 } from "@/modules/reservation/types/reservation.types";
 
 interface ReservaStore {
@@ -16,6 +17,7 @@ interface ReservaStore {
   planes: DatosPlanes;
   datosPersonales: DatosPersonales;
   documentos: DatosDocumentos;
+  cuponAplicado: Cupon | null;
 
   seleccionarVehiculo: (
     vehiculo: Vehiculo,
@@ -27,6 +29,8 @@ interface ReservaStore {
   toggleServicioAdicional: (nombre: string) => void;
   actualizarDatosPersonales: (data: Partial<DatosPersonales>) => void;
   actualizarDocumento: (llave: keyof DatosDocumentos, archivo: DatosDocumentos[keyof DatosDocumentos]) => void;
+  aplicarCupon: (cupon: Cupon) => void;
+  removerCupon: () => void;
   limpiarReserva: () => void;
 }
 
@@ -83,6 +87,7 @@ export const useReservaStore = create<ReservaStore>()((set) => ({
   planes: planesInicial(),
   datosPersonales: datosPersonalesInicial(),
   documentos: documentosInicial(),
+  cuponAplicado: null,
 
   seleccionarVehiculo: (vehiculo, datosPrecarga) =>
     set({
@@ -92,6 +97,7 @@ export const useReservaStore = create<ReservaStore>()((set) => ({
       planes: planesInicial(),
       datosPersonales: datosPersonalesInicial(),
       documentos: documentosInicial(),
+      cuponAplicado: null,
     }),
 
   setPaso: (paso) => set({ pasoActual: paso }),
@@ -117,6 +123,10 @@ export const useReservaStore = create<ReservaStore>()((set) => ({
   actualizarDocumento: (llave, archivo) =>
     set((state) => ({ documentos: { ...state.documentos, [llave]: archivo } })),
 
+  aplicarCupon: (cupon) => set({ cuponAplicado: cupon }),
+
+  removerCupon: () => set({ cuponAplicado: null }),
+
   limpiarReserva: () =>
     set({
       vehiculoSeleccionado: null,
@@ -125,5 +135,6 @@ export const useReservaStore = create<ReservaStore>()((set) => ({
       planes: planesInicial(),
       datosPersonales: datosPersonalesInicial(),
       documentos: documentosInicial(),
+      cuponAplicado: null,
     }),
 }));

@@ -610,6 +610,8 @@ export default {
     correoActualizadoMsg: 'Votre e-mail a été modifié avec succès.',
   },
   tabs: {
+    masCuponesGeniales: `Plus de super coupons`,
+
     inicio: 'Accueil',
     notificaciones: 'Notifications',
     misReservas: 'Mes réservations',
@@ -1090,4 +1092,81 @@ export default {
     monedaUsdPesos: 'pesos colombiens (COP)',
     monedaUsdParte4: ", selon le taux de change du moment.",
   },
+  coupon: {
+    cancelBtn: 'Annuler',
+    understoodBtn: 'Compris',
+    errorMinDays: 'Nécessite un minimum de {{days}} jours de location.',
+    errorCategory: 'Valable uniquement pour : {{categories}}.',
+    errorExpired: 'Ce coupon n\'est plus valable.',
+    errorInvalid: 'Le code saisi n\'existe pas ou a expiré.',
+    title: 'COUPON DE RÉDUCTION (OPTIONNEL)',
+    placeholder: 'Entrez un code',
+    applyBtn: 'APPLIQUER',
+    viewAvailable: 'VOIR LES COUPONS DISPONIBLES',
+    modalTitle: 'Coupons Disponibles',
+    empty: 'Vous n\'avez aucun coupon disponible pour le moment.',
+    conditionsBtn: 'Conditions',
+    appliedBtn: '✓ Appliqué',
+    applyAction: 'Appliquer',
+    conditionsTitle: 'Conditions du Coupon',
+    fallbackDesc: 'Applique une réduction à votre réservation actuelle.',
+    termsTitle: 'Termes et conditions :',
+    term1: '• Valable pour les paiements numériques et initiaux.',
+    term2: '• Non transférable à d\'autres utilisateurs.',
+    term3: '• Un seul coupon peut être appliqué par réservation.',
+    minDays: 'Jours minimum :',
+    validCategories: 'Catégories valides :',
+    expires: 'Expire le :',
+    understoodBtn: 'Compris'
+  }
+,
+  simulator: {
+    title: '[Simulateur] Confirmation de Paiement en Espèces',
+    desc: 'Simule l\'arrivée du client au guichet de la succursale et le paiement. Lors de la confirmation, le statut passera à CONFIRMÉ et la signature du contrat sera activée.',
+    btn: 'Confirmer la Réception du Paiement'
+  }
+,
+  mockCoupons: {
+    p1Title: 'Coupon de bienvenue actif !',
+    p1Msg: 'Utilisez le coupon A8X2F9 pour obtenir 15% de réduction sur votre prochaine location. Valable pour toutes les catégories.',
+    p1Desc: 'Profitez de 15% de réduction sur votre réservation ! Valable exclusivement pour les groupes GY et LY.',
+    p2Title: 'Week-end spécial',
+    p2Msg: 'Louez un SUV du vendredi au dimanche et payez seulement 2 jours. Valable cette semaine. Réservez vite.',
+    p2Desc: 'Louez un SUV du vendredi au dimanche et payez moins.',
+    p3Title: 'Remise client régulier',
+    p3Msg: 'En tant que client régulier, vous bénéficiez de 10% de réduction supplémentaire sur toutes vos locations ce mois-ci. Appliqué automatiquement.',
+    c1Desc: '15% de réduction sur votre première réservation. Exclusif aux nouveaux utilisateurs.',
+    c2Desc: '20% de réduction pour les locations le week-end (minimum 2 jours).',
+    c3Desc: '50 000 COP de réduction sur les locations de plus de 7 jours.',
+    c4Desc: '10% de réduction sur la catégorie LY.'
+  }
+,
+  promoCoupons: {
+    confirmTitle: `Confirmer l'Activation`,
+    confirmDesc: `Voulez-vous débloquer ce coupon et l'utiliser pour votre prochaine réservation ?`,
+
+    c1Title: '3 Premières Réservations',
+    c1Desc: 'Vous avez gagné ce coupon spécial pour avoir effectué vos 3 premières réservations sur la plateforme.',
+    c1Terms: 'Valable pour les véhicules SUV et Premium. Nécessite une réservation minimum de 500 000 COP. Expire dans 30 jours.',
+    c2Title: 'Récompense de Fidélité',
+    c2Desc: 'Attribué à nos clients les plus fidèles pour leur soutien continu et leur confiance en Drivique.',
+    c2Terms: 'Valable pour les véhicules Économiques. Nécessite un minimum de 150 000 COP. Non cumulable.',
+    c3Title: 'Bienvenue en Octobre',
+    c3Desc: 'Récompense accordée pour votre première interaction ce mois-ci sur Drivique.',
+    c3Terms: 'Applicable aux véhicules Berline. Pas de minimum. Valable pour une seule utilisation en octobre.',
+    c4Title: 'Client VIP Drivique',
+    c4Desc: 'Gagné en atteignant le niveau client étoile après avoir accumulé des locations longue durée.',
+    c4Terms: 'Offre une réduction de 50 000 COP. Réservation minimum de 200 000 COP. Valable pour toutes catégories.',
+    vp1Title: 'De retour ! N\'attendez plus',
+    vp1Desc: 'Ce véhicule est à nouveau disponible dans votre zone. Réservez-le avant qu\'il ne soit pris.',
+    vp2Title: '28% de réduction aujourd\'hui',
+    vp2Desc: 'Offre spéciale du jour. Réservez aujourd\'hui et obtenez 28% de réduction.',
+    vp3Title: 'Week-end sans pareil',
+    vp3Desc: 'Louez ce véhicule premium du vendredi au dimanche et ne payez que 2 jours.',
+    modalTitle: 'Coupon Activé avec Succès !',
+    modalSubtitle: 'Vous avez débloqué le coupon de récompense pour vos accomplissements sur Drivique.',
+    modalInstruction: 'Utilisez ce code lors de la réservation pour obtenir votre réduction.',
+    modalBtn: 'Super !'
+  }
+
 }

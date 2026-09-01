@@ -52,6 +52,7 @@ export default function ResumenReservaModal({
   const actualizarFechasLugar = useReservaStore((s) => s.actualizarFechasLugar);
   const planes = useReservaStore((s) => s.planes);
   const actualizarPlanes = useReservaStore((s) => s.actualizarPlanes);
+  const cuponAplicado = useReservaStore((s) => s.cuponAplicado);
 
   const [modo, setModo] = useState<Modo>("resumen");
   const [modalLugar, setModalLugar] = useState<"retiro" | "devolucion" | null>(null);
@@ -131,10 +132,21 @@ export default function ResumenReservaModal({
       ? servicios.filter((s) => planes.serviciosSeleccionados.includes(s.nombre)).reduce((a, s) => a + s.precio * dias, 0)
       : 0;
     const cargos = Math.round(diarias * PORCENTAJE_CARGOS_ADMINISTRATIVOS);
-    const subtotal = diarias + proteccion + kilometraje + servAdic + cargos + RECARGO_LOGISTICO;
+    const subtotalBruto = diarias + proteccion + kilometraje + servAdic + cargos + RECARGO_LOGISTICO;
+    
+    let descuentoCupon = 0;
+    if (cuponAplicado) {
+      if (cuponAplicado.descuentoPorcentaje) {
+        descuentoCupon = Math.round(subtotalBruto * (cuponAplicado.descuentoPorcentaje / 100));
+      } else if (cuponAplicado.descuentoFijo) {
+        descuentoCupon = cuponAplicado.descuentoFijo;
+      }
+    }
+    
+    const subtotal = subtotalBruto - descuentoCupon;
     const iva = Math.round(subtotal * PORCENTAJE_IVA);
-    return { dias, diarias, proteccion, kilometraje, servAdic, cargos, subtotal, iva, total: subtotal + iva };
-  }, [vehiculo.precio, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, mostrarPlanes, seguroElegido, kmElegido, servicios, planes.serviciosSeleccionados]);
+    return { dias, diarias, proteccion, kilometraje, servAdic, cargos, subtotalBruto, descuentoCupon, subtotal, iva, total: subtotal + iva };
+  }, [vehiculo.precio, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, mostrarPlanes, seguroElegido, kmElegido, servicios, planes.serviciosSeleccionados, cuponAplicado]);
 
   const cerrar = () => { setModo("resumen"); onCerrar(); };
   const confirmarPago = () => { actualizarFechasLugar(draftPago); setModo("resumen"); };
@@ -383,8 +395,19 @@ export default function ResumenReservaModal({
                         <View style={[piezas.desgloseDivisor, { backgroundColor: c.border }]} />
 
                         <LineaPrecio label={t("reserva.resumen.cargosAdministrativos", { pct: fmtPct(PORCENTAJE_CARGOS_ADMINISTRATIVOS) })} valor={fmt(desglose.cargos)} />
-                        <LineaPrecio label={t("reserva.resumen.subtotalReserva")} valor={fmt(desglose.subtotal - desglose.iva)} destacado />
                         <LineaPrecio label={t("reserva.resumen.recargoLogistico")} valor={fmt(RECARGO_LOGISTICO)} />
+                        <LineaPrecio label={t("reserva.resumen.subtotalReserva")} valor={fmt(desglose.subtotalBruto)} destacado />
+                        
+                        {desglose.descuentoCupon > 0 && cuponAplicado && (
+                          <View style={{ marginTop: 4 }}>
+                            <LineaPrecio 
+                              label={`Descuento (${cuponAplicado.codigo})`} 
+                              valor={`-${fmt(desglose.descuentoCupon)}`} 
+                              destacado 
+                            />
+                          </View>
+                        )}
+                        
                         <LineaPrecio label={t("reserva.resumen.iva", { pct: fmtPct(PORCENTAJE_IVA) })} valor={fmt(desglose.iva)} />
                       </>
                     ) : (
