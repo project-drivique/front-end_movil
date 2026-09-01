@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -304,11 +305,16 @@ export default function PagoRespuestaScreen() {
           descargando={generandoPdf}
         />
       ) : (
-      <ScrollView
-        style={{ backgroundColor: c.bg }}
-        contentContainerStyle={[styles.scroll, { paddingTop: 24 }]}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
+        <ScrollView
+          style={{ flex: 1, backgroundColor: c.bg }}
+          contentContainerStyle={[styles.scroll, { paddingTop: 24, paddingBottom: 80 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
       {foto ? (
         <Image source={{ uri: foto }} style={styles.foto} />
       ) : (
@@ -598,6 +604,7 @@ export default function PagoRespuestaScreen() {
       ) : null}
 
     </ScrollView>
+      </KeyboardAvoidingView>
       )}
     </View>
   );
