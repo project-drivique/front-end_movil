@@ -739,7 +739,12 @@ export default function SupportScreen() {
                     activeOpacity={0.88}
                   >
                     <View style={styles.reporteHeaderRow}>
-                      <Text style={[styles.reporteId, { color: c.textPrimary }]}>{item.id}</Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                        <Text style={[styles.reporteId, { color: c.textPrimary }]}>{item.id}</Text>
+                        <Text style={[styles.reporteFechaCorta, { color: c.textMuted }]}>
+                          {formatearFechaHora(item.fechaCreacion)}
+                        </Text>
+                      </View>
                       <View style={[styles.estadoBadge, { backgroundColor: `${colorEstado}18`, borderColor: `${colorEstado}40` }]}>
                         <View style={[styles.estadoDot, { backgroundColor: colorEstado }]} />
                         <Text style={[styles.estadoTexto, { color: colorEstado }]}>{item.estado}</Text>
@@ -749,6 +754,7 @@ export default function SupportScreen() {
                     <Text style={[styles.reporteTipo, { color: "#2563EB" }]}>{item.tipoIncidencia}</Text>
                     <Text style={[styles.reporteVehiculo, { color: c.textSecondary }]}>
                       {item.vehiculoNombre} {item.placa ? `(Placa: ${item.placa})` : ""}
+                      {item.reservaId ? ` · Ref: ${item.reservaId}` : ""}
                     </Text>
 
                     <Text style={[styles.reporteDesc, { color: c.textPrimary }]} numberOfLines={2}>
@@ -759,7 +765,10 @@ export default function SupportScreen() {
                       <Text style={[styles.reporteTiempo, { color: c.textMuted }]}>
                         Tiempo est: {item.tiempoEstimadoSolucion}
                       </Text>
-                      <Text style={[styles.reporteVerDetalle, { color: "#2563EB" }]}>Ver detalle →</Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                        <Text style={[styles.reporteVerDetalle, { color: "#2563EB" }]}>Ver detalle e historial</Text>
+                        <Ionicons name="chevron-forward" size={14} color="#2563EB" />
+                      </View>
                     </View>
                   </TouchableOpacity>
                 );
@@ -1313,6 +1322,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   reporteId: { fontSize: 14, fontWeight: "800" },
+  reporteFechaCorta: { fontSize: 11 },
   estadoBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -1327,6 +1337,20 @@ const styles = StyleSheet.create({
   reporteTipo: { fontSize: 13, fontWeight: "800", marginTop: 4 },
   reporteVehiculo: { fontSize: 12, marginTop: 2 },
   reporteDesc: { fontSize: 12.5, marginTop: 6, lineHeight: 17 },
+  reporteUltimoAvance: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    marginTop: 8,
+  },
+  reporteUltimoAvanceTexto: {
+    fontSize: 11.5,
+    flex: 1,
+  },
   reporteFooterRow: {
     flexDirection: "row",
     justifyContent: "space-between",

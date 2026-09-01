@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform, Image, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
@@ -177,131 +177,151 @@ export default function CouponSection({ vehiculo }: Props) {
             </TouchableOpacity>
           </View>
         )}
-      </View>
-
-      {/* Modal Principal de Lista de Cupones */}
+      </View>      {/* Modal Principal de Lista de Cupones */}
       <Modal visible={modalVisible} animationType="slide" transparent={true} onRequestClose={() => setModalVisible(false)}>
-        <KeyboardAvoidingView 
-          style={styles.modalOverlay} 
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View style={[styles.modalContent, { backgroundColor: c.bg }]}>
-            <View style={styles.modalHeader}>
-              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.pullIndicatorContainer}>
-                <View style={styles.pullIndicator} />
-              </TouchableOpacity>
-              <Text style={[styles.modalTitle, { color: primaryAccent }]}>{t("coupon.modalTitle", "Cupones Disponibles")}</Text>
-            </View>
-            
-            {errorMsgModal ? (
-              <View style={[styles.errorAlertBanner, { marginHorizontal: 16, marginBottom: 12, marginTop: 0, backgroundColor: c.oscuro ? "#450a0a" : "#FEF2F2", borderColor: c.oscuro ? "#7f1d1d" : "#FCA5A5" }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                  <Ionicons name="alert-circle" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
-                  <Text style={[styles.errorAlertText, { color: c.oscuro ? "#fca5a5" : "#B91C1C" }]}>{errorMsgModal}</Text>
-                </View>
-                <TouchableOpacity onPress={() => setErrorMsgModal("")}>
-                  <Ionicons name="close" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
+        <View style={styles.modalOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setModalVisible(false)} />
+          <KeyboardAvoidingView 
+            style={styles.keyboardAvoidWrap} 
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <View style={[styles.modalContent, { backgroundColor: c.bg }]}>
+              <View style={styles.modalHeader}>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.pullIndicatorContainer}>
+                  <View style={styles.pullIndicator} />
                 </TouchableOpacity>
+                <View style={styles.modalHeaderRow}>
+                  <Text style={[styles.modalTitle, { color: primaryAccent }]}>{t("coupon.modalTitle", "Cupones Disponibles")}</Text>
+                  <TouchableOpacity
+                    onPress={() => setModalVisible(false)}
+                    style={styles.modalCloseBtnHeader}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  >
+                    <Ionicons name="close" size={22} color={c.textPrimary} />
+                  </TouchableOpacity>
+                </View>
               </View>
-            ) : null}
-
-            <ScrollView style={styles.modalScroll}>
-              {cuponesDisponibles.length === 0 && (
-                <Text style={{ textAlign: "center", color: c.textMuted, marginTop: 20, fontSize: 12 }}>
-                  {t("coupon.empty", "No tienes cupones disponibles en este momento.")}
-                </Text>
-              )}
               
-              {cuponesDisponibles.map((cpx) => {
-                const esActivo = cuponAplicado?.codigo === cpx.codigo;
-                const carImages = getVehicleImagesByCategory(cpx.reglas?.categoriasValidas?.[0] || "");
+              {errorMsgModal ? (
+                <View style={[styles.errorAlertBanner, { marginHorizontal: 16, marginBottom: 12, marginTop: 0, backgroundColor: c.oscuro ? "#450a0a" : "#FEF2F2", borderColor: c.oscuro ? "#7f1d1d" : "#FCA5A5" }]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                    <Ionicons name="alert-circle" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
+                    <Text style={[styles.errorAlertText, { color: c.oscuro ? "#fca5a5" : "#B91C1C" }]}>{errorMsgModal}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setErrorMsgModal("")}>
+                    <Ionicons name="close" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
+                  </TouchableOpacity>
+                </View>
+              ) : null}
 
-                let discountLabel = "";
-                if (cpx.descuentoPorcentaje) {
-                  discountLabel = `${cpx.descuentoPorcentaje}% OFF`;
-                } else if (cpx.descuentoFijo) {
-                  discountLabel = `${formatCurrency(cpx.descuentoFijo, monedaActual, tasaUSD)} OFF`;
-                } else {
-                  discountLabel = t(cpx.descripcion || "Descuento");
-                }
+              <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+                {cuponesDisponibles.length === 0 && (
+                  <Text style={{ textAlign: "center", color: c.textMuted, marginTop: 20, fontSize: 12 }}>
+                    {t("coupon.empty", "No tienes cupones disponibles en este momento.")}
+                  </Text>
+                )}
+                
+                {cuponesDisponibles.map((cpx) => {
+                  const esActivo = cuponAplicado?.codigo === cpx.codigo;
+                  const carImages = getVehicleImagesByCategory(cpx.reglas?.categoriasValidas?.[0] || "");
 
-                const ruleLabel = cpx.reglas?.minimoDias ? `Min ${cpx.reglas.minimoDias} días` : "Descuento en tu reserva";
+                  let discountLabel = "";
+                  if (cpx.descuentoPorcentaje) {
+                    discountLabel = `${cpx.descuentoPorcentaje}% OFF`;
+                  } else if (cpx.descuentoFijo) {
+                    discountLabel = `${formatCurrency(cpx.descuentoFijo, monedaActual, tasaUSD)} OFF`;
+                  } else {
+                    discountLabel = t(cpx.descripcion || "Descuento");
+                  }
 
-                return (
-                  <View key={cpx.codigo} style={styles.ticketWrapper}>
-                    <View style={[styles.couponCard, { backgroundColor: c.bgCard, borderColor: esActivo ? primaryAccent : c.border }, esActivo && { borderWidth: 2 }]}>
-                      
-                      {/* OUTER notches */}
-                      <View style={[styles.notchLeft, { backgroundColor: c.bg }]} />
-                      <View style={[styles.notchRight, { backgroundColor: c.bg }]} />
+                  const ruleLabel = cpx.reglas?.minimoDias ? `Min ${cpx.reglas.minimoDias} días` : "Descuento en tu reserva";
 
-                      {/* Left Side */}
-                      <View style={styles.couponLeft}>
-                        <View style={styles.couponTitleRow}>
-                          <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4 }} />
-                          <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={1}>
-                            {t(cpx.tituloPremio || cpx.descripcion || "Cupón de Descuento")}
-                          </Text>
-                        </View>
+                  return (
+                    <View key={cpx.codigo} style={styles.ticketWrapper}>
+                      <View style={[styles.couponCard, { backgroundColor: c.bgCard, borderColor: esActivo ? primaryAccent : c.border }, esActivo && { borderWidth: 2 }]}>
+                        
+                        {/* OUTER notches */}
+                        <View style={[styles.notchLeft, { backgroundColor: c.bg }]} />
+                        <View style={[styles.notchRight, { backgroundColor: c.bg }]} />
 
-                        <View style={styles.couponImagesRow}>
-                          {carImages.map((imgUrl, idx) => (
-                            <View key={idx} style={[styles.couponCarMiniWrapper, { backgroundColor: c.bgInput }]}>
-                              {imgUrl ? (
-                                <Image source={{ uri: imgUrl }} style={styles.couponCarMiniImage} resizeMode="cover" />
-                              ) : (
-                                <Ionicons name="car-outline" size={22} color={c.textMuted} />
+                        {/* Left Side */}
+                        <View style={styles.couponLeft}>
+                          <View style={styles.couponTitleRow}>
+                            <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4 }} />
+                            <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={1}>
+                              {t(cpx.tituloPremio || cpx.descripcion || "Cupón de Descuento")}
+                            </Text>
+                          </View>
+
+                          <View style={styles.couponImagesRow}>
+                            {carImages.map((imgUrl, idx) => (
+                              <View key={idx} style={[styles.couponCarMiniWrapper, { backgroundColor: c.bgInput }]}>
+                                {imgUrl ? (
+                                  <Image source={{ uri: imgUrl }} style={styles.couponCarMiniImage} resizeMode="cover" />
+                                ) : (
+                                  <Ionicons name="car-outline" size={22} color={c.textMuted} />
+                                )}
+                              </View>
+                            ))}
+                          </View>
+
+                          <View style={styles.couponConditionRow}>
+                            <View style={{ flex: 1 }}>
+                              {cpx.expiracion && (
+                                <Text style={[styles.couponDateText, { color: c.textMuted }]}>
+                                  Exp: {formatDateShort(cpx.expiracion)}
+                                </Text>
                               )}
                             </View>
-                          ))}
+                            <TouchableOpacity onPress={() => setSelectedConditionsCoupon(cpx)}>
+                              <Text style={[styles.codeSubtitle, { color: primaryAccent }]}>{t("coupon.conditionsBtn", "Condiciones")}</Text>
+                            </TouchableOpacity>
+                          </View>
                         </View>
 
-                        <View style={styles.couponConditionRow}>
-                          <View style={{ flex: 1 }}>
-                            {cpx.expiracion && (
-                              <Text style={[styles.couponDateText, { color: c.textMuted }]}>
-                                Exp: {formatDateShort(cpx.expiracion)}
-                              </Text>
-                            )}
-                          </View>
-                          <TouchableOpacity onPress={() => setSelectedConditionsCoupon(cpx)}>
-                            <Text style={[styles.codeSubtitle, { color: primaryAccent }]}>{t("coupon.conditionsBtn", "Condiciones")}</Text>
+                        {/* Dotted Separator */}
+                        <View style={styles.separatorContainer}>
+                          <View style={[styles.innerNotchTop, { backgroundColor: c.bg }]} />
+                          <View style={[styles.dashedSeparator, { borderColor: c.border }]} />
+                          <View style={[styles.innerNotchBottom, { backgroundColor: c.bg }]} />
+                        </View>
+
+                        {/* Right Side */}
+                        <View style={[styles.couponRight, { backgroundColor: c.oscuro ? "#1e3a8a33" : "#EFF6FF" }]}>
+                          <Text style={[styles.couponDiscount, { color: primaryAccent, textAlign: "center" }]}>
+                            {discountLabel}
+                          </Text>
+                          <Text style={[styles.couponRule, { color: c.textMuted }]}>
+                            {ruleLabel}
+                          </Text>
+                          <TouchableOpacity
+                            style={[styles.couponApplyBtn, { backgroundColor: primaryAccent }, esActivo && { backgroundColor: c.bgInput }]}
+                            onPress={() => handleSeleccionarCupon(cpx, true)}
+                            disabled={esActivo}
+                          >
+                            <Text style={[styles.couponApplyBtnText, { color: esActivo ? c.textMuted : "#FFFFFF" }]}>
+                              {esActivo ? t("coupon.appliedBtn", "✓ Aplicado") : t("coupon.applyAction", "Aplicar")}
+                            </Text>
                           </TouchableOpacity>
                         </View>
                       </View>
-
-                      {/* Dotted Separator */}
-                      <View style={styles.separatorContainer}>
-                        <View style={[styles.innerNotchTop, { backgroundColor: c.bg }]} />
-                        <View style={[styles.dashedSeparator, { borderColor: c.border }]} />
-                        <View style={[styles.innerNotchBottom, { backgroundColor: c.bg }]} />
-                      </View>
-
-                      {/* Right Side */}
-                      <View style={[styles.couponRight, { backgroundColor: c.oscuro ? "#1e3a8a33" : "#EFF6FF" }]}>
-                        <Text style={[styles.couponDiscount, { color: primaryAccent, textAlign: "center" }]}>
-                          {discountLabel}
-                        </Text>
-                        <Text style={[styles.couponRule, { color: c.textMuted }]}>
-                          {ruleLabel}
-                        </Text>
-                        <TouchableOpacity
-                          style={[styles.couponApplyBtn, { backgroundColor: primaryAccent }, esActivo && { backgroundColor: c.bgInput }]}
-                          onPress={() => handleSeleccionarCupon(cpx, true)}
-                          disabled={esActivo}
-                        >
-                          <Text style={[styles.couponApplyBtnText, { color: esActivo ? c.textMuted : "#FFFFFF" }]}>
-                            {esActivo ? t("coupon.appliedBtn", "✓ Aplicado") : t("coupon.applyAction", "Aplicar")}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
                     </View>
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
-        </KeyboardAvoidingView>
+                  );
+                })}
+              </ScrollView>
+
+              <TouchableOpacity
+                style={[styles.modalBottomCloseBtn, { borderColor: c.border, backgroundColor: c.bgCard }]}
+                onPress={() => setModalVisible(false)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.modalBottomCloseBtnText, { color: c.textPrimary }]}>
+                  {t("catalogo.alertas.cancelar", { defaultValue: "Cerrar" })}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       {/* Modal de Detalles de Condiciones */}
@@ -386,12 +406,28 @@ const styles = StyleSheet.create({
   },
   
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-  modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: "85%", paddingTop: 12, paddingBottom: 24, flexShrink: 1 },
-  modalHeader: { paddingHorizontal: 16, paddingBottom: 16, alignItems: "center" },
-  pullIndicatorContainer: { width: "100%", alignItems: "center", paddingVertical: 8, marginTop: -8 },
+  keyboardAvoidWrap: { width: "100%", justifyContent: "flex-end" },
+  modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: "88%", paddingTop: 10, paddingBottom: 20, flexShrink: 1 },
+  modalHeader: { paddingHorizontal: 16, paddingBottom: 10 },
+  pullIndicatorContainer: { width: "100%", alignItems: "center", paddingVertical: 6, marginTop: -4 },
   pullIndicator: { width: 36, height: 4, backgroundColor: "#D1D5DB", borderRadius: 2 },
-  modalTitle: { fontSize: 14, fontWeight: "700", marginTop: 4 },
+  modalHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 2 },
+  modalTitle: { fontSize: 16, fontWeight: "800" },
+  modalCloseBtnHeader: { padding: 4, borderRadius: 16 },
   modalScroll: { paddingHorizontal: 16 },
+  modalBottomCloseBtn: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalBottomCloseBtnText: {
+    fontSize: 13.5,
+    fontWeight: "700",
+  },
 
   // Ticket styles
   ticketWrapper: { marginBottom: 18 },

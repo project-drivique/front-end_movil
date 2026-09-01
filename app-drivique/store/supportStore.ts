@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { useNotificationStore } from "./notificationStore";
+import reportesSoporteDemo from "@/mocks/reportesSoporteDemo.json";
 
 export type EstadoReporte = "Recibido" | "En revisión" | "En atención" | "Resuelto";
 
@@ -45,49 +46,7 @@ interface SupportState {
   actualizarEstadoReporte: (id: string, nuevoEstado: EstadoReporte, comentario?: string) => void;
 }
 
-// Datos iniciales de demostración
-const REPORTES_INICIALES: ReporteIncidencia[] = [
-  {
-    id: "REP-9102",
-    reservaId: "RES-2026-0810",
-    vehiculoNombre: "Toyota Prado VX",
-    placa: "KLS-849",
-    tipoIncidencia: "Avería mecánica",
-    descripcion: "Se encendió el testigo de revisión de motor en el tablero durante el trayecto a Neiva.",
-    evidencias: [],
-    contactoNombre: "Carlos Mendoza",
-    contactoTelefono: "+57 314 478 9702",
-    contactoEmail: "carlos.mendoza@email.com",
-    tiempoEstimadoSolucion: "2 a 4 horas",
-    estado: "En atención",
-    fechaCreacion: "2026-08-10T16:20:00Z",
-    historialEstados: [
-      { estado: "Recibido", fecha: "2026-08-10T16:20:00Z", comentario: "Reporte registrado en el sistema." },
-      { estado: "En revisión", fecha: "2026-08-10T16:35:00Z", comentario: "Asignado al taller autorizado de la zona." },
-      { estado: "En atención", fecha: "2026-08-10T17:10:00Z", comentario: "Unidad móvil enviada con mecánico especializado." },
-    ],
-  },
-  {
-    id: "REP-8401",
-    reservaId: "RES-2026-0801",
-    vehiculoNombre: "Chevrolet Spark GT",
-    placa: "HGF-123",
-    tipoIncidencia: "Limpieza / Estética",
-    descripcion: "El interior del vehículo requería una limpieza adicional en la tapicería trasera.",
-    evidencias: [],
-    contactoNombre: "Laura Torres",
-    contactoTelefono: "+57 322 316 3531",
-    contactoEmail: "laura.torres@email.com",
-    tiempoEstimadoSolucion: "12 horas",
-    estado: "Resuelto",
-    fechaCreacion: "2026-08-01T10:00:00Z",
-    historialEstados: [
-      { estado: "Recibido", fecha: "2026-08-01T10:00:00Z", comentario: "Reporte de limpieza recibido." },
-      { estado: "En revisión", fecha: "2026-08-01T10:30:00Z", comentario: "Autorizada bonificación por servicio de limpieza." },
-      { estado: "Resuelto", fecha: "2026-08-01T14:00:00Z", comentario: "Se aplicó saldo a favor en la cuenta del cliente." },
-    ],
-  },
-];
+const REPORTES_INICIALES: ReporteIncidencia[] = reportesSoporteDemo as ReporteIncidencia[];
 
 export const useSupportStore = create<SupportState>((set, get) => ({
   reportes: REPORTES_INICIALES,

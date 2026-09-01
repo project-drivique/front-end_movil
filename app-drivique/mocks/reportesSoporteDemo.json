@@ -1,0 +1,141 @@
+[
+  {
+    "id": "REP-9102",
+    "reservaId": "RES-2026-0810",
+    "vehiculoNombre": "Toyota Prado VX",
+    "placa": "KLS-849",
+    "tipoIncidencia": "Avería mecánica",
+    "descripcion": "Se encendió el testigo de revisión de motor en el tablero durante el trayecto a Neiva. El vehículo pierde fuerza en pendientes pronunciadas.",
+    "evidencias": [
+      "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=400&q=80"
+    ],
+    "contactoNombre": "Carlos Mendoza",
+    "contactoTelefono": "+57 314 478 9702",
+    "contactoEmail": "carlos.mendoza@email.com",
+    "tiempoEstimadoSolucion": "2 a 4 horas",
+    "estado": "En atención",
+    "fechaCreacion": "2026-08-10T16:20:00Z",
+    "historialEstados": [
+      {
+        "estado": "Recibido",
+        "fecha": "2026-08-10T16:20:00Z",
+        "comentario": "Reporte registrado exitosamente en la central de soporte. Confirmación enviada al correo del cliente."
+      },
+      {
+        "estado": "En revisión",
+        "fecha": "2026-08-10T16:35:00Z",
+        "comentario": "Evaluado por el centro de operaciones técnicas. Se asignó el caso al taller autorizado Neiva Centro."
+      },
+      {
+        "estado": "En atención",
+        "fecha": "2026-08-10T17:10:00Z",
+        "comentario": "Unidad móvil de asistencia técnica despachada con mecánico especializado y equipo de diagnóstico OBD."
+      }
+    ]
+  },
+  {
+    "id": "REP-8401",
+    "reservaId": "RES-2026-0801",
+    "vehiculoNombre": "Chevrolet Spark GT",
+    "placa": "HGF-123",
+    "tipoIncidencia": "Limpieza / Estética",
+    "descripcion": "El interior del vehículo requería una limpieza adicional en la tapicería trasera al momento de recibirlo en sucursal.",
+    "evidencias": [
+      "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=400&q=80"
+    ],
+    "contactoNombre": "Laura Torres",
+    "contactoTelefono": "+57 322 316 3531",
+    "contactoEmail": "laura.torres@email.com",
+    "tiempoEstimadoSolucion": "12 horas",
+    "estado": "Resuelto",
+    "fechaCreacion": "2026-08-01T10:00:00Z",
+    "historialEstados": [
+      {
+        "estado": "Recibido",
+        "fecha": "2026-08-01T10:00:00Z",
+        "comentario": "Reporte de limpieza recibido por el área de atención al cliente."
+      },
+      {
+        "estado": "En revisión",
+        "fecha": "2026-08-01T10:30:00Z",
+        "comentario": "El administrador autorizó el servicio express de limpieza profesional y bono compensatorio."
+      },
+      {
+        "estado": "En atención",
+        "fecha": "2026-08-01T11:45:00Z",
+        "comentario": "Vehículo ingresado y tratado en el centro de estética automotriz aliado."
+      },
+      {
+        "estado": "Resuelto",
+        "fecha": "2026-08-01T14:00:00Z",
+        "comentario": "Limpieza completada a satisfacción del cliente y saldo a favor acreditado en su cuenta."
+      }
+    ]
+  },
+  {
+    "id": "REP-7230",
+    "reservaId": "RES-2026-0815",
+    "vehiculoNombre": "Renault Duster Iconic",
+    "placa": "NHT-452",
+    "tipoIncidencia": "Pinchazo / Neumático",
+    "descripcion": "Pinchazo en neumático delantero derecho al salir del peaje. Se solicitó auxilio para el cambio por repuesto.",
+    "evidencias": [
+      "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=400&q=80"
+    ],
+    "contactoNombre": "Carlos Mendoza",
+    "contactoTelefono": "+57 314 478 9702",
+    "contactoEmail": "carlos.mendoza@email.com",
+    "tiempoEstimadoSolucion": "1 a 2 horas",
+    "estado": "Resuelto",
+    "fechaCreacion": "2026-08-15T08:15:00Z",
+    "historialEstados": [
+      {
+        "estado": "Recibido",
+        "fecha": "2026-08-15T08:15:00Z",
+        "comentario": "Incidencia vial registrada con prioridad alta en el sistema."
+      },
+      {
+        "estado": "En revisión",
+        "fecha": "2026-08-15T08:22:00Z",
+        "comentario": "Ubicación confirmada por geolocalización. Se contacta móvil de asistencia de zona."
+      },
+      {
+        "estado": "En atención",
+        "fecha": "2026-08-15T08:40:00Z",
+        "comentario": "Técnico en sitio realizando el cambio y calibración de la llanta de repuesto."
+      },
+      {
+        "estado": "Resuelto",
+        "fecha": "2026-08-15T09:10:00Z",
+        "comentario": "Presión y seguridad verificadas. Caso cerrado con conformidad del cliente."
+      }
+    ]
+  },
+  {
+    "id": "REP-5109",
+    "reservaId": "RES-2026-0820",
+    "vehiculoNombre": "Mazda CX-30 Grand Touring",
+    "placa": "JOP-891",
+    "tipoIncidencia": "Falla eléctrica / Batería",
+    "descripcion": "El vehículo no enciende tras haber estado estacionado durante la noche. Los testigos parpadean sin arrancar el motor.",
+    "evidencias": [],
+    "contactoNombre": "Carlos Mendoza",
+    "contactoTelefono": "+57 314 478 9702",
+    "contactoEmail": "carlos.mendoza@email.com",
+    "tiempoEstimadoSolucion": "1 a 3 horas",
+    "estado": "En revisión",
+    "fechaCreacion": "2026-08-20T07:45:00Z",
+    "historialEstados": [
+      {
+        "estado": "Recibido",
+        "fecha": "2026-08-20T07:45:00Z",
+        "comentario": "Reporte registrado en la plataforma por el usuario."
+      },
+      {
+        "estado": "En revisión",
+        "fecha": "2026-08-20T08:00:00Z",
+        "comentario": "Coordinando envío de arrancador portátil y batería de reemplazo con la sucursal más cercana."
+      }
+    ]
+  }
+]
