@@ -21,10 +21,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import {
-  CUPONES_DUMMY,
   VEHICULO_PROMOS_DUMMY,
   CouponDummy,
 } from "@/modules/notifications/constants/notifications.dummy";
+import CUPONES_DEMO from "@/mocks/cuponesDemo.json";
 
 
 export default function NotificationsScreen() {
@@ -61,7 +61,7 @@ export default function NotificationsScreen() {
 
   // Cupones activos (no expirados), desde dummy JSON
   const cupones = useMemo(
-    () => CUPONES_DUMMY.filter((c) => !isExpired(c.expiracion)),
+    () => (CUPONES_DEMO as unknown as CouponDummy[]).filter((c) => !isExpired(c.fechaExpiracion)),
     []
   );
 
@@ -95,9 +95,10 @@ export default function NotificationsScreen() {
   };
 
   // Helper: resolve vehicle images from VEHICULOS_MOCK by category
-  const getVehicleImagesByCategory = (category: string) => {
+  const getVehicleImagesByCategory = (category?: string) => {
+    const cat = category || "SUV";
     const list = VEHICULOS_MOCK.filter(
-      (v) => v.categoria.toLowerCase() === category.toLowerCase()
+      (v) => v.categoria.toLowerCase() === cat.toLowerCase()
     );
     const finalSelection = list.length > 0 ? list : VEHICULOS_MOCK;
     return finalSelection.slice(0, 3).map((v) => v.imagen || (v.imagenes && v.imagenes[0]) || "");
@@ -278,7 +279,7 @@ export default function NotificationsScreen() {
 
           {cupones.map((cpx) => {
             const isApplied = appliedCoupons.includes(cpx.codigo);
-            const carImages = getVehicleImagesByCategory(cpx.vehicleCategoryFilter);
+            const carImages = getVehicleImagesByCategory(cpx.reglas?.categoriasValidas?.[0]);
 
 
             // Calculate coupon text dynamically
@@ -287,10 +288,7 @@ export default function NotificationsScreen() {
                 ? `${formatCurrency(cpx.valorFijo ?? 0, monedaActual, tasaUSD)} OFF`
                 : cpx.descuentoTexto;
 
-            const ruleLabel =
-              cpx.minimoValor > 0
-                ? `${cpx.regla} ${formatCurrency(cpx.minimoValor, monedaActual, tasaUSD)}`
-                : cpx.regla;
+            const ruleLabel = cpx.regla || "";
 
             return (
               <View key={cpx.id} style={styles.ticketWrapper}>
@@ -544,7 +542,7 @@ export default function NotificationsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
-            <Ionicons name="checkmark-circle-outline" size={54} color="#10B981" style={{ marginBottom: 12 }} />
+            <Ionicons name="checkmark-circle" size={54} color="#10B981" style={{ marginBottom: 12 }} />
             <Text style={[styles.modalTitle, { color: c.textPrimary, textAlign: "center" }]}>
               {t("promoCoupons.modalTitle", "¡Cupón Activado con Éxito!")}
             </Text>
@@ -807,8 +805,8 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   couponCarMiniWrapper: {
-    width: 64,
-    height: 46,
+    width: 54,
+    height: 38,
     borderRadius: 6,
     alignItems: "center",
     justifyContent: "center",

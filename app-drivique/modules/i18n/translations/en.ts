@@ -612,6 +612,8 @@ export default {
     correoActualizadoMsg: 'Your email was changed successfully.',
   },
   tabs: {
+    masCuponesGeniales: `More awesome coupons`,
+
     inicio: 'Home',
     notificaciones: 'Notifications',
     misReservas: 'My Bookings',
@@ -1093,6 +1095,8 @@ export default {
     monedaUsdParte4: ', at the exchange rate at that moment.',
   },
   coupon: {
+    cancelBtn: 'Cancel',
+    understoodBtn: 'Understood',
     errorMinDays: 'Requires a minimum of {{days}} rental days.',
     errorCategory: 'Only valid for: {{categories}}.',
     errorExpired: 'This coupon is no longer valid.',
@@ -1140,6 +1144,9 @@ export default {
   }
 ,
   promoCoupons: {
+    confirmTitle: `Confirm Activation`,
+    confirmDesc: `Do you want to unlock this coupon and use it on your next booking?`,
+
     c1Title: 'First 3 Bookings',
     c1Desc: 'You earned this special coupon for completing your first 3 bookings on the platform.',
     c1Terms: 'Valid for SUV and Premium vehicles. Requires a minimum booking of 500,000 COP. Expires in 30 days.',
@@ -1163,4 +1170,5 @@ export default {
     modalInstruction: 'Use this code at checkout to get your discount.',
     modalBtn: 'Awesome!'
   }
+
 }

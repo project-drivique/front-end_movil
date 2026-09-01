@@ -610,6 +610,8 @@ export default {
     correoActualizadoMsg: 'Votre e-mail a été modifié avec succès.',
   },
   tabs: {
+    masCuponesGeniales: `Plus de super coupons`,
+
     inicio: 'Accueil',
     notificaciones: 'Notifications',
     misReservas: 'Mes réservations',
@@ -1091,6 +1093,8 @@ export default {
     monedaUsdParte4: ", selon le taux de change du moment.",
   },
   coupon: {
+    cancelBtn: 'Annuler',
+    understoodBtn: 'Compris',
     errorMinDays: 'Nécessite un minimum de {{days}} jours de location.',
     errorCategory: 'Valable uniquement pour : {{categories}}.',
     errorExpired: 'Ce coupon n\'est plus valable.',
@@ -1138,6 +1142,9 @@ export default {
   }
 ,
   promoCoupons: {
+    confirmTitle: `Confirmer l'Activation`,
+    confirmDesc: `Voulez-vous débloquer ce coupon et l'utiliser pour votre prochaine réservation ?`,
+
     c1Title: '3 Premières Réservations',
     c1Desc: 'Vous avez gagné ce coupon spécial pour avoir effectué vos 3 premières réservations sur la plateforme.',
     c1Terms: 'Valable pour les véhicules SUV et Premium. Nécessite une réservation minimum de 500 000 COP. Expire dans 30 jours.',
@@ -1161,4 +1168,5 @@ export default {
     modalInstruction: 'Utilisez ce code lors de la réservation pour obtenir votre réduction.',
     modalBtn: 'Super !'
   }
+
 }

@@ -610,6 +610,8 @@ export default {
     correoActualizadoMsg: 'O seu e-mail foi alterado com sucesso.',
   },
   tabs: {
+    masCuponesGeniales: `Mais cupons incríveis`,
+
     inicio: 'Início',
     notificaciones: 'Notificações',
     misReservas: 'Minhas reservas',
@@ -1091,6 +1093,8 @@ export default {
     monedaUsdParte4: ', de acordo com a taxa de câmbio do momento.',
   },
   coupon: {
+    cancelBtn: 'Cancelar',
+    understoodBtn: 'Entendido',
     errorMinDays: 'Requer um mínimo de {{days}} dias de aluguel.',
     errorCategory: 'Válido apenas para: {{categories}}.',
     errorExpired: 'Este cupom não é mais válido.',
@@ -1138,6 +1142,9 @@ export default {
   }
 ,
   promoCoupons: {
+    confirmTitle: `Confirmar Ativação`,
+    confirmDesc: `Deseja desbloquear este cupom e usá-lo na sua próxima reserva?`,
+
     c1Title: 'Primeiras 3 Reservas',
     c1Desc: 'Você ganhou este cupom especial por completar suas 3 primeiras reservas na plataforma.',
     c1Terms: 'Válido para veículos SUV e Premium. Requer reserva mínima de 500.000 COP. Expira em 30 dias.',
@@ -1161,4 +1168,5 @@ export default {
     modalInstruction: 'Use este código no resumo da reserva para obter seu desconto.',
     modalBtn: 'Excelente!'
   }
+
 }

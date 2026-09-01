@@ -648,6 +648,8 @@ export default {
   },
   // Tabs
   tabs: {
+    masCuponesGeniales: `Más cupones geniales`,
+
     inicio: 'Inicio',
     notificaciones: 'Notificaciones',
     misReservas: 'Mis reservas',
@@ -1130,6 +1132,8 @@ export default {
     monedaUsdParte4: ', según la tasa de cambio del momento.',
   },
   coupon: {
+    cancelBtn: 'Cancelar',
+    understoodBtn: 'Entendido',
     errorMinDays: 'Requiere un mínimo de {{days}} días de alquiler.',
     errorCategory: 'Solo válido para: {{categories}}.',
     errorExpired: 'Este cupón ya no es válido.',
@@ -1177,6 +1181,9 @@ export default {
   }
 ,
   promoCoupons: {
+    confirmTitle: `Confirmar Activación`,
+    confirmDesc: `¿Deseas desbloquear este cupón y usarlo en tu próxima reserva?`,
+
     c1Title: 'Primeras 3 reservas',
     c1Desc: 'Ganaste este cupón especial por haber completado tus primeras 3 reservas en la plataforma.',
     c1Terms: 'Válido para vehículos SUV y Premium. Requiere reserva mínima de 500.000 COP. Vence en 30 días.',
@@ -1200,4 +1207,5 @@ export default {
     modalInstruction: 'Usa este código en el resumen de reserva para obtener tu descuento.',
     modalBtn: '¡Excelente!'
   }
+
 }
