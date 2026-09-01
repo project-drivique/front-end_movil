@@ -307,13 +307,16 @@ export default function PagoRespuestaScreen() {
       ) : (
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
       >
         <ScrollView
           style={{ flex: 1, backgroundColor: c.bg }}
-          contentContainerStyle={[styles.scroll, { paddingTop: 24, paddingBottom: 80 }]}
-          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.scroll, { paddingTop: 24, paddingBottom: 320 }]}
+          showsVerticalScrollIndicator={true}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          automaticallyAdjustKeyboardInsets={true}
         >
       {foto ? (
         <Image source={{ uri: foto }} style={styles.foto} />
