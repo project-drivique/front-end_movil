@@ -41,6 +41,7 @@ export default function NotificationsScreen() {
 
   // Modal states
   const [selectedConditionsCoupon, setSelectedConditionsCoupon] = useState<CouponDummy | null>(null);
+  const [activePendingCoupon, setActivePendingCoupon] = useState<CouponDummy | null>(null);
   const [activeAppliedCoupon, setActiveAppliedCoupon] = useState<CouponDummy | null>(null);
   const [activePendingCoupon, setActivePendingCoupon] = useState<CouponDummy | null>(null);
 
@@ -84,14 +85,34 @@ export default function NotificationsScreen() {
   };
 
   const confirmApplyCoupon = () => {
+<<<<<<< Updated upstream
     if (!activePendingCoupon) return;
     setAppliedCoupons([...appliedCoupons, activePendingCoupon.codigo]);
     setActiveAppliedCoupon(activePendingCoupon);
     setActivePendingCoupon(null);
+=======
+    if (activePendingCoupon) {
+      if (!appliedCoupons.includes(activePendingCoupon.codigo)) {
+        setAppliedCoupons([...appliedCoupons, activePendingCoupon.codigo]);
+      }
+      setActiveAppliedCoupon(activePendingCoupon);
+      setActivePendingCoupon(null);
+    }
+>>>>>>> Stashed changes
   };
 
   const handleGeneralPress = (id: string) => {
     marcarComoLeida(id);
+    const item = notificaciones.find((n) => n.id === id);
+    if (item && item.titulo.toLowerCase().includes("reporte")) {
+      // Intentar extraer el ID del reporte (ej. "Reporte REP-9102 recibido")
+      const match = item.titulo.match(/REP-\d+/);
+      const reporteId = match ? match[0] : "";
+      router.push({
+        pathname: "/(tabs)/support",
+        params: { tab: "mis_reportes", reporteId },
+      });
+    }
   };
 
   // Helper: resolve vehicle images from VEHICULOS_MOCK by category
@@ -204,9 +225,15 @@ export default function NotificationsScreen() {
           </View>
           {isUnread && <View style={styles.unreadDot} />}
         </View>
+<<<<<<< Updated upstream
         <Text style={[styles.body, { color: c.textSecondary }]}>
           {t(item.mensaje, { defaultValue: item.mensaje })}
         </Text>
+=======
+          <Text style={[styles.body, { color: c.textSecondary }]}>
+            {t(item.mensaje, { defaultValue: item.mensaje })}
+          </Text>
+>>>>>>> Stashed changes
       </TouchableOpacity>
     );
   };
@@ -274,8 +301,13 @@ export default function NotificationsScreen() {
         <ScrollView style={styles.promosScroll} showsVerticalScrollIndicator={false}>
           {/* Section 1: Coupons Panel */}
           <Text style={[styles.promoSectionTitle, { color: c.textPrimary }]}>
+<<<<<<< Updated upstream
             {t("tabs.masCuponesGeniales", "Más cupones geniales")}
           </Text>
+=======
+          {t("tabs.masCuponesGeniales", "Más cupones geniales")}
+        </Text>
+>>>>>>> Stashed changes
 
           {cupones.map((cpx) => {
             const isApplied = appliedCoupons.includes(cpx.codigo);
@@ -304,9 +336,15 @@ export default function NotificationsScreen() {
                     {/* Title row */}
                     <View style={styles.couponTitleRow}>
                       <Ionicons name="ticket-outline" size={14} color="#2563EB" style={{ marginRight: 4 }} />
+<<<<<<< Updated upstream
                       <Text style={[styles.couponTitle, { color: c.textPrimary }]} numberOfLines={1}>
                         {t(cpx.tituloPremio, { defaultValue: cpx.tituloPremio })}
                       </Text>
+=======
+                      <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={1}>
+                {t(cpx.tituloPremio, { defaultValue: cpx.tituloPremio })}
+              </Text>
+>>>>>>> Stashed changes
                     </View>
 
                     {/* Real vehicle photos - bigger */}
@@ -383,7 +421,11 @@ export default function NotificationsScreen() {
               onPress={() =>
                 router.push({
                   pathname: "/vehicle/[id]",
-                  params: { id: vp.vehiculoId.toString() },
+                  params: { 
+                    id: vp.vehiculoId.toString(),
+                    promoId: vp.id,
+                    descuentoPorcentaje: vp.descuentoPorcentaje || 0
+                  },
                 } as any)
               }
               activeOpacity={0.88}
@@ -392,9 +434,22 @@ export default function NotificationsScreen() {
                 <Image source={{ uri: vp.imagen }} style={styles.vehiculoPromoImage} resizeMode="cover" />
               </View>
               <View style={styles.vehiculoPromoContent}>
+<<<<<<< Updated upstream
                 <Text style={[styles.vehiculoPromoTitle, { color: c.textPrimary }]} numberOfLines={2}>
                   {t(vp.titulo, { defaultValue: vp.titulo })}
                 </Text>
+=======
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                  <Text style={[styles.vehiculoPromoTitle, { color: c.textPrimary, flex: 1, marginRight: 8 }]} numberOfLines={2}>
+                    {t(vp.titulo, { defaultValue: vp.titulo })}
+                  </Text>
+                  {vp.descuentoPorcentaje && (
+                    <View style={{ backgroundColor: "#FEF3C7", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderColor: "#FDE68A", borderWidth: 1 }}>
+                      <Text style={{ color: "#D97706", fontSize: 11, fontWeight: "800" }}>{vp.descuentoPorcentaje}% OFF</Text>
+                    </View>
+                  )}
+                </View>
+>>>>>>> Stashed changes
                 <View style={styles.timeRow}>
                   <Ionicons name="time-outline" size={11} color={c.textMuted} style={{ marginRight: 3 }} />
                   <Text style={[styles.time, { color: c.textMuted }]}>
@@ -421,7 +476,11 @@ export default function NotificationsScreen() {
                     </View>
                   );
                 })()}
+<<<<<<< Updated upstream
                 <Text style={[styles.promoDesc, { color: c.textSecondary }]} numberOfLines={2}>
+=======
+                <Text style={[styles.vehiculoPromoDesc, { color: c.textSecondary }]} numberOfLines={3}>
+>>>>>>> Stashed changes
                   {t(vp.descripcion, { defaultValue: vp.descripcion })}
                 </Text>
               </View>
@@ -441,7 +500,7 @@ export default function NotificationsScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
             <View style={styles.modalHeaderRow}>
-              <Text style={[styles.modalTitle, { color: c.textPrimary }]}>Condiciones del Cupón</Text>
+              <Text style={[styles.modalTitle, { color: c.textPrimary }]}>{t("coupon.conditionsTitle", "Condiciones del Cupón")}</Text>
               <TouchableOpacity onPress={() => setSelectedConditionsCoupon(null)}>
                 <Ionicons name="close" size={24} color={c.textPrimary} />
               </TouchableOpacity>
@@ -450,22 +509,29 @@ export default function NotificationsScreen() {
             {selectedConditionsCoupon && (
               <ScrollView style={styles.modalScroll}>
                 <Text style={[styles.modalSubtitle, { color: "#2563EB" }]}>
-                  {selectedConditionsCoupon.tituloPremio}
+                  {t(selectedConditionsCoupon.tituloPremio, { defaultValue: selectedConditionsCoupon.tituloPremio })}
                 </Text>
                 <Text style={[styles.modalDescription, { color: c.textSecondary }]}>
-                  {selectedConditionsCoupon.recompensaDetalle}
+                  {t(selectedConditionsCoupon.recompensaDetalle, { defaultValue: selectedConditionsCoupon.recompensaDetalle })}
                 </Text>
                 
                 <View style={[styles.infoDivider, { backgroundColor: c.border }]} />
 
+<<<<<<< Updated upstream
                 <Text style={[styles.modalTitle, { color: c.textPrimary }]}>{t("promoCoupons.modalTitle", "¡Cupón Activado con Éxito!")}</Text>
               <Text style={[styles.modalSubtitle, { color: c.textSecondary }]}>
                 {t("promoCoupons.modalSubtitle", "Has desbloqueado el cupón de recompensa por tus logros en Drivique.")}
               </Text>
+=======
+                <Text style={[styles.conditionSectionHeader, { color: c.textPrimary }]}>{t("coupon.termsTitle", "Términos y condiciones:")}</Text>
+                <Text style={[styles.conditionText, { color: c.textSecondary }]}>
+                  {t(selectedConditionsCoupon.condicionesDetalladas, { defaultValue: selectedConditionsCoupon.condicionesDetalladas })}
+                </Text>
+>>>>>>> Stashed changes
                 <Text style={[styles.conditionText, { color: c.textSecondary, marginTop: 10 }]}>
-                  • Válido para pagos digitales e iniciales.{"\n"}
-                  • No transferible a otros usuarios.{"\n"}
-                  • Solo se puede aplicar un cupón por reserva.
+                  {t("coupon.term1", "• Válido para pagos digitales e iniciales.")}{"\n"}
+                  {t("coupon.term2", "• No transferible a otros usuarios.")}{"\n"}
+                  {t("coupon.term3", "• Solo se puede aplicar un cupón por reserva.")}
                 </Text>
               </ScrollView>
             )}
@@ -515,16 +581,27 @@ export default function NotificationsScreen() {
 
                 <View style={{ flexDirection: 'row', gap: 12, marginTop: 20, width: '100%' }}>
                   <TouchableOpacity
+<<<<<<< Updated upstream
                     style={[styles.modalCloseBtn, { flex: 1, backgroundColor: c.bgInput }]}
                     onPress={() => setActivePendingCoupon(null)}
                   >
                     <Text style={[styles.modalBtnText, { color: c.textPrimary }]}>{t("coupon.cancelBtn", "Cancelar")}</Text>
+=======
+                    style={[styles.modalCloseBtn, { flex: 1, backgroundColor: c.bgInput, borderWidth: 1, borderColor: c.border }]}
+                    onPress={() => setActivePendingCoupon(null)}
+                  >
+                    <Text style={[styles.modalCloseBtnText, { color: c.textPrimary }]}>{t("coupon.cancelBtn", "Cancelar")}</Text>
+>>>>>>> Stashed changes
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.modalCloseBtn, { flex: 1 }]}
                     onPress={confirmApplyCoupon}
                   >
+<<<<<<< Updated upstream
                     <Text style={styles.modalBtnText}>{t("coupon.applyAction", "Aplicar")}</Text>
+=======
+                    <Text style={styles.modalCloseBtnText}>{t("coupon.applyAction", "Aplicar")}</Text>
+>>>>>>> Stashed changes
                   </TouchableOpacity>
                 </View>
               </View>
@@ -559,9 +636,15 @@ export default function NotificationsScreen() {
                   </Text>
                 </View>
 
+<<<<<<< Updated upstream
                 <Text style={[styles.modalInstruction, { color: c.textMuted }]}>
                 {t("promoCoupons.modalInstruction", "Usa este código en el resumen de reserva para obtener tu descuento.")}
               </Text>
+=======
+                <Text style={{ fontSize: 12, color: c.textMuted, marginTop: 12, textAlign: "center" }}>
+                  {t("promoCoupons.modalInstruction", "Usa este código en el resumen de reserva para obtener tu descuento.")}
+                </Text>
+>>>>>>> Stashed changes
               </View>
             )}
 
@@ -569,7 +652,11 @@ export default function NotificationsScreen() {
               style={[styles.modalCloseBtn, { width: "100%", marginTop: 20 }]}
               onPress={() => setActiveAppliedCoupon(null)}
             >
+<<<<<<< Updated upstream
               <Text style={styles.modalBtnText}>{t("promoCoupons.modalBtn", "¡Excelente!")}</Text>
+=======
+              <Text style={styles.modalCloseBtnText}>{t("promoCoupons.modalBtn", "¡Excelente!")}</Text>
+>>>>>>> Stashed changes
             </TouchableOpacity>
           </View>
         </View>
@@ -1007,8 +1094,8 @@ const styles = StyleSheet.create({
     marginVertical: 14,
   },
   conditionSectionHeader: {
-    fontSize: 13.5,
-    fontWeight: "750",
+    fontSize: 14,
+    fontWeight: "700",
     marginBottom: 8,
   },
   conditionText: {

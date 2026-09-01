@@ -187,7 +187,11 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       servAdic +
       cargos +
       RECARGO_LOGISTICO;
+<<<<<<< Updated upstream
       
+=======
+
+>>>>>>> Stashed changes
     let descuentoCupon = 0;
     if (cuponAplicado) {
       if (cuponAplicado.descuentoPorcentaje) {
@@ -196,7 +200,11 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         descuentoCupon = cuponAplicado.descuentoFijo;
       }
     }
+<<<<<<< Updated upstream
     
+=======
+
+>>>>>>> Stashed changes
     const subtotal = subtotalBruto - descuentoCupon;
     const iva = Math.round(subtotal * PORCENTAJE_IVA);
     return subtotal + iva;
@@ -221,39 +229,37 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       });
     }
 
-    await reservaPersistService.guardarReserva({
-      referencia,
-      usuarioId: usuarioGlobal.id,
-      vehiculoId: vehiculo.id,
-      vehiculoNombre: vehiculo.nombre,
-      metodoPago,
-      total,
-      fechaReserva: new Date().toISOString(),
-      fechaRetiro: fechasLugar.fechaRetiro,
-      fechaDevolucion: fechasLugar.fechaDevolucion,
-      lugarRetiro: fechasLugar.lugarRetiro,
-      lugarDevolucion: fechasLugar.lugarDevolucion,
-      proteccion: planes.proteccion,
-      tipoKilometraje: planes.tipoKilometraje,
-      // Snapshot completo para poder reconstruir el contrato en la pantalla
-      // de respuesta de pago, ya que ahí el store de la reserva en curso
-      // (useReservaStore) ya se limpió.
-      vehiculoSnapshot: vehiculo,
-      datosPersonalesSnapshot: datosPersonales,
-      datosDocumentosSnapshot: {
-        licenciaConduccion: documentos.licenciaConduccion
-          ? { nombre: documentos.licenciaConduccion.nombre }
-          : null,
-      },
-      fechasLugarSnapshot: fechasLugar,
-      planesSnapshot: planes,
-    });
-
     setReferenciaActual(referencia);
 
     if (metodoPago === "efectivo") {
+      // Guardar reserva inmediatamente para pago en efectivo
+      await reservaPersistService.guardarReserva({
+        referencia,
+        usuarioId: usuarioGlobal.id,
+        vehiculoId: vehiculo.id,
+        vehiculoNombre: vehiculo.nombre,
+        metodoPago,
+        total,
+        fechaReserva: new Date().toISOString(),
+        fechaRetiro: fechasLugar.fechaRetiro,
+        fechaDevolucion: fechasLugar.fechaDevolucion,
+        lugarRetiro: fechasLugar.lugarRetiro,
+        lugarDevolucion: fechasLugar.lugarDevolucion,
+        proteccion: planes.proteccion,
+        tipoKilometraje: planes.tipoKilometraje,
+        vehiculoSnapshot: vehiculo,
+        datosPersonalesSnapshot: datosPersonales,
+        datosDocumentosSnapshot: {
+          licenciaConduccion: documentos.licenciaConduccion
+            ? { nombre: documentos.licenciaConduccion.nombre }
+            : null,
+        },
+        fechasLugarSnapshot: fechasLugar,
+        planesSnapshot: planes,
+      });
       setModalInstruccionesEfectivoVisible(true);
     } else {
+      // Para Wompi, solo abrimos el modal. La reserva se guarda al pulsar "Pagar con Wompi".
       setModalReservaVisible(true);
     }
   };
@@ -262,6 +268,13 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     setModalInstruccionesEfectivoVisible(false);
     limpiarReserva();
     router.replace("/(tabs)/my-bookings");
+  };
+
+  const handleCancelarInstruccionesEfectivo = async () => {
+    setModalInstruccionesEfectivoVisible(false);
+    if (referenciaActual) {
+      await reservaPersistService.eliminarReserva(referenciaActual);
+    }
   };
 
   const handleContratoFirmado = async () => {
@@ -278,6 +291,32 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     setProcesandoPago(true);
 
     try {
+      // Guardar la reserva ahora que el usuario confirmó ir a Wompi
+      await reservaPersistService.guardarReserva({
+        referencia: referenciaActual,
+        usuarioId: usuarioGlobal.id,
+        vehiculoId: vehiculo.id,
+        vehiculoNombre: vehiculo.nombre,
+        metodoPago: fechasLugar.metodoPago,
+        total,
+        fechaReserva: new Date().toISOString(),
+        fechaRetiro: fechasLugar.fechaRetiro,
+        fechaDevolucion: fechasLugar.fechaDevolucion,
+        lugarRetiro: fechasLugar.lugarRetiro,
+        lugarDevolucion: fechasLugar.lugarDevolucion,
+        proteccion: planes.proteccion,
+        tipoKilometraje: planes.tipoKilometraje,
+        vehiculoSnapshot: vehiculo,
+        datosPersonalesSnapshot: datosPersonales,
+        datosDocumentosSnapshot: {
+          licenciaConduccion: documentos.licenciaConduccion
+            ? { nombre: documentos.licenciaConduccion.nombre }
+            : null,
+        },
+        fechasLugarSnapshot: fechasLugar,
+        planesSnapshot: planes,
+      });
+
       const redirectUrl = Linking.createURL("pago-respuesta");
       const amountInCents = aCentavos(total);
 
@@ -332,13 +371,17 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         }
       } else {
         // El usuario canceló el checkout o Wompi no completó la redirección.
-        // La reserva queda guardada como PENDIENTE; puede reintentar el
-        // pago volviendo a tocar "Pagar con Wompi".
+        // Borramos la reserva de la base de datos para no dejar basura.
+        // Los datos del formulario se mantienen en memoria para que pueda reintentar.
+        await reservaPersistService.eliminarReserva(referenciaActual);
         setAlertaErrorPagoVisible(true);
         setModalReservaVisible(true);
       }
     } catch (error) {
       console.error("[FormDatosPersonales] Error en el pago con Wompi", error);
+      if (referenciaActual) {
+        await reservaPersistService.eliminarReserva(referenciaActual);
+      }
       setAlertaErrorPagoVisible(true);
       setModalReservaVisible(true);
     } finally {
@@ -514,6 +557,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         nombreSucursal={vehiculo.sucursal || ""}
         total={total}
         onCerrar={handleCerrarInstruccionesEfectivo}
+        onCancelar={handleCancelarInstruccionesEfectivo}
       />
 
       <AlertModal

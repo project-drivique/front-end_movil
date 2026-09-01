@@ -213,4 +213,15 @@ export const reservaPersistService = {
   cancelarReserva: async (referencia: string): Promise<boolean> => {
     return reservaPersistService.actualizarEstado(referencia, "CANCELADA");
   },
+
+  eliminarReserva: async (referencia: string): Promise<boolean> => {
+    const reservas = await leer();
+    const index = reservas.findIndex((r) => r.referencia === referencia);
+    if (index !== -1) {
+      reservas.splice(index, 1);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reservas));
+      return true;
+    }
+    return false;
+  },
 };

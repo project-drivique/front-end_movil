@@ -38,7 +38,11 @@ export default function CouponSection({ vehiculo }: Props) {
   const notificaciones = useNotificationStore((s) => s.notificaciones);
   
   const cuponesDisponibles = useMemo(() => {
+<<<<<<< Updated upstream
     return notificaciones
+=======
+    const unlocked = notificaciones
+>>>>>>> Stashed changes
       .filter((n) => n.tipo === "promocion" && n.cupon)
       .map((n) => ({
         ...n.cupon!,
@@ -46,7 +50,35 @@ export default function CouponSection({ vehiculo }: Props) {
         expiracion: n.expiracion,
         recompensaDetalle: n.mensaje,
       }));
+<<<<<<< Updated upstream
   }, [notificaciones]);
+=======
+
+    const actives = cuponesDemo.filter(c => c.estado === "activo" || c.estado === "a_punto_de_agotar");
+    
+    const combined = new Map();
+    actives.forEach(c => combined.set(c.codigo.toUpperCase(), c));
+    unlocked.forEach(c => combined.set(c.codigo.toUpperCase(), c));
+    
+    // Filtrar para mostrar solo los que aplican a las condiciones actuales
+    const aplicables = Array.from(combined.values()).filter((cpx: any) => {
+      if (!cpx.reglas) return true;
+      const dias = diasEntre(fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion);
+      if (cpx.reglas.minimoDias && dias < cpx.reglas.minimoDias) return false;
+      if (cpx.reglas.categoriasValidas && vehiculo.categoria) {
+        const catUpper = vehiculo.categoria.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const validCats = cpx.reglas.categoriasValidas.map((cat: string) => cat.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+        if (!validCats.includes(catUpper)) return false;
+      }
+      if (cpx.reglas.metodosPagoValidos && fechasLugar.metodoPago) {
+        if (!cpx.reglas.metodosPagoValidos.includes(fechasLugar.metodoPago)) return false;
+      }
+      return true;
+    });
+
+    return aplicables;
+  }, [notificaciones, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, vehiculo.categoria]);
+>>>>>>> Stashed changes
   
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
 
@@ -68,6 +100,7 @@ export default function CouponSection({ vehiculo }: Props) {
     }
   };
   
+<<<<<<< Updated upstream
   const handleSeleccionarCupon = (cupon: any, fromModal: boolean = false) => {
     setErrorMsg("");
     setErrorMsgModal("");
@@ -89,6 +122,11 @@ export default function CouponSection({ vehiculo }: Props) {
     aplicarCupon(cupon);
     setModalVisible(false);
     setCodigoManual("");
+=======
+  const handleSeleccionarCupon = (cupon: any) => {
+    setCodigoManual(cupon.codigo);
+    setModalVisible(false);
+>>>>>>> Stashed changes
   };
 
   const handleAplicarManual = () => {
@@ -112,7 +150,33 @@ export default function CouponSection({ vehiculo }: Props) {
     }
 
     if (cuponLista) {
+<<<<<<< Updated upstream
       handleSeleccionarCupon(cuponLista, false);
+=======
+      if (cuponLista.reglas) {
+        const dias = diasEntre(fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion);
+        if (cuponLista.reglas.minimoDias && dias < cuponLista.reglas.minimoDias) {
+          setErrorMsg(t("coupon.errorMinDays", { days: cuponLista.reglas.minimoDias }));
+          return;
+        }
+        if (cuponLista.reglas.categoriasValidas && vehiculo.categoria) {
+          const catUpper = vehiculo.categoria.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          const validCats = cuponLista.reglas.categoriasValidas.map((cat: string) => cat.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+          if (!validCats.includes(catUpper)) {
+            setErrorMsg(t("coupon.errorCategory", { categories: cuponLista.reglas.categoriasValidas.join(", ") }));
+            return;
+          }
+        }
+        if (cuponLista.reglas.metodosPagoValidos && fechasLugar.metodoPago) {
+          if (!cuponLista.reglas.metodosPagoValidos.includes(fechasLugar.metodoPago)) {
+            setErrorMsg(t("coupon.errorPaymentMethod", { methods: cuponLista.reglas.metodosPagoValidos.join(", ") }));
+            return;
+          }
+        }
+      }
+      aplicarCupon(cuponLista);
+      setCodigoManual("");
+>>>>>>> Stashed changes
     } else {
       setErrorMsg(t("coupon.errorInvalid"));
     }
@@ -181,9 +245,17 @@ export default function CouponSection({ vehiculo }: Props) {
 
       {/* Modal Principal de Lista de Cupones */}
       <Modal visible={modalVisible} animationType="slide" transparent={true} onRequestClose={() => setModalVisible(false)}>
+<<<<<<< Updated upstream
         <KeyboardAvoidingView 
           style={styles.modalOverlay} 
           behavior={Platform.OS === "ios" ? "padding" : undefined}
+=======
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setModalVisible(false)} />
+        <KeyboardAvoidingView 
+          style={styles.modalOverlay} 
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          pointerEvents="box-none"
+>>>>>>> Stashed changes
         >
           <View style={[styles.modalContent, { backgroundColor: c.bg }]}>
             <View style={styles.modalHeader}>
@@ -207,25 +279,48 @@ export default function CouponSection({ vehiculo }: Props) {
 
             <ScrollView style={styles.modalScroll}>
               {cuponesDisponibles.length === 0 && (
+<<<<<<< Updated upstream
                 <Text style={{ textAlign: "center", color: c.textMuted, marginTop: 20, fontSize: 12 }}>
                   {t("coupon.empty", "No tienes cupones disponibles en este momento.")}
                 </Text>
+=======
+                <View style={{ alignItems: 'center', justifyContent: 'center', padding: 24, marginTop: 20, backgroundColor: c.bgInput, borderRadius: 12, borderWidth: 1, borderColor: c.border, borderStyle: 'dashed' }}>
+                  <Ionicons name="ticket-outline" size={48} color={c.textMuted} style={{ marginBottom: 12, opacity: 0.5 }} />
+                  <Text style={{ textAlign: "center", color: c.textPrimary, fontSize: 14, fontWeight: "700", marginBottom: 6 }}>
+                    {t("coupon.emptyTitle", "No hay cupones aplicables")}
+                  </Text>
+                  <Text style={{ textAlign: "center", color: c.textSecondary, fontSize: 13, lineHeight: 18 }}>
+                    {t("coupon.emptyDesc", "En este momento no cuentas con cupones que apliquen para las condiciones de tu reserva actual.")}
+                  </Text>
+                </View>
+>>>>>>> Stashed changes
               )}
               
               {cuponesDisponibles.map((cpx) => {
                 const esActivo = cuponAplicado?.codigo === cpx.codigo;
                 const carImages = getVehicleImagesByCategory(cpx.reglas?.categoriasValidas?.[0] || "");
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
                 let discountLabel = "";
                 if (cpx.descuentoPorcentaje) {
                   discountLabel = `${cpx.descuentoPorcentaje}% OFF`;
                 } else if (cpx.descuentoFijo) {
+<<<<<<< Updated upstream
                   discountLabel = `${formatCurrency(cpx.descuentoFijo, monedaActual, tasaUSD)} OFF`;
+=======
+                  discountLabel = `-${formatCurrency(cpx.descuentoFijo, monedaActual, tasaUSD)}`;
+>>>>>>> Stashed changes
                 } else {
                   discountLabel = t(cpx.descripcion || "Descuento");
                 }
 
+<<<<<<< Updated upstream
                 const ruleLabel = cpx.reglas?.minimoDias ? `Min ${cpx.reglas.minimoDias} días` : "Descuento en tu reserva";
+=======
+                const ruleLabel = t(cpx.regla || cpx.condicionesDetalladas || (cpx.reglas?.minimoDias ? `Min ${cpx.reglas.minimoDias} días` : "Descuento en tu reserva"));
+>>>>>>> Stashed changes
 
                 return (
                   <View key={cpx.id || cpx.codigo} style={styles.ticketWrapper}>
@@ -237,6 +332,14 @@ export default function CouponSection({ vehiculo }: Props) {
 
                       {/* Left Side */}
                       <View style={styles.couponLeft}>
+<<<<<<< Updated upstream
+=======
+                        {cpx.estado === "a_punto_de_agotar" && (
+                          <View style={{ backgroundColor: "#FEE2E2", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, alignSelf: "flex-start", marginBottom: 4 }}>
+                            <Text style={{ fontSize: 9, fontWeight: "700", color: "#DC2626" }}>{t("coupon.expiringSoon", "Por agotarse")}</Text>
+                          </View>
+                        )}
+>>>>>>> Stashed changes
                         <View style={styles.couponTitleRow}>
                           <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4 }} />
                           <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={1}>
@@ -258,9 +361,15 @@ export default function CouponSection({ vehiculo }: Props) {
 
                         <View style={styles.couponConditionRow}>
                           <View style={{ flex: 1 }}>
+<<<<<<< Updated upstream
                             {cpx.expiracion && (
                               <Text style={[styles.couponDateText, { color: c.textMuted }]}>
                                 Exp: {formatDateShort(cpx.expiracion)}
+=======
+                            {(cpx.fechaExpiracion || cpx.expiracion) && (
+                              <Text style={[styles.couponDateText, { color: c.textMuted, fontWeight: cpx.estado === "a_punto_de_agotar" ? "bold" : "normal" }]}>
+                                Exp: {formatDateShort(cpx.fechaExpiracion || cpx.expiracion)}
+>>>>>>> Stashed changes
                               </Text>
                             )}
                           </View>
@@ -287,7 +396,11 @@ export default function CouponSection({ vehiculo }: Props) {
                         </Text>
                         <TouchableOpacity
                           style={[styles.couponApplyBtn, { backgroundColor: primaryAccent }, esActivo && { backgroundColor: c.bgInput }]}
+<<<<<<< Updated upstream
                           onPress={() => handleSeleccionarCupon(cpx, true)}
+=======
+                          onPress={() => handleSeleccionarCupon(cpx)}
+>>>>>>> Stashed changes
                           disabled={esActivo}
                         >
                           <Text style={[styles.couponApplyBtnText, { color: esActivo ? c.textMuted : "#FFFFFF" }]}>

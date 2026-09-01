@@ -125,7 +125,10 @@ export default function ResumenReservaModal({
 
   const desglose = useMemo(() => {
     const dias = diasEntre(fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion);
-    const diarias = vehiculo.precio * dias;
+    const descPct = fechasLugar.descuentoPromocion || 0;
+    const precioVehiculoDesc = vehiculo.precio * (1 - descPct / 100);
+    const diarias = precioVehiculoDesc * dias;
+    const ahorroDiarias = (vehiculo.precio - precioVehiculoDesc) * dias;
     const proteccion = mostrarPlanes && seguroElegido ? seguroElegido.precio * dias : 0;
     const kilometraje = mostrarPlanes && kmElegido ? kmElegido.precio * dias : 0;
     const servAdic = mostrarPlanes
@@ -145,8 +148,13 @@ export default function ResumenReservaModal({
     
     const subtotal = subtotalBruto - descuentoCupon;
     const iva = Math.round(subtotal * PORCENTAJE_IVA);
+<<<<<<< Updated upstream
     return { dias, diarias, proteccion, kilometraje, servAdic, cargos, subtotalBruto, descuentoCupon, subtotal, iva, total: subtotal + iva };
   }, [vehiculo.precio, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, mostrarPlanes, seguroElegido, kmElegido, servicios, planes.serviciosSeleccionados, cuponAplicado]);
+=======
+    return { dias, diarias, proteccion, kilometraje, servAdic, cargos, subtotalBruto, descuentoCupon, subtotal, iva, total: subtotal + iva, ahorroDiarias, descPct, precioVehiculoDesc };
+  }, [vehiculo.precio, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, mostrarPlanes, seguroElegido, kmElegido, servicios, planes.serviciosSeleccionados, fechasLugar.descuentoPromocion, cuponAplicado]);
+>>>>>>> Stashed changes
 
   const cerrar = () => { setModo("resumen"); onCerrar(); };
   const confirmarPago = () => { actualizarFechasLugar(draftPago); setModo("resumen"); };
@@ -357,10 +365,16 @@ export default function ResumenReservaModal({
 
                         <Text style={[piezas.desgloseSeccionTitulo, { color: c.textPrimary }]}>{t("reserva.resumen.diarias")}</Text>
                         <LineaPrecio
-                          label={`${desglose.dias} ${desglose.dias > 1 ? t("reserva.resumen.diaPlural") : t("reserva.resumen.diaSingular")} × ${fmt(vehiculo.precio)}`}
+                          label={`${desglose.dias} ${desglose.dias > 1 ? t("reserva.resumen.diaPlural") : t("reserva.resumen.diaSingular")} × ${fmt(desglose.precioVehiculoDesc)}`}
                           valor={fmt(desglose.diarias)}
                           destacado
                         />
+                        {desglose.descPct > 0 && (
+                          <LineaPrecio
+                            label={`Ahorro Promoción (${desglose.descPct}% OFF)`}
+                            valor={`-${fmt(desglose.ahorroDiarias)}`}
+                          />
+                        )}
 
                         {desglose.proteccion > 0 && (
                           <>

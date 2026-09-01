@@ -1,4 +1,4 @@
-// modules/reserva/types/reserva.types.ts
+// modules/reservation/types/reservation.types.ts
 import { TipoDocumento } from "@/modules/profile/types/profile.types";
 export type { TipoDocumento };
 
@@ -19,6 +19,8 @@ export interface DatosFechasLugar {
   barrioDevolucion: string;
   direccionDevolucion: string;
   referenciasDevolucion: string;
+
+  descuentoPromocion?: number;
 }
 
 export interface DesgloseTarifa {
@@ -72,6 +74,12 @@ export interface Cupon {
   reglas?: {
     minimoDias?: number;
     soloPrimeraReserva?: boolean;
+<<<<<<< Updated upstream
     categoriasValidas?: string[]; // e.g. "SUV", "Sedan"
   };
 }
+=======
+    categoriasValidas?: string[];
+  };
+}
+>>>>>>> Stashed changes

@@ -1095,6 +1095,7 @@ export default {
     monedaUsdParte4: ', at the exchange rate at that moment.',
   },
   coupon: {
+<<<<<<< Updated upstream
     cancelBtn: 'Cancel',
     understoodBtn: 'Understood',
     errorMinDays: 'Requires a minimum of {{days}} rental days.',
@@ -1171,4 +1172,71 @@ export default {
     modalBtn: 'Awesome!'
   }
 
+=======
+    title: "DISCOUNT COUPON (OPTIONAL)",
+    placeholder: "Enter a code",
+    applyBtn: "APPLY",
+    viewAvailable: "VIEW AVAILABLE COUPONS",
+    modalTitle: "Available Coupons",
+    empty: "You have no available coupons at this time.",
+    emptyTitle: "No applicable coupons",
+    emptyDesc: "You currently have no coupons that apply to your current booking conditions.",
+    conditionsBtn: "Conditions",
+    applyAction: "Apply",
+    appliedBtn: "✓ Applied",
+    conditionsTitle: "Coupon Conditions",
+    termsTitle: "Terms and conditions:",
+    term1: "• Valid for digital and initial payments.",
+    term2: "• Non-transferable to other users.",
+    term3: "• Only one coupon can be applied per booking.",
+    minDays: "Minimum days:",
+    validCategories: "Valid categories:",
+    expires: "Expires:",
+    understoodBtn: "Understood",
+    cancelBtn: "Cancel",
+    errorMinDays: "This coupon requires a minimum of {{days}} booking days.",
+    errorCategory: "This coupon is only valid for categories: {{categories}}.",
+    errorExpired: "This coupon has expired.",
+    errorInvalid: "Invalid or unavailable coupon code.",
+    fallbackDesc: "Discount on your next booking."
+  },
+  mockCoupons: {
+    c1Desc: "15% off on GY and LY groups",
+    p1Title: "First Booking Reward",
+    p1Desc: "Get 15% off your first booking for selected groups.",
+    c2Desc: "20% off for weekend rentals",
+    p2Title: "Weekend Special",
+    p2Desc: "Rent an SUV or Pickup this weekend and save 20%.",
+    c3Desc: "50,000 COP off on 5+ days",
+    p3Title: "Long Trip Discount",
+    p3Msg: "Enjoy a flat discount on trips longer than 5 days."
+  },
+  promoCoupons: {
+    c1Desc: "19% off on SUV and Premium",
+    c1Title: "Premium Upgrade",
+    c1Terms: "Minimum booking value of 500,000 COP.",
+    c2Desc: "15% off on Economy",
+    c2Title: "Economy Saver",
+    c2Terms: "Minimum booking value of 150,000 COP.",
+    c3Desc: "10% off on Sedans",
+    c3Title: "Sedan Special",
+    c3Terms: "No minimum value required.",
+    c4Desc: "50,000 COP off",
+    c4Title: "Cashback Reward",
+    c4Terms: "Minimum booking value of 200,000 COP.",
+    confirmTitle: "Confirm Activation",
+    confirmDesc: "Do you want to unlock this coupon and use it on your next booking?",
+    modalTitle: "Coupon Successfully Activated!",
+    modalSubtitle: "You have unlocked the reward coupon for your achievements on Drivique.",
+    modalInstruction: "Use this code at checkout to get your discount."
+  },
+  promoCards: {
+    p1Title: "It's back! Don't wait",
+    p1Desc: "This vehicle is back in stock in your area. Book it before it runs out.",
+    p2Title: "28% OFF today only",
+    p2Desc: "Special daily offer. Book today and get 28% off the standard rate.",
+    p3Title: "Unbeatable weekend",
+    p3Desc: "Rent this premium vehicle from Friday to Sunday and pay for only 2 days."
+  }
+>>>>>>> Stashed changes
 }

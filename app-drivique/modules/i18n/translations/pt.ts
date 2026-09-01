@@ -1093,6 +1093,7 @@ export default {
     monedaUsdParte4: ', de acordo com a taxa de câmbio do momento.',
   },
   coupon: {
+<<<<<<< Updated upstream
     cancelBtn: 'Cancelar',
     understoodBtn: 'Entendido',
     errorMinDays: 'Requer um mínimo de {{days}} dias de aluguel.',
@@ -1169,4 +1170,71 @@ export default {
     modalBtn: 'Excelente!'
   }
 
+=======
+    title: "CUPOM DE DESCONTO (OPCIONAL)",
+    placeholder: "Insira um código",
+    applyBtn: "APLICAR",
+    viewAvailable: "VER CUPONS DISPONÍVEIS",
+    modalTitle: "Cupons Disponíveis",
+    empty: "Você não tem cupons disponíveis no momento.",
+    emptyTitle: "Nenhum cupom aplicável",
+    emptyDesc: "No momento, você não possui cupons aplicáveis às condições de sua reserva atual.",
+    conditionsBtn: "Condições",
+    applyAction: "Aplicar",
+    appliedBtn: "✓ Aplicado",
+    conditionsTitle: "Condições do Cupom",
+    termsTitle: "Termos e condições:",
+    term1: "• Válido para pagamentos digitais e iniciais.",
+    term2: "• Intransferível para outros usuários.",
+    term3: "• Apenas um cupom pode ser aplicado por reserva.",
+    minDays: "Mínimo de dias:",
+    validCategories: "Categorias válidas:",
+    expires: "Expira:",
+    understoodBtn: "Entendido",
+    cancelBtn: "Cancelar",
+    errorMinDays: "Este cupom requer um mínimo de {{days}} dias de reserva.",
+    errorCategory: "Este cupom só é válido para categorias: {{categories}}.",
+    errorExpired: "Este cupom expirou.",
+    errorInvalid: "Código de cupom inválido ou indisponível.",
+    fallbackDesc: "Desconto na sua próxima reserva."
+  },
+  mockCoupons: {
+    c1Desc: "15% de desconto nos grupos GY e LY",
+    p1Title: "Recompensa de Primeira Reserva",
+    p1Desc: "Ganhe 15% de desconto na sua primeira reserva para grupos selecionados.",
+    c2Desc: "20% de desconto para aluguéis de fim de semana",
+    p2Title: "Especial de Fim de Semana",
+    p2Desc: "Alugue um SUV ou Pickup neste fim de semana e economize 20%.",
+    c3Desc: "50.000 COP de desconto em 5+ dias",
+    p3Title: "Desconto para Viagem Longa",
+    p3Msg: "Aproveite um desconto fixo em viagens de mais de 5 dias."
+  },
+  promoCoupons: {
+    c1Desc: "19% de desconto em SUV e Premium",
+    c1Title: "Upgrade Premium",
+    c1Terms: "Valor mínimo de reserva de 500.000 COP.",
+    c2Desc: "15% de desconto em Econômico",
+    c2Title: "Economia Econômico",
+    c2Terms: "Valor mínimo de reserva de 150.000 COP.",
+    c3Desc: "10% de desconto em Sedans",
+    c3Title: "Especial Sedan",
+    c3Terms: "Nenhum valor mínimo exigido.",
+    c4Desc: "50.000 COP de desconto",
+    c4Title: "Recompensa Cashback",
+    c4Terms: "Valor mínimo de reserva de 200.000 COP.",
+    confirmTitle: "Confirmar Ativação",
+    confirmDesc: "Deseja desbloquear este cupom e usá-lo na sua próxima reserva?",
+    modalTitle: "Cupom Ativado com Sucesso!",
+    modalSubtitle: "Você desbloqueou o cupom de recompensa por suas conquistas no Drivique.",
+    modalInstruction: "Use este código no resumo da reserva para obter seu desconto."
+  },
+  promoCards: {
+    p1Title: "Voltou! Não espere mais",
+    p1Desc: "Este veículo voltou a estar disponível na sua área. Reserve antes que esgote.",
+    p2Title: "28% OFF só hoje",
+    p2Desc: "Oferta especial do dia. Reserve hoje e ganhe 28% de desconto na tarifa padrão.",
+    p3Title: "Fim de semana sem igual",
+    p3Desc: "Alugue este veículo premium de sexta a domingo e pague apenas 2 dias."
+  }
+>>>>>>> Stashed changes
 }

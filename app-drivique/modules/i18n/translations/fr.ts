@@ -1093,6 +1093,7 @@ export default {
     monedaUsdParte4: ", selon le taux de change du moment.",
   },
   coupon: {
+<<<<<<< Updated upstream
     cancelBtn: 'Annuler',
     understoodBtn: 'Compris',
     errorMinDays: 'Nécessite un minimum de {{days}} jours de location.',
@@ -1169,4 +1170,71 @@ export default {
     modalBtn: 'Super !'
   }
 
+=======
+    title: "CODE PROMO (OPTIONNEL)",
+    placeholder: "Entrez un code",
+    applyBtn: "APPLIQUER",
+    viewAvailable: "VOIR LES COUPONS DISPONIBLES",
+    modalTitle: "Coupons Disponibles",
+    empty: "Vous n'avez aucun coupon disponible pour le moment.",
+    emptyTitle: "Aucun coupon applicable",
+    emptyDesc: "Vous n'avez actuellement aucun coupon qui s'applique aux conditions de votre réservation.",
+    conditionsBtn: "Conditions",
+    applyAction: "Appliquer",
+    appliedBtn: "✓ Appliqué",
+    conditionsTitle: "Conditions du Coupon",
+    termsTitle: "Termes et conditions:",
+    term1: "• Valable pour les paiements numériques et initiaux.",
+    term2: "• Non transférable à d'autres utilisateurs.",
+    term3: "• Un seul coupon peut être appliqué par réservation.",
+    minDays: "Jours minimum:",
+    validCategories: "Catégories valides:",
+    expires: "Expire:",
+    understoodBtn: "Compris",
+    cancelBtn: "Annuler",
+    errorMinDays: "Ce coupon nécessite un minimum de {{days}} jours de réservation.",
+    errorCategory: "Ce coupon est uniquement valable pour les catégories: {{categories}}.",
+    errorExpired: "Ce coupon a expiré.",
+    errorInvalid: "Code promo invalide ou indisponible.",
+    fallbackDesc: "Réduction sur votre prochaine réservation."
+  },
+  mockCoupons: {
+    c1Desc: "15% de réduction sur les groupes GY et LY",
+    p1Title: "Récompense de Première Réservation",
+    p1Desc: "Obtenez 15% de réduction sur votre première réservation pour les groupes sélectionnés.",
+    c2Desc: "20% de réduction pour les locations le week-end",
+    p2Title: "Spécial Week-end",
+    p2Desc: "Louez un SUV ou un Pickup ce week-end et économisez 20%.",
+    c3Desc: "50 000 COP de réduction sur 5+ jours",
+    p3Title: "Réduction Long Voyage",
+    p3Msg: "Profitez d'une réduction fixe sur les voyages de plus de 5 jours."
+  },
+  promoCoupons: {
+    c1Desc: "19% de réduction sur SUV et Premium",
+    c1Title: "Surclassement Premium",
+    c1Terms: "Valeur de réservation minimale de 500 000 COP.",
+    c2Desc: "15% de réduction sur Économique",
+    c2Title: "Économies Économique",
+    c2Terms: "Valeur de réservation minimale de 150 000 COP.",
+    c3Desc: "10% de réduction sur Berlines",
+    c3Title: "Spécial Berline",
+    c3Terms: "Aucune valeur minimale requise.",
+    c4Desc: "50 000 COP de réduction",
+    c4Title: "Récompense Cashback",
+    c4Terms: "Valeur de réservation minimale de 200 000 COP.",
+    confirmTitle: "Confirmer l'activation",
+    confirmDesc: "Voulez-vous débloquer ce coupon et l'utiliser lors de votre prochaine réservation ?",
+    modalTitle: "Coupon activé avec succès !",
+    modalSubtitle: "Vous avez débloqué le coupon de récompense pour vos réalisations sur Drivique.",
+    modalInstruction: "Utilisez ce code au moment du paiement pour obtenir votre réduction."
+  },
+  promoCards: {
+    p1Title: "Il est de retour ! N'attendez plus",
+    p1Desc: "Ce véhicule est de nouveau disponible dans votre zone. Réservez-le avant qu'il n'y en ait plus.",
+    p2Title: "28% de réduction aujourd'hui seulement",
+    p2Desc: "Offre spéciale du jour. Réservez aujourd'hui et obtenez 28% de réduction sur le tarif standard.",
+    p3Title: "Week-end imbattable",
+    p3Desc: "Louez ce véhicule premium du vendredi au dimanche et ne payez que 2 jours."
+  }
+>>>>>>> Stashed changes
 }

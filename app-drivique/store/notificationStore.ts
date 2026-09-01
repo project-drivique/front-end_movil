@@ -13,8 +13,13 @@ export interface Notificacion {
   expiracion?: string;
   /** Icono de Ionicons a mostrar (opcional, por defecto se infiere del tipo/titulo) */
   icono?: string;
+<<<<<<< Updated upstream
   /** Detalles del cupón (solo para tipo "promocion") */
   cupon?: Cupon;
+=======
+  /** Datos del cupón si la notificación es de una promoción (opcional) */
+  cupon?: any;
+>>>>>>> Stashed changes
 }
 
 interface NotificationState {

@@ -9,11 +9,19 @@
     "fechaOtorgado": "2026-08-01T09:00:00Z",
     "tituloPremio": "mockCoupons.p1Title",
     "recompensaDetalle": "mockCoupons.p1Desc",
+<<<<<<< Updated upstream
     "condicionesDetalladas": "15% de descuento. Válido exclusivamente en grupos GY y LY.",
+=======
+    "condicionesDetalladas": "15% de descuento. Válido exclusivamente en grupos GY y LY. Aplica únicamente pagando por Wompi (medios digitales).",
+>>>>>>> Stashed changes
     "descuentoTexto": "15% OFF",
     "regla": "Solo primera reserva",
     "reglas": {
       "soloPrimeraReserva": true,
+<<<<<<< Updated upstream
+=======
+      "metodosPagoValidos": ["wompi"],
+>>>>>>> Stashed changes
       "categoriasValidas": [
         "GY",
         "LY",
@@ -56,7 +64,15 @@
     "descuentoTexto": ".000 OFF",
     "regla": "Mínimo 5 días",
     "reglas": {
+<<<<<<< Updated upstream
       "minimoDias": 5
+=======
+      "minimoDias": 5,
+      "categoriasValidas": [
+        "DEPORTIVO",
+        "SUV"
+      ]
+>>>>>>> Stashed changes
     }
   },
   {
@@ -69,11 +85,20 @@
     "fechaOtorgado": "2026-08-10T09:00:00Z",
     "tituloPremio": "promoCoupons.c1Title",
     "recompensaDetalle": "promoCoupons.c1Desc",
+<<<<<<< Updated upstream
     "condicionesDetalladas": "promoCoupons.c1Terms",
     "descuentoTexto": "19% OFF",
     "regla": "Reserva minima 500.000",
     "reglas": {
       "minimoValor": 500000,
+=======
+    "condicionesDetalladas": "Válido únicamente para pagos a través de medios digitales (Wompi). No aplica en pago en sucursal ni efectivo.",
+    "descuentoTexto": "19% OFF",
+    "regla": "Reserva minima 500.000 y pagos digitales",
+    "reglas": {
+      "minimoValor": 500000,
+      "metodosPagoValidos": ["wompi"],
+>>>>>>> Stashed changes
       "categoriasValidas": [
         "SUV",
         "PREMIUM"
@@ -133,7 +158,15 @@
     "descuentoTexto": ".000 OFF",
     "regla": "Reserva minima 200.000",
     "reglas": {
+<<<<<<< Updated upstream
       "minimoValor": 200000
+=======
+      "minimoValor": 200000,
+      "categoriasValidas": [
+        "ECONOMICO",
+        "SEDAN"
+      ]
+>>>>>>> Stashed changes
     }
   },
   {
@@ -153,16 +186,26 @@
   },
   {
     "id": "c9",
+<<<<<<< Updated upstream
     "codigo": "TEST99",
     "descuentoPorcentaje": 99,
     "descripcion": "Cupón de prueba 99% sin reglas",
+=======
+    "codigo": "TEST25",
+    "descuentoPorcentaje": 25,
+    "descripcion": "Cupón de prueba 25% sin reglas",
+>>>>>>> Stashed changes
     "estado": "activo",
     "fechaExpiracion": "2028-01-01T00:00:00Z",
     "fechaOtorgado": "2024-01-01T00:00:00Z",
     "tituloPremio": "Cupón de prueba universal",
     "recompensaDetalle": "Para verificar el éxito.",
     "condicionesDetalladas": "Sin condiciones. Se aplica a todo.",
+<<<<<<< Updated upstream
     "descuentoTexto": "99% OFF",
+=======
+    "descuentoTexto": "25% OFF",
+>>>>>>> Stashed changes
     "regla": "Sin reglas",
     "reglas": {}
   }

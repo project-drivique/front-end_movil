@@ -54,10 +54,12 @@ export default function VehiculoDetallePage() {
   const { t } = useTranslation();
   const c = useTemaColores();
   const insets = useSafeAreaInsets();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, descuentoPorcentaje } = useLocalSearchParams<{ id: string; promoId?: string; descuentoPorcentaje?: string }>();
   const usuario = useAuthStore((s) => s.usuario);
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
+
+  const descuentoNum = descuentoPorcentaje ? Number(descuentoPorcentaje) : 0;
 
   const [alertaReservaVisible, setAlertaReservaVisible] = useState(false);
   const opacidad = useRef(new Animated.Value(0)).current;
@@ -128,7 +130,9 @@ export default function VehiculoDetallePage() {
       setAlertaReservaVisible(true);
       return;
     }
-    useReservaStore.getState().seleccionarVehiculo(vehiculo);
+    useReservaStore.getState().seleccionarVehiculo(vehiculo, {
+      descuentoPromocion: descuentoNum > 0 ? descuentoNum : undefined,
+    });
     router.push("/(tabs)/reserve");
   };
 
@@ -159,6 +163,16 @@ export default function VehiculoDetallePage() {
         </View>
 
         <Animated.View style={[s.contenido, { opacity: opacidad }]}>
+          {/* Banner de Promo Aplicada */}
+          {descuentoNum > 0 && (
+            <View style={{ backgroundColor: "#FEF3C7", padding: 12, borderRadius: 10, borderColor: "#FDE68A", borderWidth: 1, marginBottom: 14, flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Ionicons name="pricetag-outline" size={20} color="#D97706" />
+              <Text style={{ color: "#B45309", fontSize: 13.5, fontWeight: "800" }}>
+                Promoción aplicada: ¡Tienes {descuentoNum}% OFF en este vehículo!
+              </Text>
+            </View>
+          )}
+
           {/* Encabezado */}
           <View style={s.tagsRow}>
             <View style={[s.tagCategoria, { backgroundColor: c.primaryBg }]}>
@@ -351,10 +365,22 @@ export default function VehiculoDetallePage() {
       <View style={[s.barraInferior, { backgroundColor: c.bgCard, borderTopColor: c.border, paddingBottom: insets.bottom + 12 }]}>
         <View>
           <Text style={[s.barraPrecioLabel, { color: c.textMuted }]}>{t("catalogo.filtrosModal.precioPorDia")}</Text>
-          <Text style={s.barraPrecio}>
-            {formatCurrency(vehiculo.precio, monedaActual, tasaUSD)}
-            <Text style={[s.barraPrecioDia, { color: c.textMuted }]}> {t("vehiculo.porDia")}</Text>
-          </Text>
+          {descuentoNum > 0 ? (
+            <View>
+              <Text style={[s.barraPrecio, { fontSize: 13, color: c.textMuted, textDecorationLine: "line-through", marginBottom: -4 }]}>
+                {formatCurrency(vehiculo.precio, monedaActual, tasaUSD)}
+              </Text>
+              <Text style={s.barraPrecio}>
+                {formatCurrency(vehiculo.precio * (1 - descuentoNum / 100), monedaActual, tasaUSD)}
+                <Text style={[s.barraPrecioDia, { color: c.textMuted }]}> {t("vehiculo.porDia")}</Text>
+              </Text>
+            </View>
+          ) : (
+            <Text style={s.barraPrecio}>
+              {formatCurrency(vehiculo.precio, monedaActual, tasaUSD)}
+              <Text style={[s.barraPrecioDia, { color: c.textMuted }]}> {t("vehiculo.porDia")}</Text>
+            </Text>
+          )}
         </View>
         <TouchableOpacity
           style={[s.reservarBtnWrap, !disponible && { opacity: 0.5 }]}
