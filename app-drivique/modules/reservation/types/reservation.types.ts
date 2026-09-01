@@ -63,3 +63,15 @@ export type LlaveDocumento =
   | "licenciaConduccion";
 
 export type DatosDocumentos = Record<LlaveDocumento, ArchivoDocumento | null>;
+
+export interface Cupon {
+  codigo: string;
+  descuentoPorcentaje?: number;
+  descuentoFijo?: number;
+  descripcion?: string;
+  reglas?: {
+    minimoDias?: number;
+    soloPrimeraReserva?: boolean;
+    categoriasValidas?: string[]; // e.g. "SUV", "Sedan"
+  };
+}

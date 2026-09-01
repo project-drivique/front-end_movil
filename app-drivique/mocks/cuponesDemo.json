@@ -1,0 +1,55 @@
+[
+  {
+    "id": "c1",
+    "codigo": "A8X2F9",
+    "descuentoPorcentaje": 15,
+    "descripcion": "mockCoupons.c1Desc",
+    "estado": "activo",
+    "fechaExpiracion": "2026-12-31T23:59:59Z",
+    "reglas": {
+      "soloPrimeraReserva": true,
+      "categoriasValidas": ["GY", "LY", "SUV"]
+    }
+  },
+  {
+    "id": "c2",
+    "codigo": "W4K7P2",
+    "descuentoPorcentaje": 20,
+    "descripcion": "mockCoupons.c2Desc",
+    "estado": "a_punto_de_agotar",
+    "fechaExpiracion": "2026-09-02T23:59:59Z",
+    "reglas": {
+      "minimoDias": 2,
+      "categoriasValidas": ["SUV", "PICKUP"]
+    }
+  },
+  {
+    "id": "c3",
+    "codigo": "Z9M3R1",
+    "descuentoFijo": 50000,
+    "descripcion": "mockCoupons.c3Desc",
+    "estado": "activo",
+    "fechaExpiracion": "2026-11-30T23:59:59Z",
+    "reglas": {
+      "minimoDias": 5
+    }
+  },
+  {
+    "id": "c4",
+    "codigo": "T5Y8Q4",
+    "descuentoPorcentaje": 30,
+    "descripcion": "Promoción agresiva de Black Friday.",
+    "estado": "expirado",
+    "fechaExpiracion": "2025-11-30T23:59:59Z",
+    "reglas": {}
+  },
+  {
+    "id": "c5",
+    "codigo": "L2J6V7",
+    "descuentoPorcentaje": 10,
+    "descripcion": "Cupón relámpago con poco tiempo de validez.",
+    "estado": "a_punto_de_agotar",
+    "fechaExpiracion": "2026-09-01T12:00:00Z",
+    "reglas": {}
+  }
+]

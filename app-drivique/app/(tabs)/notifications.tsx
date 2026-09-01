@@ -42,6 +42,7 @@ export default function NotificationsScreen() {
   // Modal states
   const [selectedConditionsCoupon, setSelectedConditionsCoupon] = useState<CouponDummy | null>(null);
   const [activeAppliedCoupon, setActiveAppliedCoupon] = useState<CouponDummy | null>(null);
+  const [activePendingCoupon, setActivePendingCoupon] = useState<CouponDummy | null>(null);
 
   /** Filtra items cuya fecha de expiracion ya paso */
   const isExpired = (expiracion?: string) => {
@@ -79,8 +80,14 @@ export default function NotificationsScreen() {
 
   const handleApplyCoupon = (coupon: CouponDummy) => {
     if (appliedCoupons.includes(coupon.codigo)) return;
-    setAppliedCoupons([...appliedCoupons, coupon.codigo]);
-    setActiveAppliedCoupon(coupon);
+    setActivePendingCoupon(coupon);
+  };
+
+  const confirmApplyCoupon = () => {
+    if (!activePendingCoupon) return;
+    setAppliedCoupons([...appliedCoupons, activePendingCoupon.codigo]);
+    setActiveAppliedCoupon(activePendingCoupon);
+    setActivePendingCoupon(null);
   };
 
   const handleGeneralPress = (id: string) => {
@@ -169,7 +176,7 @@ export default function NotificationsScreen() {
           </View>
           <View style={styles.contentWrapper}>
             <Text style={[styles.title, { color: c.textPrimary }, isUnread && styles.unreadText]}>
-              {item.titulo}
+              {t(item.titulo, { defaultValue: item.titulo })}
             </Text>
             <View style={styles.timeRow}>
               <Ionicons name="time-outline" size={11} color={c.textMuted} style={{ marginRight: 3 }} />
@@ -197,7 +204,7 @@ export default function NotificationsScreen() {
           {isUnread && <View style={styles.unreadDot} />}
         </View>
         <Text style={[styles.body, { color: c.textSecondary }]}>
-          {item.mensaje}
+          {t(item.mensaje, { defaultValue: item.mensaje })}
         </Text>
       </TouchableOpacity>
     );
@@ -266,7 +273,7 @@ export default function NotificationsScreen() {
         <ScrollView style={styles.promosScroll} showsVerticalScrollIndicator={false}>
           {/* Section 1: Coupons Panel */}
           <Text style={[styles.promoSectionTitle, { color: c.textPrimary }]}>
-            Más cupones geniales
+            {t("tabs.masCuponesGeniales", "Más cupones geniales")}
           </Text>
 
           {cupones.map((cpx) => {
@@ -299,8 +306,8 @@ export default function NotificationsScreen() {
                     {/* Title row */}
                     <View style={styles.couponTitleRow}>
                       <Ionicons name="ticket-outline" size={14} color="#2563EB" style={{ marginRight: 4 }} />
-                      <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={1}>
-                        {cpx.tituloPremio}
+                      <Text style={[styles.couponTitle, { color: c.textPrimary }]} numberOfLines={1}>
+                        {t(cpx.tituloPremio, { defaultValue: cpx.tituloPremio })}
                       </Text>
                     </View>
 
@@ -388,7 +395,7 @@ export default function NotificationsScreen() {
               </View>
               <View style={styles.vehiculoPromoContent}>
                 <Text style={[styles.vehiculoPromoTitle, { color: c.textPrimary }]} numberOfLines={2}>
-                  {vp.titulo}
+                  {t(vp.titulo, { defaultValue: vp.titulo })}
                 </Text>
                 <View style={styles.timeRow}>
                   <Ionicons name="time-outline" size={11} color={c.textMuted} style={{ marginRight: 3 }} />
@@ -416,8 +423,8 @@ export default function NotificationsScreen() {
                     </View>
                   );
                 })()}
-                <Text style={[styles.vehiculoPromoDesc, { color: c.textSecondary }]} numberOfLines={3}>
-                  {vp.descripcion}
+                <Text style={[styles.promoDesc, { color: c.textSecondary }]} numberOfLines={2}>
+                  {t(vp.descripcion, { defaultValue: vp.descripcion })}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -453,10 +460,10 @@ export default function NotificationsScreen() {
                 
                 <View style={[styles.infoDivider, { backgroundColor: c.border }]} />
 
-                <Text style={[styles.conditionSectionHeader, { color: c.textPrimary }]}>Términos y condiciones:</Text>
-                <Text style={[styles.conditionText, { color: c.textSecondary }]}>
-                  {selectedConditionsCoupon.condicionesDetalladas}
-                </Text>
+                <Text style={[styles.modalTitle, { color: c.textPrimary }]}>{t("promoCoupons.modalTitle", "¡Cupón Activado con Éxito!")}</Text>
+              <Text style={[styles.modalSubtitle, { color: c.textSecondary }]}>
+                {t("promoCoupons.modalSubtitle", "Has desbloqueado el cupón de recompensa por tus logros en Drivique.")}
+              </Text>
                 <Text style={[styles.conditionText, { color: c.textSecondary, marginTop: 10 }]}>
                   • Válido para pagos digitales e iniciales.{"\n"}
                   • No transferible a otros usuarios.{"\n"}
@@ -469,8 +476,61 @@ export default function NotificationsScreen() {
               style={styles.modalCloseBtn}
               onPress={() => setSelectedConditionsCoupon(null)}
             >
-              <Text style={styles.modalCloseBtnText}>Entendido</Text>
+              <Text style={styles.modalCloseBtnText}>{t("coupon.understoodBtn", "Entendido")}</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 2.5 Modal: Confirm Apply Coupon */}
+      <Modal
+        visible={activePendingCoupon !== null}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setActivePendingCoupon(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
+            <TouchableOpacity 
+              style={{ position: 'absolute', top: 12, right: 12, padding: 8 }} 
+              onPress={() => setActivePendingCoupon(null)}
+            >
+              <Ionicons name="close" size={24} color={c.textMuted} />
+            </TouchableOpacity>
+            
+            <Ionicons name="ticket-outline" size={54} color="#2563EB" style={{ marginBottom: 12 }} />
+            <Text style={[styles.modalTitle, { color: c.textPrimary, textAlign: "center" }]}>
+              {t("promoCoupons.confirmTitle", "Confirmar Activación")}
+            </Text>
+            
+            {activePendingCoupon && (
+              <View style={{ width: "100%", alignItems: "center" }}>
+                <Text style={[styles.couponRewardEarnedDesc, { color: c.textSecondary, textAlign: "center", marginVertical: 10 }]}>
+                  {t("promoCoupons.confirmDesc", "¿Deseas desbloquear este cupón y usarlo en tu próxima reserva?")}
+                </Text>
+
+                <View style={[styles.codeBox, { backgroundColor: c.bgInput, borderColor: c.border }]}>
+                  <Text style={[styles.codeText, { color: c.textPrimary }]}>
+                    {t(activePendingCoupon.codigo, { defaultValue: activePendingCoupon.codigo })}
+                  </Text>
+                </View>
+
+                <View style={{ flexDirection: 'row', gap: 12, marginTop: 20, width: '100%' }}>
+                  <TouchableOpacity
+                    style={[styles.modalCloseBtn, { flex: 1, backgroundColor: c.bgInput }]}
+                    onPress={() => setActivePendingCoupon(null)}
+                  >
+                    <Text style={[styles.modalBtnText, { color: c.textPrimary }]}>{t("coupon.cancelBtn", "Cancelar")}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalCloseBtn, { flex: 1 }]}
+                    onPress={confirmApplyCoupon}
+                  >
+                    <Text style={styles.modalBtnText}>{t("coupon.applyAction", "Aplicar")}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
         </View>
       </Modal>
@@ -484,26 +544,26 @@ export default function NotificationsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
-            <Ionicons name="checkmark-circle-ease" size={54} color="#10B981" style={{ marginBottom: 12 }} />
+            <Ionicons name="checkmark-circle-outline" size={54} color="#10B981" style={{ marginBottom: 12 }} />
             <Text style={[styles.modalTitle, { color: c.textPrimary, textAlign: "center" }]}>
-              ¡Cupón Activado con Éxito!
+              {t("promoCoupons.modalTitle", "¡Cupón Activado con Éxito!")}
             </Text>
             
             {activeAppliedCoupon && (
               <View style={{ width: "100%", alignItems: "center" }}>
                 <Text style={[styles.couponRewardEarnedDesc, { color: c.textSecondary, textAlign: "center", marginVertical: 10 }]}>
-                  Has desbloqueado el cupón de recompensa por tus logros en Drivique.
+                  {t("promoCoupons.modalSubtitle", "Has desbloqueado el cupón de recompensa por tus logros en Drivique.")}
                 </Text>
 
                 <View style={[styles.codeBox, { backgroundColor: c.bgInput, borderColor: c.border }]}>
                   <Text style={[styles.codeText, { color: c.textPrimary }]}>
-                    {activeAppliedCoupon.codigo}
+                    {t(activeAppliedCoupon.codigo, { defaultValue: activeAppliedCoupon.codigo })}
                   </Text>
                 </View>
 
-                <Text style={{ fontSize: 12, color: c.textMuted, marginTop: 12, textAlign: "center" }}>
-                  Usa este código en el resumen de reserva para obtener tu descuento.
-                </Text>
+                <Text style={[styles.modalInstruction, { color: c.textMuted }]}>
+                {t("promoCoupons.modalInstruction", "Usa este código en el resumen de reserva para obtener tu descuento.")}
+              </Text>
               </View>
             )}
 
@@ -511,7 +571,7 @@ export default function NotificationsScreen() {
               style={[styles.modalCloseBtn, { width: "100%", marginTop: 20 }]}
               onPress={() => setActiveAppliedCoupon(null)}
             >
-              <Text style={styles.modalCloseBtnText}>¡Excelente!</Text>
+              <Text style={styles.modalBtnText}>{t("promoCoupons.modalBtn", "¡Excelente!")}</Text>
             </TouchableOpacity>
           </View>
         </View>

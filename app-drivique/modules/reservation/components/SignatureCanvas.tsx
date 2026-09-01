@@ -32,9 +32,8 @@ interface Props {
 }
 
 const GROSOR_TRAZO = 2.5;
-const COLOR_TRAZO = "#111827";
 
-function Segmento({ p1, p2 }: { p1: Punto; p2: Punto }) {
+function Segmento({ p1, p2, colorTrazo }: { p1: Punto; p2: Punto; colorTrazo: string }) {
   const dx = p2.x - p1.x;
   const dy = p2.y - p1.y;
   const largo = Math.sqrt(dx * dx + dy * dy) + GROSOR_TRAZO;
@@ -51,14 +50,14 @@ function Segmento({ p1, p2 }: { p1: Punto; p2: Punto }) {
         width: largo,
         height: GROSOR_TRAZO,
         borderRadius: GROSOR_TRAZO / 2,
-        backgroundColor: COLOR_TRAZO,
+        backgroundColor: colorTrazo,
         transform: [{ rotate: `${angulo}deg` }],
       }}
     />
   );
 }
 
-function Punto_({ p }: { p: Punto }) {
+function Punto_({ p, colorTrazo }: { p: Punto; colorTrazo: string }) {
   return (
     <View
       style={{
@@ -68,7 +67,7 @@ function Punto_({ p }: { p: Punto }) {
         width: GROSOR_TRAZO,
         height: GROSOR_TRAZO,
         borderRadius: GROSOR_TRAZO / 2,
-        backgroundColor: COLOR_TRAZO,
+        backgroundColor: colorTrazo,
       }}
     />
   );
@@ -130,8 +129,8 @@ const FirmaCanvas = forwardRef<FirmaCanvasHandle, Props>(({ onCambiar }, ref) =>
           <React.Fragment key={i}>
             {trazo.map((p, j) => (
               <React.Fragment key={j}>
-                <Punto_ p={p} />
-                {j > 0 && <Segmento p1={trazo[j - 1]} p2={p} />}
+                <Punto_ p={p} colorTrazo={c.textPrimary} />
+                {j > 0 && <Segmento p1={trazo[j - 1]} p2={p} colorTrazo={c.textPrimary} />}
               </React.Fragment>
             ))}
           </React.Fragment>
