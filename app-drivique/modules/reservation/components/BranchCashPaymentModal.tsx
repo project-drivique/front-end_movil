@@ -12,6 +12,7 @@ interface Props {
   nombreSucursal: string;
   total: number;
   onCerrar: () => void;
+  onCancelar?: () => void;
   botonTexto?: string;
 }
 
@@ -21,6 +22,7 @@ export function BranchCashPaymentModal({
   nombreSucursal,
   total,
   onCerrar,
+  onCancelar,
   botonTexto,
 }: Props) {
   const c = useTemaColores();
@@ -30,6 +32,11 @@ export function BranchCashPaymentModal({
   const direccion = getDireccionSucursal(nombreSucursal);
 
   const botones = [
+    {
+      texto: t("comun.cancelar", "Cancelar"),
+      onPress: onCancelar || onCerrar,
+      variante: "secundario" as const,
+    },
     {
       texto: botonTexto || t("reserva.confirmacion.entendidoIrAMisReservas"),
       onPress: onCerrar,
@@ -43,7 +50,7 @@ export function BranchCashPaymentModal({
       icono="cash-outline"
       titulo={t("reserva.confirmacion.efectivoConfirmadaTitulo", { defaultValue: "Pago en Sucursal" })}
       mensaje={t("reserva.confirmacion.efectivoConfirmadaMensaje", { horas: 72 })}
-      onCerrar={onCerrar}
+      onCerrar={onCancelar || onCerrar}
       botones={botones}
       contenido={
         <View style={[styles.caja, { backgroundColor: c.primaryBg, borderColor: c.border }]}>

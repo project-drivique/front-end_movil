@@ -519,21 +519,23 @@ export default function PagoRespuestaScreen() {
             </>
           )}
 
-          {/* Banner de Simulación para Sandbox */}
-          <View style={[styles.simuladorCaja, { backgroundColor: c.oscuro ? "#1E293B" : "#FEF3C7", borderColor: "#F59E0B" }]}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
-              <Ionicons name="construct-outline" size={16} color="#D97706" />
-              <Text style={[styles.simuladorTitulo, { color: c.oscuro ? "#FBBF24" : "#B45309" }]}>
-                {t("simulator.title", "[Simulador] Confirmación de Pago (Cajero)")}
+          {/* Banner de Simulación para Sandbox (SOLO PARA PAGO EN SUCURSAL) */}
+          {reserva.metodoPago === "efectivo" && (
+            <View style={[styles.simuladorCaja, { backgroundColor: c.oscuro ? "#1E293B" : "#FEF3C7", borderColor: "#F59E0B", marginTop: 16 }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                <Ionicons name="construct-outline" size={16} color="#D97706" />
+                <Text style={[styles.simuladorTitulo, { color: c.oscuro ? "#FBBF24" : "#B45309" }]}>
+                  {t("simulator.title", "[Simulador] Confirmación de Pago (Cajero)")}
+                </Text>
+              </View>
+              <Text style={[styles.simuladorTexto, { color: c.textSecondary }]}>
+                {t("simulator.desc", "Simula que el cliente se presenta en la caja de la sucursal y realiza el pago. Al confirmar, el estado cambiará a CONFIRMADA y se habilitará la firma del contrato.")}
               </Text>
+              <TouchableOpacity style={styles.simuladorBtn} onPress={handleSimularPagoCaja}>
+                <Text style={styles.simuladorBtnTexto}>{t("simulator.btn", "Confirmar Recepción de Pago")}</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={[styles.simuladorTexto, { color: c.textSecondary }]}>
-              {t("simulator.desc", "Simula que el cliente se presenta en la caja de la sucursal y realiza el pago. Al confirmar, el estado cambiará a CONFIRMADA y se habilitará la firma del contrato.")}
-            </Text>
-            <TouchableOpacity style={styles.simuladorBtn} onPress={handleSimularPagoCaja}>
-              <Text style={styles.simuladorBtnTexto}>{t("simulator.btn", "Confirmar Recepción de Pago")}</Text>
-            </TouchableOpacity>
-          </View>
+          )}
         </View>
       )}
 
