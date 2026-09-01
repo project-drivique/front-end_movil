@@ -180,7 +180,7 @@ export default function ResumenReservaModal({
             >
               <Text style={styles.vehiculoBannerLabel}>{t("reserva.resumen.grupo")}</Text>
               <Text style={styles.vehiculoBannerNombre}>{vehiculo.nombre}</Text>
-              <Text style={styles.vehiculoBannerSub}>{t(`catalogo.categoriaValores.${vehiculo.categoria ?? "Economico"}`, { defaultValue: vehiculo.categoria ?? "Econ├│mico" })} ÔÇö {t(`catalogo.transmisionValores.${vehiculo.transmision}`, { defaultValue: vehiculo.transmision })}</Text>
+              <Text style={styles.vehiculoBannerSub}>{t(`catalogo.categoriaValores.${vehiculo.categoria ?? "Economico"}`, { defaultValue: vehiculo.categoria ?? "Económico" })} — {t(`catalogo.transmisionValores.${vehiculo.transmision}`, { defaultValue: vehiculo.transmision })}</Text>
             </LinearGradient>
 
             {!seccionFechasCompleta ? (
@@ -340,7 +340,7 @@ export default function ResumenReservaModal({
                   </View>
                 ) : null}
 
-                {/* DESGLOSE ÔÇö formato tipo "oferta", completo */}
+                {/* DESGLOSE — formato tipo "oferta", completo */}
                 {modo === "resumen" && (
                   <View style={[piezas.subcard, { borderTopColor: c.border }]}>
                     {fechasCompletas ? (
@@ -357,7 +357,7 @@ export default function ResumenReservaModal({
 
                         <Text style={[piezas.desgloseSeccionTitulo, { color: c.textPrimary }]}>{t("reserva.resumen.diarias")}</Text>
                         <LineaPrecio
-                          label={`${desglose.dias} ${desglose.dias > 1 ? t("reserva.resumen.diaPlural") : t("reserva.resumen.diaSingular")} ├ù ${fmt(vehiculo.precio)}`}
+                          label={`${desglose.dias} ${desglose.dias > 1 ? t("reserva.resumen.diaPlural") : t("reserva.resumen.diaSingular")} × ${fmt(vehiculo.precio)}`}
                           valor={fmt(desglose.diarias)}
                           destacado
                         />
@@ -367,7 +367,7 @@ export default function ResumenReservaModal({
                             <Text style={[piezas.desgloseSeccionTitulo, { color: c.textPrimary }]}>{t("reserva.resumen.protecciones")}</Text>
                             <Text style={[piezas.desgloseSubtexto, { color: c.textSecondary }]}>{t(`reserva.planes.nombreSeguro.${planes.proteccion}`, { defaultValue: planes.proteccion })}</Text>
                             <LineaPrecio
-                              label={`${desglose.dias} ${desglose.dias > 1 ? t("reserva.resumen.diaPlural") : t("reserva.resumen.diaSingular")} ├ù ${fmt(seguroElegido?.precio ?? 0)}`}
+                              label={`${desglose.dias} ${desglose.dias > 1 ? t("reserva.resumen.diaPlural") : t("reserva.resumen.diaSingular")} × ${fmt(seguroElegido?.precio ?? 0)}`}
                               valor={fmt(desglose.proteccion)}
                               destacado
                             />
@@ -378,7 +378,7 @@ export default function ResumenReservaModal({
                           <>
                             <Text style={[piezas.desgloseSeccionTitulo, { color: c.textPrimary }]}>{t("reserva.resumen.kilometrajeGuion", { tipo: labelKm })}</Text>
                             <LineaPrecio
-                              label={`${desglose.dias} ${desglose.dias > 1 ? t("reserva.resumen.diaPlural") : t("reserva.resumen.diaSingular")} ├ù ${fmt(kmElegido?.precio ?? 0)}`}
+                              label={`${desglose.dias} ${desglose.dias > 1 ? t("reserva.resumen.diaPlural") : t("reserva.resumen.diaSingular")} × ${fmt(kmElegido?.precio ?? 0)}`}
                               valor={fmt(desglose.kilometraje)}
                               destacado
                             />

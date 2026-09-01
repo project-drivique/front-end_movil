@@ -1,69 +1,54 @@
 [
   {
-    "referencia": "RES-8991200300123-BC1A2X",
+    "referencia": "RES-1788500200456-M7T8W2Y",
     "usuarioId": "1",
-    "vehiculoId": 1,
-    "vehiculoNombre": "Renault Kwid 2023",
+    "vehiculoId": 6,
+    "vehiculoNombre": "Mazda CX-5 2024",
     "estado": "PENDIENTE_EFECTIVO",
     "metodoPago": "wompi",
-    "metodoPagoDetalle": "BANCOLOMBIA",
-    "total": 350000,
-    "fechaReserva": "2026-09-01T10:00:00.000Z",
-    "fechaRetiro": "2026-09-05",
-    "fechaDevolucion": "2026-09-10",
-    "lugarRetiro": "Alamo Bogotá - Aeropuerto",
-    "lugarDevolucion": "Alamo Bogotá - Aeropuerto",
-    "fechaLimitePago": "2026-09-04T10:00:00.000Z",
+    "total": 829430,
+    "fechaReserva": "2026-08-29T20:30:00.000Z",
+    "fechaRetiro": "2026-08-30",
+    "fechaDevolucion": "2026-09-02",
+    "lugarRetiro": "Alquiler Bogotá - Aeropuerto",
+    "lugarDevolucion": "Alquiler Bogotá - Aeropuerto",
+    "fechaLimitePago": "2030-09-01T20:30:00.000Z",
     "horasLimitePago": 72,
-    "paymentId": "tr_wompi_bancolombia_cash_999",
+    "paymentId": "tr_wompi_collect_demo_123",
     "vehiculoSnapshot": {
-      "id": 1,
-      "nombre": "Renault Kwid 2023",
-      "marca": "Renault",
-      "modelo": "2023",
-      "categoria": "Económico",
-      "precio": 80000,
-      "placa": "KWI-872",
+      "id": 6,
+      "nombre": "Mazda CX-5 2024",
+      "marca": "Mazda",
+      "sucursal": "Alquiler Bogotá - Aeropuerto",
+      "imagenes": [
+        "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600"
+      ],
       "color": "Blanco",
-      "año": 2023,
-      "sucursal": "Alamo Bogotá - Aeropuerto",
-      "imagenes": ["https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&q=80&w=600"],
-      "seguros": [{"nombre": "basico", "precio": 10000}],
-      "tarifas": {"kmLimitado": {"precio": 0}, "kmIlimitado": {"precio": 15000}}
+      "año": 2024,
+      "modelo": "2024",
+      "categoria": "SUV",
+      "precio": 150000,
+      "placa": "CX5-890"
     },
     "datosPersonalesSnapshot": {
       "nombreCompleto": "Cliente Demo",
       "correo": "cliente@drivique.com",
-      "numeroDocumento": "123456789",
-      "nacionalidad": "Colombia",
-      "celular": "3001234567",
-      "tipoDocumento": "CC",
-      "terminosAceptados": true
+      "numeroDocumento": "123456789"
     },
     "datosDocumentosSnapshot": {
-      "licenciaConduccion": { "nombre": "licencia_bancolombia.jpg" },
-      "cedulaFrente": { "nombre": "cedula_f.jpg" },
-      "cedulaReverso": { "nombre": "cedula_r.jpg" }
+      "licenciaConduccion": {
+        "nombre": "licencia.jpg"
+      }
     },
     "fechasLugarSnapshot": {
-      "metodoPago": "wompi",
-      "lugarRetiro": "Alamo Bogotá - Aeropuerto",
-      "lugarDevolucion": "Alamo Bogotá - Aeropuerto",
-      "fechaRetiro": "2026-09-05",
-      "fechaDevolucion": "2026-09-10",
-      "horaRetiro": "10:00",
-      "horaDevolucion": "10:00",
-      "barrioRetiro": "Centro",
-      "direccionRetiro": "Calle 1 # 2-3",
-      "referenciasRetiro": "Frente al parque",
-      "barrioDevolucion": "Centro",
-      "direccionDevolucion": "Calle 1 # 2-3",
-      "referenciasDevolucion": "Frente al parque"
+      "lugarRetiro": "Alquiler Bogotá - Aeropuerto",
+      "lugarDevolucion": "Alquiler Bogotá - Aeropuerto",
+      "fechaRetiro": "2026-08-30",
+      "fechaDevolucion": "2026-09-02"
     },
     "planesSnapshot": {
       "proteccion": "basico",
-      "tipoKilometraje": "limitado",
-      "serviciosSeleccionados": []
+      "tipoKilometraje": "libre"
     }
   }
 ]

@@ -33,11 +33,6 @@ export function BranchCashPaymentModal({
 
   const botones = [
     {
-      texto: t("comun.cancelar", "Cancelar"),
-      onPress: onCancelar || onCerrar,
-      variante: "secundario" as const,
-    },
-    {
       texto: botonTexto || t("reserva.confirmacion.entendidoIrAMisReservas"),
       onPress: onCerrar,
       variante: "primario" as const,

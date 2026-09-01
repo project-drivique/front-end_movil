@@ -96,10 +96,10 @@ export default function CouponSection({ vehiculo }: Props) {
     if (!code) return;
     setErrorMsg("");
 
-    // Primero buscamos si est├í en la lista de notificaciones del usuario
+    // Primero buscamos si está en la lista de notificaciones del usuario
     let cuponLista = cuponesDisponibles.find(c => c.codigo.toUpperCase() === code);
     
-    // Si no est├í, lo buscamos en la base de datos mock (cuponesDemo)
+    // Si no está, lo buscamos en la base de datos mock (cuponesDemo)
     if (!cuponLista) {
       const cuponDB = cuponesDemo.find(c => c.codigo.toUpperCase() === code);
       if (cuponDB) {
@@ -121,7 +121,7 @@ export default function CouponSection({ vehiculo }: Props) {
   return (
     <View style={styles.container}>
       <Text style={[styles.seccionLabel, { color: c.textMuted }]}>
-        {t("coupon.title", "CUP├ôN DE DESCUENTO (OPCIONAL)")}
+        {t("coupon.title", "CUPÓN DE DESCUENTO (OPCIONAL)")}
       </Text>
 
       <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: cuponAplicado ? primaryAccent : c.border }]}>
@@ -145,7 +145,7 @@ export default function CouponSection({ vehiculo }: Props) {
             <View style={styles.inputRow}>
               <TextInput
                 style={[styles.input, { backgroundColor: c.bgInput, borderColor: errorMsg ? (c.oscuro ? "#ef4444" : "#EF4444") : c.border, color: c.textPrimary }]}
-                placeholder={t("coupon.placeholder", "Ingresa un c├│digo")}
+                placeholder={t("coupon.placeholder", "Ingresa un código")}
                 placeholderTextColor={c.textMuted}
                 value={codigoManual}
                 onChangeText={(t) => { setCodigoManual(t); setErrorMsg(""); }}
@@ -183,9 +183,9 @@ export default function CouponSection({ vehiculo }: Props) {
       <Modal visible={modalVisible} animationType="slide" transparent={true} onRequestClose={() => setModalVisible(false)}>
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setModalVisible(false)} />
         <KeyboardAvoidingView 
-          style={styles.modalOverlay} 
+          style={styles.modalOverlay}
+          pointerEvents="box-none" 
           behavior={Platform.OS === "ios" ? "padding" : undefined}
-          pointerEvents="box-none"
         >
           <View style={[styles.modalContent, { backgroundColor: c.bg }]}>
             <View style={styles.modalHeader}>
@@ -242,7 +242,7 @@ export default function CouponSection({ vehiculo }: Props) {
                         <View style={styles.couponTitleRow}>
                           <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4 }} />
                           <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={1}>
-                            {t(cpx.tituloPremio || cpx.descripcion || "Cup├│n de Descuento")}
+                            {t(cpx.tituloPremio || cpx.descripcion || "Cupón de Descuento")}
                           </Text>
                         </View>
 
@@ -293,7 +293,7 @@ export default function CouponSection({ vehiculo }: Props) {
                           disabled={esActivo}
                         >
                           <Text style={[styles.couponApplyBtnText, { color: esActivo ? c.textMuted : "#FFFFFF" }]}>
-                            {esActivo ? t("coupon.appliedBtn", "Ô£ô Aplicado") : t("coupon.applyAction", "Aplicar")}
+                            {esActivo ? t("coupon.appliedBtn", "✓ Aplicado") : t("coupon.applyAction", "Aplicar")}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -316,7 +316,7 @@ export default function CouponSection({ vehiculo }: Props) {
         <View style={styles.modalOverlayCenter}>
           <View style={[styles.modalCardCenter, { backgroundColor: c.bgCard, borderColor: c.border }]}>
             <View style={styles.modalHeaderRowCenter}>
-              <Text style={[styles.modalTitleCenter, { color: c.textPrimary }]}>{t("coupon.conditionsTitle", "Condiciones del Cup├│n")}</Text>
+              <Text style={[styles.modalTitleCenter, { color: c.textPrimary }]}>{t("coupon.conditionsTitle", "Condiciones del Cupón")}</Text>
               <TouchableOpacity onPress={() => setSelectedConditionsCoupon(null)}>
                 <Ionicons name="close" size={24} color={c.textPrimary} />
               </TouchableOpacity>
@@ -333,14 +333,14 @@ export default function CouponSection({ vehiculo }: Props) {
                 
                 <View style={[styles.infoDividerCenter, { backgroundColor: c.border }]} />
 
-                <Text style={[styles.conditionSectionHeaderCenter, { color: c.textPrimary }]}>{t("coupon.termsTitle", "T├®rminos y condiciones:")}</Text>
+                <Text style={[styles.conditionSectionHeaderCenter, { color: c.textPrimary }]}>{t("coupon.termsTitle", "Términos y condiciones:")}</Text>
                 <Text style={[styles.conditionTextCenter, { color: c.textSecondary, marginTop: 10 }]}>
-                  {t("coupon.term1", "ÔÇó V├ílido para pagos digitales e iniciales.")}{"\n"}
-                  {t("coupon.term2", "ÔÇó No transferible a otros usuarios.")}{"\n"}
-                  {t("coupon.term3", "ÔÇó Solo se puede aplicar un cup├│n por reserva.")}
-                  {selectedConditionsCoupon.reglas?.minimoDias ? `\nÔÇó ${t("coupon.minDays", "M├¡nimo de d├¡as:")} ${selectedConditionsCoupon.reglas.minimoDias}` : ''}
-                  {selectedConditionsCoupon.reglas?.categoriasValidas ? `\nÔÇó ${t("coupon.validCategories", "Categor├¡as v├ílidas:")} ${selectedConditionsCoupon.reglas.categoriasValidas.join(", ")}` : ''}
-                  {selectedConditionsCoupon.expiracion ? `\nÔÇó ${t("coupon.expires", "Vence:")} ${formatDateShort(selectedConditionsCoupon.expiracion)}` : ''}
+                  {t("coupon.term1", "• Válido para pagos digitales e iniciales.")}{"\n"}
+                  {t("coupon.term2", "• No transferible a otros usuarios.")}{"\n"}
+                  {t("coupon.term3", "• Solo se puede aplicar un cupón por reserva.")}
+                  {selectedConditionsCoupon.reglas?.minimoDias ? `\n• ${t("coupon.minDays", "Mínimo de días:")} ${selectedConditionsCoupon.reglas.minimoDias}` : ''}
+                  {selectedConditionsCoupon.reglas?.categoriasValidas ? `\n• ${t("coupon.validCategories", "Categorías válidas:")} ${selectedConditionsCoupon.reglas.categoriasValidas.join(", ")}` : ''}
+                  {selectedConditionsCoupon.expiracion ? `\n• ${t("coupon.expires", "Vence:")} ${formatDateShort(selectedConditionsCoupon.expiracion)}` : ''}
                 </Text>
               </ScrollView>
             )}

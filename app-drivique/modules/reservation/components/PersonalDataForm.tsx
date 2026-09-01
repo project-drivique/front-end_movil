@@ -211,9 +211,9 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     const referencia = generarReferenciaUnica();
     const metodoPago = fechasLugar.metodoPago;
 
-    // Si subi├│ un documento nuevo (o todav├¡a no ten├¡a ninguno guardado),
-    // lo dejamos registrado para no volver a ped├¡rselo en la pr├│xima
-    // reserva ÔÇö igual que en la web.
+    // Si subió un documento nuevo (o todavía no tenía ninguno guardado),
+    // lo dejamos registrado para no volver a pedírselo en la próxima
+    // reserva — igual que en la web.
     if (documentos.cedulaFrente || documentos.licenciaConduccion || !docsVerificados) {
       await documentosService.guardarDocumentos(usuarioGlobal.id, {
         identificacion: documentos.cedulaFrente,
@@ -236,8 +236,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       proteccion: planes.proteccion,
       tipoKilometraje: planes.tipoKilometraje,
       // Snapshot completo para poder reconstruir el contrato en la pantalla
-      // de respuesta de pago, ya que ah├¡ el store de la reserva en curso
-      // (useReservaStore) ya se limpi├│.
+      // de respuesta de pago, ya que ahí el store de la reserva en curso
+      // (useReservaStore) ya se limpió.
       vehiculoSnapshot: vehiculo,
       datosPersonalesSnapshot: datosPersonales,
       datosDocumentosSnapshot: {
@@ -269,6 +269,10 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     if (referenciaActual) {
       await reservaPersistService.eliminarReserva(referenciaActual);
     }
+  };
+    setModalInstruccionesEfectivoVisible(false);
+    limpiarReserva();
+    router.replace("/(tabs)/my-bookings");
   };
 
   const handleContratoFirmado = async () => {
@@ -339,9 +343,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         }
       } else {
         // El usuario canceló el checkout o Wompi no completó la redirección.
-        // Borramos la reserva de la base de datos para no dejar basura.
-        // Los datos del formulario se mantienen en memoria para que pueda reintentar.
-        await reservaPersistService.eliminarReserva(referenciaActual);
+        // La reserva queda guardada como PENDIENTE; puede reintentar el
+        // pago volviendo a tocar "Pagar con Wompi".
         setAlertaErrorPagoVisible(true);
         setModalReservaVisible(true);
       }

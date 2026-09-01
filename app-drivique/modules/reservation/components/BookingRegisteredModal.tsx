@@ -23,16 +23,11 @@ export default function ModalReservaRegistrada({ visible, onPagarWompi, onCerrar
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCerrar}>
       <View style={styles.overlay}>
         <View style={[styles.card, { backgroundColor: c.bgCard }]}>
-          {/* Botón X superior */}
-          <TouchableOpacity style={styles.botonCerrarX} onPress={onCerrar} hitSlop={10}>
-            <Ionicons name="close" size={22} color={c.textMuted} />
-          </TouchableOpacity>
-
           <View style={[styles.iconoWrap, { backgroundColor: c.primaryBg }]}>
             <Ionicons name="checkmark-circle" size={40} color={primaryAccent} />
           </View>
 
-          <Text style={[styles.titulo, { color: c.textPrimary }]}>{t("reserva.confirmacion.reservaRegistradaTitulo", "Confirmar reserva")}</Text>
+          <Text style={[styles.titulo, { color: c.textPrimary }]}>{t("reserva.confirmacion.reservaRegistradaTitulo")}</Text>
 
           <Text style={[styles.descripcion, { color: c.textSecondary }]}>
             {t("reserva.confirmacion.reservaRegistradaDescripcion")}
@@ -52,11 +47,6 @@ export default function ModalReservaRegistrada({ visible, onPagarWompi, onCerrar
               <Text style={styles.botonWompiTexto}>{t("reserva.confirmacion.pagarConWompi")}</Text>
             </LinearGradient>
           </TouchableOpacity>
-
-          {/* Botón Cancelar al pie */}
-          <TouchableOpacity style={[styles.botonCancelar, { borderColor: c.border }]} onPress={onCerrar}>
-            <Text style={[styles.botonCancelarTexto, { color: c.textSecondary }]}>{t("comun.cancelar", "Cancelar")}</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </Modal>
@@ -70,13 +60,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 24,
-  },
-  botonCerrarX: {
-    position: "absolute",
-    top: 14,
-    right: 14,
-    zIndex: 10,
-    padding: 4,
   },
   card: {
     width: "100%",
@@ -136,18 +119,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     color: "#fff",
-  },
-  botonCancelar: {
-    marginTop: 12,
-    width: "100%",
-    paddingVertical: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderRadius: 14,
-  },
-  botonCancelarTexto: {
-    fontSize: 14,
-    fontWeight: "700",
   },
 });

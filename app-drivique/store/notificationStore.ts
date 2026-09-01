@@ -9,11 +9,11 @@ export interface Notificacion {
   /** ISO 8601 */
   fecha: string;
   leido: boolean;
-  /** ISO 8601 ÔÇö si existe, la notificacion desaparece automaticamente despues de esta fecha */
+  /** ISO 8601 — si existe, la notificacion desaparece automaticamente despues de esta fecha */
   expiracion?: string;
   /** Icono de Ionicons a mostrar (opcional, por defecto se infiere del tipo/titulo) */
   icono?: string;
-  /** Detalles del cup├│n (solo para tipo "promocion") */
+  /** Detalles del cupón (solo para tipo "promocion") */
   cupon?: Cupon;
 }
 
@@ -26,13 +26,13 @@ interface NotificationState {
 
 export const useNotificationStore = create<NotificationState>((set) => ({
   notificaciones: [
-    // ÔöÇÔöÇ GENERALES ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ── GENERALES ──────────────────────────────────────────────────────
     {
       id: "g1",
       tipo: "general",
       titulo: "Reserva confirmada",
       mensaje:
-        "Tu reserva del Toyota Prado ha sido confirmada con ├®xito. Recuerda que el retiro es en sucursal Neiva el d├¡a acordado.",
+        "Tu reserva del Toyota Prado ha sido confirmada con éxito. Recuerda que el retiro es en sucursal Neiva el día acordado.",
       fecha: "2026-08-11T14:30:00Z",
       leido: false,
       icono: "checkmark-circle-outline",
@@ -42,7 +42,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       tipo: "general",
       titulo: "Pago validado",
       mensaje:
-        "El pago digital a trav├®s de Wompi fue validado de forma satisfactoria. Guarda tu comprobante.",
+        "El pago digital a través de Wompi fue validado de forma satisfactoria. Guarda tu comprobante.",
       fecha: "2026-08-11T14:35:00Z",
       leido: false,
       icono: "card-outline",
@@ -52,7 +52,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       tipo: "general",
       titulo: "Documentos verificados",
       mensaje:
-        "Tu licencia de conducci├│n y documento de identidad fueron aprobados por nuestro equipo. Ya puedes continuar con tu reserva.",
+        "Tu licencia de conducción y documento de identidad fueron aprobados por nuestro equipo. Ya puedes continuar con tu reserva.",
       fecha: "2026-08-10T09:20:00Z",
       leido: false,
       icono: "document-text-outline",
@@ -60,9 +60,9 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     {
       id: "g4",
       tipo: "general",
-      titulo: "Reserva pr├│xima a vencer",
+      titulo: "Reserva próxima a vencer",
       mensaje:
-        "Tu reserva del Chevrolet Spark vence ma├▒ana a las 10:00 AM. Si no la confirmas, se liberar├í el veh├¡culo.",
+        "Tu reserva del Chevrolet Spark vence mañana a las 10:00 AM. Si no la confirmas, se liberará el vehículo.",
       fecha: "2026-08-09T18:00:00Z",
       leido: false,
       icono: "time-outline",
@@ -71,9 +71,9 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     {
       id: "g5",
       tipo: "general",
-      titulo: "Soporte respondi├│ tu caso",
+      titulo: "Soporte respondió tu caso",
       mensaje:
-        "El equipo de soporte respondi├│ tu solicitud #4821. Ingresa a la secci├│n de soporte para ver la respuesta.",
+        "El equipo de soporte respondió tu solicitud #4821. Ingresa a la sección de soporte para ver la respuesta.",
       fecha: "2026-08-09T11:45:00Z",
       leido: true,
       icono: "chatbubble-ellipses-outline",
@@ -83,7 +83,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       tipo: "general",
       titulo: "Alquiler finalizado",
       mensaje:
-        "Tu alquiler del Ford Explorer finaliz├│ correctamente. ┬íGracias por confiar en Drivique! No olvides dejar tu calificaci├│n.",
+        "Tu alquiler del Ford Explorer finalizó correctamente. ¡Gracias por confiar en Drivique! No olvides dejar tu calificación.",
       fecha: "2026-08-08T16:00:00Z",
       leido: true,
       icono: "car-outline",
@@ -91,14 +91,14 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     {
       id: "g7",
       tipo: "general",
-      titulo: "Nueva pol├¡tica de cancelaci├│n",
+      titulo: "Nueva política de cancelación",
       mensaje:
-        "Actualizamos nuestra pol├¡tica de cancelaci├│n. Ahora tienes hasta 24 horas antes del inicio para cancelar sin costo.",
+        "Actualizamos nuestra política de cancelación. Ahora tienes hasta 24 horas antes del inicio para cancelar sin costo.",
       fecha: "2026-08-07T10:00:00Z",
       leido: true,
       icono: "information-circle-outline",
     },
-    // ÔöÇÔöÇ PROMOCIONES ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ── PROMOCIONES ───────────────────────────────────────────────────
     {
       id: "p1",
       tipo: "promocion",
