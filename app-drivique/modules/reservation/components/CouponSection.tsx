@@ -35,27 +35,37 @@ export default function CouponSection({ vehiculo }: Props) {
   const removerCupon = useReservaStore((s) => s.removerCupon);
   const fechasLugar = useReservaStore((s) => s.fechasLugar);
   
-  const notificaciones = useNotificationStore((s) => s.notificaciones);
-  
+  const normalizeStr = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
   const cuponesDisponibles = useMemo(() => {
-    return notificaciones
-      .filter((n) => n.tipo === "promocion" && n.cupon)
-      .map((n) => ({
-        ...n.cupon!,
-        tituloPremio: n.titulo,
-        expiracion: n.expiracion,
-        recompensaDetalle: n.mensaje,
-      }));
-  }, [notificaciones]);
+    return cuponesDemo
+      .filter((c: any) => c.estado !== "expirado")
+      .map((c: any) => ({
+        ...c,
+        expiracion: c.fechaExpiracion,
+        agotandose: c.estado === "a_punto_de_agotar",
+      }))
+      .filter((cpx: any) => {
+        // Filtrar para que solo aparezcan cupones compatibles con la categoría del vehículo actual
+        if (cpx.reglas?.categoriasValidas && cpx.reglas.categoriasValidas.length > 0 && vehiculo.categoria) {
+          const vehCatNorm = normalizeStr(vehiculo.categoria);
+          return cpx.reglas.categoriasValidas.some((cat: string) => normalizeStr(cat) === vehCatNorm);
+        }
+        return true;
+      });
+  }, [vehiculo.categoria]);
   
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
 
   const getVehicleImagesByCategory = (category: string) => {
-    const list = VEHICULOS_MOCK.filter(
+    const matching = VEHICULOS_MOCK.filter(
       (v) => v.categoria.toLowerCase() === (category || "").toLowerCase()
     );
-    const finalSelection = list.length > 0 ? list : VEHICULOS_MOCK;
-    return finalSelection.slice(0, 3).map((v) => v.imagen || (v.imagenes && v.imagenes[0]) || "");
+    const others = VEHICULOS_MOCK.filter(
+      (v) => v.categoria.toLowerCase() !== (category || "").toLowerCase()
+    );
+    const combined = [...matching, ...others];
+    return combined.slice(0, 3).map((v) => v.imagen || (v.imagenes && v.imagenes[0]) || "");
   };
 
   const formatDateShort = (isoString?: string) => {
@@ -79,10 +89,21 @@ export default function CouponSection({ vehiculo }: Props) {
         fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
         return;
       }
-      if (cupon.reglas.categoriasValidas && vehiculo.categoria && !cupon.reglas.categoriasValidas.includes(vehiculo.categoria)) {
-        const msg = t("coupon.errorCategory", { categories: cupon.reglas.categoriasValidas.join(", ") });
-        fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
-        return;
+      if (cupon.reglas.categoriasValidas && cupon.reglas.categoriasValidas.length > 0 && vehiculo.categoria) {
+        const vehCatNorm = normalizeStr(vehiculo.categoria);
+        const isValidCategory = cupon.reglas.categoriasValidas.some((cat: string) => normalizeStr(cat) === vehCatNorm);
+        if (!isValidCategory) {
+          const msg = t("coupon.errorCategory", { categories: cupon.reglas.categoriasValidas.join(", ") });
+          fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
+          return;
+        }
+      }
+      if (cupon.reglas.metodosPagoValidos && fechasLugar.metodoPago) {
+        if (!cupon.reglas.metodosPagoValidos.includes(fechasLugar.metodoPago)) {
+          const msg = "Este cupón solo es válido para pagos digitales (Wompi).";
+          fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
+          return;
+        }
       }
     }
 
@@ -181,8 +202,10 @@ export default function CouponSection({ vehiculo }: Props) {
 
       {/* Modal Principal de Lista de Cupones */}
       <Modal visible={modalVisible} animationType="slide" transparent={true} onRequestClose={() => setModalVisible(false)}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setModalVisible(false)} />
         <KeyboardAvoidingView 
-          style={styles.modalOverlay} 
+          style={styles.modalOverlay}
+          pointerEvents="box-none" 
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <View style={[styles.modalContent, { backgroundColor: c.bg }]}>
@@ -228,7 +251,7 @@ export default function CouponSection({ vehiculo }: Props) {
                 const ruleLabel = cpx.reglas?.minimoDias ? `Min ${cpx.reglas.minimoDias} días` : "Descuento en tu reserva";
 
                 return (
-                  <View key={cpx.id || cpx.codigo} style={styles.ticketWrapper}>
+                  <View key={cpx.codigo} style={styles.ticketWrapper}>
                     <View style={[styles.couponCard, { backgroundColor: c.bgCard, borderColor: esActivo ? primaryAccent : c.border }, esActivo && { borderWidth: 2 }]}>
                       
                       {/* OUTER notches */}
@@ -238,8 +261,8 @@ export default function CouponSection({ vehiculo }: Props) {
                       {/* Left Side */}
                       <View style={styles.couponLeft}>
                         <View style={styles.couponTitleRow}>
-                          <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4 }} />
-                          <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={1}>
+                          <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4, marginTop: 1 }} />
+                          <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={2}>
                             {t(cpx.tituloPremio || cpx.descripcion || "Cupón de Descuento")}
                           </Text>
                         </View>
@@ -322,29 +345,32 @@ export default function CouponSection({ vehiculo }: Props) {
             
             {selectedConditionsCoupon && (
               <ScrollView style={styles.modalScrollCenter}>
-                <Text style={[styles.modalSubtitleCenter, { color: primaryAccent }]}>
+                <Text style={[styles.modalSubtitleCenter, { color: primaryAccent, fontWeight: "800", fontSize: 16, marginBottom: 4 }]}>
                   {t(selectedConditionsCoupon.tituloPremio || selectedConditionsCoupon.descripcion)}
                 </Text>
-                <Text style={[styles.modalDescriptionCenter, { color: c.textSecondary }]}>
+                <Text style={[styles.modalDescriptionCenter, { color: c.textSecondary, lineHeight: 20, marginBottom: 12 }]}>
                   {t(selectedConditionsCoupon.recompensaDetalle || "coupon.fallbackDesc")}
                 </Text>
                 
-                <View style={[styles.infoDividerCenter, { backgroundColor: c.border }]} />
+                <View style={[styles.infoDividerCenter, { backgroundColor: c.border, marginVertical: 12 }]} />
 
-                <Text style={[styles.conditionSectionHeaderCenter, { color: c.textPrimary }]}>{t("coupon.termsTitle", "Términos y condiciones:")}</Text>
-                <Text style={[styles.conditionTextCenter, { color: c.textSecondary, marginTop: 10 }]}>
+                <Text style={[styles.conditionSectionHeaderCenter, { color: c.textPrimary, fontWeight: "700", fontSize: 14 }]}>
+                  {t("coupon.termsTitle", "Términos y condiciones:")}
+                </Text>
+                <Text style={[styles.conditionTextCenter, { color: c.textSecondary, marginTop: 10, lineHeight: 20 }]}>
                   {t("coupon.term1", "• Válido para pagos digitales e iniciales.")}{"\n"}
                   {t("coupon.term2", "• No transferible a otros usuarios.")}{"\n"}
                   {t("coupon.term3", "• Solo se puede aplicar un cupón por reserva.")}
-                  {selectedConditionsCoupon.reglas?.minimoDias ? `\n• ${t("coupon.minDays", "Mínimo de días:")} ${selectedConditionsCoupon.reglas.minimoDias}` : ''}
+                  {selectedConditionsCoupon.reglas?.minimoDias ? `\n• ${t("coupon.minDays", "Mínimo de días:")} ${selectedConditionsCoupon.reglas.minimoDias} días` : ''}
                   {selectedConditionsCoupon.reglas?.categoriasValidas ? `\n• ${t("coupon.validCategories", "Categorías válidas:")} ${selectedConditionsCoupon.reglas.categoriasValidas.join(", ")}` : ''}
-                  {selectedConditionsCoupon.expiracion ? `\n• ${t("coupon.expires", "Vence:")} ${formatDateShort(selectedConditionsCoupon.expiracion)}` : ''}
+                  {selectedConditionsCoupon.condicionesDetalladas ? `\n• ${t(selectedConditionsCoupon.condicionesDetalladas, { defaultValue: selectedConditionsCoupon.condicionesDetalladas })}` : ''}
+                  {selectedConditionsCoupon.expiracion ? `\n• ${t("coupon.expires", "Vence:")} ${formatDateShort(selectedConditionsCoupon.expiracion)}` : `\n• ${t("coupon.validAllMonth", "Válido durante todo el mes.")}`}
                 </Text>
               </ScrollView>
             )}
 
             <TouchableOpacity
-              style={[styles.modalCloseBtnCenter, { backgroundColor: primaryAccent }]}
+              style={[styles.modalCloseBtnCenter, { backgroundColor: primaryAccent, marginTop: 16 }]}
               onPress={() => setSelectedConditionsCoupon(null)}
             >
               <Text style={styles.modalCloseBtnTextCenter}>{t("coupon.understoodBtn", "Entendido")}</Text>
@@ -409,20 +435,22 @@ const styles = StyleSheet.create({
   },
   notchLeft: { position: "absolute", left: -11, top: "50%", marginTop: -11, width: 22, height: 22, borderRadius: 11, zIndex: 20 },
   notchRight: { position: "absolute", right: -11, top: "50%", marginTop: -11, width: 22, height: 22, borderRadius: 11, zIndex: 20 },
-  couponLeft: { flex: 3, padding: 14, justifyContent: "space-between" },
-  couponTitleRow: { flexDirection: "row", alignItems: "center" },
-  couponTitlePremio: { fontSize: 12, fontWeight: "700", flex: 1 },
-  couponImagesRow: { flexDirection: "row", gap: 6, marginVertical: 6 },
-  couponCarMiniWrapper: { width: 64, height: 46, borderRadius: 6, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  couponLeft: { flex: 3.2, padding: 12, justifyContent: "space-between" },
+  couponTitleRow: { flexDirection: "row", alignItems: "flex-start" },
+  couponTitlePremio: { fontSize: 12, fontWeight: "700", lineHeight: 16, flex: 1 },
+  couponImagesRow: { flexDirection: "row", gap: 5, marginVertical: 6 },
+  couponCarMiniWrapper: { width: 52, height: 36, borderRadius: 6, alignItems: "center", justifyContent: "center", overflow: "hidden" },
   couponCarMiniImage: { width: "100%", height: "100%" },
   couponConditionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   couponDateText: { fontSize: 10, marginTop: 2 },
-  codeSubtitle: { fontSize: 11, fontWeight: "700", textDecorationLine: "underline" },
+  codeSubtitle: { fontSize: 11, fontWeight: "700" },
+  expiringText: { color: "#EF4444", fontSize: 11, fontWeight: "700" },
+  conditionsLink: { color: "#3B82F6", fontSize: 11, fontWeight: "700" },
   separatorContainer: { width: 1, alignSelf: "stretch", justifyContent: "center", alignItems: "center", position: "relative", overflow: "visible" },
   innerNotchTop: { position: "absolute", top: -10, width: 20, height: 20, borderRadius: 10, zIndex: 20 },
   innerNotchBottom: { position: "absolute", bottom: -10, width: 20, height: 20, borderRadius: 10, zIndex: 20 },
   dashedSeparator: { height: "100%", borderStyle: "dashed", borderWidth: 1 },
-  couponRight: { flex: 2.1, padding: 12, alignItems: "center", justifyContent: "center" },
+  couponRight: { flex: 1.9, padding: 10, alignItems: "center", justifyContent: "center" },
   couponDiscount: { fontSize: 16, fontWeight: "800" },
   couponRule: { fontSize: 10, fontWeight: "700", textAlign: "center", marginTop: 2, marginBottom: 8 },
   couponApplyBtn: { paddingVertical: 6, paddingHorizontal: 16, borderRadius: 6, width: "90%", alignItems: "center" },

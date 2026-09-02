@@ -264,6 +264,20 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     router.replace("/(tabs)/my-bookings");
   };
 
+  const handleCancelarInstruccionesEfectivo = async () => {
+    setModalInstruccionesEfectivoVisible(false);
+    if (referenciaActual) {
+      await reservaPersistService.eliminarReserva(referenciaActual);
+    }
+  };
+
+  const handleCancelarModalReserva = async () => {
+    setModalReservaVisible(false);
+    if (referenciaActual) {
+      await reservaPersistService.eliminarReserva(referenciaActual);
+    }
+  };
+
   const handleContratoFirmado = async () => {
     if (referenciaActual) {
       await reservaPersistService.actualizarEstado(referenciaActual, "CONFIRMADA");
@@ -332,15 +346,17 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         }
       } else {
         // El usuario canceló el checkout o Wompi no completó la redirección.
-        // La reserva queda guardada como PENDIENTE; puede reintentar el
-        // pago volviendo a tocar "Pagar con Wompi".
+        // Borramos la reserva de la base de datos para no dejar reservas fantasma.
+        // Los datos del formulario se mantienen en memoria para que pueda reintentar.
+        await reservaPersistService.eliminarReserva(referenciaActual);
         setAlertaErrorPagoVisible(true);
-        setModalReservaVisible(true);
       }
     } catch (error) {
       console.error("[FormDatosPersonales] Error en el pago con Wompi", error);
+      if (referenciaActual) {
+        await reservaPersistService.eliminarReserva(referenciaActual);
+      }
       setAlertaErrorPagoVisible(true);
-      setModalReservaVisible(true);
     } finally {
       setProcesandoPago(false);
     }
@@ -505,7 +521,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       <ModalReservaRegistrada
         visible={modalReservaVisible}
         onPagarWompi={handlePagarWompi}
-        onCerrar={() => setModalReservaVisible(false)}
+        onCerrar={handleCancelarModalReserva}
       />
 
       <BranchCashPaymentModal
@@ -514,6 +530,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         nombreSucursal={vehiculo.sucursal || ""}
         total={total}
         onCerrar={handleCerrarInstruccionesEfectivo}
+        onCancelar={handleCancelarInstruccionesEfectivo}
       />
 
       <AlertModal

@@ -19,6 +19,7 @@ export interface DatosFechasLugar {
   barrioDevolucion: string;
   direccionDevolucion: string;
   referenciasDevolucion: string;
+  descuentoPromocion?: number;
 }
 
 export interface DesgloseTarifa {

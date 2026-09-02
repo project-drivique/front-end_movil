@@ -31,6 +31,7 @@ export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t } = useTranslation();
+  const primaryAccent = c.oscuro ? "#60A5FA" : "#1D4ED8";
 
   const { notificaciones, marcarComoLeida, marcarTodasComoLeidas } = useNotificationStore();
   const monedaActual = useMonedaStore((s) => s.monedaActual);
@@ -61,7 +62,7 @@ export default function NotificationsScreen() {
 
   // Cupones activos (no expirados), desde dummy JSON
   const cupones = useMemo(
-    () => (CUPONES_DEMO as unknown as CouponDummy[]).filter((c) => !isExpired(c.fechaExpiracion)),
+    () => (CUPONES_DEMO as unknown as CouponDummy[]).filter((c) => !isExpired(c.fechaExpiracion || c.expiracion)),
     []
   );
 
@@ -94,18 +95,22 @@ export default function NotificationsScreen() {
     marcarComoLeida(id);
   };
 
-  // Helper: resolve vehicle images from VEHICULOS_MOCK by category
+  // Helper: resolve vehicle images from VEHICULOS_MOCK by category (always returns 3 images)
   const getVehicleImagesByCategory = (category?: string) => {
     const cat = category || "SUV";
-    const list = VEHICULOS_MOCK.filter(
+    const matching = VEHICULOS_MOCK.filter(
       (v) => v.categoria.toLowerCase() === cat.toLowerCase()
     );
-    const finalSelection = list.length > 0 ? list : VEHICULOS_MOCK;
-    return finalSelection.slice(0, 3).map((v) => v.imagen || (v.imagenes && v.imagenes[0]) || "");
+    const others = VEHICULOS_MOCK.filter(
+      (v) => v.categoria.toLowerCase() !== cat.toLowerCase()
+    );
+    const combined = [...matching, ...others];
+    return combined.slice(0, 3).map((v) => v.imagen || (v.imagenes && v.imagenes[0]) || "");
   };
 
   // Helper: Format ISO date -> human readable date + time
-  const formatDateTime = (isoString: string) => {
+  const formatDateTime = (isoString?: string) => {
+    if (!isoString) return "";
     try {
       const date = new Date(isoString);
       return date.toLocaleDateString("es-CO", {
@@ -121,7 +126,8 @@ export default function NotificationsScreen() {
   };
 
   // Helper: format only date for coupons (shorter)
-  const formatDateShort = (isoString: string) => {
+  const formatDateShort = (isoString?: string) => {
+    if (!isoString) return "";
     try {
       const date = new Date(isoString);
       return date.toLocaleDateString("es-CO", {
@@ -271,7 +277,7 @@ export default function NotificationsScreen() {
           }
         />
       ) : (
-        <ScrollView style={styles.promosScroll} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.promosScroll} contentContainerStyle={{ paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
           {/* Section 1: Coupons Panel */}
           <Text style={[styles.promoSectionTitle, { color: c.textPrimary }]}>
             {t("tabs.masCuponesGeniales", "Más cupones geniales")}
@@ -303,8 +309,8 @@ export default function NotificationsScreen() {
                   <View style={styles.couponLeft}>
                     {/* Title row */}
                     <View style={styles.couponTitleRow}>
-                      <Ionicons name="ticket-outline" size={14} color="#2563EB" style={{ marginRight: 4 }} />
-                      <Text style={[styles.couponTitle, { color: c.textPrimary }]} numberOfLines={1}>
+                      <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4, marginTop: 1 }} />
+                      <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={2}>
                         {t(cpx.tituloPremio, { defaultValue: cpx.tituloPremio })}
                       </Text>
                     </View>
@@ -380,21 +386,38 @@ export default function NotificationsScreen() {
             <TouchableOpacity
               key={vp.id}
               style={[styles.vehiculoPromoCard, { backgroundColor: c.bgCard, borderColor: c.border }]}
-              onPress={() =>
+              onPress={() => {
+                const pctMatch = vp.descuentoBadge ? vp.descuentoBadge.match(/\d+/) : null;
+                const pct = pctMatch ? pctMatch[0] : "10";
                 router.push({
                   pathname: "/vehicle/[id]",
-                  params: { id: vp.vehiculoId.toString() },
-                } as any)
-              }
+                  params: {
+                    id: vp.vehiculoId.toString(),
+                    descuentoPorcentaje: pct,
+                  },
+                } as any);
+              }}
               activeOpacity={0.88}
             >
               <View style={[styles.vehiculoPromoImageWrapper, { backgroundColor: c.bgInput }]}>
                 <Image source={{ uri: vp.imagen }} style={styles.vehiculoPromoImage} resizeMode="cover" />
               </View>
               <View style={styles.vehiculoPromoContent}>
-                <Text style={[styles.vehiculoPromoTitle, { color: c.textPrimary }]} numberOfLines={2}>
-                  {t(vp.titulo, { defaultValue: vp.titulo })}
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 6 }}>
+                  <Text style={[styles.vehiculoPromoTitle, { color: c.textPrimary, flex: 1 }]} numberOfLines={2}>
+                    {t(vp.titulo, { defaultValue: vp.titulo })}
+                  </Text>
+                  {vp.descuentoBadge ? (
+                    <View style={[styles.descuentoBadge, { backgroundColor: c.oscuro ? "#78350f" : "#FEF3C7", borderColor: c.oscuro ? "#b45309" : "#FDE68A" }]}>
+                      <Text style={[styles.descuentoBadgeText, { color: c.oscuro ? "#fbbf24" : "#B45309" }]}>{vp.descuentoBadge}</Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                <Text style={[styles.vehiculoPromoModelo, { color: primaryAccent }]} numberOfLines={1}>
+                  {vp.marcaModelo}
                 </Text>
+
                 <View style={styles.timeRow}>
                   <Ionicons name="time-outline" size={11} color={c.textMuted} style={{ marginRight: 3 }} />
                   <Text style={[styles.time, { color: c.textMuted }]}>
@@ -407,21 +430,21 @@ export default function NotificationsScreen() {
                   return (
                     <View style={[
                       styles.expiryPill,
-                      { backgroundColor: d <= 2 ? "#FEF2F2" : "#FFFBEB", borderColor: d <= 2 ? "#FECACA" : "#FDE68A" },
+                      { backgroundColor: d <= 2 ? (c.oscuro ? "#450a0a" : "#FEF2F2") : (c.oscuro ? "#451a03" : "#FFFBEB"), borderColor: d <= 2 ? (c.oscuro ? "#7f1d1d" : "#FECACA") : (c.oscuro ? "#78350f" : "#FDE68A") },
                     ]}>
                       <Ionicons
                         name="hourglass-outline"
                         size={10}
-                        color={d <= 2 ? "#DC2626" : "#D97706"}
+                        color={d <= 2 ? "#EF4444" : "#F59E0B"}
                         style={{ marginRight: 3 }}
                       />
-                      <Text style={[styles.expiryPillText, { color: d <= 2 ? "#DC2626" : "#D97706" }]}>
+                      <Text style={[styles.expiryPillText, { color: d <= 2 ? (c.oscuro ? "#f87171" : "#DC2626") : (c.oscuro ? "#fbbf24" : "#D97706") }]}>
                         {d === 1 ? "Vence hoy" : `Vence en ${d} días`}
                       </Text>
                     </View>
                   );
                 })()}
-                <Text style={[styles.promoDesc, { color: c.textSecondary }]} numberOfLines={2}>
+                <Text style={[styles.vehiculoPromoDesc, { color: c.textSecondary, marginTop: 4 }]} numberOfLines={2}>
                   {t(vp.descripcion, { defaultValue: vp.descripcion })}
                 </Text>
               </View>
@@ -441,7 +464,9 @@ export default function NotificationsScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
             <View style={styles.modalHeaderRow}>
-              <Text style={[styles.modalTitle, { color: c.textPrimary }]}>Condiciones del Cupón</Text>
+              <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
+                {t("coupon.conditionsTitle", "Condiciones del Cupón")}
+              </Text>
               <TouchableOpacity onPress={() => setSelectedConditionsCoupon(null)}>
                 <Ionicons name="close" size={24} color={c.textPrimary} />
               </TouchableOpacity>
@@ -449,29 +474,31 @@ export default function NotificationsScreen() {
             
             {selectedConditionsCoupon && (
               <ScrollView style={styles.modalScroll}>
-                <Text style={[styles.modalSubtitle, { color: "#2563EB" }]}>
-                  {selectedConditionsCoupon.tituloPremio}
+                <Text style={[styles.modalSubtitle, { color: primaryAccent, fontWeight: "800", fontSize: 16, marginBottom: 4 }]}>
+                  {t(selectedConditionsCoupon.tituloPremio, { defaultValue: selectedConditionsCoupon.tituloPremio })}
                 </Text>
-                <Text style={[styles.modalDescription, { color: c.textSecondary }]}>
-                  {selectedConditionsCoupon.recompensaDetalle}
+                <Text style={[styles.modalDescription, { color: c.textSecondary, lineHeight: 20, marginBottom: 12 }]}>
+                  {t(selectedConditionsCoupon.recompensaDetalle, { defaultValue: selectedConditionsCoupon.recompensaDetalle })}
                 </Text>
                 
-                <View style={[styles.infoDivider, { backgroundColor: c.border }]} />
+                <View style={[styles.infoDivider, { backgroundColor: c.border, marginVertical: 12 }]} />
 
-                <Text style={[styles.modalTitle, { color: c.textPrimary }]}>{t("promoCoupons.modalTitle", "¡Cupón Activado con Éxito!")}</Text>
-              <Text style={[styles.modalSubtitle, { color: c.textSecondary }]}>
-                {t("promoCoupons.modalSubtitle", "Has desbloqueado el cupón de recompensa por tus logros en Drivique.")}
-              </Text>
-                <Text style={[styles.conditionText, { color: c.textSecondary, marginTop: 10 }]}>
-                  • Válido para pagos digitales e iniciales.{"\n"}
-                  • No transferible a otros usuarios.{"\n"}
-                  • Solo se puede aplicar un cupón por reserva.
+                <Text style={[styles.modalTitle, { color: c.textPrimary, fontSize: 14, marginBottom: 8 }]}>
+                  {t("coupon.termsTitle", "Términos y condiciones:")}
+                </Text>
+                <Text style={[styles.conditionText, { color: c.textSecondary, lineHeight: 20 }]}>
+                  {t("coupon.term1", "• Válido para pagos digitales e iniciales.")}{"\n"}
+                  {t("coupon.term2", "• No transferible a otros usuarios.")}{"\n"}
+                  {t("coupon.term3", "• Solo se puede aplicar un cupón por reserva.")}
+                  {selectedConditionsCoupon.condicionesDetalladas ? `\n• ${t(selectedConditionsCoupon.condicionesDetalladas, { defaultValue: selectedConditionsCoupon.condicionesDetalladas })}` : ''}
+                  {selectedConditionsCoupon.minimoValor ? `\n• ${t("reserva.resumen.montoMinimo", "Monto mínimo:")} ${formatCurrency(selectedConditionsCoupon.minimoValor, monedaActual, tasaUSD)}` : ''}
+                  {selectedConditionsCoupon.expiracion ? `\n• ${t("coupon.expires", "Vence:")} ${formatDateShort(selectedConditionsCoupon.expiracion)}` : `\n• ${t("coupon.validAllMonth", "Válido durante todo el mes.")}`}
                 </Text>
               </ScrollView>
             )}
 
             <TouchableOpacity
-              style={styles.modalCloseBtn}
+              style={[styles.modalCloseBtn, { backgroundColor: primaryAccent, marginTop: 16 }]}
               onPress={() => setSelectedConditionsCoupon(null)}
             >
               <Text style={styles.modalCloseBtnText}>{t("coupon.understoodBtn", "Entendido")}</Text>
@@ -496,7 +523,7 @@ export default function NotificationsScreen() {
               <Ionicons name="close" size={24} color={c.textMuted} />
             </TouchableOpacity>
             
-            <Ionicons name="ticket-outline" size={54} color="#2563EB" style={{ marginBottom: 12 }} />
+            <Ionicons name="ticket-outline" size={54} color={primaryAccent} style={{ marginBottom: 12 }} />
             <Text style={[styles.modalTitle, { color: c.textPrimary, textAlign: "center" }]}>
               {t("promoCoupons.confirmTitle", "Confirmar Activación")}
             </Text>
@@ -515,16 +542,30 @@ export default function NotificationsScreen() {
 
                 <View style={{ flexDirection: 'row', gap: 12, marginTop: 20, width: '100%' }}>
                   <TouchableOpacity
-                    style={[styles.modalCloseBtn, { flex: 1, backgroundColor: c.bgInput }]}
+                    style={[
+                      styles.modalCloseBtn, 
+                      { 
+                        flex: 1, 
+                        backgroundColor: c.bgInput, 
+                        borderWidth: 1, 
+                        borderColor: c.border 
+                      }
+                    ]}
                     onPress={() => setActivePendingCoupon(null)}
+                    activeOpacity={0.8}
                   >
-                    <Text style={[styles.modalBtnText, { color: c.textPrimary }]}>{t("coupon.cancelBtn", "Cancelar")}</Text>
+                    <Text style={[styles.modalBtnText, { color: c.textSecondary, fontWeight: "700" }]}>
+                      {t("coupon.cancelBtn", "Cancelar")}
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.modalCloseBtn, { flex: 1 }]}
+                    style={[styles.modalCloseBtn, { flex: 1, backgroundColor: primaryAccent }]}
                     onPress={confirmApplyCoupon}
+                    activeOpacity={0.85}
                   >
-                    <Text style={styles.modalBtnText}>{t("coupon.applyAction", "Aplicar")}</Text>
+                    <Text style={[styles.modalBtnText, { color: "#FFFFFF", fontWeight: "800" }]}>
+                      {t("coupon.applyAction", "Aplicar")}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -786,27 +827,28 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   couponLeft: {
-    flex: 3,
-    padding: 14,
+    flex: 3.2,
+    padding: 12,
     justifyContent: "space-between",
   },
   couponTitleRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   couponTitlePremio: {
     fontSize: 12,
     fontWeight: "700",
+    lineHeight: 16,
     flex: 1,
   },
   couponImagesRow: {
     flexDirection: "row",
-    gap: 6,
+    gap: 5,
     marginVertical: 6,
   },
   couponCarMiniWrapper: {
-    width: 54,
-    height: 38,
+    width: 52,
+    height: 36,
     borderRadius: 6,
     alignItems: "center",
     justifyContent: "center",
@@ -861,8 +903,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   couponRight: {
-    flex: 2.1,
-    padding: 12,
+    flex: 1.9,
+    padding: 10,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -946,6 +988,23 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     flex: 1,
   },
+  vehiculoPromoModelo: {
+    fontSize: 13,
+    fontWeight: "700",
+    marginTop: 2,
+    marginBottom: 4,
+  },
+  descuentoBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignSelf: "flex-start",
+  },
+  descuentoBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+  },
   vehiculoPromoTime: {
     fontSize: 11,
     marginLeft: 8,
@@ -1008,7 +1067,7 @@ const styles = StyleSheet.create({
   },
   conditionSectionHeader: {
     fontSize: 13.5,
-    fontWeight: "750",
+    fontWeight: "700",
     marginBottom: 8,
   },
   conditionText: {
@@ -1026,6 +1085,22 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 13.5,
     fontWeight: "800",
+  },
+  modalBtnText: {
+    fontSize: 13.5,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  modalInstruction: {
+    fontSize: 12,
+    textAlign: "center",
+    lineHeight: 17,
+    marginTop: 12,
+  },
+  promoDesc: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 4,
   },
   couponRewardEarnedDesc: {
     fontSize: 13,

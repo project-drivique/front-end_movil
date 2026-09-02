@@ -2,6 +2,7 @@
   {
     "id": "c1",
     "codigo": "A8X2F9",
+    "titulo": "Cupón de bienvenida",
     "descuentoPorcentaje": 15,
     "descripcion": "mockCoupons.c1Desc",
     "estado": "activo",
@@ -9,29 +10,32 @@
     "fechaOtorgado": "2026-08-01T09:00:00Z",
     "tituloPremio": "mockCoupons.p1Title",
     "recompensaDetalle": "mockCoupons.p1Desc",
-    "condicionesDetalladas": "15% de descuento. Válido exclusivamente en grupos GY y LY.",
+    "condicionesDetalladas": "15% de descuento en tu primera reserva. Válido exclusivamente en vehículos SUV y Sedán pagando por Wompi.",
     "descuentoTexto": "15% OFF",
     "regla": "Solo primera reserva",
     "reglas": {
       "soloPrimeraReserva": true,
       "categoriasValidas": [
-        "GY",
-        "LY",
-        "SUV"
+        "SUV",
+        "SEDAN"
+      ],
+      "metodosPagoValidos": [
+        "wompi"
       ]
     }
   },
   {
     "id": "c2",
     "codigo": "W4K7P2",
+    "titulo": "Fin de semana especial",
     "descuentoPorcentaje": 20,
     "descripcion": "mockCoupons.c2Desc",
     "estado": "a_punto_de_agotar",
-    "fechaExpiracion": "2026-09-02T23:59:59Z",
+    "fechaExpiracion": "2026-09-08T23:59:59Z",
     "fechaOtorgado": "2026-08-01T09:00:00Z",
     "tituloPremio": "mockCoupons.p2Title",
     "recompensaDetalle": "mockCoupons.p2Desc",
-    "condicionesDetalladas": "20% OFF alquilando fin de semana (mínimo 2 días).",
+    "condicionesDetalladas": "20% de descuento para alquileres de fin de semana (mínimo 2 días) en SUV y Pickups.",
     "descuentoTexto": "20% OFF",
     "regla": "Mínimo 2 días",
     "reglas": {
@@ -45,6 +49,7 @@
   {
     "id": "c3",
     "codigo": "Z9M3R1",
+    "titulo": "Alquiler prolongado",
     "descuentoFijo": 50000,
     "descripcion": "mockCoupons.c3Desc",
     "estado": "activo",
@@ -52,31 +57,38 @@
     "fechaOtorgado": "2026-08-01T09:00:00Z",
     "tituloPremio": "mockCoupons.p3Title",
     "recompensaDetalle": "mockCoupons.p3Msg",
-    "condicionesDetalladas": ".000 COP de descuento en alquileres mayores a 7 días.",
-    "descuentoTexto": ".000 OFF",
+    "condicionesDetalladas": "$50.000 COP de descuento en alquileres mayores a 5 días en categorías Deportivo y SUV.",
+    "descuentoTexto": "-$50.000",
     "regla": "Mínimo 5 días",
     "reglas": {
-      "minimoDias": 5
+      "minimoDias": 5,
+      "categoriasValidas": [
+        "DEPORTIVO",
+        "SUV"
+      ]
     }
   },
   {
     "id": "c4",
     "codigo": "C3P9X1",
-    "descuentoPorcentaje": 19,
+    "descuentoPorcentaje": 18,
     "descripcion": "promoCoupons.c1Desc",
     "estado": "a_punto_de_agotar",
     "fechaExpiracion": "2026-09-10T23:59:59Z",
     "fechaOtorgado": "2026-08-10T09:00:00Z",
     "tituloPremio": "promoCoupons.c1Title",
     "recompensaDetalle": "promoCoupons.c1Desc",
-    "condicionesDetalladas": "promoCoupons.c1Terms",
-    "descuentoTexto": "19% OFF",
-    "regla": "Reserva minima 500.000",
+    "condicionesDetalladas": "Válido únicamente para pagos a través de medios digitales (Wompi). No aplica en pago en sucursal ni efectivo.",
+    "descuentoTexto": "18% OFF",
+    "regla": "Monto min $500.000",
     "reglas": {
       "minimoValor": 500000,
       "categoriasValidas": [
         "SUV",
         "PREMIUM"
+      ],
+      "metodosPagoValidos": [
+        "wompi"
       ]
     }
   },
@@ -92,7 +104,7 @@
     "recompensaDetalle": "promoCoupons.c2Desc",
     "condicionesDetalladas": "promoCoupons.c2Terms",
     "descuentoTexto": "15% OFF",
-    "regla": "Reserva minima 150.000",
+    "regla": "Monto min $150.000",
     "reglas": {
       "minimoValor": 150000,
       "categoriasValidas": [
@@ -112,7 +124,7 @@
     "recompensaDetalle": "promoCoupons.c3Desc",
     "condicionesDetalladas": "promoCoupons.c3Terms",
     "descuentoTexto": "10% OFF",
-    "regla": "Sin minimo",
+    "regla": "Sin mínimo",
     "reglas": {
       "categoriasValidas": [
         "SEDAN"
@@ -130,40 +142,37 @@
     "tituloPremio": "promoCoupons.c4Title",
     "recompensaDetalle": "promoCoupons.c4Desc",
     "condicionesDetalladas": "promoCoupons.c4Terms",
-    "descuentoTexto": ".000 OFF",
-    "regla": "Reserva minima 200.000",
+    "descuentoTexto": "-$50.000",
+    "regla": "Monto min $200.000",
     "reglas": {
-      "minimoValor": 200000
+      "minimoValor": 200000,
+      "categoriasValidas": [
+        "ECONOMICO",
+        "SEDAN"
+      ]
     }
   },
   {
     "id": "c8",
     "codigo": "OLD50",
-    "descuentoPorcentaje": 50,
-    "descripcion": "Cupón antiguo expirado",
+    "descuentoPorcentaje": 15,
+    "descripcion": "Cupón de temporada pasada",
     "estado": "expirado",
     "fechaExpiracion": "2025-01-01T00:00:00Z",
     "fechaOtorgado": "2024-01-01T00:00:00Z",
-    "tituloPremio": "Cupón expirado",
-    "recompensaDetalle": "Ya no es válido",
+    "tituloPremio": "Cupón de temporada pasada",
+    "recompensaDetalle": "Promoción finalizada",
     "condicionesDetalladas": "Expiró en 2025.",
-    "descuentoTexto": "50% OFF",
-    "regla": "Ninguna",
-    "reglas": {}
-  },
-  {
-    "id": "c9",
-    "codigo": "TEST99",
-    "descuentoPorcentaje": 99,
-    "descripcion": "Cupón de prueba 99% sin reglas",
-    "estado": "activo",
-    "fechaExpiracion": "2028-01-01T00:00:00Z",
-    "fechaOtorgado": "2024-01-01T00:00:00Z",
-    "tituloPremio": "Cupón de prueba universal",
-    "recompensaDetalle": "Para verificar el éxito.",
-    "condicionesDetalladas": "Sin condiciones. Se aplica a todo.",
-    "descuentoTexto": "99% OFF",
-    "regla": "Sin reglas",
-    "reglas": {}
+    "descuentoTexto": "15% OFF",
+    "regla": "Expirado",
+    "reglas": {
+      "metodosPagoValidos": [
+        "efectivo"
+      ],
+      "categoriasValidas": [
+        "SUV",
+        "DEPORTIVO"
+      ]
+    }
   }
 ]

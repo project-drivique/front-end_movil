@@ -1117,7 +1117,8 @@ export default {
     minDays: 'Jours minimum :',
     validCategories: 'Catégories valides :',
     expires: 'Expire le :',
-    understoodBtn: 'Compris'
+    validAllMonth: 'Valable tout le mois.',
+    almostGone: 'Bientôt épuisé !'
   }
 ,
   simulator: {
