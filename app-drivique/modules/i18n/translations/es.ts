@@ -1155,7 +1155,9 @@ export default {
     term3: '• Solo se puede aplicar un cupón por reserva.',
     minDays: 'Mínimo de días:',
     validCategories: 'Categorías válidas:',
-    expires: 'Vence:'
+    expires: 'Vence:',
+    validAllMonth: 'Válido durante todo el mes.',
+    almostGone: '¡Por agotarse!'
   }
 ,
   simulator: {

@@ -454,7 +454,9 @@ export default function NotificationsScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
             <View style={styles.modalHeaderRow}>
-              <Text style={[styles.modalTitle, { color: c.textPrimary }]}>Condiciones del Cupón</Text>
+              <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
+                {t("coupon.conditionsTitle", "Condiciones del Cupón")}
+              </Text>
               <TouchableOpacity onPress={() => setSelectedConditionsCoupon(null)}>
                 <Ionicons name="close" size={24} color={c.textPrimary} />
               </TouchableOpacity>
@@ -462,29 +464,31 @@ export default function NotificationsScreen() {
             
             {selectedConditionsCoupon && (
               <ScrollView style={styles.modalScroll}>
-                <Text style={[styles.modalSubtitle, { color: "#2563EB" }]}>
-                  {selectedConditionsCoupon.tituloPremio}
+                <Text style={[styles.modalSubtitle, { color: primaryAccent, fontWeight: "800", fontSize: 16, marginBottom: 4 }]}>
+                  {t(selectedConditionsCoupon.tituloPremio, { defaultValue: selectedConditionsCoupon.tituloPremio })}
                 </Text>
-                <Text style={[styles.modalDescription, { color: c.textSecondary }]}>
-                  {selectedConditionsCoupon.recompensaDetalle}
+                <Text style={[styles.modalDescription, { color: c.textSecondary, lineHeight: 20, marginBottom: 12 }]}>
+                  {t(selectedConditionsCoupon.recompensaDetalle, { defaultValue: selectedConditionsCoupon.recompensaDetalle })}
                 </Text>
                 
-                <View style={[styles.infoDivider, { backgroundColor: c.border }]} />
+                <View style={[styles.infoDivider, { backgroundColor: c.border, marginVertical: 12 }]} />
 
-                <Text style={[styles.modalTitle, { color: c.textPrimary }]}>{t("promoCoupons.modalTitle", "¡Cupón Activado con Éxito!")}</Text>
-              <Text style={[styles.modalSubtitle, { color: c.textSecondary }]}>
-                {t("promoCoupons.modalSubtitle", "Has desbloqueado el cupón de recompensa por tus logros en Drivique.")}
-              </Text>
-                <Text style={[styles.conditionText, { color: c.textSecondary, marginTop: 10 }]}>
-                  • Válido para pagos digitales e iniciales.{"\n"}
-                  • No transferible a otros usuarios.{"\n"}
-                  • Solo se puede aplicar un cupón por reserva.
+                <Text style={[styles.modalTitle, { color: c.textPrimary, fontSize: 14, marginBottom: 8 }]}>
+                  {t("coupon.termsTitle", "Términos y condiciones:")}
+                </Text>
+                <Text style={[styles.conditionText, { color: c.textSecondary, lineHeight: 20 }]}>
+                  {t("coupon.term1", "• Válido para pagos digitales e iniciales.")}{"\n"}
+                  {t("coupon.term2", "• No transferible a otros usuarios.")}{"\n"}
+                  {t("coupon.term3", "• Solo se puede aplicar un cupón por reserva.")}
+                  {selectedConditionsCoupon.condicionesDetalladas ? `\n• ${t(selectedConditionsCoupon.condicionesDetalladas, { defaultValue: selectedConditionsCoupon.condicionesDetalladas })}` : ''}
+                  {selectedConditionsCoupon.minimoValor ? `\n• ${t("reserva.resumen.montoMinimo", "Monto mínimo:")} ${formatCurrency(selectedConditionsCoupon.minimoValor, monedaActual, tasaUSD)}` : ''}
+                  {selectedConditionsCoupon.expiracion ? `\n• ${t("coupon.expires", "Vence:")} ${formatDate(selectedConditionsCoupon.expiracion)}` : `\n• ${t("coupon.validAllMonth", "Válido durante todo el mes.")}`}
                 </Text>
               </ScrollView>
             )}
 
             <TouchableOpacity
-              style={styles.modalCloseBtn}
+              style={[styles.modalCloseBtn, { backgroundColor: primaryAccent, marginTop: 16 }]}
               onPress={() => setSelectedConditionsCoupon(null)}
             >
               <Text style={styles.modalCloseBtnText}>{t("coupon.understoodBtn", "Entendido")}</Text>
@@ -509,7 +513,7 @@ export default function NotificationsScreen() {
               <Ionicons name="close" size={24} color={c.textMuted} />
             </TouchableOpacity>
             
-            <Ionicons name="ticket-outline" size={54} color="#2563EB" style={{ marginBottom: 12 }} />
+            <Ionicons name="ticket-outline" size={54} color={primaryAccent} style={{ marginBottom: 12 }} />
             <Text style={[styles.modalTitle, { color: c.textPrimary, textAlign: "center" }]}>
               {t("promoCoupons.confirmTitle", "Confirmar Activación")}
             </Text>
@@ -528,16 +532,30 @@ export default function NotificationsScreen() {
 
                 <View style={{ flexDirection: 'row', gap: 12, marginTop: 20, width: '100%' }}>
                   <TouchableOpacity
-                    style={[styles.modalCloseBtn, { flex: 1, backgroundColor: c.bgInput }]}
+                    style={[
+                      styles.modalCloseBtn, 
+                      { 
+                        flex: 1, 
+                        backgroundColor: c.bgInput, 
+                        borderWidth: 1.5, 
+                        borderColor: c.oscuro ? "#334155" : "#CBD5E1" 
+                      }
+                    ]}
                     onPress={() => setActivePendingCoupon(null)}
+                    activeOpacity={0.8}
                   >
-                    <Text style={[styles.modalBtnText, { color: c.textPrimary }]}>{t("coupon.cancelBtn", "Cancelar")}</Text>
+                    <Text style={[styles.modalBtnText, { color: c.textSecondary, fontWeight: "700" }]}>
+                      {t("coupon.cancelBtn", "Cancelar")}
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.modalCloseBtn, { flex: 1 }]}
+                    style={[styles.modalCloseBtn, { flex: 1, backgroundColor: primaryAccent }]}
                     onPress={confirmApplyCoupon}
+                    activeOpacity={0.85}
                   >
-                    <Text style={styles.modalBtnText}>{t("coupon.applyAction", "Aplicar")}</Text>
+                    <Text style={[styles.modalBtnText, { color: "#FFFFFF", fontWeight: "800" }]}>
+                      {t("coupon.applyAction", "Aplicar")}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>

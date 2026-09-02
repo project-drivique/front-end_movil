@@ -2,6 +2,7 @@
   {
     "id": "c1",
     "codigo": "A8X2F9",
+    "titulo": "Cupón de bienvenida",
     "descuentoPorcentaje": 15,
     "descripcion": "mockCoupons.c1Desc",
     "estado": "activo",
@@ -9,15 +10,14 @@
     "fechaOtorgado": "2026-08-01T09:00:00Z",
     "tituloPremio": "mockCoupons.p1Title",
     "recompensaDetalle": "mockCoupons.p1Desc",
-    "condicionesDetalladas": "15% de descuento. Válido exclusivamente en grupos GY y LY. Aplica únicamente pagando por Wompi (medios digitales).",
+    "condicionesDetalladas": "15% de descuento en tu primera reserva. Válido exclusivamente en vehículos SUV y Sedán pagando por Wompi.",
     "descuentoTexto": "15% OFF",
     "regla": "Solo primera reserva",
     "reglas": {
       "soloPrimeraReserva": true,
       "categoriasValidas": [
-        "GY",
-        "LY",
-        "SUV"
+        "SUV",
+        "SEDAN"
       ],
       "metodosPagoValidos": [
         "wompi"
@@ -27,14 +27,15 @@
   {
     "id": "c2",
     "codigo": "W4K7P2",
+    "titulo": "Fin de semana especial",
     "descuentoPorcentaje": 20,
     "descripcion": "mockCoupons.c2Desc",
     "estado": "a_punto_de_agotar",
-    "fechaExpiracion": "2026-09-02T23:59:59Z",
+    "fechaExpiracion": "2026-09-08T23:59:59Z",
     "fechaOtorgado": "2026-08-01T09:00:00Z",
     "tituloPremio": "mockCoupons.p2Title",
     "recompensaDetalle": "mockCoupons.p2Desc",
-    "condicionesDetalladas": "20% OFF alquilando fin de semana (mínimo 2 días).",
+    "condicionesDetalladas": "20% de descuento para alquileres de fin de semana (mínimo 2 días) en SUV y Pickups.",
     "descuentoTexto": "20% OFF",
     "regla": "Mínimo 2 días",
     "reglas": {
@@ -48,6 +49,7 @@
   {
     "id": "c3",
     "codigo": "Z9M3R1",
+    "titulo": "Alquiler prolongado",
     "descuentoFijo": 50000,
     "descripcion": "mockCoupons.c3Desc",
     "estado": "activo",
@@ -55,8 +57,8 @@
     "fechaOtorgado": "2026-08-01T09:00:00Z",
     "tituloPremio": "mockCoupons.p3Title",
     "recompensaDetalle": "mockCoupons.p3Msg",
-    "condicionesDetalladas": ".000 COP de descuento en alquileres mayores a 7 días.",
-    "descuentoTexto": ".000 OFF",
+    "condicionesDetalladas": "$50.000 COP de descuento en alquileres mayores a 5 días en categorías Deportivo y SUV.",
+    "descuentoTexto": "-$50.000",
     "regla": "Mínimo 5 días",
     "reglas": {
       "minimoDias": 5,

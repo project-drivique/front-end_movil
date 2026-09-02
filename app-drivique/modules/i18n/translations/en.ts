@@ -1118,7 +1118,9 @@ export default {
     term3: '• Only one coupon can be applied per booking.',
     minDays: 'Minimum days:',
     validCategories: 'Valid categories:',
-    expires: 'Expires:'
+    expires: 'Expires:',
+    validAllMonth: 'Valid all month long.',
+    almostGone: 'Almost gone!'
   }
 ,
   simulator: {

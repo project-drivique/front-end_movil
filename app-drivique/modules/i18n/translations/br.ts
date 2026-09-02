@@ -1116,7 +1116,9 @@ export default {
     term3: '• Apenas um cupom pode ser aplicado por reserva.',
     minDays: 'Mínimo de dias:',
     validCategories: 'Categorias válidas:',
-    expires: 'Expira em:'
+    expires: 'Expira em:',
+    validAllMonth: 'Válido durante todo o mês.',
+    almostGone: 'Quase esgotado!'
   }
 ,
   simulator: {

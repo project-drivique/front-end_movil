@@ -345,29 +345,32 @@ export default function CouponSection({ vehiculo }: Props) {
             
             {selectedConditionsCoupon && (
               <ScrollView style={styles.modalScrollCenter}>
-                <Text style={[styles.modalSubtitleCenter, { color: primaryAccent }]}>
+                <Text style={[styles.modalSubtitleCenter, { color: primaryAccent, fontWeight: "800", fontSize: 16, marginBottom: 4 }]}>
                   {t(selectedConditionsCoupon.tituloPremio || selectedConditionsCoupon.descripcion)}
                 </Text>
-                <Text style={[styles.modalDescriptionCenter, { color: c.textSecondary }]}>
+                <Text style={[styles.modalDescriptionCenter, { color: c.textSecondary, lineHeight: 20, marginBottom: 12 }]}>
                   {t(selectedConditionsCoupon.recompensaDetalle || "coupon.fallbackDesc")}
                 </Text>
                 
-                <View style={[styles.infoDividerCenter, { backgroundColor: c.border }]} />
+                <View style={[styles.infoDividerCenter, { backgroundColor: c.border, marginVertical: 12 }]} />
 
-                <Text style={[styles.conditionSectionHeaderCenter, { color: c.textPrimary }]}>{t("coupon.termsTitle", "Términos y condiciones:")}</Text>
-                <Text style={[styles.conditionTextCenter, { color: c.textSecondary, marginTop: 10 }]}>
+                <Text style={[styles.conditionSectionHeaderCenter, { color: c.textPrimary, fontWeight: "700", fontSize: 14 }]}>
+                  {t("coupon.termsTitle", "Términos y condiciones:")}
+                </Text>
+                <Text style={[styles.conditionTextCenter, { color: c.textSecondary, marginTop: 10, lineHeight: 20 }]}>
                   {t("coupon.term1", "• Válido para pagos digitales e iniciales.")}{"\n"}
                   {t("coupon.term2", "• No transferible a otros usuarios.")}{"\n"}
                   {t("coupon.term3", "• Solo se puede aplicar un cupón por reserva.")}
-                  {selectedConditionsCoupon.reglas?.minimoDias ? `\n• ${t("coupon.minDays", "Mínimo de días:")} ${selectedConditionsCoupon.reglas.minimoDias}` : ''}
+                  {selectedConditionsCoupon.reglas?.minimoDias ? `\n• ${t("coupon.minDays", "Mínimo de días:")} ${selectedConditionsCoupon.reglas.minimoDias} días` : ''}
                   {selectedConditionsCoupon.reglas?.categoriasValidas ? `\n• ${t("coupon.validCategories", "Categorías válidas:")} ${selectedConditionsCoupon.reglas.categoriasValidas.join(", ")}` : ''}
-                  {selectedConditionsCoupon.expiracion ? `\n• ${t("coupon.expires", "Vence:")} ${formatDateShort(selectedConditionsCoupon.expiracion)}` : ''}
+                  {selectedConditionsCoupon.condicionesDetalladas ? `\n• ${t(selectedConditionsCoupon.condicionesDetalladas, { defaultValue: selectedConditionsCoupon.condicionesDetalladas })}` : ''}
+                  {selectedConditionsCoupon.expiracion ? `\n• ${t("coupon.expires", "Vence:")} ${formatDateShort(selectedConditionsCoupon.expiracion)}` : `\n• ${t("coupon.validAllMonth", "Válido durante todo el mes.")}`}
                 </Text>
               </ScrollView>
             )}
 
             <TouchableOpacity
-              style={[styles.modalCloseBtnCenter, { backgroundColor: primaryAccent }]}
+              style={[styles.modalCloseBtnCenter, { backgroundColor: primaryAccent, marginTop: 16 }]}
               onPress={() => setSelectedConditionsCoupon(null)}
             >
               <Text style={styles.modalCloseBtnTextCenter}>{t("coupon.understoodBtn", "Entendido")}</Text>
