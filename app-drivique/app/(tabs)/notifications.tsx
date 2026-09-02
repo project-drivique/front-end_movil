@@ -31,6 +31,7 @@ export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t } = useTranslation();
+  const primaryAccent = c.oscuro ? "#60A5FA" : "#1D4ED8";
 
   const { notificaciones, marcarComoLeida, marcarTodasComoLeidas } = useNotificationStore();
   const monedaActual = useMonedaStore((s) => s.monedaActual);
