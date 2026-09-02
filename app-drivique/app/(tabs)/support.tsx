@@ -56,6 +56,7 @@ export default function SupportScreen() {
     vehiculoNombre?: string;
     placa?: string;
     tab?: string;
+    reporteId?: string;
   }>();
 
   const { reportes, crearReporte } = useSupportStore();
@@ -132,8 +133,14 @@ export default function SupportScreen() {
       setActiveTab("reportar");
     } else if (params.tab === "mis_reportes") {
       setActiveTab("mis_reportes");
+      if (params.reporteId) {
+        const found = reportes.find(r => r.id === params.reporteId);
+        if (found) {
+          setReporteSeleccionado(found);
+        }
+      }
     }
-  }, [params.reservaId, params.vehiculoNombre, params.placa, params.tab]);
+  }, [params.reservaId, params.vehiculoNombre, params.placa, params.tab, params.reporteId, reportes]);
 
   // Objeto de tipo de incidencia seleccionado
   const tipoObj = useMemo(
@@ -870,7 +877,7 @@ export default function SupportScreen() {
         onRequestClose={() => setReporteSeleccionado(null)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalCardLarge, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+          <View style={[styles.modalCardLarge, { backgroundColor: c.bgCard, borderColor: c.border, height: '82%' }]}>
             <View style={styles.modalHeaderRow}>
               <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
                 Detalle de Reporte {reporteSeleccionado?.id}
@@ -914,33 +921,44 @@ export default function SupportScreen() {
                 </Text>
 
                 {/* Historial de atención del Administrador */}
-                <Text style={[styles.modalSubHeader, { color: c.textPrimary, marginTop: 16, fontWeight: "800", fontSize: 13.5 }]}>
-                  Historial de atención del Administrador:
-                </Text>
+                {reporteSeleccionado.estado === "Recibido" ? (
+                  <View style={[styles.adminNoteBox, { backgroundColor: c.bgInput, borderColor: c.border, marginTop: 16 }]}>
+                    <Ionicons name="time-outline" size={18} color="#2563EB" />
+                    <Text style={[styles.adminNoteText, { color: c.textSecondary }]}>
+                      Tu reporte ha sido recibido y está a la espera de ser asignado a un técnico. Recibirás una notificación cuando cambie de estado.
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    <Text style={[styles.modalSubHeader, { color: c.textPrimary, marginTop: 16, fontWeight: "800", fontSize: 13.5 }]}>
+                      Historial de atención del Administrador:
+                    </Text>
 
-                <View style={styles.timelineContainer}>
-                  {reporteSeleccionado.historialEstados.map((h, i) => (
-                    <View key={i} style={styles.timelineItem}>
-                      <View style={[styles.timelineDot, { backgroundColor: getEstadoColor(h.estado) }]} />
-                      <View style={styles.timelineContent}>
-                        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                          <Text style={[styles.timelineEstado, { color: c.textPrimary }]}>{h.estado}</Text>
-                          <Text style={[styles.timelineFecha, { color: c.textMuted }]}>
-                            {new Date(h.fecha).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </Text>
+                    <View style={styles.timelineContainer}>
+                      {reporteSeleccionado.historialEstados.map((h, i) => (
+                        <View key={i} style={styles.timelineItem}>
+                          <View style={[styles.timelineDot, { backgroundColor: getEstadoColor(h.estado) }]} />
+                          <View style={styles.timelineContent}>
+                            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                              <Text style={[styles.timelineEstado, { color: c.textPrimary }]}>{h.estado}</Text>
+                              <Text style={[styles.timelineFecha, { color: c.textMuted }]}>
+                                {new Date(h.fecha).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              </Text>
+                            </View>
+                            {h.comentario && (
+                              <Text style={[styles.timelineComentario, { color: c.textSecondary }]}>
+                                {h.comentario}
+                              </Text>
+                            )}
+                          </View>
                         </View>
-                        {h.comentario && (
-                          <Text style={[styles.timelineComentario, { color: c.textSecondary }]}>
-                            {h.comentario}
-                          </Text>
-                        )}
-                      </View>
+                      ))}
                     </View>
-                  ))}
-                </View>
+                  </>
+                )}
 
                 {/* Nota informativa de gestión por el Administrador */}
-                <View style={[styles.adminNoteBox, { backgroundColor: c.bgInput, borderColor: c.border }]}>
+                <View style={[styles.adminNoteBox, { backgroundColor: c.bgInput, borderColor: c.border, marginTop: 12 }]}>
                   <Ionicons name="shield-checkmark-outline" size={18} color="#2563EB" />
                   <Text style={[styles.adminNoteText, { color: c.textSecondary }]}>
                     El estado de este reporte es validado y actualizado directamente por el equipo administrador en la central de soporte.

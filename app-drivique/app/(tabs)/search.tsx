@@ -40,8 +40,8 @@ export default function MasMenuScreen() {
 
   const getInitials = () => {
     if (!usuario) return null;
-    const name = usuario.nombre && usuario.nombre.trim() !== "" 
-      ? usuario.nombre 
+    const name = usuario.nombres && usuario.nombres.trim() !== "" 
+      ? usuario.nombres 
       : (usuario.correo ? usuario.correo.split("@")[0] : "");
     if (!name) return "?";
     const parts = name.trim().split(/\s+/);
@@ -51,8 +51,8 @@ export default function MasMenuScreen() {
   };
 
   const userName = usuario
-    ? (usuario.nombre && usuario.nombre.trim() !== "" 
-        ? usuario.nombre 
+    ? (usuario.nombres && usuario.nombres.trim() !== "" 
+        ? usuario.nombres 
         : (usuario.correo ? usuario.correo.split("@")[0] : ""))
     : "Invitado";
 

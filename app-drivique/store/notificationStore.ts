@@ -104,17 +104,18 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       tipo: "promocion",
       titulo: "mockCoupons.p1Title",
       mensaje: "mockCoupons.p1Msg",
-      fecha: "2026-08-11T08:00:00Z",
+      fecha: "2026-09-01T08:00:00Z",
       leido: false,
       icono: "ticket-outline",
-      expiracion: "2026-08-31T23:59:59Z",
+      expiracion: "2026-12-31T23:59:59Z",
       cupon: {
         codigo: "A8X2F9",
         descuentoPorcentaje: 15,
         descripcion: "mockCoupons.p1Desc",
         reglas: {
           soloPrimeraReserva: true,
-          categoriasValidas: ["GY", "LY"]
+          categoriasValidas: ["SUV", "SEDAN"],
+          metodosPagoValidos: ["wompi"]
         }
       }
     },
@@ -123,17 +124,17 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       tipo: "promocion",
       titulo: "mockCoupons.p2Title",
       mensaje: "mockCoupons.p2Msg",
-      fecha: "2026-08-09T10:00:00Z",
+      fecha: "2026-09-01T10:00:00Z",
       leido: true,
       icono: "calendar-outline",
-      expiracion: "2026-08-17T23:59:59Z",
+      expiracion: "2026-09-30T23:59:59Z",
       cupon: {
         codigo: "W4K7P2",
         descuentoPorcentaje: 20,
         descripcion: "mockCoupons.p2Desc",
         reglas: {
           minimoDias: 2,
-          categoriasValidas: ["SUV"]
+          categoriasValidas: ["SUV", "PICKUP"]
         }
       }
     },
@@ -142,9 +143,19 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       tipo: "promocion",
       titulo: "mockCoupons.p3Title",
       mensaje: "mockCoupons.p3Msg",
-      fecha: "2026-08-08T07:30:00Z",
+      fecha: "2026-09-01T07:30:00Z",
       leido: true,
       icono: "star-outline",
+      expiracion: "2026-11-30T23:59:59Z",
+      cupon: {
+        codigo: "Z9M3R1",
+        descuentoFijo: 50000,
+        descripcion: "mockCoupons.p3Msg",
+        reglas: {
+          minimoDias: 5,
+          categoriasValidas: ["DEPORTIVO", "SUV"]
+        }
+      }
     },
   ],
   marcarComoLeida: (id) =>

@@ -1,4 +1,3 @@
-// modules/reserva/components/TarjetaTerminosCondiciones.tsx
 import React, { useState, useMemo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
