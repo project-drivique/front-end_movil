@@ -397,7 +397,7 @@ export default function NotificationsScreen() {
               </View>
               <View style={styles.vehiculoPromoContent}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 6 }}>
-                  <Text style={[styles.vehiculoPromoTitle, { color: c.textPrimary, flex: 1 }]} numberOfLines={1}>
+                  <Text style={[styles.vehiculoPromoTitle, { color: c.textPrimary, flex: 1 }]} numberOfLines={2}>
                     {t(vp.titulo, { defaultValue: vp.titulo })}
                   </Text>
                   {vp.descuentoBadge ? (

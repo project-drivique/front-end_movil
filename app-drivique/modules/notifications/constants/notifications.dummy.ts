@@ -102,6 +102,7 @@ export const VEHICULO_PROMOS_DUMMY: VehiculoPromoDummy[] = [
     vehiculoId: 1,
     titulo: 'promoCoupons.vp1Title',
     descripcion: 'promoCoupons.vp1Desc',
+    descuentoBadge: '10% OFF',
     fechaPublicacion: '2026-09-01T08:00:00Z',
     expiracion: '2026-09-30T23:59:59Z',
   },
