@@ -109,7 +109,8 @@ export default function NotificationsScreen() {
   };
 
   // Helper: Format ISO date -> human readable date + time
-  const formatDateTime = (isoString: string) => {
+  const formatDateTime = (isoString?: string) => {
+    if (!isoString) return "";
     try {
       const date = new Date(isoString);
       return date.toLocaleDateString("es-CO", {
@@ -125,7 +126,8 @@ export default function NotificationsScreen() {
   };
 
   // Helper: format only date for coupons (shorter)
-  const formatDateShort = (isoString: string) => {
+  const formatDateShort = (isoString?: string) => {
+    if (!isoString) return "";
     try {
       const date = new Date(isoString);
       return date.toLocaleDateString("es-CO", {
