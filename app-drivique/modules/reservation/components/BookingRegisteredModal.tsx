@@ -53,9 +53,9 @@ export default function ModalReservaRegistrada({ visible, onPagarWompi, onCerrar
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* Botón Cancelar al pie con borde visible y mismo tamaño */}
+          {/* Botón Cancelar al pie con borde sutil y mismo tamaño */}
           <TouchableOpacity
-            style={[styles.botonCancelar, { borderColor: c.oscuro ? "#334155" : "#CBD5E1", backgroundColor: c.bgInput }]}
+            style={[styles.botonCancelar, { borderColor: c.border, backgroundColor: c.bgInput }]}
             onPress={onCerrar}
             activeOpacity={0.8}
           >

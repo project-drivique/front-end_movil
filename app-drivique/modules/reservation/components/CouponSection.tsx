@@ -61,11 +61,14 @@ export default function CouponSection({ vehiculo }: Props) {
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
 
   const getVehicleImagesByCategory = (category: string) => {
-    const list = VEHICULOS_MOCK.filter(
+    const matching = VEHICULOS_MOCK.filter(
       (v) => v.categoria.toLowerCase() === (category || "").toLowerCase()
     );
-    const finalSelection = list.length > 0 ? list : VEHICULOS_MOCK;
-    return finalSelection.slice(0, 3).map((v) => v.imagen || (v.imagenes && v.imagenes[0]) || "");
+    const others = VEHICULOS_MOCK.filter(
+      (v) => v.categoria.toLowerCase() !== (category || "").toLowerCase()
+    );
+    const combined = [...matching, ...others];
+    return combined.slice(0, 3).map((v) => v.imagen || (v.imagenes && v.imagenes[0]) || "");
   };
 
   const formatDateShort = (isoString?: string) => {
@@ -261,8 +264,8 @@ export default function CouponSection({ vehiculo }: Props) {
                       {/* Left Side */}
                       <View style={styles.couponLeft}>
                         <View style={styles.couponTitleRow}>
-                          <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4 }} />
-                          <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={1}>
+                          <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4, marginTop: 1 }} />
+                          <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={2}>
                             {t(cpx.tituloPremio || cpx.descripcion || "Cupón de Descuento")}
                           </Text>
                         </View>
@@ -435,20 +438,22 @@ const styles = StyleSheet.create({
   },
   notchLeft: { position: "absolute", left: -11, top: "50%", marginTop: -11, width: 22, height: 22, borderRadius: 11, zIndex: 20 },
   notchRight: { position: "absolute", right: -11, top: "50%", marginTop: -11, width: 22, height: 22, borderRadius: 11, zIndex: 20 },
-  couponLeft: { flex: 3, padding: 14, justifyContent: "space-between" },
-  couponTitleRow: { flexDirection: "row", alignItems: "center" },
-  couponTitlePremio: { fontSize: 12, fontWeight: "700", flex: 1 },
-  couponImagesRow: { flexDirection: "row", gap: 6, marginVertical: 6 },
-  couponCarMiniWrapper: { width: 64, height: 46, borderRadius: 6, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  couponLeft: { flex: 3.2, padding: 12, justifyContent: "space-between" },
+  couponTitleRow: { flexDirection: "row", alignItems: "flex-start" },
+  couponTitlePremio: { fontSize: 12, fontWeight: "700", lineHeight: 16, flex: 1 },
+  couponImagesRow: { flexDirection: "row", gap: 5, marginVertical: 6 },
+  couponCarMiniWrapper: { width: 52, height: 36, borderRadius: 6, alignItems: "center", justifyContent: "center", overflow: "hidden" },
   couponCarMiniImage: { width: "100%", height: "100%" },
   couponConditionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   couponDateText: { fontSize: 10, marginTop: 2 },
-  codeSubtitle: { fontSize: 11, fontWeight: "700", textDecorationLine: "underline" },
+  codeSubtitle: { fontSize: 11, fontWeight: "700" },
+  expiringText: { color: "#EF4444", fontSize: 11, fontWeight: "700" },
+  conditionsLink: { color: "#3B82F6", fontSize: 11, fontWeight: "700" },
   separatorContainer: { width: 1, alignSelf: "stretch", justifyContent: "center", alignItems: "center", position: "relative", overflow: "visible" },
   innerNotchTop: { position: "absolute", top: -10, width: 20, height: 20, borderRadius: 10, zIndex: 20 },
   innerNotchBottom: { position: "absolute", bottom: -10, width: 20, height: 20, borderRadius: 10, zIndex: 20 },
   dashedSeparator: { height: "100%", borderStyle: "dashed", borderWidth: 1 },
-  couponRight: { flex: 2.1, padding: 12, alignItems: "center", justifyContent: "center" },
+  couponRight: { flex: 1.9, padding: 10, alignItems: "center", justifyContent: "center" },
   couponDiscount: { fontSize: 16, fontWeight: "800" },
   couponRule: { fontSize: 10, fontWeight: "700", textAlign: "center", marginTop: 2, marginBottom: 8 },
   couponApplyBtn: { paddingVertical: 6, paddingHorizontal: 16, borderRadius: 6, width: "90%", alignItems: "center" },

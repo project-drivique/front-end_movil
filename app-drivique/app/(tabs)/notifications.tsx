@@ -95,14 +95,17 @@ export default function NotificationsScreen() {
     marcarComoLeida(id);
   };
 
-  // Helper: resolve vehicle images from VEHICULOS_MOCK by category
+  // Helper: resolve vehicle images from VEHICULOS_MOCK by category (always returns 3 images)
   const getVehicleImagesByCategory = (category?: string) => {
     const cat = category || "SUV";
-    const list = VEHICULOS_MOCK.filter(
+    const matching = VEHICULOS_MOCK.filter(
       (v) => v.categoria.toLowerCase() === cat.toLowerCase()
     );
-    const finalSelection = list.length > 0 ? list : VEHICULOS_MOCK;
-    return finalSelection.slice(0, 3).map((v) => v.imagen || (v.imagenes && v.imagenes[0]) || "");
+    const others = VEHICULOS_MOCK.filter(
+      (v) => v.categoria.toLowerCase() !== cat.toLowerCase()
+    );
+    const combined = [...matching, ...others];
+    return combined.slice(0, 3).map((v) => v.imagen || (v.imagenes && v.imagenes[0]) || "");
   };
 
   // Helper: Format ISO date -> human readable date + time
@@ -272,7 +275,7 @@ export default function NotificationsScreen() {
           }
         />
       ) : (
-        <ScrollView style={styles.promosScroll} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.promosScroll} contentContainerStyle={{ paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
           {/* Section 1: Coupons Panel */}
           <Text style={[styles.promoSectionTitle, { color: c.textPrimary }]}>
             {t("tabs.masCuponesGeniales", "Más cupones geniales")}
@@ -304,8 +307,8 @@ export default function NotificationsScreen() {
                   <View style={styles.couponLeft}>
                     {/* Title row */}
                     <View style={styles.couponTitleRow}>
-                      <Ionicons name="ticket-outline" size={14} color="#2563EB" style={{ marginRight: 4 }} />
-                      <Text style={[styles.couponTitle, { color: c.textPrimary }]} numberOfLines={1}>
+                      <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4, marginTop: 1 }} />
+                      <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={2}>
                         {t(cpx.tituloPremio, { defaultValue: cpx.tituloPremio })}
                       </Text>
                     </View>
@@ -537,8 +540,8 @@ export default function NotificationsScreen() {
                       { 
                         flex: 1, 
                         backgroundColor: c.bgInput, 
-                        borderWidth: 1.5, 
-                        borderColor: c.oscuro ? "#334155" : "#CBD5E1" 
+                        borderWidth: 1, 
+                        borderColor: c.border 
                       }
                     ]}
                     onPress={() => setActivePendingCoupon(null)}
@@ -817,27 +820,28 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   couponLeft: {
-    flex: 3,
-    padding: 14,
+    flex: 3.2,
+    padding: 12,
     justifyContent: "space-between",
   },
   couponTitleRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   couponTitlePremio: {
     fontSize: 12,
     fontWeight: "700",
+    lineHeight: 16,
     flex: 1,
   },
   couponImagesRow: {
     flexDirection: "row",
-    gap: 6,
+    gap: 5,
     marginVertical: 6,
   },
   couponCarMiniWrapper: {
-    width: 54,
-    height: 38,
+    width: 52,
+    height: 36,
     borderRadius: 6,
     alignItems: "center",
     justifyContent: "center",
@@ -892,8 +896,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   couponRight: {
-    flex: 2.1,
-    padding: 12,
+    flex: 1.9,
+    padding: 10,
     alignItems: "center",
     justifyContent: "center",
   },
