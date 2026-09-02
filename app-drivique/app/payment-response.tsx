@@ -313,7 +313,7 @@ export default function PagoRespuestaScreen() {
         <ScrollView
           style={{ flex: 1, backgroundColor: c.bg }}
           contentContainerStyle={[styles.scroll, { paddingTop: 24, paddingBottom: 320 }]}
-          showsVerticalScrollIndicator={true}
+          showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           automaticallyAdjustKeyboardInsets={true}
