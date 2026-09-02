@@ -37,6 +37,8 @@ export default function CouponSection({ vehiculo }: Props) {
   
   const notificaciones = useNotificationStore((s) => s.notificaciones);
   
+  const normalizeStr = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
   const cuponesDisponibles = useMemo(() => {
     return notificaciones
       .filter((n) => n.tipo === "promocion" && n.cupon)
@@ -45,8 +47,16 @@ export default function CouponSection({ vehiculo }: Props) {
         tituloPremio: n.titulo,
         expiracion: n.expiracion,
         recompensaDetalle: n.mensaje,
-      }));
-  }, [notificaciones]);
+      }))
+      .filter((cpx) => {
+        // Filtrar para que solo aparezcan cupones compatibles con la categoría del vehículo actual
+        if (cpx.reglas?.categoriasValidas && cpx.reglas.categoriasValidas.length > 0 && vehiculo.categoria) {
+          const vehCatNorm = normalizeStr(vehiculo.categoria);
+          return cpx.reglas.categoriasValidas.some((cat: string) => normalizeStr(cat) === vehCatNorm);
+        }
+        return true;
+      });
+  }, [notificaciones, vehiculo.categoria]);
   
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
 
@@ -79,10 +89,21 @@ export default function CouponSection({ vehiculo }: Props) {
         fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
         return;
       }
-      if (cupon.reglas.categoriasValidas && vehiculo.categoria && !cupon.reglas.categoriasValidas.includes(vehiculo.categoria)) {
-        const msg = t("coupon.errorCategory", { categories: cupon.reglas.categoriasValidas.join(", ") });
-        fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
-        return;
+      if (cupon.reglas.categoriasValidas && cupon.reglas.categoriasValidas.length > 0 && vehiculo.categoria) {
+        const vehCatNorm = normalizeStr(vehiculo.categoria);
+        const isValidCategory = cupon.reglas.categoriasValidas.some((cat: string) => normalizeStr(cat) === vehCatNorm);
+        if (!isValidCategory) {
+          const msg = t("coupon.errorCategory", { categories: cupon.reglas.categoriasValidas.join(", ") });
+          fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
+          return;
+        }
+      }
+      if (cupon.reglas.metodosPagoValidos && fechasLugar.metodoPago) {
+        if (!cupon.reglas.metodosPagoValidos.includes(fechasLugar.metodoPago)) {
+          const msg = "Este cupón solo es válido para pagos digitales (Wompi).";
+          fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
+          return;
+        }
       }
     }
 
