@@ -75,7 +75,8 @@ function calcularFechaLimitePago(): string {
 
 /**
  * Cancela automáticamente (en el estado local) las reservas que quedaron en
- * PENDIENTE_EFECTIVO cuyo plazo de pago ya venció sin haberse confirmado.
+ * PENDIENTE_EFECTIVO o PENDIENTE cuyo plazo de 72 horas para pago en sucursal
+ * ya venció sin haberse confirmado.
  */
 function vencerReservasEfectivo(reservas: ReservaGuardada[]): {
   actualizadas: ReservaGuardada[];
@@ -86,12 +87,21 @@ function vencerReservasEfectivo(reservas: ReservaGuardada[]): {
 
   const actualizadas = reservas.map((r) => {
     if (
-      r.estado === "PENDIENTE_EFECTIVO" &&
-      r.fechaLimitePago &&
-      new Date(r.fechaLimitePago).getTime() < ahora
+      r.estado === "PENDIENTE_EFECTIVO" ||
+      (r.estado === "PENDIENTE" && r.metodoPago === "efectivo")
     ) {
-      cambiaron = true;
-      return { ...r, estado: "CANCELADA_POR_TIEMPO" as EstadoReserva };
+      let limiteMs = r.fechaLimitePago ? new Date(r.fechaLimitePago).getTime() : 0;
+      if (!limiteMs && r.fechaReserva) {
+        limiteMs = new Date(r.fechaReserva).getTime() + HORAS_LIMITE_PAGO_EFECTIVO * 60 * 60 * 1000;
+      }
+      if (limiteMs && limiteMs < ahora) {
+        cambiaron = true;
+        return {
+          ...r,
+          estado: "CANCELADA_POR_TIEMPO" as EstadoReserva,
+          motivoCancelacion: "Cancelada automáticamente por superar el plazo de 72 horas para pago en sucursal.",
+        };
+      }
     }
     return r;
   });
