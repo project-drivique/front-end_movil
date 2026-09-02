@@ -75,6 +75,7 @@ function VehiculoCard({
   const imagenes = getSafeImages(vehiculo);
   const estadoDisponible = vehiculo.disponible !== false;
   const rating = Number(vehiculo.calificacion ?? 0);
+  const tieneResenas = (vehiculo.comentarios && vehiculo.comentarios.length > 0) || rating > 0;
   const estrellas = Array.from(
     { length: 5 },
     (_, i) => i < Math.round(rating)
@@ -225,10 +226,23 @@ function VehiculoCard({
         </View>
 
         <View style={styles.estrellasRow}>
-          {estrellas.map((llena, i) => (
-            <Estrella key={i} llena={llena} />
-          ))}
-          <Text style={[styles.ratingText, { color: c.textSecondary }]}>{rating.toFixed(1)}</Text>
+          {tieneResenas ? (
+            <>
+              {estrellas.map((llena, i) => (
+                <Estrella key={i} llena={llena} />
+              ))}
+              <Text style={[styles.ratingText, { color: c.textSecondary }]}>{rating.toFixed(1)}</Text>
+            </>
+          ) : (
+            <>
+              {Array.from({ length: 5 }, (_, i) => (
+                <Ionicons key={i} name="star-outline" size={13} color={c.textMuted} />
+              ))}
+              <Text style={[styles.ratingText, { color: c.textMuted }]}>
+                {t("catalogo.sinResenas", "Sin reseñas")}
+              </Text>
+            </>
+          )}
         </View>
 
         <Text style={styles.precio}>

@@ -130,9 +130,18 @@ export default function VehiculoDetallePage() {
       setAlertaReservaVisible(true);
       return;
     }
-    useReservaStore.getState().seleccionarVehiculo(vehiculo, {
-      descuentoPromocion: descuentoNum > 0 ? descuentoNum : undefined,
-    });
+    useReservaStore.getState().seleccionarVehiculo(
+      descuentoNum > 0
+        ? {
+            ...vehiculo,
+            precioOriginal: vehiculo.precio,
+            precio: Math.round(vehiculo.precio * (1 - descuentoNum / 100)),
+          }
+        : vehiculo,
+      {
+        descuentoPromocion: descuentoNum > 0 ? descuentoNum : undefined,
+      }
+    );
     router.push("/(tabs)/reserve");
   };
 
@@ -165,10 +174,10 @@ export default function VehiculoDetallePage() {
         <Animated.View style={[s.contenido, { opacity: opacidad }]}>
           {/* Banner de Promo Aplicada */}
           {descuentoNum > 0 && (
-            <View style={{ backgroundColor: "#FEF3C7", padding: 12, borderRadius: 10, borderColor: "#FDE68A", borderWidth: 1, marginBottom: 14, flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <Ionicons name="pricetag-outline" size={20} color="#D97706" />
-              <Text style={{ color: "#B45309", fontSize: 13.5, fontWeight: "800" }}>
-                Promoción aplicada: ¡Tienes {descuentoNum}% OFF en este vehículo!
+            <View style={{ backgroundColor: c.oscuro ? "#78350f22" : "#FEF3C7", padding: 12, borderRadius: 10, borderColor: c.oscuro ? "#b45309" : "#FDE68A", borderWidth: 1, marginBottom: 14, flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Ionicons name="pricetag-outline" size={20} color={c.oscuro ? "#fbbf24" : "#D97706"} />
+              <Text style={{ color: c.oscuro ? "#fbbf24" : "#B45309", fontSize: 13.5, fontWeight: "800" }}>
+                Promoción destacada: ¡Tienes {descuentoNum}% OFF en este vehículo!
               </Text>
             </View>
           )}
@@ -189,6 +198,33 @@ export default function VehiculoDetallePage() {
             )}
           </View>
           <Text style={[s.nombre, { color: c.textPrimary }]}>{vehiculo.nombre}</Text>
+
+          {/* Precio y Descuento Promocional */}
+          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 8, marginVertical: 6, flexWrap: "wrap" }}>
+            {descuentoNum > 0 ? (
+              <>
+                <Text style={{ fontSize: 24, fontWeight: "900", color: c.primary }}>
+                  {formatCurrency(vehiculo.precio * (1 - descuentoNum / 100), monedaActual, tasaUSD)}
+                </Text>
+                <Text style={{ fontSize: 13, color: c.textMuted, textDecorationLine: "line-through" }}>
+                  {formatCurrency(vehiculo.precio, monedaActual, tasaUSD)}
+                </Text>
+                <View style={{ backgroundColor: c.oscuro ? "#78350f" : "#FEF3C7", paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, borderWidth: 1, borderColor: c.oscuro ? "#b45309" : "#FDE68A" }}>
+                  <Text style={{ color: c.oscuro ? "#fbbf24" : "#B45309", fontSize: 11, fontWeight: "800" }}>
+                    {descuentoNum}% OFF
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 12.5, color: c.textMuted }}>/ {t("vehiculo.porDia")}</Text>
+              </>
+            ) : (
+              <>
+                <Text style={{ fontSize: 24, fontWeight: "900", color: c.primary }}>
+                  {formatCurrency(vehiculo.precio, monedaActual, tasaUSD)}
+                </Text>
+                <Text style={{ fontSize: 12.5, color: c.textMuted }}>/ {t("vehiculo.porDia")}</Text>
+              </>
+            )}
+          </View>
 
           {/* Specs rápidas */}
           <View style={s.quickRow}>

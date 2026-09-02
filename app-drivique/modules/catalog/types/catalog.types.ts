@@ -65,6 +65,7 @@ export interface Vehiculo {
   transmision: string;
   combustible: string;
   precio: number;
+  precioOriginal?: number;
   calificacion: number;
   disponible: boolean;
   destacado?: boolean;

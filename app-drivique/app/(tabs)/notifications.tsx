@@ -386,12 +386,17 @@ export default function NotificationsScreen() {
             <TouchableOpacity
               key={vp.id}
               style={[styles.vehiculoPromoCard, { backgroundColor: c.bgCard, borderColor: c.border }]}
-              onPress={() =>
+              onPress={() => {
+                const pctMatch = vp.descuentoBadge ? vp.descuentoBadge.match(/\d+/) : null;
+                const pct = pctMatch ? pctMatch[0] : "10";
                 router.push({
                   pathname: "/vehicle/[id]",
-                  params: { id: vp.vehiculoId.toString() },
-                } as any)
-              }
+                  params: {
+                    id: vp.vehiculoId.toString(),
+                    descuentoPorcentaje: pct,
+                  },
+                } as any);
+              }}
               activeOpacity={0.88}
             >
               <View style={[styles.vehiculoPromoImageWrapper, { backgroundColor: c.bgInput }]}>
