@@ -62,7 +62,7 @@ export default function NotificationsScreen() {
 
   // Cupones activos (no expirados), desde dummy JSON
   const cupones = useMemo(
-    () => (CUPONES_DEMO as unknown as CouponDummy[]).filter((c) => !isExpired(c.fechaExpiracion)),
+    () => (CUPONES_DEMO as unknown as CouponDummy[]).filter((c) => !isExpired(c.fechaExpiracion || c.expiracion)),
     []
   );
 
@@ -437,7 +437,7 @@ export default function NotificationsScreen() {
                     </View>
                   );
                 })()}
-                <Text style={[styles.promoDesc, { color: c.textSecondary, marginTop: 4 }]} numberOfLines={2}>
+                <Text style={[styles.vehiculoPromoDesc, { color: c.textSecondary, marginTop: 4 }]} numberOfLines={2}>
                   {t(vp.descripcion, { defaultValue: vp.descripcion })}
                 </Text>
               </View>
@@ -485,7 +485,7 @@ export default function NotificationsScreen() {
                   {t("coupon.term3", "• Solo se puede aplicar un cupón por reserva.")}
                   {selectedConditionsCoupon.condicionesDetalladas ? `\n• ${t(selectedConditionsCoupon.condicionesDetalladas, { defaultValue: selectedConditionsCoupon.condicionesDetalladas })}` : ''}
                   {selectedConditionsCoupon.minimoValor ? `\n• ${t("reserva.resumen.montoMinimo", "Monto mínimo:")} ${formatCurrency(selectedConditionsCoupon.minimoValor, monedaActual, tasaUSD)}` : ''}
-                  {selectedConditionsCoupon.expiracion ? `\n• ${t("coupon.expires", "Vence:")} ${formatDate(selectedConditionsCoupon.expiracion)}` : `\n• ${t("coupon.validAllMonth", "Válido durante todo el mes.")}`}
+                  {selectedConditionsCoupon.expiracion ? `\n• ${t("coupon.expires", "Vence:")} ${formatDateShort(selectedConditionsCoupon.expiracion)}` : `\n• ${t("coupon.validAllMonth", "Válido durante todo el mes.")}`}
                 </Text>
               </ScrollView>
             )}
@@ -1060,7 +1060,7 @@ const styles = StyleSheet.create({
   },
   conditionSectionHeader: {
     fontSize: 13.5,
-    fontWeight: "750",
+    fontWeight: "700",
     marginBottom: 8,
   },
   conditionText: {
@@ -1078,6 +1078,22 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 13.5,
     fontWeight: "800",
+  },
+  modalBtnText: {
+    fontSize: 13.5,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  modalInstruction: {
+    fontSize: 12,
+    textAlign: "center",
+    lineHeight: 17,
+    marginTop: 12,
+  },
+  promoDesc: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 4,
   },
   couponRewardEarnedDesc: {
     fontSize: 13,

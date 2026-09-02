@@ -8,16 +8,26 @@ export interface CouponDummy {
   codigo: string;
   descuentoTexto: string;
   porcentaje?: number;
+  descuentoPorcentaje?: number;
   valorFijo?: number;
-  regla: string;
-  minimoValor: number;
+  descuentoFijo?: number;
+  regla?: string;
+  reglas?: {
+    soloPrimeraReserva?: boolean;
+    minimoDias?: number;
+    minimoValor?: number;
+    categoriasValidas?: string[];
+    metodosPagoValidos?: string[];
+  };
+  minimoValor?: number;
   tituloPremio: string;
   recompensaDetalle: string;
-  categoria: string;
-  vehicleCategoryFilter: string;
-  agotandose: boolean;
-  condicionesDetalladas: string;
-  fechaOtorgado: string;
+  categoria?: string;
+  vehicleCategoryFilter?: string;
+  agotandose?: boolean;
+  condicionesDetalladas?: string;
+  fechaOtorgado?: string;
+  fechaExpiracion?: string;
   expiracion?: string;
 }
 
