@@ -315,7 +315,6 @@ export default function PagoRespuestaScreen() {
           contentContainerStyle={[styles.scroll, { paddingTop: 24, paddingBottom: 320 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
           automaticallyAdjustKeyboardInsets={true}
         >
       {foto ? (
