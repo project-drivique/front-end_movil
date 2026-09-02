@@ -35,20 +35,17 @@ export default function CouponSection({ vehiculo }: Props) {
   const removerCupon = useReservaStore((s) => s.removerCupon);
   const fechasLugar = useReservaStore((s) => s.fechasLugar);
   
-  const notificaciones = useNotificationStore((s) => s.notificaciones);
-  
   const normalizeStr = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
   const cuponesDisponibles = useMemo(() => {
-    return notificaciones
-      .filter((n) => n.tipo === "promocion" && n.cupon)
-      .map((n) => ({
-        ...n.cupon!,
-        tituloPremio: n.titulo,
-        expiracion: n.expiracion,
-        recompensaDetalle: n.mensaje,
+    return cuponesDemo
+      .filter((c: any) => c.estado !== "expirado")
+      .map((c: any) => ({
+        ...c,
+        expiracion: c.fechaExpiracion,
+        agotandose: c.estado === "a_punto_de_agotar",
       }))
-      .filter((cpx) => {
+      .filter((cpx: any) => {
         // Filtrar para que solo aparezcan cupones compatibles con la categoría del vehículo actual
         if (cpx.reglas?.categoriasValidas && cpx.reglas.categoriasValidas.length > 0 && vehiculo.categoria) {
           const vehCatNorm = normalizeStr(vehiculo.categoria);
@@ -56,7 +53,7 @@ export default function CouponSection({ vehiculo }: Props) {
         }
         return true;
       });
-  }, [notificaciones, vehiculo.categoria]);
+  }, [vehiculo.categoria]);
   
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
 
