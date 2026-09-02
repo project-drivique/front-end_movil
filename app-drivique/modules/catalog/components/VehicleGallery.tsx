@@ -44,10 +44,15 @@ export function VehicleGallery({ imagenes, calificacion }: Props) {
       <View>
         <Image source={{ uri: imagenes[activa] }} style={s.principal} resizeMode="cover" />
 
-        {!!calificacion && (
+        {calificacion && calificacion > 0 ? (
           <View style={s.badgeCalificacion}>
             <Ionicons name="star" size={13} color="#F59E0B" />
             <Text style={s.badgeCalificacionTexto}>{calificacion.toFixed(1)}</Text>
+          </View>
+        ) : (
+          <View style={[s.badgeCalificacion, { backgroundColor: "rgba(17,24,39,0.7)" }]}>
+            <Ionicons name="star-outline" size={13} color="#9CA3AF" />
+            <Text style={[s.badgeCalificacionTexto, { color: "#9CA3AF", fontSize: 11 }]}>Sin reseñas</Text>
           </View>
         )}
 

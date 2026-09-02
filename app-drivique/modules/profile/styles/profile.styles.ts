@@ -22,6 +22,11 @@ export const perfilStyles = StyleSheet.create({
     fontWeight: "800",
     color: "#111827",
   },
+  headerSubtitle: {
+    fontSize: 13,
+    fontWeight: "400",
+    marginTop: 4,
+  },
   // Card usuario
   userCard: {
     backgroundColor: "#FFFFFF",

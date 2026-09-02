@@ -20,7 +20,15 @@
       "nombre": "Mazda CX-5 2024",
       "marca": "Mazda",
       "sucursal": "Alquiler Bogotá - Aeropuerto",
-      "imagenes": ["https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600"]
+      "imagenes": [
+        "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600"
+      ],
+      "color": "Blanco",
+      "año": 2024,
+      "modelo": "2024",
+      "categoria": "SUV",
+      "precio": 150000,
+      "placa": "CX5-890"
     },
     "datosPersonalesSnapshot": {
       "nombreCompleto": "Cliente Demo",
@@ -28,7 +36,9 @@
       "numeroDocumento": "123456789"
     },
     "datosDocumentosSnapshot": {
-      "licenciaConduccion": { "nombre": "licencia.jpg" }
+      "licenciaConduccion": {
+        "nombre": "licencia.jpg"
+      }
     },
     "fechasLugarSnapshot": {
       "lugarRetiro": "Alquiler Bogotá - Aeropuerto",

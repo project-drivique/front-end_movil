@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -304,11 +305,18 @@ export default function PagoRespuestaScreen() {
           descargando={generandoPdf}
         />
       ) : (
-      <ScrollView
-        style={{ backgroundColor: c.bg }}
-        contentContainerStyle={[styles.scroll, { paddingTop: 24 }]}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
       >
+        <ScrollView
+          style={{ flex: 1, backgroundColor: c.bg }}
+          contentContainerStyle={[styles.scroll, { paddingTop: 24, paddingBottom: 320 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets={true}
+        >
       {foto ? (
         <Image source={{ uri: foto }} style={styles.foto} />
       ) : (
@@ -519,8 +527,9 @@ export default function PagoRespuestaScreen() {
             </>
           )}
 
-          {/* Banner de Simulación para Sandbox */}
-          <View style={[styles.simuladorCaja, { backgroundColor: c.oscuro ? "#1E293B" : "#FEF3C7", borderColor: "#F59E0B" }]}>
+          {/* Banner de Simulación para Sandbox (SOLO PARA PAGO EN SUCURSAL) */}
+          {reserva.metodoPago === "efectivo" && (
+            <View style={[styles.simuladorCaja, { backgroundColor: c.oscuro ? "#1E293B" : "#FEF3C7", borderColor: "#F59E0B", marginTop: 16 }]}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
               <Ionicons name="construct-outline" size={16} color="#D97706" />
               <Text style={[styles.simuladorTitulo, { color: c.oscuro ? "#FBBF24" : "#B45309" }]}>
@@ -534,6 +543,7 @@ export default function PagoRespuestaScreen() {
               <Text style={styles.simuladorBtnTexto}>{t("simulator.btn", "Confirmar Recepción de Pago")}</Text>
             </TouchableOpacity>
           </View>
+          )}
         </View>
       )}
 
@@ -596,6 +606,7 @@ export default function PagoRespuestaScreen() {
       ) : null}
 
     </ScrollView>
+      </KeyboardAvoidingView>
       )}
     </View>
   );

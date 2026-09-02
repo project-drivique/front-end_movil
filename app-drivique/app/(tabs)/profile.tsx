@@ -462,9 +462,9 @@ export default function PerfilScreen() {
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: c.bg }]}>
         <StatusBar barStyle="light-content" backgroundColor="#1e3a8a" />
         <LinearGradient
-          colors={GRADIENTES.boton.colors}
-          start={GRADIENTES.boton.start}
-          end={GRADIENTES.boton.end}
+          colors={['#1e3a8a', '#2563eb']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
           style={styles.header}
         >
           <Text style={[styles.headerTitle, { color: "#ffffff" }]}>{t("perfil.titulo")}</Text>
@@ -501,9 +501,9 @@ export default function PerfilScreen() {
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: c.bg }]}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3a8a" />
       <LinearGradient
-        colors={GRADIENTES.boton.colors}
-        start={GRADIENTES.boton.start}
-        end={GRADIENTES.boton.end}
+        colors={['#1e3a8a', '#2563eb']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
         style={styles.header}
       >
         <Text style={[styles.headerTitle, { color: "#ffffff" }]}>{t("perfil.titulo")}</Text>

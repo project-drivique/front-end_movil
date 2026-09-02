@@ -1117,7 +1117,8 @@ export default {
     minDays: 'Mínimo de dias:',
     validCategories: 'Categorias válidas:',
     expires: 'Expira em:',
-    understoodBtn: 'Entendi'
+    validAllMonth: 'Válido durante todo o mês.',
+    almostGone: 'Quase esgotado!'
   }
 ,
   simulator: {
@@ -1159,7 +1160,7 @@ export default {
     c4Terms: 'Concede 50.000 COP de desconto. Requer reserva mínima de 200.000 COP. Válido para qualquer categoria.',
     vp1Title: 'Voltou! Não espere mais',
     vp1Desc: 'Este veículo está disponível novamente na sua área. Reserve antes que esgote.',
-    vp2Title: '28% OFF só hoje',
+    vp2Title: '20% OFF solo hoy',
     vp2Desc: 'Oferta especial do dia. Reserve hoje e ganhe 28% de desconto na tarifa padrão.',
     vp3Title: 'Fim de semana inigualável',
     vp3Desc: 'Alugue este veículo premium de sexta a domingo e pague apenas 2 dias.',

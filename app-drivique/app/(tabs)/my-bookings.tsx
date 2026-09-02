@@ -278,6 +278,7 @@ export default function MisReservasScreen() {
           data={reservasFiltradas}
           keyExtractor={(item) => item.referencia}
           contentContainerStyle={styles.lista}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <TarjetaReserva reserva={item} usuarioId={usuarioKey} c={c} t={t} onPress={() => irADetalle(item.referencia)} />}
         />
       )}

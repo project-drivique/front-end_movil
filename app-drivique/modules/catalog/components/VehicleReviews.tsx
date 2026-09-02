@@ -48,12 +48,19 @@ export function VehicleReviews({ comentarios }: Props) {
   const { t } = useTranslation();
   const [visibles, setVisibles] = useState(INCREMENTO_VER_MAS);
 
-  if (comentarios.length === 0) {
+  if (!comentarios || comentarios.length === 0) {
     return (
-      <View style={[s.vacio, { backgroundColor: c.bgInput }]}>
-        <Ionicons name="chatbubble-ellipses-outline" size={30} color={c.textMuted} />
-        <Text style={[s.vacioTexto, { color: c.textMuted }]}>
-          {t("vehiculo.resenas.sinResenas")}
+      <View style={[s.vacio, { backgroundColor: c.bgInput, padding: 22, alignItems: "center" }]}>
+        <View style={{ flexDirection: "row", gap: 4, marginBottom: 8 }}>
+          {Array.from({ length: 5 }, (_, i) => (
+            <Ionicons key={i} name="star-outline" size={22} color={c.textMuted} />
+          ))}
+        </View>
+        <Text style={{ fontSize: 15, fontWeight: "800", color: c.textPrimary, marginBottom: 4 }}>
+          {t("vehiculo.resenas.sinResenas", "Sin reseñas")}
+        </Text>
+        <Text style={[s.vacioTexto, { color: c.textMuted, fontSize: 12.5 }]}>
+          {t("vehiculo.resenas.sinResenasDesc", "Este vehículo aún no tiene calificaciones ni opiniones registradas.")}
         </Text>
       </View>
     );

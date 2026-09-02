@@ -8,16 +8,26 @@ export interface CouponDummy {
   codigo: string;
   descuentoTexto: string;
   porcentaje?: number;
+  descuentoPorcentaje?: number;
   valorFijo?: number;
-  regla: string;
-  minimoValor: number;
+  descuentoFijo?: number;
+  regla?: string;
+  reglas?: {
+    soloPrimeraReserva?: boolean;
+    minimoDias?: number;
+    minimoValor?: number;
+    categoriasValidas?: string[];
+    metodosPagoValidos?: string[];
+  };
+  minimoValor?: number;
   tituloPremio: string;
   recompensaDetalle: string;
-  categoria: string;
-  vehicleCategoryFilter: string;
-  agotandose: boolean;
-  condicionesDetalladas: string;
-  fechaOtorgado: string;
+  categoria?: string;
+  vehicleCategoryFilter?: string;
+  agotandose?: boolean;
+  condicionesDetalladas?: string;
+  fechaOtorgado?: string;
+  fechaExpiracion?: string;
   expiracion?: string;
 }
 
@@ -26,6 +36,7 @@ export interface VehiculoPromoDummy {
   vehiculoId: number;
   titulo: string;
   descripcion: string;
+  descuentoBadge?: string;
   fechaPublicacion: string;
   expiracion?: string;
 }
@@ -34,9 +45,9 @@ export const CUPONES_DUMMY: CouponDummy[] = [
   {
     id: 'c1',
     codigo: 'C3P9X1',
-    descuentoTexto: '19% OFF',
-    porcentaje: 19,
-    regla: 'Reserva minima',
+    descuentoTexto: '18% OFF',
+    porcentaje: 18,
+    regla: 'Min $500.000',
     minimoValor: 500000,
     tituloPremio: 'promoCoupons.c1Title',
     recompensaDetalle: 'promoCoupons.c1Desc',
@@ -52,11 +63,11 @@ export const CUPONES_DUMMY: CouponDummy[] = [
     codigo: 'F1D8L5',
     descuentoTexto: '15% OFF',
     porcentaje: 15,
-    regla: 'Reserva minima',
+    regla: 'Min $150.000',
     minimoValor: 150000,
     tituloPremio: 'promoCoupons.c2Title',
     recompensaDetalle: 'promoCoupons.c2Desc',
-    categoria: 'Economicos',
+    categoria: 'Económicos',
     vehicleCategoryFilter: 'Economico',
     agotandose: false,
     condicionesDetalladas: 'promoCoupons.c2Terms',
@@ -65,13 +76,13 @@ export const CUPONES_DUMMY: CouponDummy[] = [
   {
     id: 'c3',
     codigo: 'O2T9N4',
-    descuentoTexto: '15% OFF',
-    porcentaje: 15,
-    regla: 'Sin reserva minima',
+    descuentoTexto: '10% OFF',
+    porcentaje: 10,
+    regla: 'Sin mínimo',
     minimoValor: 0,
     tituloPremio: 'promoCoupons.c3Title',
     recompensaDetalle: 'promoCoupons.c3Desc',
-    categoria: 'Sedan & Hatchback',
+    categoria: 'Sedán & Hatchback',
     vehicleCategoryFilter: 'Sedan',
     agotandose: false,
     condicionesDetalladas: 'promoCoupons.c3Terms',
@@ -81,13 +92,13 @@ export const CUPONES_DUMMY: CouponDummy[] = [
   {
     id: 'c4',
     codigo: 'V1P50X',
-    descuentoTexto: 'VALOR_FIJO',
+    descuentoTexto: '-$50.000',
     valorFijo: 50000,
-    regla: 'Reserva minima',
+    regla: 'Min $200.000',
     minimoValor: 200000,
     tituloPremio: 'promoCoupons.c4Title',
     recompensaDetalle: 'promoCoupons.c4Desc',
-    categoria: 'Cualquier categoria',
+    categoria: 'Cualquier categoría',
     vehicleCategoryFilter: 'Todos',
     agotandose: false,
     condicionesDetalladas: 'promoCoupons.c4Terms',
@@ -101,23 +112,26 @@ export const VEHICULO_PROMOS_DUMMY: VehiculoPromoDummy[] = [
     vehiculoId: 1,
     titulo: 'promoCoupons.vp1Title',
     descripcion: 'promoCoupons.vp1Desc',
-    fechaPublicacion: '2026-08-11T08:00:00Z',
-    expiracion: '2026-08-18T23:59:59Z',
+    descuentoBadge: '10% OFF',
+    fechaPublicacion: '2026-09-01T08:00:00Z',
+    expiracion: '2026-09-30T23:59:59Z',
   },
   {
     id: 'vp-2',
     vehiculoId: 2,
     titulo: 'promoCoupons.vp2Title',
     descripcion: 'promoCoupons.vp2Desc',
-    fechaPublicacion: '2026-08-11T06:00:00Z',
-    expiracion: '2026-08-11T23:59:59Z',
+    descuentoBadge: '20% OFF',
+    fechaPublicacion: '2026-09-01T06:00:00Z',
+    expiracion: '2026-09-15T23:59:59Z',
   },
   {
     id: 'vp-3',
     vehiculoId: 3,
     titulo: 'promoCoupons.vp3Title',
     descripcion: 'promoCoupons.vp3Desc',
-    fechaPublicacion: '2026-08-10T12:00:00Z',
-    expiracion: '2026-08-17T23:59:59Z',
+    descuentoBadge: '15% OFF',
+    fechaPublicacion: '2026-09-01T12:00:00Z',
+    expiracion: '2026-10-31T23:59:59Z',
   },
 ];

@@ -1119,7 +1119,8 @@ export default {
     minDays: 'Minimum days:',
     validCategories: 'Valid categories:',
     expires: 'Expires:',
-    understoodBtn: 'Understood'
+    validAllMonth: 'Valid all month long.',
+    almostGone: 'Almost gone!'
   }
 ,
   simulator: {
@@ -1161,7 +1162,7 @@ export default {
     c4Terms: 'Grants 50,000 COP discount. Requires a minimum booking of 200,000 COP. Valid for any category.',
     vp1Title: 'It\'s back! Don\'t wait',
     vp1Desc: 'This vehicle is available again in your area. Book it before it sells out.',
-    vp2Title: '28% OFF today only',
+    vp2Title: '20% OFF solo hoy',
     vp2Desc: 'Special daily offer. Book today and get a 28% discount on the standard rate.',
     vp3Title: 'Unmatched weekend price',
     vp3Desc: 'Rent this premium vehicle from Friday to Sunday and pay for only 2 days.',

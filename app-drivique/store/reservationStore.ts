@@ -21,7 +21,7 @@ interface ReservaStore {
 
   seleccionarVehiculo: (
     vehiculo: Vehiculo,
-    datosPrecarga?: Partial<Pick<DatosFechasLugar, "lugarRetiro" | "fechaRetiro" | "fechaDevolucion">>
+    datosPrecarga?: Partial<Pick<DatosFechasLugar, "fechaRetiro" | "fechaDevolucion" | "lugarRetiro" | "descuentoPromocion">>
   ) => void;
   setPaso: (paso: PasoReserva) => void;
   actualizarFechasLugar: (data: Partial<DatosFechasLugar>) => void;
