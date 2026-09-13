@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform, Image, Dimensions } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform, Image, Dimensions, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
@@ -290,185 +290,167 @@ export default function CouponSection({ vehiculo }: Props) {
       {/* ── Modal: Cupones Disponibles / Condiciones ── */}
       <Modal 
         visible={modalVisible} 
-        animationType="slide" 
+        animationType="fade" 
         transparent={true} 
         onRequestClose={handleCerrarModal}
-        statusBarTranslucent
+        statusBarTranslucent={true}
       >
-        <View style={styles.modalOverlay}>
-          {/* Backdrop superior que cierra al presionar afuera */}
-          <TouchableOpacity 
-            style={styles.modalBackdropTop} 
-            activeOpacity={1} 
-            onPress={handleCerrarModal} 
-          />
-
-          <KeyboardAvoidingView 
-            style={styles.keyboardAvoidContainer}
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-          >
-            <View 
-              style={[
-                styles.modalContenedor, 
-                { backgroundColor: c.bgCard }
-              ]}
-            >
-              {/* Indicador de arrastre superior */}
-              <View style={[styles.modalHandle, { backgroundColor: c.border }]} />
-
-              {/* Encabezado estándar con Título y Botón Cerrar */}
-              <View style={[styles.modalEncabezado, { borderBottomColor: c.border }]}>
+        <View style={styles.overlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleCerrarModal} />
+          <View style={[styles.card, { backgroundColor: c.bgCard }]}>
+            {/* Header */}
+            <View style={[styles.header, { backgroundColor: c.bgCard }]}>
+              <View style={styles.headerTitleRow}>
                 {selectedConditionsCoupon ? (
                   <TouchableOpacity
-                    style={[styles.modalBotonHeader, { backgroundColor: c.oscuro ? "#374151" : "#F3F4F6", marginRight: 10 }]}
                     onPress={handleVolverALista}
-                    activeOpacity={0.7}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    style={{ marginRight: 6 }}
                   >
-                    <Ionicons name="chevron-back" size={18} color={c.textPrimary} />
+                    <Ionicons name="chevron-back" size={20} color={COLOR_MARCA} />
                   </TouchableOpacity>
-                ) : null}
-
-                <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>
+                ) : (
+                  <Ionicons name="pricetag" size={20} color={COLOR_MARCA} />
+                )}
+                <Text style={[styles.headerTitle, { color: COLOR_MARCA }]}>
                   {selectedConditionsCoupon
                     ? t("coupon.conditionsTitle", { defaultValue: "Condiciones del Cupón" })
                     : t("coupon.modalTitle", { defaultValue: "Cupones Disponibles" })}
                 </Text>
-
-                <TouchableOpacity
-                  style={[styles.modalBotonHeader, { backgroundColor: c.oscuro ? "#374151" : "#F3F4F6" }]}
-                  onPress={handleCerrarModal}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="close" size={16} color={c.oscuro ? "#9CA3AF" : "#6B7280"} />
-                </TouchableOpacity>
               </View>
+              <TouchableOpacity onPress={handleCerrarModal} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="close" size={22} color={c.textSecondary} />
+              </TouchableOpacity>
+            </View>
 
-              {/* CONTENIDO 1: CONDICIONES DEL CUPÓN */}
-              {selectedConditionsCoupon ? (
-                <ScrollView 
-                  style={styles.modalScroll} 
-                  contentContainerStyle={styles.modalScrollConditionsContent}
-                  showsVerticalScrollIndicator={true}
-                  nestedScrollEnabled={true}
-                  keyboardShouldPersistTaps="handled"
-                  bounces={true}
-                  overScrollMode="always"
-                >
-                  <View style={[
-                    styles.conditionsCardWrapper, 
-                    { 
-                      backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF", 
-                      borderColor: c.border 
-                    }
-                  ]}>
-                    <Text style={[styles.modalSubtitleCenter, { color: primaryAccent }]}>
-                      {t(selectedConditionsCoupon.tituloPremio || selectedConditionsCoupon.descripcion)}
-                    </Text>
+            <View style={[styles.divider, { backgroundColor: c.border }]} />
 
-                    <Text style={[styles.modalDescriptionCenter, { color: c.textSecondary }]}>
-                      {t(selectedConditionsCoupon.recompensaDetalle || "coupon.fallbackDesc")}
-                    </Text>
-                    
-                    <View style={[styles.conditionsCardDivider, { backgroundColor: c.border }]} />
+            {/* CONTENIDO 1: CONDICIONES DEL CUPÓN */}
+            {selectedConditionsCoupon ? (
+              <ScrollView 
+                style={styles.modalScroll} 
+                contentContainerStyle={styles.modalScrollConditionsContent}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+                keyboardShouldPersistTaps="handled"
+                bounces={true}
+                overScrollMode="always"
+              >
+                <View style={[
+                  styles.conditionsCardWrapper, 
+                  { 
+                    backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF", 
+                    borderColor: c.border 
+                  }
+                ]}>
+                  <Text style={[styles.modalSubtitleCenter, { color: primaryAccent }]}>
+                    {t(selectedConditionsCoupon.tituloPremio || selectedConditionsCoupon.descripcion)}
+                  </Text>
 
-                    <Text style={[styles.conditionSectionHeaderCenter, { color: c.textPrimary }]}>
-                      {t("coupon.termsTitle", { defaultValue: "Términos y condiciones:" })}
-                    </Text>
+                  <Text style={[styles.modalDescriptionCenter, { color: c.textSecondary }]}>
+                    {t(selectedConditionsCoupon.recompensaDetalle || "coupon.fallbackDesc")}
+                  </Text>
+                  
+                  <View style={[styles.conditionsCardDivider, { backgroundColor: c.border }]} />
 
-                    <View style={styles.conditionsBulletsList}>
-                      <View style={styles.bulletRow}>
-                        <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
-                        <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
-                          Código: <Text style={{ fontWeight: "700", color: c.textPrimary }}>{selectedConditionsCoupon.codigo}</Text>
-                        </Text>
-                      </View>
-                      <View style={styles.bulletRow}>
-                        <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
-                        <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
-                          {t("coupon.term1", { defaultValue: "Válido para pagos digitales e iniciales." })}
-                        </Text>
-                      </View>
-                      <View style={styles.bulletRow}>
-                        <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
-                        <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
-                          {t("coupon.term2", { defaultValue: "No transferible a otros usuarios." })}
-                        </Text>
-                      </View>
-                      <View style={styles.bulletRow}>
-                        <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
-                        <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
-                          {t("coupon.term3", { defaultValue: "Solo se puede aplicar un cupón por reserva." })}
-                        </Text>
-                      </View>
-                      {selectedConditionsCoupon.reglas?.minimoDias ? (
-                        <View style={styles.bulletRow}>
-                          <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
-                          <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
-                            {t("coupon.minDays", { defaultValue: "Mínimo de días:" })} {selectedConditionsCoupon.reglas.minimoDias} días
-                          </Text>
-                        </View>
-                      ) : null}
-                      <View style={styles.bulletRow}>
-                        <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
-                        <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
-                          {t("coupon.validCategories", { defaultValue: "Categorías válidas:" })} <Text style={{ fontWeight: "700", color: c.textPrimary }}>{selectedConditionsCoupon.reglas?.categoriasValidas?.length ? selectedConditionsCoupon.reglas.categoriasValidas.join(", ") : "TODOS"}</Text>
-                        </Text>
-                      </View>
-                      <View style={styles.bulletRow}>
-                        <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
-                        <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
-                          Válido para vehículos de la flota. No acumulable con otras promociones.
-                        </Text>
-                      </View>
-                      <View style={styles.bulletRow}>
-                        <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
-                        <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
-                          {t("coupon.expires", { defaultValue: "Vence:" })} {selectedConditionsCoupon.expiracion ? formatDateShort(selectedConditionsCoupon.expiracion) : "31 de dic de 2026"}
-                        </Text>
-                      </View>
-                      {selectedConditionsCoupon.condicionesDetalladas ? (
-                        <View style={styles.bulletRow}>
-                          <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
-                          <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
-                            Condiciones especiales: {t(selectedConditionsCoupon.condicionesDetalladas, { defaultValue: selectedConditionsCoupon.condicionesDetalladas })}
-                          </Text>
-                        </View>
-                      ) : null}
+                  <Text style={[styles.conditionSectionHeaderCenter, { color: c.textPrimary }]}>
+                    {t("coupon.termsTitle", { defaultValue: "Términos y condiciones:" })}
+                  </Text>
+
+                  <View style={styles.conditionsBulletsList}>
+                    <View style={styles.bulletRow}>
+                      <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
+                      <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
+                        Código: <Text style={{ fontWeight: "700", color: c.textPrimary }}>{selectedConditionsCoupon.codigo}</Text>
+                      </Text>
                     </View>
-
-                    <TouchableOpacity
-                      style={[styles.modalActionBtn, { backgroundColor: primaryAccent }]}
-                      onPress={() => handleSeleccionarCupon(selectedConditionsCoupon, true)}
-                    >
-                      <Text style={styles.modalActionBtnText}>
-                        {cuponAplicado?.codigo === selectedConditionsCoupon.codigo
-                          ? t("coupon.alreadyApplied", { defaultValue: "Cupón ya aplicado" })
-                          : t("coupon.applyBtn", { defaultValue: "Aplicar este cupón" })}
+                    <View style={styles.bulletRow}>
+                      <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
+                      <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
+                        {t("coupon.term1", { defaultValue: "Válido para pagos digitales e iniciales." })}
                       </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={[styles.modalVolverBtn, { backgroundColor: c.oscuro ? c.bgCard : "#F8FAFC", borderColor: c.border }]}
-                      onPress={handleVolverALista}
-                    >
-                      <Text style={[styles.modalVolverBtnText, { color: c.textPrimary }]}>
-                        {t("common.back", { defaultValue: "Volver a cupones" })}
+                    </View>
+                    <View style={styles.bulletRow}>
+                      <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
+                      <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
+                        {t("coupon.term2", { defaultValue: "No transferible a otros usuarios." })}
                       </Text>
-                    </TouchableOpacity>
+                    </View>
+                    <View style={styles.bulletRow}>
+                      <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
+                      <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
+                        {t("coupon.term3", { defaultValue: "Solo se puede aplicar un cupón por reserva." })}
+                      </Text>
+                    </View>
+                    {selectedConditionsCoupon.reglas?.minimoDias ? (
+                      <View style={styles.bulletRow}>
+                        <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
+                        <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
+                          {t("coupon.minDays", { defaultValue: "Mínimo de días:" })} {selectedConditionsCoupon.reglas.minimoDias} días
+                        </Text>
+                      </View>
+                    ) : null}
+                    <View style={styles.bulletRow}>
+                      <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
+                      <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
+                        {t("coupon.validCategories", { defaultValue: "Categorías válidas:" })} <Text style={{ fontWeight: "700", color: c.textPrimary }}>{selectedConditionsCoupon.reglas?.categoriasValidas?.length ? selectedConditionsCoupon.reglas.categoriasValidas.join(", ") : "TODOS"}</Text>
+                      </Text>
+                    </View>
+                    <View style={styles.bulletRow}>
+                      <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
+                      <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
+                        Válido para vehículos de la flota. No acumulable con otras promociones.
+                      </Text>
+                    </View>
+                    <View style={styles.bulletRow}>
+                      <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
+                      <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
+                        {t("coupon.expires", { defaultValue: "Vence:" })} {selectedConditionsCoupon.expiracion ? formatDateShort(selectedConditionsCoupon.expiracion) : "31 de dic de 2026"}
+                      </Text>
+                    </View>
+                    {selectedConditionsCoupon.condicionesDetalladas ? (
+                      <View style={styles.bulletRow}>
+                        <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
+                        <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
+                          Condiciones especiales: {t(selectedConditionsCoupon.condicionesDetalladas, { defaultValue: selectedConditionsCoupon.condicionesDetalladas })}
+                        </Text>
+                      </View>
+                    ) : null}
                   </View>
-                </ScrollView>
-              ) : (
-                /* CONTENIDO 2: LISTA DE CUPONES DISPONIBLES */
-                <ScrollView 
-                  style={styles.modalScroll}
-                  contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 24 }}
-                  showsVerticalScrollIndicator={true}
-                  nestedScrollEnabled={true}
-                  bounces={true}
-                  overScrollMode="always"
-                >
+
+                  <TouchableOpacity
+                    style={[styles.modalActionBtn, { backgroundColor: primaryAccent }]}
+                    onPress={() => handleSeleccionarCupon(selectedConditionsCoupon, true)}
+                  >
+                    <Text style={styles.modalActionBtnText}>
+                      {cuponAplicado?.codigo === selectedConditionsCoupon.codigo
+                        ? t("coupon.alreadyApplied", { defaultValue: "Cupón ya aplicado" })
+                        : t("coupon.applyBtn", { defaultValue: "Aplicar este cupón" })}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.modalVolverBtn, { backgroundColor: c.oscuro ? c.bgCard : "#F8FAFC", borderColor: c.border }]}
+                    onPress={handleVolverALista}
+                  >
+                    <Text style={[styles.modalVolverBtnText, { color: c.textPrimary }]}>
+                      {t("common.back", { defaultValue: "Volver a cupones" })}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            ) : (
+              /* CONTENIDO 2: LISTA DE CUPONES DISPONIBLES */
+              <ScrollView 
+                style={styles.modalScroll}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 16 }}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+                bounces={true}
+                overScrollMode="always"
+              >
                 {errorMsgModal ? (
-                  <View style={[styles.errorAlertBanner, { marginHorizontal: 16, marginBottom: 12, marginTop: 0, backgroundColor: c.oscuro ? "#450a0a" : "#FEF2F2", borderColor: c.oscuro ? "#7f1d1d" : "#FCA5A5" }]}>
+                  <View style={[styles.errorAlertBanner, { marginHorizontal: 0, marginBottom: 12, marginTop: 0, backgroundColor: c.oscuro ? "#450a0a" : "#FEF2F2", borderColor: c.oscuro ? "#7f1d1d" : "#FCA5A5" }]}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
                       <Ionicons name="alert-circle" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
                       <Text style={[styles.errorAlertText, { color: c.oscuro ? "#fca5a5" : "#B91C1C" }]}>{errorMsgModal}</Text>
@@ -480,7 +462,7 @@ export default function CouponSection({ vehiculo }: Props) {
                 ) : null}
 
                 {cuponesDisponibles.length === 0 && (
-                  <Text style={{ textAlign: "center", color: c.textMuted, marginTop: 20, fontSize: 12 }}>
+                  <Text style={{ textAlign: "center", color: c.textMuted, marginVertical: 24, fontSize: 12 }}>
                     {t("coupon.empty", "No tienes cupones disponibles en este momento.")}
                   </Text>
                 )}
@@ -574,12 +556,26 @@ export default function CouponSection({ vehiculo }: Props) {
                 })}
               </ScrollView>
             )}
+
+            <View style={[styles.divider, { backgroundColor: c.border }]} />
+
+            {/* Footer con Botón Cerrar */}
+            <View style={[styles.footer, { backgroundColor: c.bgCard }]}>
+              <TouchableOpacity
+                style={[styles.btnCerrar, { backgroundColor: COLOR_MARCA }]}
+                onPress={handleCerrarModal}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.btnCerrarText}>
+                  {t("reserva.fechasLugar.cerrar", { defaultValue: "Cerrar" })}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </KeyboardAvoidingView>
-      </View>
-    </Modal>
-  </View>
-);
+        </View>
+      </Modal>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -633,61 +629,51 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   
-  modalOverlay: {
+  overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
+    backgroundColor: "rgba(15, 23, 42, 0.65)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 16,
   },
-  modalBackdropTop: {
-    flex: 1,
+  card: {
     width: "100%",
-  },
-  keyboardAvoidContainer: {
-    width: "100%",
-    justifyContent: "flex-end",
-  },
-  modalContenedor: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: height * 0.85,
-    minHeight: height * 0.5,
-    paddingBottom: 24,
+    maxWidth: 440,
+    maxHeight: "82%",
+    borderRadius: 16,
     overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 12,
   },
-  modalHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 10,
-    marginBottom: 6,
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 16,
   },
-  modalEncabezado: {
+  headerTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    gap: 8,
   },
-  modalTitulo: {
-    fontSize: 15,
+  headerTitle: {
+    fontSize: 16,
     fontWeight: "800",
-    flex: 1,
   },
-  modalBotonHeader: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
+  divider: {
+    height: 1,
+    width: "100%",
   },
   modalScroll: {
     flex: 1,
   },
   modalScrollConditionsContent: {
     padding: 16,
-    paddingBottom: 24,
+    paddingBottom: 20,
   },
   conditionsCardWrapper: {
     borderRadius: 16,
@@ -753,6 +739,22 @@ const styles = StyleSheet.create({
   modalVolverBtnText: {
     fontSize: 13,
     fontWeight: "600",
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+  },
+  btnCerrar: {
+    paddingHorizontal: 22,
+    paddingVertical: 9,
+    borderRadius: 8,
+  },
+  btnCerrarText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
   },
 
   // Ticket styles
