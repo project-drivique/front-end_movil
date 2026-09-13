@@ -421,11 +421,11 @@ export default function PagoRespuestaScreen() {
       color: "#f59e0b",
       titulo:
         reserva.estado === "PENDIENTE_EFECTIVO"
-          ? t("misReservas.detalle.tituloPendienteEfectivo", { defaultValue: "Pendiente de pago en efectivo" })
+          ? t("misReservas.detalle.tituloPendienteEfectivo", { defaultValue: "Pendiente - Pago en efectivo en sucursal" })
           : reserva.estado === "PENDIENTE_VALIDACION"
           ? t("misReservas.detalle.tituloPendienteValidacion", { defaultValue: "Pago en validación" })
           : reserva.metodoPago === "wompi" || reserva.estado === "PENDIENTE"
-          ? t("misReservas.detalle.tituloPagoDigitalPendiente", { defaultValue: "Pago Digital Pendiente" })
+          ? t("misReservas.detalle.tituloPagoDigitalPendiente", { defaultValue: "Pendiente - Pago virtual con Wompi" })
           : t("misReservas.detalle.tituloPendiente", { defaultValue: "Reserva pendiente" }),
     },
     confirmada: { icono: "checkmark-done-circle-outline", color: COLOR_MARCA, titulo: t("misReservas.detalle.tituloConfirmada") },
@@ -741,8 +741,8 @@ export default function PagoRespuestaScreen() {
           {/* Título */}
           <Text style={[styles.tituloEfectivo, { color: c.textPrimary }]}>
             {pmTypeUpper.includes("COLLECT") || detLower.includes("efectivo en bancolombia") || detLower.includes("corresponsal")
-              ? "Pago en Efectivo - Bancolombia"
-              : t("reserva.confirmacion.efectivoConfirmadaTitulo", { defaultValue: "Reserva Registrada" })}
+              ? "Pendiente - Pago en efectivo en Bancolombia"
+              : t("reserva.confirmacion.efectivoConfirmadaTitulo", { defaultValue: "Pendiente - Pago en efectivo en sucursal" })}
           </Text>
 
           {/* Mensaje descriptivo */}
@@ -853,22 +853,25 @@ export default function PagoRespuestaScreen() {
       )}
 
       {reserva.metodoPago === "wompi" && !esPendienteEfectivo && reserva.estado === "PENDIENTE" && (
-        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border, marginTop: 4, marginBottom: 16, alignItems: "center" }]}>
+        <View style={[styles.card, styles.cardEfectivo, { backgroundColor: c.bgCard, borderColor: c.border, marginTop: 4, marginBottom: 16 }]}>
+          {/* Logo Circular Superior */}
           <View
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: 26,
-              backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.18)" : "rgba(37, 99, 235, 0.1)",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 12,
-            }}
+            style={[
+              styles.logoCircle,
+              {
+                backgroundColor: "#FFFFFF",
+                borderColor: c.oscuro ? "#334155" : "#F1F5F9",
+              },
+            ]}
           >
-            <Ionicons name="card-outline" size={26} color={primaryAccent} />
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.logoImg}
+              resizeMode="contain"
+            />
           </View>
           <Text style={[styles.tituloEfectivo, { color: c.textPrimary, fontSize: 18, marginBottom: 6 }]}>
-            {t("reserva.confirmacion.pagoPendienteTitulo", { defaultValue: "Pago Digital Pendiente" })}
+            {t("reserva.confirmacion.pagoPendienteTitulo", { defaultValue: "Pendiente - Pago virtual con Wompi" })}
           </Text>
           <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, marginBottom: 14 }]}>
             {t("reserva.confirmacion.pagoPendienteTexto", {

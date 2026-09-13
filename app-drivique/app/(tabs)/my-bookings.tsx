@@ -154,6 +154,23 @@ function obtenerTituloSeccionFecha(fechaIsoStr?: string | null, locale: string =
   return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
 }
 
+function getTimestampCreacion(r: ReservaGuardada): number {
+  if (r.fechaReserva) {
+    const t = new Date(r.fechaReserva).getTime();
+    if (!isNaN(t) && t > 0) return t;
+  }
+  const match = String(r.referencia || "").match(/\d{10,}/);
+  if (match) {
+    const t = parseInt(match[0], 10);
+    if (!isNaN(t) && t > 0) return t;
+  }
+  return 0;
+}
+
+const ordenarPorCreacionDesc = (a: ReservaGuardada, b: ReservaGuardada) => {
+  return getTimestampCreacion(b) - getTimestampCreacion(a);
+};
+
 export default function MisReservasScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
@@ -182,17 +199,7 @@ export default function MisReservasScreen() {
           numeroDocumento: usuarioDocumento,
         });
         if (activo) {
-          setReservas(
-            [...data].sort((a, b) => {
-              const fechaA = String(a.fechaRetiro || a.fechaReserva || "");
-              const horaA = String((a.fechasLugarSnapshot as any)?.horaRetiro || a.horaRetiro || "00:00");
-              const fechaB = String(b.fechaRetiro || b.fechaReserva || "");
-              const horaB = String((b.fechasLugarSnapshot as any)?.horaRetiro || b.horaRetiro || "00:00");
-              const fullA = `${fechaA}T${horaA}`;
-              const fullB = `${fechaB}T${horaB}`;
-              return fullB.localeCompare(fullA);
-            })
-          );
+          setReservas([...data].sort(ordenarPorCreacionDesc));
           setCargando(false);
 
           // Verificar en segundo plano si Wompi ya aprobó algún pago pendiente
@@ -220,17 +227,7 @@ export default function MisReservasScreen() {
                 correo: usuarioCorreo,
                 numeroDocumento: usuarioDocumento,
               });
-              setReservas(
-                [...dataActualizada].sort((a, b) => {
-                  const fechaA = String(a.fechaRetiro || a.fechaReserva || "");
-                  const horaA = String((a.fechasLugarSnapshot as any)?.horaRetiro || a.horaRetiro || "00:00");
-                  const fechaB = String(b.fechaRetiro || b.fechaReserva || "");
-                  const horaB = String((b.fechasLugarSnapshot as any)?.horaRetiro || b.horaRetiro || "00:00");
-                  const fullA = `${fechaA}T${horaA}`;
-                  const fullB = `${fechaB}T${horaB}`;
-                  return fullB.localeCompare(fullA);
-                })
-              );
+              setReservas([...dataActualizada].sort(ordenarPorCreacionDesc));
             }
           }
         }
@@ -286,7 +283,7 @@ export default function MisReservasScreen() {
   const seccionesReservas = useMemo(() => {
     const mapa = new Map<string, ReservaGuardada[]>();
     for (const r of reservasFiltradas) {
-      const fechaKey = String(r.fechaReserva || r.fechaRetiro || "").split("T")[0] || "desconocida";
+      const fechaKey = String(r.fechaReserva || "").split("T")[0] || String(r.fechaRetiro || "").split("T")[0] || "desconocida";
       const lista = mapa.get(fechaKey) || [];
       lista.push(r);
       mapa.set(fechaKey, lista);
@@ -295,7 +292,7 @@ export default function MisReservasScreen() {
     return fechasOrdenadas.map((fechaKey) => ({
       fechaKey,
       titulo: obtenerTituloSeccionFecha(fechaKey === "desconocida" ? null : fechaKey, locale),
-      data: mapa.get(fechaKey) || [],
+      data: (mapa.get(fechaKey) || []).sort(ordenarPorCreacionDesc),
     }));
   }, [reservasFiltradas, locale]);
 
