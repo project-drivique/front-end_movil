@@ -260,26 +260,46 @@ export default function EditDatesLocationSection({
         ? t("reserva.fechasLugar.horaSingular", { defaultValue: "hora" })
         : t("reserva.fechasLugar.horaPlural", { defaultValue: "horas" });
 
+    const esMismoDia = draft.fechaRetiro === draft.fechaDevolucion;
+
     if (draft.horaRetiro && draft.horaDevolucion) {
       const inicio = new Date(`${draft.fechaRetiro}T${draft.horaRetiro}:00`).getTime();
       const fin = new Date(`${draft.fechaDevolucion}T${draft.horaDevolucion}:00`).getTime();
       const diffMs = Math.max(fin - inicio, 0);
-      const totalHoras = Math.floor(diffMs / (1000 * 60 * 60));
-      const dias = Math.floor(totalHoras / 24);
-      const horas = totalHoras % 24;
+      const totalMinutos = Math.floor(diffMs / (1000 * 60));
+      const dias = Math.floor(totalMinutos / (24 * 60));
+      const horas = Math.floor((totalMinutos % (24 * 60)) / 60);
+      const minutos = totalMinutos % 60;
 
-      if (dias > 0 && horas > 0) {
-        return `${dias} ${diaTexto(dias)} - ${horas} ${horaTexto(horas)}`;
+      if (esMismoDia) {
+        if (horas > 0 && minutos > 0) {
+          return `${horas} ${horaTexto(horas)} ${minutos} min`;
+        }
+        if (horas > 0 && minutos === 0) {
+          return `${horas} ${horaTexto(horas)}`;
+        }
+        if (horas === 0 && minutos > 0) {
+          return `${minutos} min`;
+        }
+        return "Mismo día";
       }
-      if (dias === 1 && horas === 0) {
+
+      if (dias === 1 && horas === 0 && minutos === 0) {
         return `24 horas (${diaTexto(1)})`;
       }
-      if (dias > 1 && horas === 0) {
+      if (dias > 1 && horas === 0 && minutos === 0) {
         return `${dias} ${diaTexto(dias)}`;
       }
-      if (dias === 0 && horas > 0) {
-        return `${horas} ${horaTexto(horas)} (tarifa 1 día)`;
+      if (dias > 0 && (horas > 0 || minutos > 0)) {
+        return `${dias} ${diaTexto(dias)}${horas > 0 ? ` - ${horas} ${horaTexto(horas)}` : ""}${minutos > 0 ? ` ${minutos} min` : ""}`;
       }
+      if (dias === 0) {
+        return `${horas} ${horaTexto(horas)}${minutos > 0 ? ` ${minutos} min` : ""}`;
+      }
+    }
+
+    if (esMismoDia) {
+      return t("reserva.fechasLugar.mismoDiaLabel", { defaultValue: "Mismo día" });
     }
 
     const d1 = new Date(draft.fechaRetiro + "T00:00:00").getTime();
