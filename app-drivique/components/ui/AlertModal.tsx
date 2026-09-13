@@ -45,7 +45,7 @@ export function AlertModal({
   const listaBotones: BotonAlerta[] =
     botones !== undefined
       ? botones
-      : [{ texto: "Entendido", onPress: onCerrar ?? (() => {}), variante: "primario" }];
+      : [{ texto: "Aceptar", onPress: onCerrar ?? (() => {}), variante: "primario" }];
 
   return (
     <Modal

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { useReservaStore } from "@/store/reservationStore";
@@ -9,6 +9,7 @@ import CalendarioRango from "./DateRangeCalendar";
 import SelectorSucursalModal, { OpcionLugar } from "./BranchSelectorModal";
 import SelectorHoraModal from "./TimeSelectorModal";
 import { AlertaPagoEfectivo } from "./CashPaymentAlert";
+import { AlertModal } from "@/components/ui/AlertModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 
@@ -32,6 +33,17 @@ export default function FormFechasLugar({ vehiculo }: Props) {
   const [modalTipo, setModalTipo] = useState<"retiro" | "devolucion" | null>(null);
   const [horaVisible, setHoraVisible] = useState<"retiro" | "devolucion" | null>(null);
   const [alertaEfectivoVisible, setAlertaEfectivoVisible] = useState(false);
+  const [alertaModal, setAlertaModal] = useState<{
+    visible: boolean;
+    icono?: keyof typeof Ionicons.glyphMap;
+    titulo: string;
+    mensaje: string;
+    botones?: { texto: string; onPress: () => void; variante?: "primario" | "secundario" }[];
+  }>({
+    visible: false,
+    titulo: "",
+    mensaje: "",
+  });
 
   const nombreSucursal = vehiculo.sucursal ?? "";
   const ciudadNombre = vehiculo.sucursal ? getCiudadPorSucursal(vehiculo.sucursal) : null;
@@ -104,16 +116,24 @@ export default function FormFechasLugar({ vehiculo }: Props) {
       fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion &&
       fechasLugar.horaRetiro === horarioRetiro.horaCierre
     ) {
-      Alert.alert(
-        t("reserva.fechasLugar.sinHorasMismoDiaTitulo", { defaultValue: "Hora de devolución" }),
-        t("reserva.fechasLugar.sinHorasMismoDiaMensaje", {
+      setAlertaModal({
+        visible: true,
+        icono: "time-outline",
+        titulo: t("reserva.fechasLugar.sinHorasMismoDiaTitulo", { defaultValue: "Hora de devolución" }),
+        mensaje: t("reserva.fechasLugar.sinHorasMismoDiaMensaje", {
           defaultValue: `Como la hora de retiro es a las ${formatHoraAmPm(horarioRetiro.horaCierre)} (cierre de sucursal), la devolución debe realizarse a partir del día siguiente.`,
         }),
-        [
-          { text: t("comun.cancelar", { defaultValue: "Cancelar" }), style: "cancel" },
+        botones: [
           {
-            text: t("reserva.fechasLugar.moverDiaSiguiente", { defaultValue: "Mover a mañana" }),
+            texto: t("comun.cancelar", { defaultValue: "Cancelar" }),
+            variante: "secundario",
+            onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+          },
+          {
+            texto: t("reserva.fechasLugar.moverDiaSiguiente", { defaultValue: "Mover a mañana" }),
+            variante: "primario",
             onPress: () => {
+              setAlertaModal((p) => ({ ...p, visible: false }));
               const [y, m, d] = fechasLugar.fechaRetiro!.split("-").map(Number);
               const sigDia = new Date(y, m - 1, d + 1);
               const ySig = sigDia.getFullYear();
@@ -124,8 +144,8 @@ export default function FormFechasLugar({ vehiculo }: Props) {
               setHoraVisible("devolucion");
             },
           },
-        ]
-      );
+        ],
+      });
       return;
     }
     setHoraVisible("devolucion");
@@ -144,9 +164,19 @@ export default function FormFechasLugar({ vehiculo }: Props) {
             ? t("reserva.fechasLugar.horaNoDisponibleMantenimiento")
             : t("reserva.fechasLugar.horaNoDisponibleReservado");
 
-        Alert.alert(t("reserva.fechasLugar.horaNoDisponibleTitulo"), mensaje, [
-          { text: t("reserva.fechasLugar.intentarDeNuevo"), style: "default" },
-        ]);
+        setAlertaModal({
+          visible: true,
+          icono: "alert-circle-outline",
+          titulo: t("reserva.fechasLugar.horaNoDisponibleTitulo"),
+          mensaje,
+          botones: [
+            {
+              texto: t("reserva.fechasLugar.intentarDeNuevo", { defaultValue: "Aceptar" }),
+              variante: "primario",
+              onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+            },
+          ],
+        });
         return;
       }
     }
@@ -168,12 +198,21 @@ export default function FormFechasLugar({ vehiculo }: Props) {
           fechaDevolucion: fechaSigStr,
           horaDevolucion: "",
         });
-        Alert.alert(
-          t("reserva.fechasLugar.ajusteDevolucionTitulo", { defaultValue: "Fecha de devolución ajustada" }),
-          t("reserva.fechasLugar.ajusteDevolucionMensaje", {
+        setAlertaModal({
+          visible: true,
+          icono: "information-circle-outline",
+          titulo: t("reserva.fechasLugar.ajusteDevolucionTitulo", { defaultValue: "Fecha de devolución ajustada" }),
+          mensaje: t("reserva.fechasLugar.ajusteDevolucionMensaje", {
             defaultValue: `Al retirar a las ${formatHoraAmPm(horarioRetiro.horaCierre)} (hora de cierre), la fecha de devolución se ajustó automáticamente para el día siguiente.`,
-          })
-        );
+          }),
+          botones: [
+            {
+              texto: t("comun.aceptar", { defaultValue: "Aceptar" }),
+              variante: "primario",
+              onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+            },
+          ],
+        });
       } else {
         const esMismoDia = fechasLugar.fechaDevolucion === fechasLugar.fechaRetiro;
 
@@ -654,6 +693,15 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         ciudad={ciudadEntregaNombre || ciudadNombre}
         direccion={getDireccionSucursal(nombreSucursal)}
         onCerrar={() => setAlertaEfectivoVisible(false)}
+      />
+
+      <AlertModal
+        visible={alertaModal.visible}
+        icono={alertaModal.icono}
+        titulo={alertaModal.titulo}
+        mensaje={alertaModal.mensaje}
+        botones={alertaModal.botones}
+        onCerrar={() => setAlertaModal((p) => ({ ...p, visible: false }))}
       />
     </View>
   );

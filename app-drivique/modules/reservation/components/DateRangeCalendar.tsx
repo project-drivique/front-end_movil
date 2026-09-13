@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
 import { Ionicons } from "@expo/vector-icons";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { getDisponibilidadVehiculo, getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
 import { COLOR_MARCA } from "../constants/reservation.constants";
+import { AlertModal } from "@/components/ui/AlertModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 
@@ -240,27 +241,58 @@ export default function CalendarioRango({
     return getFechaHoyLocal();
   }, [horarioSucursal.horaCierre]);
 
+  const [alertaModal, setAlertaModal] = useState<{
+    visible: boolean;
+    icono?: keyof typeof Ionicons.glyphMap;
+    titulo: string;
+    mensaje: string;
+    botones?: { texto: string; onPress: () => void; variante?: "primario" | "secundario" }[];
+  }>({
+    visible: false,
+    titulo: "",
+    mensaje: "",
+  });
+
   const mensajePorMotivo = (motivo: "reservado" | "mantenimiento") =>
     motivo === "mantenimiento"
       ? t("reserva.fechasLugar.vehiculoEnMantenimiento")
       : t("reserva.fechasLugar.vehiculoYaReservado");
 
   const alertarNoDisponible = (titulo: string, motivo: "reservado" | "mantenimiento") => {
-    Alert.alert(titulo, mensajePorMotivo(motivo), [
-      { text: t("reserva.fechasLugar.intentarDeNuevo"), style: "default" },
-    ]);
+    setAlertaModal({
+      visible: true,
+      icono: "alert-circle-outline",
+      titulo,
+      mensaje: mensajePorMotivo(motivo),
+      botones: [
+        {
+          texto: t("reserva.fechasLugar.intentarDeNuevo", { defaultValue: "Aceptar" }),
+          variante: "primario",
+          onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+        },
+      ],
+    });
   };
 
   const handleDayPress = (day: DateData) => {
     const fecha = day.dateString;
 
     if (fecha < fechaMinimaRetiro) {
-      Alert.alert(
-        t("reserva.fechasLugar.sucursalCerradaTitulo", { defaultValue: "Sucursal cerrada por hoy" }),
-        t("reserva.fechasLugar.sucursalCerradaMensaje", {
+      setAlertaModal({
+        visible: true,
+        icono: "time-outline",
+        titulo: t("reserva.fechasLugar.sucursalCerradaTitulo", { defaultValue: "Sucursal cerrada por hoy" }),
+        mensaje: t("reserva.fechasLugar.sucursalCerradaMensaje", {
           defaultValue: `La sucursal ${vehiculo.sucursal || "seleccionada"} atiende ${horarioSucursal.textoHorario.toLowerCase()}. Puedes reservar a partir de mañana.`,
-        })
-      );
+        }),
+        botones: [
+          {
+            texto: t("comun.aceptar", { defaultValue: "Aceptar" }),
+            variante: "primario",
+            onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+          },
+        ],
+      });
       return;
     }
 
@@ -284,25 +316,42 @@ export default function CalendarioRango({
     const rango = getDiasEnRango(fechaRetiro, fecha);
     const motivoEnMedio = rango.map((d) => ocupados.get(d)).find(Boolean);
     if (motivoEnMedio) {
-      Alert.alert(
-        t("reserva.fechasLugar.rangoNoDisponibleTitulo"),
-        motivoEnMedio === "mantenimiento"
-          ? t("reserva.fechasLugar.rangoConMantenimiento")
-          : t("reserva.fechasLugar.rangoConReservas"),
-        [{ text: t("reserva.fechasLugar.intentarDeNuevo"), style: "default" }]
-      );
+      setAlertaModal({
+        visible: true,
+        icono: "alert-circle-outline",
+        titulo: t("reserva.fechasLugar.rangoNoDisponibleTitulo"),
+        mensaje:
+          motivoEnMedio === "mantenimiento"
+            ? t("reserva.fechasLugar.rangoConMantenimiento")
+            : t("reserva.fechasLugar.rangoConReservas"),
+        botones: [
+          {
+            texto: t("reserva.fechasLugar.intentarDeNuevo", { defaultValue: "Aceptar" }),
+            variante: "primario",
+            onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+          },
+        ],
+      });
       onCambiarFechas(fecha, null);
       return;
     }
 
     if (fecha === fechaRetiro) {
-      Alert.alert(
-        t("reserva.fechasLugar.mismoDiaTitulo", { defaultValue: "Reserva de 1 día" }),
-        t("reserva.fechasLugar.mismoDiaMensaje", {
+      setAlertaModal({
+        visible: true,
+        icono: "information-circle-outline",
+        titulo: t("reserva.fechasLugar.mismoDiaTitulo", { defaultValue: "Reserva de 1 día" }),
+        mensaje: t("reserva.fechasLugar.mismoDiaMensaje", {
           defaultValue: `Esta reserva dura 1 día. El vehículo se retira y se devuelve este mismo día dentro del horario de atención de la sucursal (${horarioSucursal.textoHorario}).`,
         }),
-        [{ text: t("comun.entendido", { defaultValue: "Entendido" }) }]
-      );
+        botones: [
+          {
+            texto: t("comun.aceptar", { defaultValue: "Aceptar" }),
+            variante: "primario",
+            onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+          },
+        ],
+      });
     }
 
     onCambiarFechas(fechaRetiro, fecha);
@@ -415,6 +464,15 @@ export default function CalendarioRango({
           </Text>
         </View>
       </View>
+
+      <AlertModal
+        visible={alertaModal.visible}
+        icono={alertaModal.icono}
+        titulo={alertaModal.titulo}
+        mensaje={alertaModal.mensaje}
+        botones={alertaModal.botones}
+        onCerrar={() => setAlertaModal((p) => ({ ...p, visible: false }))}
+      />
     </View>
   );
 }
