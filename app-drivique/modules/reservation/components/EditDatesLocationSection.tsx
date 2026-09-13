@@ -265,8 +265,7 @@ export default function EditDatesLocationSection({
 
     const d1 = new Date(draft.fechaRetiro + "T00:00:00").getTime();
     const d2 = new Date(draft.fechaDevolucion + "T00:00:00").getTime();
-    const diff = Math.round((d2 - d1) / 86400000);
-    const dias = diff > 0 ? diff : 1;
+    const dias = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
 
     return `${dias} ${diaTexto(dias)}`;
   }, [draft.fechaRetiro, draft.fechaDevolucion, t]);
@@ -726,20 +725,6 @@ export default function EditDatesLocationSection({
         minHora={
           horaVisible === "devolucion" && draft.fechaRetiro === draft.fechaDevolucion
             ? draft.horaRetiro
-            : null
-        }
-        maxHora={
-          horaVisible === "devolucion" &&
-          draft.fechaRetiro !== draft.fechaDevolucion &&
-          draft.horaRetiro
-            ? draft.horaRetiro
-            : null
-        }
-        subtitulo={
-          horaVisible === "devolucion" &&
-          draft.fechaRetiro !== draft.fechaDevolucion &&
-          draft.horaRetiro
-            ? `Hasta las ${formatHoraAmPm(draft.horaRetiro)} (límite de tu reserva)`
             : null
         }
         horaApertura={horaVisible === "retiro" ? horarioRetiro.horaApertura : horarioDevolucion.horaApertura}

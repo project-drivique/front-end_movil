@@ -35,8 +35,8 @@ function calcularDias(fechaRetiro: string | null, fechaDevolucion: string | null
   const inicio = new Date(fechaRetiro + "T00:00:00");
   const fin = new Date(fechaDevolucion + "T00:00:00");
   const diffMs = fin.getTime() - inicio.getTime();
-  const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
-  return diffDias > 0 ? diffDias : 1;
+  const dias = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
+  return dias > 0 ? dias : 1;
 }
 
 function IconoBeneficio({ tipo }: { tipo: "check" | "warning" | "cross" }) {

@@ -42,8 +42,8 @@ export const diasEntre = (a: string | null, b: string | null) => {
   if (!a || !b) return 0;
   const d1 = new Date(a + "T00:00:00").getTime();
   const d2 = new Date(b + "T00:00:00").getTime();
-  const diff = Math.round((d2 - d1) / 86400000);
-  return diff > 0 ? diff : 1;
+  const diff = Math.round((d2 - d1) / 86400000) + 1;
+  return Math.max(diff, 1);
 };
 
 // ---------- Piezas visuales ----------

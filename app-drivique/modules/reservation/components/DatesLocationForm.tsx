@@ -220,8 +220,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
 
     const d1 = new Date(fechasLugar.fechaRetiro + "T00:00:00").getTime();
     const d2 = new Date(fechasLugar.fechaDevolucion + "T00:00:00").getTime();
-    const diff = Math.round((d2 - d1) / 86400000);
-    const dias = diff > 0 ? diff : 1;
+    const dias = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
 
     return `${dias} ${diaTexto(dias)}`;
   }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, t]);
@@ -600,20 +599,6 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         minHora={
           horaVisible === "devolucion" && fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion
             ? fechasLugar.horaRetiro
-            : null
-        }
-        maxHora={
-          horaVisible === "devolucion" &&
-          fechasLugar.fechaRetiro !== fechasLugar.fechaDevolucion &&
-          fechasLugar.horaRetiro
-            ? fechasLugar.horaRetiro
-            : null
-        }
-        subtitulo={
-          horaVisible === "devolucion" &&
-          fechasLugar.fechaRetiro !== fechasLugar.fechaDevolucion &&
-          fechasLugar.horaRetiro
-            ? `Hasta las ${formatHoraAmPm(fechasLugar.horaRetiro)} (límite de tu reserva)`
             : null
         }
         horaApertura={horaVisible === "retiro" ? horarioRetiro.horaApertura : horarioDevolucion.horaApertura}
