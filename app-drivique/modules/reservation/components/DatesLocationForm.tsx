@@ -557,7 +557,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         </View>
       </View>
 
-      {/* --- STRIP DURACIÓN DEL ALQUILER --- */}
+      {/* --- STRIP 1: DURACIÓN DEL ALQUILER --- */}
       {!!infoDuracion && (
         <View
           style={[
@@ -567,38 +567,38 @@ export default function FormFechasLugar({ vehiculo }: Props) {
               : { backgroundColor: "rgba(47, 78, 162, 0.04)", borderColor: "rgba(47, 78, 162, 0.15)" },
           ]}
         >
-          <View style={{ flex: 1 }}>
-            <View style={styles.duracionFilaSuperior}>
-              <View style={styles.duracionLeftRow}>
-                <Ionicons name="hourglass-outline" size={15} color={primaryAccent} />
-                <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
-                  {t("reserva.fechasLugar.duracionAlquiler", { defaultValue: "Duración del alquiler" })}
-                </Text>
-              </View>
-              <Text style={[styles.duracionValor, { color: primaryAccent }]}>
-                {infoDuracion.titulo}
-              </Text>
-            </View>
-
-            {!!infoDuracion.tiempoUso && (
-              <View
-                style={[
-                  styles.duracionFilaInferior,
-                  { borderTopColor: c.oscuro ? "rgba(255, 255, 255, 0.08)" : "rgba(47, 78, 162, 0.12)" },
-                ]}
-              >
-                <View style={styles.duracionLeftRow}>
-                  <Ionicons name="time-outline" size={15} color={primaryAccent} />
-                  <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
-                    {t("reserva.fechasLugar.devolucionAnticipada", { defaultValue: "Devolución anticipada" })}
-                  </Text>
-                </View>
-                <Text style={[styles.duracionValor, { color: primaryAccent }]}>
-                  {infoDuracion.tiempoUso} de uso
-                </Text>
-              </View>
-            )}
+          <View style={styles.duracionLeftRow}>
+            <Ionicons name="hourglass-outline" size={15} color={primaryAccent} />
+            <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
+              {t("reserva.fechasLugar.duracionAlquiler", { defaultValue: "Duración del alquiler" })}
+            </Text>
           </View>
+          <Text style={[styles.duracionValor, { color: primaryAccent }]}>
+            {infoDuracion.titulo}
+          </Text>
+        </View>
+      )}
+
+      {/* --- STRIP 2: DEVOLUCIÓN ANTICIPADA (Espacio propio separado) --- */}
+      {!!infoDuracion?.tiempoUso && (
+        <View
+          style={[
+            styles.duracionStrip,
+            { marginTop: 8 },
+            c.oscuro
+              ? { backgroundColor: "rgba(47, 78, 162, 0.16)", borderColor: "rgba(47, 78, 162, 0.35)" }
+              : { backgroundColor: "rgba(47, 78, 162, 0.04)", borderColor: "rgba(47, 78, 162, 0.15)" },
+          ]}
+        >
+          <View style={styles.duracionLeftRow}>
+            <Ionicons name="time-outline" size={15} color={primaryAccent} />
+            <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
+              {t("reserva.fechasLugar.devolucionAnticipada", { defaultValue: "Devolución anticipada" })}
+            </Text>
+          </View>
+          <Text style={[styles.duracionValor, { color: primaryAccent }]}>
+            {infoDuracion.tiempoUso} de uso
+          </Text>
         </View>
       )}
 
