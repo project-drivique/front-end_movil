@@ -118,11 +118,6 @@ export default function SelectorHoraModal({
           <View style={[styles.header, { borderBottomColor: c.border }]}>
             <View style={{ flex: 1, marginRight: 8 }}>
               <Text style={[styles.headerTitulo, { color: c.textPrimary }]}>{t("reserva.fechasLugar.seleccionaHora")}</Text>
-              {!!(horaApertura && horaCierre) && (
-                <Text style={[styles.headerHorario, { color: c.textMuted }]}>
-                  {`Horario: ${formatHoraAmPm(horaApertura)} a ${formatHoraAmPm(horaCierre)}`}
-                </Text>
-              )}
               {!!subtitulo && (
                 <Text style={[styles.headerSubtitulo, { color: COLOR_MARCA }]}>
                   {subtitulo}
@@ -204,7 +199,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   headerTitulo: { fontSize: 14, fontWeight: "800" },
-  headerHorario: { fontSize: 11, marginTop: 2, fontWeight: "500" },
   headerSubtitulo: { fontSize: 11, marginTop: 2, fontWeight: "700" },
   cerrarTexto: { fontSize: 13, fontWeight: "700", color: COLOR_MARCA },
   lista: { flex: 1, paddingHorizontal: 8, paddingTop: 4 },
