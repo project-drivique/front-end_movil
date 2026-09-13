@@ -293,7 +293,7 @@ export default function CalendarioRango({
       Alert.alert(
         t("reserva.fechasLugar.mismoDiaTitulo", { defaultValue: "Reserva de 1 día" }),
         t("reserva.fechasLugar.mismoDiaMensaje", {
-          defaultValue: "Tu tarifa cubre 24 horas de alquiler. Puedes devolver el vehículo hoy o entregarlo mañana a la misma hora por el mismo valor.",
+          defaultValue: "El vehículo se retira y se devuelve este mismo día dentro del horario de atención de la sucursal (6:00 a.m. a 10:00 p.m.).",
         }),
         [{ text: t("comun.entendido", { defaultValue: "Entendido" }) }]
       );
