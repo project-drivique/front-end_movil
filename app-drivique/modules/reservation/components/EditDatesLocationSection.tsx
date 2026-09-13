@@ -223,18 +223,15 @@ export default function EditDatesLocationSection({
           })
         );
       } else {
-        const autoDev =
-          draft.fechaDevolucion &&
-          draft.fechaDevolucion !== draft.fechaRetiro &&
-          !draft.horaDevolucion;
+        const esMismoDia = draft.fechaDevolucion === draft.fechaRetiro;
 
         setDraft((prev) => {
           const nuevoDraft = {
             ...prev,
             horaRetiro: hora,
-            ...(autoDev ? { horaDevolucion: hora } : {}),
+            ...(!esMismoDia ? { horaDevolucion: hora } : {}),
           };
-          if (prev.fechaRetiro === prev.fechaDevolucion && prev.horaDevolucion && prev.horaDevolucion <= hora) {
+          if (esMismoDia && prev.horaDevolucion && prev.horaDevolucion <= hora) {
             nuevoDraft.horaDevolucion = "";
           }
           return nuevoDraft;
@@ -268,7 +265,8 @@ export default function EditDatesLocationSection({
 
     const d1 = new Date(draft.fechaRetiro + "T00:00:00").getTime();
     const d2 = new Date(draft.fechaDevolucion + "T00:00:00").getTime();
-    const dias = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
+    const diff = Math.round((d2 - d1) / 86400000);
+    const dias = diff > 0 ? diff : 1;
 
     return `${dias} ${diaTexto(dias)}`;
   }, [draft.fechaRetiro, draft.fechaDevolucion, t]);

@@ -38,13 +38,13 @@ export const fechaCorta = (f: string | null) =>
 export const fechaHora = (f: string | null, h: string, formatHoraAmPm: (h: string) => string, fallback: string) =>
   [fechaCorta(f), h ? formatHoraAmPm(h) : ""].filter(Boolean).join(" · ") || fallback;
 
-export const diasEntre = (a: string | null, b: string | null) =>
-  a && b
-    ? Math.max(
-        Math.round((new Date(b + "T00:00:00").getTime() - new Date(a + "T00:00:00").getTime()) / 86400000) + 1,
-        1
-      )
-    : 0;
+export const diasEntre = (a: string | null, b: string | null) => {
+  if (!a || !b) return 0;
+  const d1 = new Date(a + "T00:00:00").getTime();
+  const d2 = new Date(b + "T00:00:00").getTime();
+  const diff = Math.round((d2 - d1) / 86400000);
+  return diff > 0 ? diff : 1;
+};
 
 // ---------- Piezas visuales ----------
 

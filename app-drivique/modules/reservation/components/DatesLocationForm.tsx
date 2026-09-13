@@ -175,19 +175,16 @@ export default function FormFechasLugar({ vehiculo }: Props) {
           })
         );
       } else {
-        const autoDev =
-          fechasLugar.fechaDevolucion &&
-          fechasLugar.fechaDevolucion !== fechasLugar.fechaRetiro &&
-          !fechasLugar.horaDevolucion;
+        const esMismoDia = fechasLugar.fechaDevolucion === fechasLugar.fechaRetiro;
 
         actualizarFechasLugar({
           horaRetiro: hora,
-          ...(autoDev ? { horaDevolucion: hora } : {}),
+          ...(!esMismoDia ? { horaDevolucion: hora } : {}),
         });
 
         // Si la hora de devolución quedó antes o igual en el mismo día, resetearla
         if (
-          fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion &&
+          esMismoDia &&
           fechasLugar.horaDevolucion &&
           fechasLugar.horaDevolucion <= hora
         ) {
@@ -223,7 +220,8 @@ export default function FormFechasLugar({ vehiculo }: Props) {
 
     const d1 = new Date(fechasLugar.fechaRetiro + "T00:00:00").getTime();
     const d2 = new Date(fechasLugar.fechaDevolucion + "T00:00:00").getTime();
-    const dias = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
+    const diff = Math.round((d2 - d1) / 86400000);
+    const dias = diff > 0 ? diff : 1;
 
     return `${dias} ${diaTexto(dias)}`;
   }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, t]);
