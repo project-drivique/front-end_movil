@@ -209,7 +209,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
   const mostrarDomicilioRetiro = fechasLugar.lugarRetiro === "domicilio";
   const mostrarDomicilioDevolucion = fechasLugar.lugarDevolucion === "domicilio";
 
-  const textoDuracion = useMemo(() => {
+  const infoDuracion = useMemo(() => {
     if (!fechasLugar.fechaRetiro || !fechasLugar.fechaDevolucion) return null;
 
     const diaTexto = (n: number) =>
@@ -217,12 +217,51 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         ? t("reserva.fechasLugar.diaSingular", { defaultValue: "día" })
         : t("reserva.fechasLugar.diaPlural", { defaultValue: "días" });
 
+    const horaTexto = (n: number) =>
+      n === 1
+        ? t("reserva.fechasLugar.horaSingular", { defaultValue: "hora" })
+        : t("reserva.fechasLugar.horaPlural", { defaultValue: "horas" });
+
     const d1 = new Date(fechasLugar.fechaRetiro + "T00:00:00").getTime();
     const d2 = new Date(fechasLugar.fechaDevolucion + "T00:00:00").getTime();
     const diasContratados = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
 
-    return `${diasContratados} ${diaTexto(diasContratados)}`;
-  }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, t]);
+    const titulo = `${diasContratados} ${diaTexto(diasContratados)}`;
+    let subtituloAnticipada: string | null = null;
+
+    // Solo aplica devolución anticipada si en reserva de más de 1 día la hora de devolución es estrictamente anterior a la hora de retiro
+    if (
+      fechasLugar.fechaRetiro !== fechasLugar.fechaDevolucion &&
+      fechasLugar.horaRetiro &&
+      fechasLugar.horaDevolucion
+    ) {
+      const [hRetiro, mRetiro] = fechasLugar.horaRetiro.split(":").map(Number);
+      const [hDev, mDev] = fechasLugar.horaDevolucion.split(":").map(Number);
+      const minRetiro = hRetiro * 60 + mRetiro;
+      const minDev = hDev * 60 + mDev;
+
+      if (minDev < minRetiro) {
+        const diffMinutosAnticipo = minRetiro - minDev;
+        const diasUso = diasContratados - 1;
+        const minutosUsoUltimoDia = 24 * 60 - diffMinutosAnticipo;
+        const horasUso = Math.floor(minutosUsoUltimoDia / 60);
+        const minsUso = minutosUsoUltimoDia % 60;
+
+        const partesUso: string[] = [];
+        if (diasUso > 0) partesUso.push(`${diasUso} ${diaTexto(diasUso)}`);
+        if (horasUso > 0) partesUso.push(`${horasUso} ${horaTexto(horasUso)}`);
+        if (minsUso > 0) partesUso.push(`${minsUso} min`);
+
+        const tiempoUsoStr = partesUso.join(" y ") || "0 horas";
+        subtituloAnticipada = `Devolución anticipada: ${tiempoUsoStr} de uso`;
+      }
+    }
+
+    return {
+      titulo,
+      subtituloAnticipada,
+    };
+  }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, fechasLugar.horaRetiro, fechasLugar.horaDevolucion, t]);
 
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
 
@@ -563,7 +602,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
       </View>
 
       {/* --- STRIP DURACIÓN DEL ALQUILER --- */}
-      {!!textoDuracion && (
+      {!!infoDuracion && (
         <View
           style={[
             styles.duracionStrip,
@@ -572,15 +611,28 @@ export default function FormFechasLugar({ vehiculo }: Props) {
               : { backgroundColor: "rgba(47, 78, 162, 0.04)", borderColor: "rgba(47, 78, 162, 0.15)" },
           ]}
         >
-          <View style={styles.duracionLeftRow}>
-            <Ionicons name="hourglass-outline" size={16} color={COLOR_MARCA} />
-            <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
-              {t("reserva.fechasLugar.duracionAlquiler", { defaultValue: "Duración del alquiler" })}
-            </Text>
+          <View style={{ flex: 1 }}>
+            <View style={styles.duracionFilaSuperior}>
+              <View style={styles.duracionLeftRow}>
+                <Ionicons name="hourglass-outline" size={16} color={COLOR_MARCA} />
+                <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
+                  {t("reserva.fechasLugar.duracionAlquiler", { defaultValue: "Duración del alquiler" })}
+                </Text>
+              </View>
+              <Text style={styles.duracionValor}>
+                {infoDuracion.titulo}
+              </Text>
+            </View>
+
+            {!!infoDuracion.subtituloAnticipada && (
+              <View style={styles.subtituloAnticipadaRow}>
+                <Ionicons name="time-outline" size={13} color="#059669" />
+                <Text style={styles.subtituloAnticipadaTexto}>
+                  {infoDuracion.subtituloAnticipada}
+                </Text>
+              </View>
+            )}
           </View>
-          <Text style={styles.duracionValor}>
-            {textoDuracion}
-          </Text>
         </View>
       )}
 
@@ -788,9 +840,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   duracionStrip: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     backgroundColor: "rgba(47, 78, 162, 0.04)",
     borderWidth: 1,
     borderColor: "rgba(47, 78, 162, 0.15)",
@@ -798,6 +847,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginTop: 10,
+  },
+  duracionFilaSuperior: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   duracionLeftRow: {
     flexDirection: "row",
@@ -813,5 +867,19 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800",
     color: COLOR_MARCA,
+  },
+  subtituloAnticipadaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 6,
+    paddingTop: 6,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(47, 78, 162, 0.12)",
+  },
+  subtituloAnticipadaTexto: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: "#059669",
   },
 });
