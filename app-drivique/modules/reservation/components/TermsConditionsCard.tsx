@@ -71,9 +71,9 @@ export default function TarjetaTerminosCondiciones() {
           "No se realizarán devoluciones de dinero. Las cancelaciones se gestionan mediante saldo a favor para futuras reservas.",
       },
       {
-        titulo: "5. HORARIOS Y DEVOLUCIÓN PUNTUAL",
+        titulo: "5. HORARIOS Y ENTREGA",
         texto:
-          "La entrega del vehículo debe realizarse en la fecha y hora acordadas en la reserva. Se otorga una tolerancia de 30 minutos de cortesía. Superado este tiempo, se aplicará el recargo automático correspondiente por hora extra o día adicional de alquiler.",
+          "El retiro del vehículo debe efectuarse en la fecha, hora y sede acordadas dentro de los horarios de atención establecidos por la sucursal.",
       },
       {
         titulo: "6. KILOMETRAJE Y EXCEDENTES",
@@ -93,6 +93,11 @@ export default function TarjetaTerminosCondiciones() {
         titulo: "9. LEGISLACIÓN APLICABLE",
         texto:
           "El presente contrato de alquiler se rige en su totalidad por las leyes de la República de Colombia.",
+      },
+      {
+        titulo: "10. POLÍTICA DE DEVOLUCIÓN PUNTUAL",
+        texto:
+          "Por favor entrega el vehículo en la fecha y hora acordadas. Cuentas con 30 minutos de cortesía. Si la entrega supera este tiempo, se aplicará el cobro automático por tiempo adicional.",
       },
     ],
     [valorKmFormateado]
@@ -148,30 +153,6 @@ export default function TarjetaTerminosCondiciones() {
             </Text>
           </Text>
         </TouchableOpacity>
-
-        {/* Tarjeta de Política de Devolución Puntual */}
-        <View
-          style={[
-            styles.avisoPuntualidadCard,
-            {
-              backgroundColor: c.oscuro ? "rgba(245, 158, 11, 0.1)" : "#FFFBEB",
-              borderColor: c.oscuro ? "rgba(245, 158, 11, 0.3)" : "#FDE68A",
-            },
-          ]}
-        >
-          <View style={styles.avisoPuntualidadHeader}>
-            <Ionicons name="time-outline" size={14} color={c.oscuro ? "#FBBF24" : "#D97706"} />
-            <Text style={[styles.avisoPuntualidadTitulo, { color: c.oscuro ? "#FBBF24" : "#92400E" }]}>
-              {t("reserva.terminos.politicaDevolucionTitulo", { defaultValue: "Política de devolución puntual" })}
-            </Text>
-          </View>
-          <Text style={[styles.avisoPuntualidadDesc, { color: c.oscuro ? "#FDE68A" : "#78350F" }]}>
-            {t("reserva.terminos.politicaDevolucionDesc", {
-              defaultValue:
-                "Por favor entrega el vehículo en la fecha y hora acordadas. Cuentas con 30 minutos de cortesía. Si la entrega supera este tiempo, se aplicará el cobro automático por tiempo adicional.",
-            })}
-          </Text>
-        </View>
       </View>
 
       {/* ── Modal: Términos y condiciones con scroll obligatorio ── */}
@@ -471,25 +452,5 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 13,
     fontWeight: "700",
-  },
-  avisoPuntualidadCard: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 14,
-  },
-  avisoPuntualidadHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 4,
-  },
-  avisoPuntualidadTitulo: {
-    fontSize: 11.5,
-    fontWeight: "700",
-  },
-  avisoPuntualidadDesc: {
-    fontSize: 11,
-    lineHeight: 15,
   },
 });
