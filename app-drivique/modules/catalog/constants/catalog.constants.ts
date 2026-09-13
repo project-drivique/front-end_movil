@@ -120,9 +120,45 @@ export interface HorarioSucursal {
   textoHorario: string;
 }
 
-// Horarios reales según tipología y ubicación de cada sucursal
+// Horarios reales según tipología y ubicación de cada sucursal/punto de entrega
 export function getHorarioSucursal(sucursalNombre?: string | null): HorarioSucursal {
   if (!sucursalNombre) {
+    return {
+      horaApertura: "08:00",
+      horaCierre: "18:00",
+      textoHorario: "Lunes a Sábado · 8:00 a.m. – 6:00 p.m.",
+    };
+  }
+
+  const nombre = sucursalNombre.toLowerCase();
+
+  // 1. Aeropuertos: Operación 24/7 (vuelos nacionales e internacionales)
+  if (
+    nombre.includes("aeropuerto") ||
+    nombre.includes("airport") ||
+    nombre.includes("eldorado") ||
+    nombre.includes("el dorado") ||
+    nombre.includes("jose maria cordova") ||
+    nombre.includes("josé maría córdova")
+  ) {
+    return {
+      horaApertura: "00:00",
+      horaCierre: "23:30",
+      textoHorario: "Atención 24/7 · Todos los días",
+    };
+  }
+
+  // 2. Terminales de transporte: Operación 24/7 (transporte intermunicipal en Colombia)
+  if (nombre.includes("terminal")) {
+    return {
+      horaApertura: "00:00",
+      horaCierre: "23:30",
+      textoHorario: "Atención 24/7 · Todos los días",
+    };
+  }
+
+  // 3. Entrega a domicilio (Hoteles / Airbnbs / Residencias): Rango diurno seguro (no noche tardía ni madrugada)
+  if (nombre.includes("domicilio") || nombre.includes("hotel") || nombre.includes("airbnb")) {
     return {
       horaApertura: "07:00",
       horaCierre: "19:00",
@@ -130,48 +166,7 @@ export function getHorarioSucursal(sucursalNombre?: string | null): HorarioSucur
     };
   }
 
-  const nombre = sucursalNombre.toLowerCase();
-
-  // Aeropuertos: Horario extendido por flujo de vuelos (6:00 a.m. a 10:00 p.m.)
-  if (
-    nombre.includes("aeropuerto") ||
-    nombre.includes("airport") ||
-    nombre.includes("eldorado") ||
-    nombre.includes("el dorado")
-  ) {
-    return {
-      horaApertura: "06:00",
-      horaCierre: "22:00",
-      textoHorario: "Todos los días · 6:00 a.m. – 10:00 p.m.",
-    };
-  }
-
-  // Terminales de transporte: 6:00 a.m. a 8:00 p.m.
-  if (nombre.includes("terminal")) {
-    return {
-      horaApertura: "06:00",
-      horaCierre: "20:00",
-      textoHorario: "Todos los días · 6:00 a.m. – 8:00 p.m.",
-    };
-  }
-
-  // Zonas comerciales premium / turísticas (Poblado, Bocagrande, Granada, Alto Prado, Calle 80): 7:00 a.m. a 8:00 p.m.
-  if (
-    nombre.includes("poblado") ||
-    nombre.includes("bocagrande") ||
-    nombre.includes("granada") ||
-    nombre.includes("alto prado") ||
-    nombre.includes("calle 80") ||
-    nombre.includes("rodadero")
-  ) {
-    return {
-      horaApertura: "07:00",
-      horaCierre: "20:00",
-      textoHorario: "Lunes a Domingo · 7:00 a.m. – 8:00 p.m.",
-    };
-  }
-
-  // Sedes Centro y ciudades intermedias (horario comercial): 8:00 a.m. a 6:00 p.m.
+  // 4. Sucursales físicas comerciales (Horario estándar de rentadoras de vehículos en Colombia)
   return {
     horaApertura: "08:00",
     horaCierre: "18:00",
