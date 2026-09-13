@@ -683,8 +683,8 @@ export default function EditDatesLocationSection({
                         {t("reserva.fechasLugar.devolucionAnticipada", { defaultValue: "Devolución anticipada" })}
                       </Text>
                     </View>
-                    <Text style={[styles.duracionValor, { color: primaryAccent }]}>
-                      {infoDuracion.tiempoUso} de uso
+                    <Text style={[styles.duracionValor, { color: primaryAccent }]} numberOfLines={1}>
+                      {infoDuracion.tiempoUso}
                     </Text>
                   </View>
                 )}
@@ -985,37 +985,42 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(47, 78, 162, 0.15)",
     borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     marginTop: 10,
   },
   duracionFilaSuperior: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-  },
-  duracionLeftRow: {
-    flexDirection: "row",
-    alignItems: "center",
     gap: 8,
-  },
-  duracionLabel: {
-    fontSize: 12.5,
-    fontWeight: "600",
-    color: "#64748B",
-  },
-  duracionValor: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: COLOR_MARCA,
   },
   duracionFilaInferior: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 8,
-    paddingTop: 8,
+    gap: 8,
+    marginTop: 7,
+    paddingTop: 7,
     borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  duracionLeftRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    flexShrink: 0,
+  },
+  duracionLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#64748B",
+  },
+  duracionValor: {
+    fontSize: 12.5,
+    fontWeight: "800",
+    color: COLOR_MARCA,
+    textAlign: "right",
+    flexShrink: 1,
   },
   footer: {
     borderTopWidth: 1,

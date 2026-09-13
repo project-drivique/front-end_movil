@@ -126,11 +126,12 @@ export function getDetalleDuracionAlquiler(
 
       const partesUso: string[] = [];
       if (diasUso > 0) partesUso.push(`${diasUso} ${diaTexto(diasUso)}`);
-      if (horasUso > 0) partesUso.push(`${horasUso} ${horaTexto(horasUso)}`);
-      if (minsUso > 0) partesUso.push(`${minsUso} min`);
+      if (horasUso > 0 && minsUso === 0) partesUso.push(`${horasUso} ${horaTexto(horasUso)}`);
+      else if (horasUso > 0 && minsUso > 0) partesUso.push(`${horasUso} h ${minsUso} min`);
+      else if (horasUso === 0 && minsUso > 0) partesUso.push(`${minsUso} min`);
 
-      tiempoUso = partesUso.join(" y ") || "0 horas";
-      subtituloAnticipada = `Devolución anticipada: ${tiempoUso} de uso`;
+      tiempoUso = partesUso.join(", ") || "0 horas";
+      subtituloAnticipada = `Devolución anticipada: ${tiempoUso}`;
     }
   }
 
