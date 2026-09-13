@@ -260,12 +260,8 @@ export default function EditDatesLocationSection({
     const d2 = new Date(draft.fechaDevolucion + "T00:00:00").getTime();
     const dias = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
 
-    if (draft.horaRetiro && draft.horaDevolucion) {
-      return `${dias} ${diaTexto(dias)} (${formatHoraAmPm(draft.horaRetiro)} - ${formatHoraAmPm(draft.horaDevolucion)})`;
-    }
-
     return `${dias} ${diaTexto(dias)}`;
-  }, [draft.fechaRetiro, draft.fechaDevolucion, draft.horaRetiro, draft.horaDevolucion, t]);
+  }, [draft.fechaRetiro, draft.fechaDevolucion, t]);
 
   const handleGuardar = () => {
     actualizarFechasLugar(draft);

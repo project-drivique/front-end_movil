@@ -219,12 +219,8 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     const d2 = new Date(fechasLugar.fechaDevolucion + "T00:00:00").getTime();
     const dias = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
 
-    if (fechasLugar.horaRetiro && fechasLugar.horaDevolucion) {
-      return `${dias} ${diaTexto(dias)} (${formatHoraAmPm(fechasLugar.horaRetiro)} - ${formatHoraAmPm(fechasLugar.horaDevolucion)})`;
-    }
-
     return `${dias} ${diaTexto(dias)}`;
-  }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, fechasLugar.horaRetiro, fechasLugar.horaDevolucion, t]);
+  }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, t]);
 
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
 
