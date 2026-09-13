@@ -29,6 +29,7 @@ interface Props {
   horaApertura?: string | null;
   horaCierre?: string | null;
   nombreSucursal?: string | null;
+  subtitulo?: string | null;
   onSeleccionar: (hora: string) => void;
   onCerrar: () => void;
 }
@@ -50,6 +51,7 @@ export default function SelectorHoraModal({
   horaApertura,
   horaCierre,
   nombreSucursal,
+  subtitulo,
   onSeleccionar,
   onCerrar,
 }: Props) {
@@ -119,6 +121,11 @@ export default function SelectorHoraModal({
               {!!(horaApertura && horaCierre) && (
                 <Text style={[styles.headerHorario, { color: c.textMuted }]}>
                   {`Horario: ${formatHoraAmPm(horaApertura)} a ${formatHoraAmPm(horaCierre)}`}
+                </Text>
+              )}
+              {!!subtitulo && (
+                <Text style={[styles.headerSubtitulo, { color: COLOR_MARCA }]}>
+                  {subtitulo}
                 </Text>
               )}
             </View>
@@ -198,6 +205,7 @@ const styles = StyleSheet.create({
   },
   headerTitulo: { fontSize: 14, fontWeight: "800" },
   headerHorario: { fontSize: 11, marginTop: 2, fontWeight: "500" },
+  headerSubtitulo: { fontSize: 11, marginTop: 2, fontWeight: "700" },
   cerrarTexto: { fontSize: 13, fontWeight: "700", color: COLOR_MARCA },
   lista: { flex: 1, paddingHorizontal: 8, paddingTop: 4 },
   listaContenido: { paddingBottom: 24 },

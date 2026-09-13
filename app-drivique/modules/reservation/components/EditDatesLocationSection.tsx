@@ -676,6 +676,29 @@ export default function EditDatesLocationSection({
             </View>
           )}
 
+          {/* Aviso de devolución flexible */}
+          {!!draft.fechaRetiro && (
+            <View
+              style={[
+                styles.tipFlexibilidad,
+                {
+                  backgroundColor: c.oscuro ? "rgba(47, 78, 162, 0.12)" : "rgba(47, 78, 162, 0.05)",
+                  borderColor: c.oscuro ? "rgba(47, 78, 162, 0.3)" : "rgba(47, 78, 162, 0.15)",
+                },
+              ]}
+            >
+              <Ionicons name="information-circle" size={15} color={primaryAccent} style={{ marginTop: 1 }} />
+              <Text style={[styles.tipFlexibilidadTexto, { color: c.textSecondary }]}>
+                <Text style={{ fontWeight: "700", color: primaryAccent }}>
+                  {t("reserva.fechasLugar.devolucionFlexibleTitulo", { defaultValue: "Devolución flexible: " })}
+                </Text>
+                {t("reserva.fechasLugar.devolucionFlexibleMensaje", {
+                  defaultValue: "Si terminas antes tu viaje, puedes entregar el vehículo en cualquier momento previo dentro del horario de atención de la sucursal.",
+                })}
+              </Text>
+            </View>
+          )}
+
 
         </View>
       </ScrollView>
@@ -727,6 +750,20 @@ export default function EditDatesLocationSection({
         minHora={
           horaVisible === "devolucion" && draft.fechaRetiro === draft.fechaDevolucion
             ? draft.horaRetiro
+            : null
+        }
+        maxHora={
+          horaVisible === "devolucion" &&
+          draft.fechaRetiro !== draft.fechaDevolucion &&
+          draft.horaRetiro
+            ? draft.horaRetiro
+            : null
+        }
+        subtitulo={
+          horaVisible === "devolucion" &&
+          draft.fechaRetiro !== draft.fechaDevolucion &&
+          draft.horaRetiro
+            ? `Hasta las ${formatHoraAmPm(draft.horaRetiro)} (límite de tu reserva)`
             : null
         }
         horaApertura={horaVisible === "retiro" ? horarioRetiro.horaApertura : horarioDevolucion.horaApertura}
@@ -1009,5 +1046,20 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "800",
+  },
+  tipFlexibilidad: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 8,
+  },
+  tipFlexibilidadTexto: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    flex: 1,
   },
 });
