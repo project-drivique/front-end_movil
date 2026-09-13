@@ -326,6 +326,24 @@ export default function ResumenReservaModal({
                   {getLugarLabel(fechasLugar.lugarDevolucion, "devolucion")}
                 </Text>
               </View>
+
+              {/* Aviso de puntualidad en resumen */}
+              <View
+                style={[
+                  styles.avisoPuntualidadResumen,
+                  {
+                    backgroundColor: c.oscuro ? "rgba(245, 158, 11, 0.08)" : "#FFFBEB",
+                    borderColor: c.oscuro ? "rgba(245, 158, 11, 0.25)" : "#FEF3C7",
+                  },
+                ]}
+              >
+                <Ionicons name="time-outline" size={13} color={c.oscuro ? "#FBBF24" : "#D97706"} style={{ marginTop: 1 }} />
+                <Text style={[styles.avisoPuntualidadResumenTexto, { color: c.oscuro ? "#FDE68A" : "#92400E" }]}>
+                  {t("reserva.terminos.politicaDevolucionResumen", {
+                    defaultValue: "30 minutos de cortesía para devolución. Demoras posteriores generan cobro automático de tiempo extra.",
+                  })}
+                </Text>
+              </View>
             </View>
 
             {/* Divisor Sólido */}
@@ -787,5 +805,20 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "800",
+  },
+  avisoPuntualidadResumen: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 8,
+  },
+  avisoPuntualidadResumenTexto: {
+    flex: 1,
+    fontSize: 10.5,
+    lineHeight: 14,
+    fontWeight: "500",
   },
 });
