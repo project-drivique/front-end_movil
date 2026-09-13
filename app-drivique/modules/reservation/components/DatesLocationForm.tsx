@@ -224,7 +224,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
 
     const d1 = new Date(fechasLugar.fechaRetiro + "T00:00:00").getTime();
     const d2 = new Date(fechasLugar.fechaDevolucion + "T00:00:00").getTime();
-    const diasContratados = Math.max(Math.round((d2 - d1) / 86400000), 1);
+    const diasContratados = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
 
     const titulo = `${diasContratados} ${diaTexto(diasContratados)}`;
     let subtituloAnticipada: string | null = null;
