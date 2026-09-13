@@ -80,13 +80,19 @@ export function parseHoraEnMinutos(hora?: string | null): number | null {
   return h * 60 + m;
 }
 
+export interface InfoDuracionAlquiler {
+  titulo: string;
+  tiempoUso: string | null;
+  subtituloAnticipada: string | null;
+}
+
 export function getDetalleDuracionAlquiler(
   fechaRetiro: string | null | undefined,
   fechaDevolucion: string | null | undefined,
   horaRetiro: string | null | undefined,
   horaDevolucion: string | null | undefined,
   t: (key: string, opts?: any) => string
-): { titulo: string; subtituloAnticipada: string | null } | null {
+): InfoDuracionAlquiler | null {
   if (!fechaRetiro || !fechaDevolucion) return null;
 
   const diaTexto = (n: number) =>
@@ -104,6 +110,7 @@ export function getDetalleDuracionAlquiler(
   const diasContratados = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
 
   const titulo = `${diasContratados} ${diaTexto(diasContratados)}`;
+  let tiempoUso: string | null = null;
   let subtituloAnticipada: string | null = null;
 
   if (fechaRetiro !== fechaDevolucion && horaRetiro && horaDevolucion) {
@@ -122,13 +129,14 @@ export function getDetalleDuracionAlquiler(
       if (horasUso > 0) partesUso.push(`${horasUso} ${horaTexto(horasUso)}`);
       if (minsUso > 0) partesUso.push(`${minsUso} min`);
 
-      const tiempoUsoStr = partesUso.join(" y ") || "0 horas";
-      subtituloAnticipada = `Devolución anticipada: ${tiempoUsoStr} de uso`;
+      tiempoUso = partesUso.join(" y ") || "0 horas";
+      subtituloAnticipada = `Devolución anticipada: ${tiempoUso} de uso`;
     }
   }
 
   return {
     titulo,
+    tiempoUso,
     subtituloAnticipada,
   };
 }

@@ -570,21 +570,31 @@ export default function FormFechasLugar({ vehiculo }: Props) {
           <View style={{ flex: 1 }}>
             <View style={styles.duracionFilaSuperior}>
               <View style={styles.duracionLeftRow}>
-                <Ionicons name="hourglass-outline" size={16} color={COLOR_MARCA} />
+                <Ionicons name="hourglass-outline" size={15} color={primaryAccent} />
                 <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
                   {t("reserva.fechasLugar.duracionAlquiler", { defaultValue: "Duración del alquiler" })}
                 </Text>
               </View>
-              <Text style={styles.duracionValor}>
+              <Text style={[styles.duracionValor, { color: primaryAccent }]}>
                 {infoDuracion.titulo}
               </Text>
             </View>
 
-            {!!infoDuracion.subtituloAnticipada && (
-              <View style={styles.subtituloAnticipadaRow}>
-                <Ionicons name="time-outline" size={13} color="#059669" />
-                <Text style={styles.subtituloAnticipadaTexto}>
-                  {infoDuracion.subtituloAnticipada}
+            {!!infoDuracion.tiempoUso && (
+              <View
+                style={[
+                  styles.duracionFilaInferior,
+                  { borderTopColor: c.oscuro ? "rgba(255, 255, 255, 0.08)" : "rgba(47, 78, 162, 0.12)" },
+                ]}
+              >
+                <View style={styles.duracionLeftRow}>
+                  <Ionicons name="time-outline" size={15} color={primaryAccent} />
+                  <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
+                    {t("reserva.fechasLugar.devolucionAnticipada", { defaultValue: "Devolución anticipada" })}
+                  </Text>
+                </View>
+                <Text style={[styles.duracionValor, { color: primaryAccent }]}>
+                  {infoDuracion.tiempoUso} de uso
                 </Text>
               </View>
             )}
@@ -824,18 +834,12 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: COLOR_MARCA,
   },
-  subtituloAnticipadaRow: {
+  duracionFilaInferior: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
-    marginTop: 6,
-    paddingTop: 6,
+    justifyContent: "space-between",
+    marginTop: 8,
+    paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(47, 78, 162, 0.12)",
-  },
-  subtituloAnticipadaTexto: {
-    fontSize: 11.5,
-    fontWeight: "700",
-    color: "#059669",
   },
 });

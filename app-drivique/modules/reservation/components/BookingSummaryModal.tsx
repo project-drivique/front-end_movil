@@ -339,9 +339,9 @@ export default function ResumenReservaModal({
                 </Text>
 
                 {!!infoDuracion?.subtituloAnticipada && (
-                  <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                    <Ionicons name="time-outline" size={12} color="#059669" />
-                    <Text style={{ fontSize: 11, fontWeight: "600", color: "#059669", marginLeft: 4 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", marginTop: 5 }}>
+                    <Ionicons name="time-outline" size={13} color={primaryAccent} />
+                    <Text style={{ fontSize: 11.5, fontWeight: "600", color: primaryAccent, marginLeft: 4 }}>
                       {infoDuracion.subtituloAnticipada}
                     </Text>
                   </View>
