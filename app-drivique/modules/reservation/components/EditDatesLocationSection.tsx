@@ -799,7 +799,7 @@ export default function EditDatesLocationSection({
                   defaultValue: `Hora máxima de devolución: ${formatHoraAmPm(draft.horaRetiro)}`,
                 }),
                 mensaje: t("reserva.fechasLugar.alertaHoraDevolucionMensaje", {
-                  defaultValue: `Para cumplir exactamente con los ${infoDuracion?.titulo ?? "días"} de tu reserva (retiro a las ${formatHoraAmPm(draft.horaRetiro)}), la hora máxima de entrega es a las ${formatHoraAmPm(draft.horaRetiro)}. Si devuelves antes, se calculará devolución anticipada.`,
+                  defaultValue: `Para cumplir con los ${infoDuracion?.titulo ?? "días"} de tu reserva (retiro a las ${formatHoraAmPm(draft.horaRetiro)}), la hora límite de entrega es a las ${formatHoraAmPm(draft.horaRetiro)}. Si seleccionas una hora anterior, se calculará devolución anticipada.`,
                 }),
               }
             : null
