@@ -766,15 +766,6 @@ export default function EditDatesLocationSection({
             ? draft.horaRetiro
             : null
         }
-        maxHora={
-          horaVisible === "devolucion" &&
-          draft.fechaRetiro &&
-          draft.fechaDevolucion &&
-          draft.fechaRetiro !== draft.fechaDevolucion &&
-          draft.horaRetiro
-            ? draft.horaRetiro
-            : null
-        }
         horaSeleccionada={horaVisible === "retiro" ? draft.horaRetiro : draft.horaDevolucion}
         onSeleccionar={handleElegirHora}
         onCerrar={() => setHoraVisible(null)}

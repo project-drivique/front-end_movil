@@ -644,15 +644,6 @@ export default function FormFechasLugar({ vehiculo }: Props) {
             ? fechasLugar.horaRetiro
             : null
         }
-        maxHora={
-          horaVisible === "devolucion" &&
-          fechasLugar.fechaRetiro &&
-          fechasLugar.fechaDevolucion &&
-          fechasLugar.fechaRetiro !== fechasLugar.fechaDevolucion &&
-          fechasLugar.horaRetiro
-            ? fechasLugar.horaRetiro
-            : null
-        }
         horaSeleccionada={horaVisible === "retiro" ? fechasLugar.horaRetiro : fechasLugar.horaDevolucion}
         onSeleccionar={handleElegirHora}
         onCerrar={() => setHoraVisible(null)}
