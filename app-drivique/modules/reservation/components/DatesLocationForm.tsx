@@ -3,7 +3,7 @@ import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "reac
 import { Ionicons } from "@expo/vector-icons";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { useReservaStore } from "@/store/reservationStore";
-import { COLOR_MARCA, formatHoraAmPm, getMetodosPago } from "../constants/reservation.constants";
+import { COLOR_MARCA, formatHoraAmPm, getDetalleDuracionAlquiler, getMetodosPago } from "../constants/reservation.constants";
 import { CIUDADES_DATA, getCiudadPorSucursal, getDireccionSucursal, getDisponibilidadVehiculo, getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
 import CalendarioRango from "./DateRangeCalendar";
 import SelectorSucursalModal, { OpcionLugar } from "./BranchSelectorModal";
@@ -210,57 +210,13 @@ export default function FormFechasLugar({ vehiculo }: Props) {
   const mostrarDomicilioDevolucion = fechasLugar.lugarDevolucion === "domicilio";
 
   const infoDuracion = useMemo(() => {
-    if (!fechasLugar.fechaRetiro || !fechasLugar.fechaDevolucion) return null;
-
-    const diaTexto = (n: number) =>
-      n === 1
-        ? t("reserva.fechasLugar.diaSingular", { defaultValue: "día" })
-        : t("reserva.fechasLugar.diaPlural", { defaultValue: "días" });
-
-    const horaTexto = (n: number) =>
-      n === 1
-        ? t("reserva.fechasLugar.horaSingular", { defaultValue: "hora" })
-        : t("reserva.fechasLugar.horaPlural", { defaultValue: "horas" });
-
-    const d1 = new Date(fechasLugar.fechaRetiro + "T00:00:00").getTime();
-    const d2 = new Date(fechasLugar.fechaDevolucion + "T00:00:00").getTime();
-    const diasContratados = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
-
-    const titulo = `${diasContratados} ${diaTexto(diasContratados)}`;
-    let subtituloAnticipada: string | null = null;
-
-    // Solo aplica devolución anticipada si en reserva de más de 1 día la hora de devolución es estrictamente anterior a la hora de retiro
-    if (
-      fechasLugar.fechaRetiro !== fechasLugar.fechaDevolucion &&
-      fechasLugar.horaRetiro &&
-      fechasLugar.horaDevolucion
-    ) {
-      const [hRetiro, mRetiro] = fechasLugar.horaRetiro.split(":").map(Number);
-      const [hDev, mDev] = fechasLugar.horaDevolucion.split(":").map(Number);
-      const minRetiro = hRetiro * 60 + mRetiro;
-      const minDev = hDev * 60 + mDev;
-
-      if (minDev < minRetiro) {
-        const diffMinutosAnticipo = minRetiro - minDev;
-        const diasUso = diasContratados - 1;
-        const minutosUsoUltimoDia = 24 * 60 - diffMinutosAnticipo;
-        const horasUso = Math.floor(minutosUsoUltimoDia / 60);
-        const minsUso = minutosUsoUltimoDia % 60;
-
-        const partesUso: string[] = [];
-        if (diasUso > 0) partesUso.push(`${diasUso} ${diaTexto(diasUso)}`);
-        if (horasUso > 0) partesUso.push(`${horasUso} ${horaTexto(horasUso)}`);
-        if (minsUso > 0) partesUso.push(`${minsUso} min`);
-
-        const tiempoUsoStr = partesUso.join(" y ") || "0 horas";
-        subtituloAnticipada = `Devolución anticipada: ${tiempoUsoStr} de uso`;
-      }
-    }
-
-    return {
-      titulo,
-      subtituloAnticipada,
-    };
+    return getDetalleDuracionAlquiler(
+      fechasLugar.fechaRetiro,
+      fechasLugar.fechaDevolucion,
+      fechasLugar.horaRetiro,
+      fechasLugar.horaDevolucion,
+      t
+    );
   }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, fechasLugar.horaRetiro, fechasLugar.horaDevolucion, t]);
 
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;

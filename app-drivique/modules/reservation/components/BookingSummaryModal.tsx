@@ -12,6 +12,8 @@ import {
   COLOR_MARCA,
   PORCENTAJE_CARGOS_ADMINISTRATIVOS,
   PORCENTAJE_IVA,
+  formatHoraAmPm,
+  getDetalleDuracionAlquiler,
 } from "../constants/reservation.constants";
 import { fmt, fmtPct, diasEntre } from "./BookingSummaryModal.pieces";
 import { useMonedaStore } from "@/store/currencyStore";
@@ -47,6 +49,16 @@ export default function ResumenReservaModal({
   const cuponAplicado = useReservaStore((s) => s.cuponAplicado);
 
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+
+  const infoDuracion = useMemo(() => {
+    return getDetalleDuracionAlquiler(
+      fechasLugar.fechaRetiro,
+      fechasLugar.fechaDevolucion,
+      fechasLugar.horaRetiro,
+      fechasLugar.horaDevolucion,
+      t
+    );
+  }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, fechasLugar.horaRetiro, fechasLugar.horaDevolucion, t]);
 
   const handleCerrar = () => {
     setSeccionEditando(null);
@@ -301,7 +313,7 @@ export default function ResumenReservaModal({
                   {formatFechaResumen(fechasLugar.fechaRetiro)}
                 </Text>
                 <Text style={[styles.valorSecundario, { color: c.textMuted }]}>
-                  {fechasLugar.horaRetiro ? fechasLugar.horaRetiro : "--:--"}
+                  {fechasLugar.horaRetiro ? formatHoraAmPm(fechasLugar.horaRetiro) : "--:--"}
                 </Text>
                 <Text style={[styles.valorUbicacion, { color: c.textPrimary }]}>
                   {getLugarLabel(fechasLugar.lugarRetiro, "entrega")}
@@ -320,11 +332,20 @@ export default function ResumenReservaModal({
                   {formatFechaResumen(fechasLugar.fechaDevolucion)}
                 </Text>
                 <Text style={[styles.valorSecundario, { color: c.textMuted }]}>
-                  {fechasLugar.horaDevolucion ? fechasLugar.horaDevolucion : "--:--"}
+                  {fechasLugar.horaDevolucion ? formatHoraAmPm(fechasLugar.horaDevolucion) : "--:--"}
                 </Text>
                 <Text style={[styles.valorUbicacion, { color: c.textPrimary }]}>
                   {getLugarLabel(fechasLugar.lugarDevolucion, "devolucion")}
                 </Text>
+
+                {!!infoDuracion?.subtituloAnticipada && (
+                  <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+                    <Ionicons name="time-outline" size={12} color="#059669" />
+                    <Text style={{ fontSize: 11, fontWeight: "600", color: "#059669", marginLeft: 4 }}>
+                      {infoDuracion.subtituloAnticipada}
+                    </Text>
+                  </View>
+                )}
               </View>
 
               {/* Aviso de puntualidad en resumen */}

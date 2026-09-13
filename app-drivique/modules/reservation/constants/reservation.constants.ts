@@ -56,12 +56,81 @@ export function getMetodosPago(t: (key: string) => string) {
 // a. m. / p. m. (ej: "2:00 p. m."). El valor guardado sigue siendo 24h;
 // esto solo cambia cómo se MUESTRA la hora al usuario.
 export function formatHoraAmPm(hora24: string): string {
-  const [hStr, m] = hora24.split(":");
-  let h = parseInt(hStr, 10);
+  if (!hora24) return "";
+  const match = String(hora24).match(/(\d{1,2}):(\d{2})/);
+  if (!match) return hora24;
+  let h = parseInt(match[1], 10);
+  const m = match[2];
   const sufijo = h >= 12 ? "p. m." : "a. m.";
   h = h % 12;
   if (h === 0) h = 12;
   return `${h}:${m} ${sufijo}`;
+}
+
+export function parseHoraEnMinutos(hora?: string | null): number | null {
+  if (!hora || typeof hora !== "string") return null;
+  const match = hora.match(/(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  let h = parseInt(match[1], 10);
+  const m = parseInt(match[2], 10);
+  const isPM = /pm|p\.m\./i.test(hora);
+  const isAM = /am|a\.m\./i.test(hora);
+  if (isPM && h < 12) h += 12;
+  if (isAM && h === 12) h = 0;
+  return h * 60 + m;
+}
+
+export function getDetalleDuracionAlquiler(
+  fechaRetiro: string | null | undefined,
+  fechaDevolucion: string | null | undefined,
+  horaRetiro: string | null | undefined,
+  horaDevolucion: string | null | undefined,
+  t: (key: string, opts?: any) => string
+): { titulo: string; subtituloAnticipada: string | null } | null {
+  if (!fechaRetiro || !fechaDevolucion) return null;
+
+  const diaTexto = (n: number) =>
+    n === 1
+      ? t("reserva.fechasLugar.diaSingular", { defaultValue: "día" })
+      : t("reserva.fechasLugar.diaPlural", { defaultValue: "días" });
+
+  const horaTexto = (n: number) =>
+    n === 1
+      ? t("reserva.fechasLugar.horaSingular", { defaultValue: "hora" })
+      : t("reserva.fechasLugar.horaPlural", { defaultValue: "horas" });
+
+  const d1 = new Date(fechaRetiro + "T00:00:00").getTime();
+  const d2 = new Date(fechaDevolucion + "T00:00:00").getTime();
+  const diasContratados = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
+
+  const titulo = `${diasContratados} ${diaTexto(diasContratados)}`;
+  let subtituloAnticipada: string | null = null;
+
+  if (fechaRetiro !== fechaDevolucion && horaRetiro && horaDevolucion) {
+    const minRetiro = parseHoraEnMinutos(horaRetiro);
+    const minDev = parseHoraEnMinutos(horaDevolucion);
+
+    if (minRetiro !== null && minDev !== null && minDev < minRetiro) {
+      const diffMinutosAnticipo = minRetiro - minDev;
+      const diasUso = diasContratados - 1;
+      const minutosUsoUltimoDia = 24 * 60 - diffMinutosAnticipo;
+      const horasUso = Math.floor(minutosUsoUltimoDia / 60);
+      const minsUso = minutosUsoUltimoDia % 60;
+
+      const partesUso: string[] = [];
+      if (diasUso > 0) partesUso.push(`${diasUso} ${diaTexto(diasUso)}`);
+      if (horasUso > 0) partesUso.push(`${horasUso} ${horaTexto(horasUso)}`);
+      if (minsUso > 0) partesUso.push(`${minsUso} min`);
+
+      const tiempoUsoStr = partesUso.join(" y ") || "0 horas";
+      subtituloAnticipada = `Devolución anticipada: ${tiempoUsoStr} de uso`;
+    }
+  }
+
+  return {
+    titulo,
+    subtituloAnticipada,
+  };
 }
 
 // ===================== TAB "PLANES" =====================
