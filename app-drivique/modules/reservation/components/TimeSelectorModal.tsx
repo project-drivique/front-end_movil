@@ -20,6 +20,11 @@ function generarHoras(horaApertura = "06:00", horaCierre = "22:00"): string[] {
   return horas;
 }
 
+export interface AlertaInformativaHora {
+  titulo: string;
+  mensaje: string;
+}
+
 interface Props {
   visible: boolean;
   horaSeleccionada: string;
@@ -30,6 +35,7 @@ interface Props {
   horaCierre?: string | null;
   nombreSucursal?: string | null;
   subtitulo?: string | null;
+  alertaInformativa?: AlertaInformativaHora | null;
   onSeleccionar: (hora: string) => void;
   onCerrar: () => void;
 }
@@ -52,6 +58,7 @@ export default function SelectorHoraModal({
   horaCierre,
   nombreSucursal,
   subtitulo,
+  alertaInformativa,
   onSeleccionar,
   onCerrar,
 }: Props) {
@@ -128,6 +135,35 @@ export default function SelectorHoraModal({
               <Text style={styles.cerrarTexto}>{t("reserva.resumen.cerrar")}</Text>
             </TouchableOpacity>
           </View>
+
+          {/* BANNER DE ALERTA INFORMATIVA ESTÁNDAR */}
+          {!!alertaInformativa && (
+            <View
+              style={[
+                styles.alertaInformativaBox,
+                {
+                  backgroundColor: c.primaryBg,
+                  borderColor: c.oscuro ? "rgba(47, 78, 162, 0.4)" : "rgba(47, 78, 162, 0.2)",
+                },
+              ]}
+            >
+              <Ionicons
+                name="information-circle"
+                size={20}
+                color={c.oscuro ? "#60A5FA" : COLOR_MARCA}
+                style={{ marginTop: 1 }}
+              />
+              <View style={styles.alertaInformativaContenido}>
+                <Text style={[styles.alertaInformativaTitulo, { color: c.textPrimary }]}>
+                  {alertaInformativa.titulo}
+                </Text>
+                <Text style={[styles.alertaInformativaMensaje, { color: c.textSecondary }]}>
+                  {alertaInformativa.mensaje}
+                </Text>
+              </View>
+            </View>
+          )}
+
           <ScrollView
             style={styles.lista}
             contentContainerStyle={styles.listaContenido}
@@ -186,8 +222,8 @@ const styles = StyleSheet.create({
   card: {
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
-    height: "68%",
-    maxHeight: 520,
+    height: "72%",
+    maxHeight: 540,
     paddingBottom: 8,
   },
   header: {
@@ -201,6 +237,29 @@ const styles = StyleSheet.create({
   headerTitulo: { fontSize: 14, fontWeight: "800" },
   headerSubtitulo: { fontSize: 11, marginTop: 2, fontWeight: "700" },
   cerrarTexto: { fontSize: 13, fontWeight: "700", color: COLOR_MARCA },
+  alertaInformativaBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 4,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 8,
+  },
+  alertaInformativaContenido: {
+    flex: 1,
+  },
+  alertaInformativaTitulo: {
+    fontSize: 12.5,
+    fontWeight: "700",
+    marginBottom: 3,
+  },
+  alertaInformativaMensaje: {
+    fontSize: 11.5,
+    lineHeight: 16,
+  },
   lista: { flex: 1, paddingHorizontal: 8, paddingTop: 4 },
   listaContenido: { paddingBottom: 24 },
   item: { paddingVertical: 12, paddingHorizontal: 12, borderRadius: 10, marginVertical: 1 },

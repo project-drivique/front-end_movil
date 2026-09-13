@@ -625,11 +625,19 @@ export default function FormFechasLugar({ vehiculo }: Props) {
             ? fechasLugar.horaRetiro
             : null
         }
-        subtitulo={
+        subtitulo={null}
+        alertaInformativa={
           horaVisible === "devolucion" &&
           fechasLugar.fechaRetiro !== fechasLugar.fechaDevolucion &&
           fechasLugar.horaRetiro
-            ? `Hasta las ${formatHoraAmPm(fechasLugar.horaRetiro)} (máximo de tus días de reserva)`
+            ? {
+                titulo: t("reserva.fechasLugar.alertaHoraDevolucionTitulo", {
+                  defaultValue: `Hora máxima de devolución: ${formatHoraAmPm(fechasLugar.horaRetiro)}`,
+                }),
+                mensaje: t("reserva.fechasLugar.alertaHoraDevolucionMensaje", {
+                  defaultValue: `Para cumplir exactamente con los ${infoDuracion?.titulo ?? "días"} de tu reserva (retiro a las ${formatHoraAmPm(fechasLugar.horaRetiro)}), la hora máxima de entrega es a las ${formatHoraAmPm(fechasLugar.horaRetiro)}. Si devuelves antes, se calculará devolución anticipada.`,
+                }),
+              }
             : null
         }
         horaApertura={horaVisible === "retiro" ? horarioRetiro.horaApertura : horarioDevolucion.horaApertura}
