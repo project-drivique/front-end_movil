@@ -264,8 +264,7 @@ export default function EditDatesLocationSection({
 
     const d1 = new Date(draft.fechaRetiro + "T00:00:00").getTime();
     const d2 = new Date(draft.fechaDevolucion + "T00:00:00").getTime();
-    const diff = Math.round((d2 - d1) / 86400000);
-    const dias = Math.max(diff, 1);
+    const dias = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
 
     return `${dias} ${diaTexto(dias)}`;
   }, [draft.fechaRetiro, draft.fechaDevolucion, t]);
