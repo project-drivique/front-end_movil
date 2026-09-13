@@ -1,9 +1,8 @@
 import React, { useMemo } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
-import { Ionicons } from "@expo/vector-icons";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
-import { getDisponibilidadVehiculo } from "@/modules/catalog/constants/catalog.constants";
+import { getDisponibilidadVehiculo, getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
 import { COLOR_MARCA } from "../constants/reservation.constants";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
@@ -224,15 +223,21 @@ export default function CalendarioRango({
     return mapa;
   }, [vehiculo.id]);
 
-  // Si ya pasaron las 10:00 p.m. (22:00), las sucursales ya cerraron hoy;
-  // por tanto, la fecha mínima para iniciar reserva es a partir de mañana a las 6:00 a.m.
+  const horarioSucursal = useMemo(
+    () => getHorarioSucursal(vehiculo.sucursal),
+    [vehiculo.sucursal]
+  );
+
+  // Si ya pasó la hora de cierre de la sucursal de origen hoy,
+  // la fecha mínima para iniciar reserva es a partir de mañana a la hora de apertura.
   const fechaMinimaRetiro = useMemo(() => {
     const ahora = new Date();
-    if (ahora.getHours() >= 22) {
+    const horaCierreNum = parseInt(horarioSucursal.horaCierre.split(":")[0], 10) || 20;
+    if (ahora.getHours() >= horaCierreNum) {
       return getFechaMananaLocal();
     }
     return getFechaHoyLocal();
-  }, []);
+  }, [horarioSucursal.horaCierre]);
 
   const mensajePorMotivo = (motivo: "reservado" | "mantenimiento") =>
     motivo === "mantenimiento"
@@ -252,7 +257,7 @@ export default function CalendarioRango({
       Alert.alert(
         t("reserva.fechasLugar.sucursalCerradaTitulo", { defaultValue: "Sucursal cerrada por hoy" }),
         t("reserva.fechasLugar.sucursalCerradaMensaje", {
-          defaultValue: "Nuestras sucursales atienden de 6:00 a.m. a 10:00 p.m. Puedes reservar a partir de mañana a las 6:00 a.m.",
+          defaultValue: `La sucursal ${vehiculo.sucursal || "seleccionada"} atiende ${horarioSucursal.textoHorario.toLowerCase()}. Puedes reservar a partir de mañana.`,
         })
       );
       return;
@@ -293,7 +298,7 @@ export default function CalendarioRango({
       Alert.alert(
         t("reserva.fechasLugar.mismoDiaTitulo", { defaultValue: "Reserva de 1 día" }),
         t("reserva.fechasLugar.mismoDiaMensaje", {
-          defaultValue: "Esta reserva dura 1 día. El vehículo se retira y se devuelve este mismo día dentro del horario de atención de la sucursal (6:00 a.m. a 10:00 p.m.).",
+          defaultValue: `Esta reserva dura 1 día. El vehículo se retira y se devuelve este mismo día dentro del horario de atención de la sucursal (${horarioSucursal.textoHorario}).`,
         }),
         [{ text: t("comun.entendido", { defaultValue: "Entendido" }) }]
       );

@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { useReservaStore } from "@/store/reservationStore";
 import { COLOR_MARCA, formatHoraAmPm, getMetodosPago } from "../constants/reservation.constants";
-import { CIUDADES_DATA, getCiudadPorSucursal, getDireccionSucursal, getDisponibilidadVehiculo } from "@/modules/catalog/constants/catalog.constants";
+import { CIUDADES_DATA, getCiudadPorSucursal, getDireccionSucursal, getDisponibilidadVehiculo, getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
 import CalendarioRango from "./DateRangeCalendar";
 import SelectorSucursalModal, { OpcionLugar } from "./BranchSelectorModal";
 import SelectorHoraModal from "./TimeSelectorModal";
@@ -36,6 +36,15 @@ export default function FormFechasLugar({ vehiculo }: Props) {
   const nombreSucursal = vehiculo.sucursal ?? "";
   const ciudadNombre = vehiculo.sucursal ? getCiudadPorSucursal(vehiculo.sucursal) : null;
   const ciudadInfo = ciudadNombre ? CIUDADES_DATA.find((c) => c.nombre === ciudadNombre) : null;
+
+  const horarioRetiro = useMemo(
+    () => getHorarioSucursal(fechasLugar.lugarRetiro || nombreSucursal),
+    [fechasLugar.lugarRetiro, nombreSucursal]
+  );
+  const horarioDevolucion = useMemo(
+    () => getHorarioSucursal(fechasLugar.lugarDevolucion || nombreSucursal),
+    [fechasLugar.lugarDevolucion, nombreSucursal]
+  );
 
   const esWompi = fechasLugar.metodoPago === "wompi";
 
@@ -70,9 +79,6 @@ export default function FormFechasLugar({ vehiculo }: Props) {
   useEffect(() => {
     if (fechasLugar.metodoPago === "efectivo") {
       const actualizacion: Partial<typeof fechasLugar> = {};
-      // Con pago en efectivo la única opción válida es la sucursal del
-      // vehículo: la seleccionamos automáticamente (no solo cuando ya había
-      // otro valor elegido, sino también cuando el campo estaba vacío).
       if (fechasLugar.lugarRetiro !== nombreSucursal) {
         actualizacion.lugarRetiro = nombreSucursal;
       }
@@ -96,12 +102,12 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     if (
       fechasLugar.fechaRetiro &&
       fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion &&
-      fechasLugar.horaRetiro === "22:00"
+      fechasLugar.horaRetiro === horarioRetiro.horaCierre
     ) {
       Alert.alert(
         t("reserva.fechasLugar.sinHorasMismoDiaTitulo", { defaultValue: "Hora de devolución" }),
         t("reserva.fechasLugar.sinHorasMismoDiaMensaje", {
-          defaultValue: "Como la hora de retiro es a las 10:00 p.m. (cierre de sucursal), la devolución debe realizarse a partir del día siguiente.",
+          defaultValue: `Como la hora de retiro es a las ${formatHoraAmPm(horarioRetiro.horaCierre)} (cierre de sucursal), la devolución debe realizarse a partir del día siguiente.`,
         }),
         [
           { text: t("comun.cancelar", { defaultValue: "Cancelar" }), style: "cancel" },
@@ -147,7 +153,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
 
     if (horaVisible === "retiro") {
       if (
-        hora === "22:00" &&
+        hora === horarioRetiro.horaCierre &&
         fechasLugar.fechaRetiro &&
         fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion
       ) {
@@ -165,14 +171,14 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         Alert.alert(
           t("reserva.fechasLugar.ajusteDevolucionTitulo", { defaultValue: "Fecha de devolución ajustada" }),
           t("reserva.fechasLugar.ajusteDevolucionMensaje", {
-            defaultValue: "Al retirar a las 10:00 p.m. (hora de cierre), la fecha de devolución se ajustó automáticamente para el día siguiente.",
+            defaultValue: `Al retirar a las ${formatHoraAmPm(horarioRetiro.horaCierre)} (hora de cierre), la fecha de devolución se ajustó automáticamente para el día siguiente.`,
           })
         );
       } else {
         const autoDev =
           fechasLugar.fechaDevolucion &&
           fechasLugar.fechaDevolucion !== fechasLugar.fechaRetiro &&
-          (!fechasLugar.horaDevolucion || fechasLugar.horaDevolucion > hora);
+          !fechasLugar.horaDevolucion;
 
         actualizarFechasLugar({
           horaRetiro: hora,
@@ -599,6 +605,9 @@ export default function FormFechasLugar({ vehiculo }: Props) {
             ? fechasLugar.horaRetiro
             : null
         }
+        horaApertura={horaVisible === "retiro" ? horarioRetiro.horaApertura : horarioDevolucion.horaApertura}
+        horaCierre={horaVisible === "retiro" ? horarioRetiro.horaCierre : horarioDevolucion.horaCierre}
+        nombreSucursal={horaVisible === "retiro" ? (fechasLugar.lugarRetiro || nombreSucursal) : (fechasLugar.lugarDevolucion || nombreSucursal)}
         horaSeleccionada={horaVisible === "retiro" ? fechasLugar.horaRetiro : fechasLugar.horaDevolucion}
         onSeleccionar={handleElegirHora}
         onCerrar={() => setHoraVisible(null)}

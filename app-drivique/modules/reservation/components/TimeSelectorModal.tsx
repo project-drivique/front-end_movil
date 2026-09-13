@@ -5,19 +5,20 @@ import { COLOR_MARCA, formatHoraAmPm } from "../constants/reservation.constants"
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 
-function generarHoras(): string[] {
+function generarHoras(horaApertura = "06:00", horaCierre = "22:00"): string[] {
+  const [hInicio, mInicio] = (horaApertura || "06:00").split(":").map(Number);
+  const [hFin, mFin] = (horaCierre || "22:00").split(":").map(Number);
   const horas: string[] = [];
-  // Horario de atención estándar de sucursales: 6:00 a.m. a 10:00 p.m.
-  for (let h = 6; h <= 22; h++) {
+
+  for (let h = hInicio; h <= hFin; h++) {
     for (const m of [0, 30]) {
-      if (h === 22 && m === 30) continue; // Cierre de sucursal a las 10:00 p.m.
+      if (h === hInicio && m < mInicio) continue;
+      if (h === hFin && m > mFin) continue;
       horas.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
     }
   }
   return horas;
 }
-
-const HORAS = generarHoras();
 
 interface Props {
   visible: boolean;
@@ -25,6 +26,9 @@ interface Props {
   fecha?: string | null;
   minHora?: string | null;
   maxHora?: string | null;
+  horaApertura?: string | null;
+  horaCierre?: string | null;
+  nombreSucursal?: string | null;
   onSeleccionar: (hora: string) => void;
   onCerrar: () => void;
 }
@@ -43,6 +47,9 @@ export default function SelectorHoraModal({
   fecha,
   minHora,
   maxHora,
+  horaApertura,
+  horaCierre,
+  nombreSucursal,
   onSeleccionar,
   onCerrar,
 }: Props) {
@@ -75,7 +82,9 @@ export default function SelectorHoraModal({
       }
     }
 
-    return HORAS.map((horaStr) => {
+    const horasBase = generarHoras(horaApertura || "07:00", horaCierre || "19:00");
+
+    return horasBase.map((horaStr) => {
       const [h, m] = horaStr.split(":").map(Number);
       const totalMin = h * 60 + m;
 
@@ -97,7 +106,7 @@ export default function SelectorHoraModal({
         bloqueada,
       };
     });
-  }, [fecha, minHora, maxHora]);
+  }, [fecha, minHora, maxHora, horaApertura, horaCierre]);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCerrar}>
@@ -105,7 +114,14 @@ export default function SelectorHoraModal({
         <Pressable style={StyleSheet.absoluteFill} onPress={onCerrar} />
         <View style={[styles.card, { backgroundColor: c.bgCard }]}>
           <View style={[styles.header, { borderBottomColor: c.border }]}>
-            <Text style={[styles.headerTitulo, { color: c.textPrimary }]}>{t("reserva.fechasLugar.seleccionaHora")}</Text>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Text style={[styles.headerTitulo, { color: c.textPrimary }]}>{t("reserva.fechasLugar.seleccionaHora")}</Text>
+              {!!(horaApertura && horaCierre) && (
+                <Text style={[styles.headerHorario, { color: c.textMuted }]}>
+                  {`Horario: ${formatHoraAmPm(horaApertura)} a ${formatHoraAmPm(horaCierre)}`}
+                </Text>
+              )}
+            </View>
             <TouchableOpacity onPress={onCerrar} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Text style={styles.cerrarTexto}>{t("reserva.resumen.cerrar")}</Text>
             </TouchableOpacity>
@@ -181,6 +197,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   headerTitulo: { fontSize: 14, fontWeight: "800" },
+  headerHorario: { fontSize: 11, marginTop: 2, fontWeight: "500" },
   cerrarTexto: { fontSize: 13, fontWeight: "700", color: COLOR_MARCA },
   lista: { flex: 1, paddingHorizontal: 8, paddingTop: 4 },
   listaContenido: { paddingBottom: 24 },

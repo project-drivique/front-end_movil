@@ -113,9 +113,73 @@ export function getDireccionSucursal(sucursal: string): string | null {
   return encontrada ? encontrada.direccion : null;
 }
 
-// El mock de sucursales (branches.json) no trae horario — todas las
-// sucursales operan con el mismo horario estándar de la compañía.
-export const HORARIO_ATENCION_SUCURSAL = "Todos los días · 6:00 a.m. – 10:00 p.m.";
+// Estructura de horarios por sucursal
+export interface HorarioSucursal {
+  horaApertura: string;
+  horaCierre: string;
+  textoHorario: string;
+}
+
+// Horarios reales según tipología y ubicación de cada sucursal
+export function getHorarioSucursal(sucursalNombre?: string | null): HorarioSucursal {
+  if (!sucursalNombre) {
+    return {
+      horaApertura: "07:00",
+      horaCierre: "19:00",
+      textoHorario: "Todos los días · 7:00 a.m. – 7:00 p.m.",
+    };
+  }
+
+  const nombre = sucursalNombre.toLowerCase();
+
+  // Aeropuertos: Horario extendido por flujo de vuelos (6:00 a.m. a 10:00 p.m.)
+  if (
+    nombre.includes("aeropuerto") ||
+    nombre.includes("airport") ||
+    nombre.includes("eldorado") ||
+    nombre.includes("el dorado")
+  ) {
+    return {
+      horaApertura: "06:00",
+      horaCierre: "22:00",
+      textoHorario: "Todos los días · 6:00 a.m. – 10:00 p.m.",
+    };
+  }
+
+  // Terminales de transporte: 6:00 a.m. a 8:00 p.m.
+  if (nombre.includes("terminal")) {
+    return {
+      horaApertura: "06:00",
+      horaCierre: "20:00",
+      textoHorario: "Todos los días · 6:00 a.m. – 8:00 p.m.",
+    };
+  }
+
+  // Zonas comerciales premium / turísticas (Poblado, Bocagrande, Granada, Alto Prado, Calle 80): 7:00 a.m. a 8:00 p.m.
+  if (
+    nombre.includes("poblado") ||
+    nombre.includes("bocagrande") ||
+    nombre.includes("granada") ||
+    nombre.includes("alto prado") ||
+    nombre.includes("calle 80") ||
+    nombre.includes("rodadero")
+  ) {
+    return {
+      horaApertura: "07:00",
+      horaCierre: "20:00",
+      textoHorario: "Lunes a Domingo · 7:00 a.m. – 8:00 p.m.",
+    };
+  }
+
+  // Sedes Centro y ciudades intermedias (horario comercial): 8:00 a.m. a 6:00 p.m.
+  return {
+    horaApertura: "08:00",
+    horaCierre: "18:00",
+    textoHorario: "Lunes a Sábado · 8:00 a.m. – 6:00 p.m.",
+  };
+}
+
+export const HORARIO_ATENCION_SUCURSAL = "Todos los días · 7:00 a.m. – 7:00 p.m.";
 
 // URL de Google Maps para "Cómo llegar" a partir de la dirección de la
 // sucursal (no requiere API key, funciona con Linking.openURL).

@@ -18,6 +18,7 @@ import {
   getCiudadPorSucursal,
   getDireccionSucursal,
   getDisponibilidadVehiculo,
+  getHorarioSucursal,
 } from "@/modules/catalog/constants/catalog.constants";
 import CalendarioRango from "./DateRangeCalendar";
 import SelectorSucursalModal, { OpcionLugar } from "./BranchSelectorModal";
@@ -55,6 +56,15 @@ export default function EditDatesLocationSection({
   const nombreSucursal = vehiculo.sucursal ?? "";
   const ciudadNombre = vehiculo.sucursal ? getCiudadPorSucursal(vehiculo.sucursal) : null;
   const ciudadInfo = ciudadNombre ? CIUDADES_DATA.find((item) => item.nombre === ciudadNombre) : null;
+
+  const horarioRetiro = useMemo(
+    () => getHorarioSucursal(draft.lugarRetiro || nombreSucursal),
+    [draft.lugarRetiro, nombreSucursal]
+  );
+  const horarioDevolucion = useMemo(
+    () => getHorarioSucursal(draft.lugarDevolucion || nombreSucursal),
+    [draft.lugarDevolucion, nombreSucursal]
+  );
 
   const esWompi = draft.metodoPago === "wompi";
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
@@ -139,12 +149,12 @@ export default function EditDatesLocationSection({
     if (
       draft.fechaRetiro &&
       draft.fechaRetiro === draft.fechaDevolucion &&
-      draft.horaRetiro === "22:00"
+      draft.horaRetiro === horarioRetiro.horaCierre
     ) {
       Alert.alert(
         t("reserva.fechasLugar.sinHorasMismoDiaTitulo", { defaultValue: "Hora de devolución" }),
         t("reserva.fechasLugar.sinHorasMismoDiaMensaje", {
-          defaultValue: "Como la hora de retiro es a las 10:00 p.m. (cierre de sucursal), la devolución debe realizarse a partir del día siguiente.",
+          defaultValue: `Como la hora de retiro es a las ${formatHoraAmPm(horarioRetiro.horaCierre)} (cierre de sucursal), la devolución debe realizarse a partir del día siguiente.`,
         }),
         [
           { text: t("comun.cancelar", { defaultValue: "Cancelar" }), style: "cancel" },
@@ -190,7 +200,7 @@ export default function EditDatesLocationSection({
 
     if (horaVisible === "retiro") {
       if (
-        hora === "22:00" &&
+        hora === horarioRetiro.horaCierre &&
         draft.fechaRetiro &&
         draft.fechaRetiro === draft.fechaDevolucion
       ) {
@@ -209,14 +219,14 @@ export default function EditDatesLocationSection({
         Alert.alert(
           t("reserva.fechasLugar.ajusteDevolucionTitulo", { defaultValue: "Fecha de devolución ajustada" }),
           t("reserva.fechasLugar.ajusteDevolucionMensaje", {
-            defaultValue: "Al retirar a las 10:00 p.m. (hora de cierre), la fecha de devolución se ajustó automáticamente para el día siguiente.",
+            defaultValue: `Al retirar a las ${formatHoraAmPm(horarioRetiro.horaCierre)} (hora de cierre), la fecha de devolución se ajustó automáticamente para el día siguiente.`,
           })
         );
       } else {
         const autoDev =
           draft.fechaDevolucion &&
           draft.fechaDevolucion !== draft.fechaRetiro &&
-          (!draft.horaDevolucion || draft.horaDevolucion > hora);
+          !draft.horaDevolucion;
 
         setDraft((prev) => {
           const nuevoDraft = {
@@ -721,6 +731,9 @@ export default function EditDatesLocationSection({
             ? draft.horaRetiro
             : null
         }
+        horaApertura={horaVisible === "retiro" ? horarioRetiro.horaApertura : horarioDevolucion.horaApertura}
+        horaCierre={horaVisible === "retiro" ? horarioRetiro.horaCierre : horarioDevolucion.horaCierre}
+        nombreSucursal={horaVisible === "retiro" ? (draft.lugarRetiro || nombreSucursal) : (draft.lugarDevolucion || nombreSucursal)}
         horaSeleccionada={horaVisible === "retiro" ? draft.horaRetiro : draft.horaDevolucion}
         onSeleccionar={handleElegirHora}
         onCerrar={() => setHoraVisible(null)}
