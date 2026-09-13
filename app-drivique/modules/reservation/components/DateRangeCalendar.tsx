@@ -293,7 +293,7 @@ export default function CalendarioRango({
       Alert.alert(
         t("reserva.fechasLugar.mismoDiaTitulo", { defaultValue: "Reserva de 1 día" }),
         t("reserva.fechasLugar.mismoDiaMensaje", {
-          defaultValue: "El vehículo se retira y se devuelve este mismo día dentro del horario de atención de la sucursal (6:00 a.m. a 10:00 p.m.).",
+          defaultValue: "Esta reserva dura 1 día. El vehículo se retira y se devuelve este mismo día dentro del horario de atención de la sucursal (6:00 a.m. a 10:00 p.m.).",
         }),
         [{ text: t("comun.entendido", { defaultValue: "Entendido" }) }]
       );
