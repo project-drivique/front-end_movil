@@ -263,7 +263,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
 
     const d1 = new Date(fechasLugar.fechaRetiro + "T00:00:00").getTime();
     const d2 = new Date(fechasLugar.fechaDevolucion + "T00:00:00").getTime();
-    const dias = Math.max(Math.round((d2 - d1) / 86400000), 1);
+    const dias = Math.max(Math.round((d2 - d1) / 86400000) + 1, 1);
     return `${dias} ${diaTexto(dias)}`;
   }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, fechasLugar.horaRetiro, fechasLugar.horaDevolucion, t]);
 

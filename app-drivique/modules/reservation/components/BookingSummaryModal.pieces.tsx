@@ -41,7 +41,7 @@ export const fechaHora = (f: string | null, h: string, formatHoraAmPm: (h: strin
 export const diasEntre = (a: string | null, b: string | null) =>
   a && b
     ? Math.max(
-        Math.round((new Date(b + "T00:00:00").getTime() - new Date(a + "T00:00:00").getTime()) / 86400000),
+        Math.round((new Date(b + "T00:00:00").getTime() - new Date(a + "T00:00:00").getTime()) / 86400000) + 1,
         1
       )
     : 0;
