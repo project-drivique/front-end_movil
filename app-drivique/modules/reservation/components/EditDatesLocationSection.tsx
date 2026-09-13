@@ -229,7 +229,6 @@ export default function EditDatesLocationSection({
           const nuevoDraft = {
             ...prev,
             horaRetiro: hora,
-            ...(!esMismoDia ? { horaDevolucion: hora } : {}),
           };
           if (esMismoDia && prev.horaDevolucion && prev.horaDevolucion <= hora) {
             nuevoDraft.horaDevolucion = "";

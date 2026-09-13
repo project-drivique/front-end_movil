@@ -179,7 +179,6 @@ export default function FormFechasLugar({ vehiculo }: Props) {
 
         actualizarFechasLugar({
           horaRetiro: hora,
-          ...(!esMismoDia ? { horaDevolucion: hora } : {}),
         });
 
         // Si la hora de devolución quedó antes o igual en el mismo día, resetearla
