@@ -32,10 +32,10 @@ function formatPrecio(precio: number): string {
 
 function calcularDias(fechaRetiro: string | null, fechaDevolucion: string | null): number {
   if (!fechaRetiro || !fechaDevolucion) return 1;
-  const inicio = new Date(fechaRetiro);
-  const fin = new Date(fechaDevolucion);
+  const inicio = new Date(fechaRetiro + "T00:00:00");
+  const fin = new Date(fechaDevolucion + "T00:00:00");
   const diffMs = fin.getTime() - inicio.getTime();
-  const dias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  const dias = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
   return dias > 0 ? dias : 1;
 }
 

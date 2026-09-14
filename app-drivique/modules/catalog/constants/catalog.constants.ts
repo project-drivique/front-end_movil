@@ -113,9 +113,68 @@ export function getDireccionSucursal(sucursal: string): string | null {
   return encontrada ? encontrada.direccion : null;
 }
 
-// El mock de sucursales (branches.json) no trae horario — todas las
-// sucursales operan con el mismo horario estándar de la compañía.
-export const HORARIO_ATENCION_SUCURSAL = "Todos los días · 6:00 a.m. – 10:00 p.m.";
+// Estructura de horarios por sucursal
+export interface HorarioSucursal {
+  horaApertura: string;
+  horaCierre: string;
+  textoHorario: string;
+}
+
+// Horarios reales según tipología y ubicación de cada sucursal/punto de entrega
+export function getHorarioSucursal(sucursalNombre?: string | null): HorarioSucursal {
+  if (!sucursalNombre) {
+    return {
+      horaApertura: "08:00",
+      horaCierre: "18:00",
+      textoHorario: "Lunes a Sábado · 8:00 a.m. – 6:00 p.m.",
+    };
+  }
+
+  const nombre = sucursalNombre.toLowerCase();
+
+  // 1. Aeropuertos: Operación 24/7 (vuelos nacionales e internacionales)
+  if (
+    nombre.includes("aeropuerto") ||
+    nombre.includes("airport") ||
+    nombre.includes("eldorado") ||
+    nombre.includes("el dorado") ||
+    nombre.includes("jose maria cordova") ||
+    nombre.includes("josé maría córdova")
+  ) {
+    return {
+      horaApertura: "00:00",
+      horaCierre: "23:30",
+      textoHorario: "Atención 24/7 · Todos los días",
+    };
+  }
+
+  // 2. Terminales de transporte: Operación 24/7 (transporte intermunicipal en Colombia)
+  if (nombre.includes("terminal")) {
+    return {
+      horaApertura: "00:00",
+      horaCierre: "23:30",
+      textoHorario: "Atención 24/7 · Todos los días",
+    };
+  }
+
+  // 3. Entrega a domicilio (Hoteles / Airbnbs / Residencias): Rango diurno seguro (no noche tardía ni madrugada)
+  if (nombre.includes("domicilio") || nombre.includes("hotel") || nombre.includes("airbnb")) {
+    return {
+      horaApertura: "07:00",
+      horaCierre: "19:00",
+      textoHorario: "Todos los días · 7:00 a.m. – 7:00 p.m.",
+    };
+  }
+
+  // 4. Sucursales físicas comerciales (Horario estándar de rentadoras de vehículos en Colombia)
+  return {
+    horaApertura: "08:00",
+    horaCierre: "18:00",
+    textoHorario: "Lunes a Sábado · 8:00 a.m. – 6:00 p.m.",
+  };
+}
+
+export const HORARIO_ATENCION_SUCURSAL = "Todos los días · 7:00 a.m. – 7:00 p.m.";
 
 // URL de Google Maps para "Cómo llegar" a partir de la dirección de la
 // sucursal (no requiere API key, funciona con Linking.openURL).
