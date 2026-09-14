@@ -660,17 +660,10 @@ export default function PagoRespuestaScreen() {
         >
       {/* Título y Subtítulo afuera de la tarjeta */}
       <Text style={[styles.titulo, { color: c.textPrimary }]}>{encabezado.titulo}</Text>
-      <Text style={[styles.subtitulo, { color: c.textSecondary }]}>{reserva.referencia}</Text>
+      <Text style={[styles.subtitulo, { color: c.textSecondary }]}>{reserva.vehiculoNombre}</Text>
 
       {/* Tarjeta 1: Ficha y Resumen del Alquiler */}
       <View style={[styles.card, styles.resumenCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-        {/* Nombre del vehículo arriba de la imagen */}
-        <View style={styles.cardHeaderVehiculo}>
-          <Text style={[styles.nombreVehiculoCard, { color: c.textPrimary }]}>
-            {reserva.vehiculoNombre}
-          </Text>
-        </View>
-
         {/* Foto del vehículo */}
         {foto ? (
           <Image source={{ uri: foto }} style={styles.fotoVehiculo} resizeMode="cover" />
@@ -776,17 +769,7 @@ export default function PagoRespuestaScreen() {
                 ? t("reserva.confirmacion.estados.PENDIENTE", { defaultValue: "Pendiente" })
                 : estadoTexto
             }
-            colorValor={
-              esPendienteEfectivo || reserva.estado === "PENDIENTE_EFECTIVO" || grupo === "pendiente"
-                ? "#16A34A"
-                : grupo === "confirmada"
-                ? "#2563EB"
-                : grupo === "en_curso"
-                ? "#16A34A"
-                : grupo === "cancelada"
-                ? "#DC2626"
-                : c.textPrimary
-            }
+            colorValor={grupo === "cancelada" ? "#DC2626" : primaryAccent}
             c={c}
           />
         </View>
@@ -1143,179 +1126,6 @@ export default function PagoRespuestaScreen() {
               </Text>
             </LinearGradient>
           </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Tarjeta Requisitos para el Alquiler (Adaptada a Drivique) */}
-      {grupo !== "finalizada" && grupo !== "cancelada" && (Boolean(contratoActual) || contratoFirmado || claveDesbloqueada || grupo === "confirmada" || grupo === "en_curso") && (
-        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-          {/* Encabezado de la Tarjeta */}
-          <View style={styles.requisitosHeader}>
-            <View
-              style={[
-                styles.requisitosBadgeIcono,
-                {
-                  backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.15)" : "rgba(47, 78, 162, 0.1)",
-                  borderColor: primaryAccent,
-                },
-              ]}
-            >
-              <Ionicons name="shield-checkmark" size={20} color={primaryAccent} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.requisitosTitulo, { color: c.textPrimary }]}>
-                {t("reserva.requisitos.titulo", { defaultValue: "Requisitos para el Alquiler" })}
-              </Text>
-              <Text style={[styles.requisitosSubtitulo, { color: c.textSecondary }]}>
-                {t("reserva.requisitos.subtitulo", {
-                  defaultValue: "Documentos y condiciones para la entrega de tu vehículo",
-                })}
-              </Text>
-            </View>
-          </View>
-
-          {/* Lista de Requisitos adaptados a Drivique */}
-          <View style={styles.requisitosLista}>
-            {/* Requisito 1: Edad */}
-            <View style={styles.requisitoFila}>
-              <View
-                style={[
-                  styles.requisitoCirculoIcono,
-                  {
-                    borderColor: primaryAccent,
-                    backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.12)" : "rgba(47, 78, 162, 0.08)",
-                  },
-                ]}
-              >
-                <Text style={[styles.requisitoNumeroEdad, { color: primaryAccent }]}>18</Text>
-              </View>
-              <View style={styles.requisitoContenido}>
-                <Text style={[styles.requisitoItemTitulo, { color: c.textPrimary }]}>
-                  {t("reserva.requisitos.edadTitulo", { defaultValue: "Edad mínima de 18 años" })}
-                </Text>
-                <Text style={[styles.requisitoItemDesc, { color: c.textSecondary }]}>
-                  {t("reserva.requisitos.edadDesc", {
-                    defaultValue:
-                      "Si tienes entre 18 y 20 años, se aplica la opción de 'Conductor Joven' autorizada a tu reserva.",
-                  })}
-                </Text>
-              </View>
-            </View>
-
-            <View style={[styles.requisitoDivisor, { backgroundColor: c.border }]} />
-
-            {/* Requisito 2: Licencia */}
-            <View style={styles.requisitoFila}>
-              <View
-                style={[
-                  styles.requisitoCirculoIcono,
-                  {
-                    borderColor: primaryAccent,
-                    backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.12)" : "rgba(47, 78, 162, 0.08)",
-                  },
-                ]}
-              >
-                <Ionicons name="card-outline" size={19} color={primaryAccent} />
-              </View>
-              <View style={styles.requisitoContenido}>
-                <Text style={[styles.requisitoItemTitulo, { color: c.textPrimary }]}>
-                  {t("reserva.requisitos.licenciaTitulo", { defaultValue: "Lleva tu licencia de conducir" })}
-                </Text>
-                <Text style={[styles.requisitoItemDesc, { color: c.textSecondary }]}>
-                  {t("reserva.requisitos.licenciaDesc", {
-                    defaultValue:
-                      "Presenta tu licencia de conducir física vigente y válida para el territorio nacional, sin tiempo mínimo requerido.",
-                  })}
-                </Text>
-              </View>
-            </View>
-
-            <View style={[styles.requisitoDivisor, { backgroundColor: c.border }]} />
-
-            {/* Requisito 3: Tarjeta de crédito / Depósito */}
-            <View style={styles.requisitoFila}>
-              <View
-                style={[
-                  styles.requisitoCirculoIcono,
-                  {
-                    borderColor: primaryAccent,
-                    backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.12)" : "rgba(47, 78, 162, 0.08)",
-                  },
-                ]}
-              >
-                <Ionicons name="card" size={19} color={primaryAccent} />
-              </View>
-              <View style={styles.requisitoContenido}>
-                <Text style={[styles.requisitoItemTitulo, { color: c.textPrimary }]}>
-                  {t("reserva.requisitos.tarjetaTitulo", { defaultValue: "Lleva una tarjeta de crédito a tu nombre" })}
-                </Text>
-                <Text style={[styles.requisitoItemDesc, { color: c.textSecondary }]}>
-                  {t("reserva.requisitos.tarjetaDesc", {
-                    defaultValue:
-                      "Presenta una tarjeta de crédito física a nombre del titular de la reserva con cupo disponible para el depósito de garantía.",
-                  })}
-                </Text>
-              </View>
-            </View>
-
-            <View style={[styles.requisitoDivisor, { backgroundColor: c.border }]} />
-
-            {/* Requisito 4: Documento oficial */}
-            <View style={styles.requisitoFila}>
-              <View
-                style={[
-                  styles.requisitoCirculoIcono,
-                  {
-                    borderColor: primaryAccent,
-                    backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.12)" : "rgba(47, 78, 162, 0.08)",
-                  },
-                ]}
-              >
-                <Ionicons name="document-text-outline" size={19} color={primaryAccent} />
-              </View>
-              <View style={styles.requisitoContenido}>
-                <Text style={[styles.requisitoItemTitulo, { color: c.textPrimary }]}>
-                  {t("reserva.requisitos.documentoTitulo", {
-                    defaultValue: "Documento de identificación oficial",
-                  })}
-                </Text>
-                <Text style={[styles.requisitoItemDesc, { color: c.textSecondary }]}>
-                  {t("reserva.requisitos.documentoDesc", {
-                    defaultValue:
-                      "Cédula de ciudadanía, extranjería o pasaporte original y vigente con el que registraste tu reserva en Drivique.",
-                  })}
-                </Text>
-              </View>
-            </View>
-
-            <View style={[styles.requisitoDivisor, { backgroundColor: c.border }]} />
-
-            {/* Requisito 5: Horario */}
-            <View style={styles.requisitoFila}>
-              <View
-                style={[
-                  styles.requisitoCirculoIcono,
-                  {
-                    borderColor: primaryAccent,
-                    backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.12)" : "rgba(47, 78, 162, 0.08)",
-                  },
-                ]}
-              >
-                <Ionicons name="time-outline" size={19} color={primaryAccent} />
-              </View>
-              <View style={styles.requisitoContenido}>
-                <Text style={[styles.requisitoItemTitulo, { color: c.textPrimary }]}>
-                  {t("reserva.requisitos.horarioTitulo", { defaultValue: "Horario de recogida del vehículo" })}
-                </Text>
-                <Text style={[styles.requisitoItemDesc, { color: c.textSecondary }]}>
-                  {t("reserva.requisitos.horarioDesc", {
-                    defaultValue:
-                      "El límite para la recogida es hasta una hora después de la hora seleccionada, dentro del horario de atención de la sucursal.",
-                  })}
-                </Text>
-              </View>
-            </View>
-          </View>
         </View>
       )}
 
