@@ -71,9 +71,9 @@ export default function TarjetaTerminosCondiciones() {
           "No se realizarán devoluciones de dinero. Las cancelaciones se gestionan mediante saldo a favor para futuras reservas.",
       },
       {
-        titulo: "5. DURACIÓN Y MODIFICACIONES",
+        titulo: "5. HORARIOS Y ENTREGA",
         texto:
-          "La duración de la renta será la acordada en la reserva. Cualquier cambio en fechas, horas o sucursal de entrega/devolución debe ser coordinado con antelación y puede generar ajustes en la tarifa.",
+          "El retiro del vehículo debe efectuarse en la fecha, hora y sede acordadas dentro de los horarios de atención establecidos por la sucursal.",
       },
       {
         titulo: "6. KILOMETRAJE Y EXCEDENTES",
@@ -94,6 +94,11 @@ export default function TarjetaTerminosCondiciones() {
         texto:
           "El presente contrato de alquiler se rige en su totalidad por las leyes de la República de Colombia.",
       },
+      {
+        titulo: "10. POLÍTICA DE DEVOLUCIÓN PUNTUAL",
+        texto:
+          "Por favor entrega el vehículo en la fecha y hora acordadas. Cuentas con 30 minutos de cortesía. Pasado este tiempo, la hora adicional tendrá un valor de $30.000 COP. Si el retraso supera las 2 horas o pasa al siguiente día, se cobrará el valor equivalente a un (1) día completo de alquiler a la tarifa contratada.",
+      },
     ],
     [valorKmFormateado]
   );
@@ -102,7 +107,6 @@ export default function TarjetaTerminosCondiciones() {
     <>
       <View style={[styles.cardForm, { backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF", borderColor: c.border }]}>
         <View style={styles.cardHeaderFila}>
-          <Ionicons name="shield-checkmark-outline" size={14} color={primaryAccent} />
           <Text style={[styles.cardHeaderTitulo, { color: primaryAccent }]}>
             {t("reserva.terminos.politicasSeguridad", { defaultValue: "Políticas y seguridad" })}
           </Text>

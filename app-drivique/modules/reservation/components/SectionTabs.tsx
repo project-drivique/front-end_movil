@@ -37,9 +37,8 @@ export default function TabsSeccion<T extends string = SeccionReserva>({
           <TouchableOpacity
             key={seccion.id}
             style={[styles.tab, activa && styles.tabActivo, deshabilitado && styles.tabDeshabilitado]}
-            onPress={() => !deshabilitado && onCambiarSeccion(seccion.id)}
-            activeOpacity={deshabilitado ? 1 : 0.8}
-            disabled={deshabilitado}
+            onPress={() => onCambiarSeccion(seccion.id)}
+            activeOpacity={0.8}
           >
             <Text
               style={[

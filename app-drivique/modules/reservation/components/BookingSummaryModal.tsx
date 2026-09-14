@@ -12,6 +12,8 @@ import {
   COLOR_MARCA,
   PORCENTAJE_CARGOS_ADMINISTRATIVOS,
   PORCENTAJE_IVA,
+  formatHoraAmPm,
+  getDetalleDuracionAlquiler,
 } from "../constants/reservation.constants";
 import { fmt, fmtPct, diasEntre } from "./BookingSummaryModal.pieces";
 import { useMonedaStore } from "@/store/currencyStore";
@@ -47,6 +49,16 @@ export default function ResumenReservaModal({
   const cuponAplicado = useReservaStore((s) => s.cuponAplicado);
 
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+
+  const infoDuracion = useMemo(() => {
+    return getDetalleDuracionAlquiler(
+      fechasLugar.fechaRetiro,
+      fechasLugar.fechaDevolucion,
+      fechasLugar.horaRetiro,
+      fechasLugar.horaDevolucion,
+      t
+    );
+  }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, fechasLugar.horaRetiro, fechasLugar.horaDevolucion, t]);
 
   const handleCerrar = () => {
     setSeccionEditando(null);
@@ -301,7 +313,7 @@ export default function ResumenReservaModal({
                   {formatFechaResumen(fechasLugar.fechaRetiro)}
                 </Text>
                 <Text style={[styles.valorSecundario, { color: c.textMuted }]}>
-                  {fechasLugar.horaRetiro ? fechasLugar.horaRetiro : "--:--"}
+                  {fechasLugar.horaRetiro ? formatHoraAmPm(fechasLugar.horaRetiro) : "--:--"}
                 </Text>
                 <Text style={[styles.valorUbicacion, { color: c.textPrimary }]}>
                   {getLugarLabel(fechasLugar.lugarRetiro, "entrega")}
@@ -320,10 +332,37 @@ export default function ResumenReservaModal({
                   {formatFechaResumen(fechasLugar.fechaDevolucion)}
                 </Text>
                 <Text style={[styles.valorSecundario, { color: c.textMuted }]}>
-                  {fechasLugar.horaDevolucion ? fechasLugar.horaDevolucion : "--:--"}
+                  {fechasLugar.horaDevolucion ? formatHoraAmPm(fechasLugar.horaDevolucion) : "--:--"}
                 </Text>
                 <Text style={[styles.valorUbicacion, { color: c.textPrimary }]}>
                   {getLugarLabel(fechasLugar.lugarDevolucion, "devolucion")}
+                </Text>
+
+                {!!infoDuracion?.subtituloAnticipada && (
+                  <View style={{ flexDirection: "row", alignItems: "center", marginTop: 5 }}>
+                    <Ionicons name="time-outline" size={13} color={primaryAccent} />
+                    <Text style={{ fontSize: 11.5, fontWeight: "600", color: primaryAccent, marginLeft: 4 }}>
+                      {infoDuracion.subtituloAnticipada}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Aviso de puntualidad en resumen */}
+              <View
+                style={[
+                  styles.avisoPuntualidadResumen,
+                  {
+                    backgroundColor: c.oscuro ? "rgba(245, 158, 11, 0.08)" : "#FFFBEB",
+                    borderColor: c.oscuro ? "rgba(245, 158, 11, 0.25)" : "#FEF3C7",
+                  },
+                ]}
+              >
+                <Ionicons name="time-outline" size={13} color={c.oscuro ? "#FBBF24" : "#D97706"} style={{ marginTop: 1 }} />
+                <Text style={[styles.avisoPuntualidadResumenTexto, { color: c.oscuro ? "#FDE68A" : "#92400E" }]}>
+                  {t("reserva.terminos.politicaDevolucionResumen", {
+                    defaultValue: "30 minutos de cortesía para devolución. Demoras posteriores generan cobro automático de tiempo extra.",
+                  })}
                 </Text>
               </View>
             </View>
@@ -787,5 +826,20 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "800",
+  },
+  avisoPuntualidadResumen: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 8,
+  },
+  avisoPuntualidadResumenTexto: {
+    flex: 1,
+    fontSize: 10.5,
+    lineHeight: 14,
+    fontWeight: "500",
   },
 });

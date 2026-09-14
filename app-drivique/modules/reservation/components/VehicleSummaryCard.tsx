@@ -37,6 +37,31 @@ export default function VehiculoResumenCard({ vehiculo }: Props) {
 
   return (
     <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+      {/* Encabezado con Nombre y Pills antes de la imagen */}
+      <View style={styles.headerTop}>
+        <View style={styles.pillsRow}>
+          <View style={[styles.pillCategoria, { backgroundColor: c.primaryBg }]}>
+            <Text style={[styles.pillCategoriaText, { color: c.primary }]}>
+              {t(`catalogo.categoriaValores.${vehiculo.categoria ?? "Economico"}`, {
+                defaultValue: vehiculo.categoria ?? "Económico",
+              })}
+            </Text>
+          </View>
+
+          <View style={[styles.pillSucursal, { backgroundColor: c.bgInput }]}>
+            <Ionicons name="location-outline" size={12} color={c.textMuted} />
+            <Text style={[styles.pillSucursalText, { color: c.textSecondary }]} numberOfLines={1}>
+              {nombreSucursal}
+            </Text>
+          </View>
+        </View>
+
+        {/* Nombre del vehículo */}
+        <Text style={[styles.nombre, { color: c.textPrimary }]} numberOfLines={1}>
+          {vehiculo.nombre}
+        </Text>
+      </View>
+
       {/* Cabecera con Imagen */}
       <View style={[styles.imagenContenedor, { backgroundColor: c.bgInput }]}>
         {imagen ? (
@@ -66,28 +91,6 @@ export default function VehiculoResumenCard({ vehiculo }: Props) {
 
       {/* Contenido / Información */}
       <View style={styles.cuerpo}>
-        {/* Pills: Categoría y Sucursal */}
-        <View style={styles.pillsRow}>
-          <View style={[styles.pillCategoria, { backgroundColor: c.primaryBg }]}>
-            <Text style={[styles.pillCategoriaText, { color: c.primary }]}>
-              {t(`catalogo.categoriaValores.${vehiculo.categoria ?? "Economico"}`, {
-                defaultValue: vehiculo.categoria ?? "Económico",
-              })}
-            </Text>
-          </View>
-
-          <View style={[styles.pillSucursal, { backgroundColor: c.bgInput }]}>
-            <Ionicons name="location-outline" size={12} color={c.textMuted} />
-            <Text style={[styles.pillSucursalText, { color: c.textSecondary }]} numberOfLines={1}>
-              {nombreSucursal}
-            </Text>
-          </View>
-        </View>
-
-        {/* Nombre del vehículo */}
-        <Text style={[styles.nombre, { color: c.textPrimary }]} numberOfLines={1}>
-          {vehiculo.nombre}
-        </Text>
 
         {/* Fila de características clave */}
         <View style={styles.specsRow}>
@@ -152,6 +155,12 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
     marginBottom: 4,
+  },
+  headerTop: {
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 10,
+    gap: 6,
   },
   imagenContenedor: {
     width: "100%",

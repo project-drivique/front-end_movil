@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,17 +11,19 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { useReservaStore } from "@/store/reservationStore";
-import { COLOR_MARCA, getMetodosPago } from "../constants/reservation.constants";
+import { COLOR_MARCA, formatHoraAmPm, getDetalleDuracionAlquiler, getMetodosPago } from "../constants/reservation.constants";
 import {
   CIUDADES_DATA,
   getCiudadPorSucursal,
   getDireccionSucursal,
   getDisponibilidadVehiculo,
+  getHorarioSucursal,
 } from "@/modules/catalog/constants/catalog.constants";
 import CalendarioRango from "./DateRangeCalendar";
 import SelectorSucursalModal, { OpcionLugar } from "./BranchSelectorModal";
 import SelectorHoraModal from "./TimeSelectorModal";
 import { AlertaPagoEfectivo } from "./CashPaymentAlert";
+import { AlertModal } from "@/components/ui/AlertModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { GRADIENTES } from "@/constants/gradients";
@@ -51,10 +52,30 @@ export default function EditDatesLocationSection({
   const [modalTipo, setModalTipo] = useState<"retiro" | "devolucion" | null>(null);
   const [horaVisible, setHoraVisible] = useState<"retiro" | "devolucion" | null>(null);
   const [alertaEfectivoVisible, setAlertaEfectivoVisible] = useState(false);
+  const [alertaModal, setAlertaModal] = useState<{
+    visible: boolean;
+    icono?: keyof typeof Ionicons.glyphMap;
+    titulo: string;
+    mensaje: string;
+    botones?: { texto: string; onPress: () => void; variante?: "primario" | "secundario" }[];
+  }>({
+    visible: false,
+    titulo: "",
+    mensaje: "",
+  });
 
   const nombreSucursal = vehiculo.sucursal ?? "";
   const ciudadNombre = vehiculo.sucursal ? getCiudadPorSucursal(vehiculo.sucursal) : null;
   const ciudadInfo = ciudadNombre ? CIUDADES_DATA.find((item) => item.nombre === ciudadNombre) : null;
+
+  const horarioRetiro = useMemo(
+    () => getHorarioSucursal(draft.lugarRetiro || nombreSucursal),
+    [draft.lugarRetiro, nombreSucursal]
+  );
+  const horarioDevolucion = useMemo(
+    () => getHorarioSucursal(draft.lugarDevolucion || nombreSucursal),
+    [draft.lugarDevolucion, nombreSucursal]
+  );
 
   const esWompi = draft.metodoPago === "wompi";
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
@@ -135,8 +156,32 @@ export default function EditDatesLocationSection({
     setModalTipo(null);
   };
 
+function getFechaSiguiente(fechaStr: string | null | undefined): string | null {
+  if (!fechaStr) return null;
+  const [y, m, d] = fechaStr.split("-").map(Number);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return fechaStr;
+  const sig = new Date(y, m - 1, d + 1);
+  const ySig = sig.getFullYear();
+  const mSig = String(sig.getMonth() + 1).padStart(2, "0");
+  const dSig = String(sig.getDate()).padStart(2, "0");
+  return `${ySig}-${mSig}-${dSig}`;
+}
+
+  const esUnSoloDia =
+    !!draft.fechaRetiro &&
+    !!draft.fechaDevolucion &&
+    draft.fechaRetiro === draft.fechaDevolucion;
+
+  const fechaDevolucionEfectiva = esUnSoloDia
+    ? getFechaSiguiente(draft.fechaRetiro) || draft.fechaDevolucion
+    : draft.fechaDevolucion;
+
+  const handleAbrirHoraDevolucion = () => {
+    setHoraVisible("devolucion");
+  };
+
   const handleElegirHora = (hora: string) => {
-    const fecha = horaVisible === "retiro" ? draft.fechaRetiro : draft.fechaDevolucion;
+    const fecha = horaVisible === "retiro" ? draft.fechaRetiro : fechaDevolucionEfectiva;
 
     if (fecha) {
       const horasOcupadas = getDisponibilidadVehiculo(vehiculo.id).horasOcupadas?.[fecha] ?? [];
@@ -148,15 +193,39 @@ export default function EditDatesLocationSection({
             ? t("reserva.fechasLugar.horaNoDisponibleMantenimiento")
             : t("reserva.fechasLugar.horaNoDisponibleReservado");
 
-        Alert.alert(t("reserva.fechasLugar.horaNoDisponibleTitulo"), mensaje, [
-          { text: t("reserva.fechasLugar.intentarDeNuevo"), style: "default" },
-        ]);
+        setAlertaModal({
+          visible: true,
+          icono: "alert-circle-outline",
+          titulo: t("reserva.fechasLugar.horaNoDisponibleTitulo"),
+          mensaje,
+          botones: [
+            {
+              texto: t("reserva.fechasLugar.intentarDeNuevo", { defaultValue: "Aceptar" }),
+              variante: "primario",
+              onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+            },
+          ],
+        });
         return;
       }
     }
 
-    if (horaVisible === "retiro") setDraft((prev) => ({ ...prev, horaRetiro: hora }));
-    else if (horaVisible === "devolucion") setDraft((prev) => ({ ...prev, horaDevolucion: hora }));
+    if (horaVisible === "retiro") {
+      setDraft((prev) => ({
+        ...prev,
+        horaRetiro: hora,
+      }));
+    } else if (horaVisible === "devolucion") {
+      const nuevaFechaDev = esUnSoloDia
+        ? getFechaSiguiente(draft.fechaRetiro) || draft.fechaDevolucion
+        : draft.fechaDevolucion;
+
+      setDraft((prev) => ({
+        ...prev,
+        horaDevolucion: hora,
+        fechaDevolucion: nuevaFechaDev,
+      }));
+    }
   };
 
   const labelLugarRetiro =
@@ -172,41 +241,14 @@ export default function EditDatesLocationSection({
   const mostrarDomicilioRetiro = draft.lugarRetiro === "domicilio";
   const mostrarDomicilioDevolucion = draft.lugarDevolucion === "domicilio";
 
-  const textoDuracion = useMemo(() => {
-    if (!draft.fechaRetiro || !draft.fechaDevolucion) return null;
-
-    const diaTexto = (n: number) =>
-      n === 1
-        ? t("reserva.fechasLugar.diaSingular", { defaultValue: "día" })
-        : t("reserva.fechasLugar.diaPlural", { defaultValue: "días" });
-    const horaTexto = (n: number) =>
-      n === 1
-        ? t("reserva.fechasLugar.horaSingular", { defaultValue: "hora" })
-        : t("reserva.fechasLugar.horaPlural", { defaultValue: "horas" });
-
-    if (draft.horaRetiro && draft.horaDevolucion) {
-      const inicio = new Date(`${draft.fechaRetiro}T${draft.horaRetiro}:00`).getTime();
-      const fin = new Date(`${draft.fechaDevolucion}T${draft.horaDevolucion}:00`).getTime();
-      const diffMs = Math.max(fin - inicio, 0);
-      const totalHoras = Math.floor(diffMs / (1000 * 60 * 60));
-      const dias = Math.floor(totalHoras / 24);
-      const horas = totalHoras % 24;
-
-      if (dias > 0 && horas > 0) {
-        return `${dias} ${diaTexto(dias)} - ${horas} ${horaTexto(horas)}`;
-      }
-      if (dias > 0 && horas === 0) {
-        return `${dias} ${diaTexto(dias)}`;
-      }
-      if (dias === 0 && horas > 0) {
-        return `${horas} ${horaTexto(horas)}`;
-      }
-    }
-
-    const d1 = new Date(draft.fechaRetiro + "T00:00:00").getTime();
-    const d2 = new Date(draft.fechaDevolucion + "T00:00:00").getTime();
-    const dias = Math.max(Math.round((d2 - d1) / 86400000), 1);
-    return `${dias} ${diaTexto(dias)}`;
+  const infoDuracion = useMemo(() => {
+    return getDetalleDuracionAlquiler(
+      draft.fechaRetiro,
+      draft.fechaDevolucion,
+      draft.horaRetiro,
+      draft.horaDevolucion,
+      t
+    );
   }, [draft.fechaRetiro, draft.fechaDevolucion, draft.horaRetiro, draft.horaDevolucion, t]);
 
   const handleGuardar = () => {
@@ -480,60 +522,7 @@ export default function EditDatesLocationSection({
             </View>
           )}
 
-          {/* 4. Horas de retiro y devolución */}
-          <View style={[styles.filaDosCols, { marginTop: 4 }]}>
-            <View style={styles.columnaMedia}>
-              <View style={styles.headerConIcono}>
-                <Ionicons name="time" size={14} color={primaryAccent} />
-                <Text style={[styles.tituloHeaderConIcono, { color: primaryAccent }]} numberOfLines={1}>
-                  {t("reserva.fechasLugar.horaDeRetiro")}
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
-                onPress={() => setHoraVisible("retiro")}
-                activeOpacity={0.8}
-              >
-                <View style={styles.selectValorRow}>
-                  <Text
-                    style={[styles.selectValue, { color: draft.horaRetiro ? c.textPrimary : c.textMuted }]}
-                    numberOfLines={1}
-                  >
-                    {draft.horaRetiro ||
-                      t("reserva.fechasLugar.seleccionarHora", { defaultValue: "Seleccionar hora" })}
-                  </Text>
-                  <Ionicons name="chevron-down" size={14} color={c.textMuted} />
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.columnaMedia}>
-              <View style={styles.headerConIcono}>
-                <Ionicons name="time" size={14} color={primaryAccent} />
-                <Text style={[styles.tituloHeaderConIcono, { color: primaryAccent }]} numberOfLines={1}>
-                  {t("reserva.fechasLugar.horaDeDevolucion")}
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
-                onPress={() => setHoraVisible("devolucion")}
-                activeOpacity={0.8}
-              >
-                <View style={styles.selectValorRow}>
-                  <Text
-                    style={[styles.selectValue, { color: draft.horaDevolucion ? c.textPrimary : c.textMuted }]}
-                    numberOfLines={1}
-                  >
-                    {draft.horaDevolucion ||
-                      t("reserva.fechasLugar.seleccionarHora", { defaultValue: "Seleccionar hora" })}
-                  </Text>
-                  <Ionicons name="chevron-down" size={14} color={c.textMuted} />
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* 5. Calendario de disponibilidad */}
+          {/* 4. Calendario de disponibilidad */}
           <View style={styles.headerCalendarioContainer}>
             <Ionicons name="calendar" size={14} color={primaryAccent} style={styles.iconoCalendario} />
             <Text style={[styles.tituloCalendario, { color: primaryAccent }]}>
@@ -551,7 +540,7 @@ export default function EditDatesLocationSection({
             }
           />
 
-          {/* 6. Fechas automáticas seleccionadas */}
+          {/* 5. Fechas automáticas seleccionadas */}
           <View style={[styles.filaDosCols, { marginTop: 14, marginBottom: 0 }]}>
             <View style={styles.columnaMedia}>
               <View style={styles.headerConIcono}>
@@ -592,8 +581,63 @@ export default function EditDatesLocationSection({
             </View>
           </View>
 
+          {/* 6. Horas de retiro y devolución */}
+          <View style={[styles.filaDosCols, { marginTop: 12, marginBottom: 0 }]}>
+            <View style={styles.columnaMedia}>
+              <View style={styles.headerConIcono}>
+                <Ionicons name="time" size={14} color={primaryAccent} />
+                <Text style={[styles.tituloHeaderConIcono, { color: primaryAccent }]} numberOfLines={1}>
+                  {t("reserva.fechasLugar.horaDeRetiro")}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
+                onPress={() => setHoraVisible("retiro")}
+                activeOpacity={0.8}
+              >
+                <View style={styles.selectValorRow}>
+                  <Text
+                    style={[styles.selectValue, { color: draft.horaRetiro ? c.textPrimary : c.textMuted }]}
+                    numberOfLines={1}
+                  >
+                    {draft.horaRetiro
+                      ? formatHoraAmPm(draft.horaRetiro)
+                      : t("reserva.fechasLugar.seleccionarHora", { defaultValue: "Seleccionar hora" })}
+                  </Text>
+                  <Ionicons name="chevron-down" size={14} color={c.textMuted} />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.columnaMedia}>
+              <View style={styles.headerConIcono}>
+                <Ionicons name="time" size={14} color={primaryAccent} />
+                <Text style={[styles.tituloHeaderConIcono, { color: primaryAccent }]} numberOfLines={1}>
+                  {t("reserva.fechasLugar.horaDeDevolucion")}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
+                onPress={handleAbrirHoraDevolucion}
+                activeOpacity={0.8}
+              >
+                <View style={styles.selectValorRow}>
+                  <Text
+                    style={[styles.selectValue, { color: draft.horaDevolucion ? c.textPrimary : c.textMuted }]}
+                    numberOfLines={1}
+                  >
+                    {draft.horaDevolucion
+                      ? formatHoraAmPm(draft.horaDevolucion)
+                      : t("reserva.fechasLugar.seleccionarHora", { defaultValue: "Seleccionar hora" })}
+                  </Text>
+                  <Ionicons name="chevron-down" size={14} color={c.textMuted} />
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+
           {/* 7. Strip Duración del alquiler */}
-          {!!textoDuracion && (
+          {!!infoDuracion && (
             <View
               style={[
                 styles.duracionStrip,
@@ -602,15 +646,39 @@ export default function EditDatesLocationSection({
                   : { backgroundColor: "rgba(47, 78, 162, 0.04)", borderColor: "rgba(47, 78, 162, 0.15)" },
               ]}
             >
-              <View style={styles.duracionLeftRow}>
-                <Ionicons name="hourglass-outline" size={16} color={primaryAccent} />
-                <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
-                  {t("reserva.fechasLugar.duracionAlquiler", { defaultValue: "Duración del alquiler" })}
-                </Text>
+              <View style={{ flex: 1 }}>
+                <View style={styles.duracionFilaSuperior}>
+                  <View style={styles.duracionLeftRow}>
+                    <Ionicons name="hourglass-outline" size={15} color={primaryAccent} />
+                    <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
+                      {t("reserva.fechasLugar.duracionAlquiler", { defaultValue: "Duración del alquiler" })}
+                    </Text>
+                  </View>
+                  <Text style={[styles.duracionValor, { color: primaryAccent }]}>{infoDuracion.titulo}</Text>
+                </View>
+
+                {!!infoDuracion.tiempoUso && (
+                  <View
+                    style={[
+                      styles.duracionFilaInferior,
+                      { borderTopColor: c.oscuro ? "rgba(255, 255, 255, 0.08)" : "rgba(47, 78, 162, 0.12)" },
+                    ]}
+                  >
+                    <View style={styles.duracionLeftRow}>
+                      <Ionicons name="time-outline" size={15} color={primaryAccent} />
+                      <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
+                        {t("reserva.fechasLugar.devolucionAnticipada", { defaultValue: "Devolución anticipada" })}
+                      </Text>
+                    </View>
+                    <Text style={[styles.duracionValor, { color: primaryAccent }]} numberOfLines={1}>
+                      {infoDuracion.tiempoUso}
+                    </Text>
+                  </View>
+                )}
               </View>
-              <Text style={[styles.duracionValor, { color: primaryAccent }]}>{textoDuracion}</Text>
             </View>
           )}
+
         </View>
       </ScrollView>
 
@@ -657,6 +725,33 @@ export default function EditDatesLocationSection({
 
       <SelectorHoraModal
         visible={horaVisible !== null}
+        fecha={horaVisible === "retiro" ? draft.fechaRetiro : fechaDevolucionEfectiva}
+        minHora={null}
+        maxHora={
+          horaVisible === "devolucion" && draft.horaRetiro
+            ? draft.horaRetiro
+            : null
+        }
+        subtitulo={
+          horaVisible === "devolucion" && esUnSoloDia && draft.fechaRetiro
+            ? `Devolución: ${fechaDevolucionEfectiva} (Día siguiente)`
+            : null
+        }
+        alertaInformativa={
+          horaVisible === "devolucion" && draft.horaRetiro
+            ? {
+                titulo: t("reserva.fechasLugar.alertaHoraDevolucionTitulo", {
+                  defaultValue: `Hora máxima de devolución: ${formatHoraAmPm(draft.horaRetiro)}`,
+                }),
+                mensaje: t("reserva.fechasLugar.alertaHoraDevolucionMensaje", {
+                  defaultValue: `Para cumplir con los ${infoDuracion?.titulo ?? "días"} de tu reserva (retiro a las ${formatHoraAmPm(draft.horaRetiro)}), la hora límite de entrega es a las ${formatHoraAmPm(draft.horaRetiro)}. Si seleccionas una hora anterior, se calculará devolución anticipada.`,
+                }),
+              }
+            : null
+        }
+        horaApertura={horaVisible === "retiro" ? horarioRetiro.horaApertura : horarioDevolucion.horaApertura}
+        horaCierre={horaVisible === "retiro" ? horarioRetiro.horaCierre : horarioDevolucion.horaCierre}
+        nombreSucursal={horaVisible === "retiro" ? (draft.lugarRetiro || nombreSucursal) : (draft.lugarDevolucion || nombreSucursal)}
         horaSeleccionada={horaVisible === "retiro" ? draft.horaRetiro : draft.horaDevolucion}
         onSeleccionar={handleElegirHora}
         onCerrar={() => setHoraVisible(null)}
@@ -668,6 +763,15 @@ export default function EditDatesLocationSection({
         ciudad={ciudadEntregaNombre || ciudadNombre}
         direccion={getDireccionSucursal(nombreSucursal)}
         onCerrar={() => setAlertaEfectivoVisible(false)}
+      />
+
+      <AlertModal
+        visible={alertaModal.visible}
+        icono={alertaModal.icono}
+        titulo={alertaModal.titulo}
+        mensaje={alertaModal.mensaje}
+        botones={alertaModal.botones}
+        onCerrar={() => setAlertaModal((p) => ({ ...p, visible: false }))}
       />
     </View>
   );
@@ -815,8 +919,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     letterSpacing: 0.2,
-    flex: 1,
     lineHeight: 18,
+    flex: 1,
   },
   domicilioCard: {
     borderWidth: 1,
@@ -877,27 +981,46 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   duracionStrip: {
+    backgroundColor: "rgba(47, 78, 162, 0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(47, 78, 162, 0.15)",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 10,
+  },
+  duracionFilaSuperior: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginTop: 10,
+    gap: 8,
+  },
+  duracionFilaInferior: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    marginTop: 7,
+    paddingTop: 7,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   duracionLeftRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
+    flexShrink: 0,
   },
   duracionLabel: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: "600",
+    color: "#64748B",
   },
   duracionValor: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: "800",
+    color: COLOR_MARCA,
+    textAlign: "right",
+    flexShrink: 1,
   },
   footer: {
     borderTopWidth: 1,
