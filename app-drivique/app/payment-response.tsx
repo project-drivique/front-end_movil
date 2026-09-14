@@ -550,8 +550,26 @@ export default function PagoRespuestaScreen() {
     horaDevolucion: (reserva as any)?.horaDevolucion || "10:00",
     lugarRetiro: reserva?.lugarRetiro || "Sucursal Principal",
     lugarDevolucion: reserva?.lugarDevolucion || "Sucursal Principal",
+    direccionRetiro: (reserva as any)?.direccionRetiro || "",
+    barrioRetiro: (reserva as any)?.barrioRetiro || "",
+    referenciasRetiro: (reserva as any)?.referenciasRetiro || "",
+    direccionDevolucion: (reserva as any)?.direccionDevolucion || "",
+    barrioDevolucion: (reserva as any)?.barrioDevolucion || "",
+    referenciasDevolucion: (reserva as any)?.referenciasDevolucion || "",
     metodoPago: (reserva?.metodoPago as any) || "wompi",
   }) as DatosFechasLugar;
+
+  const esDomicilioRetiro =
+    fechasLugarEfectivas?.lugarRetiro === "domicilio" ||
+    reserva?.lugarRetiro === "domicilio" ||
+    (reserva?.fechasLugarSnapshot as any)?.lugarRetiro === "domicilio";
+
+  const esDomicilioDevolucion =
+    fechasLugarEfectivas?.lugarDevolucion === "domicilio" ||
+    reserva?.lugarDevolucion === "domicilio" ||
+    (reserva?.fechasLugarSnapshot as any)?.lugarDevolucion === "domicilio";
+
+  const tieneDomicilio = esDomicilioRetiro || esDomicilioDevolucion;
 
   const planesEfectivos: DatosPlanes = (planesSnap || {
     proteccion: reserva?.proteccion || "Básica",
@@ -773,6 +791,147 @@ export default function PagoRespuestaScreen() {
           />
         </View>
       </View>
+
+      {/* Tarjeta Informativa de Servicio a Domicilio (solo si retiro o devolución o ambos es a domicilio) */}
+      {tieneDomicilio && (
+        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+          {/* Header */}
+          <View style={styles.domicilioDetalleHeader}>
+            <View
+              style={[
+                styles.domicilioIconoHeaderWrap,
+                {
+                  backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.15)" : "rgba(47, 78, 162, 0.1)",
+                  borderColor: primaryAccent,
+                },
+              ]}
+            >
+              <Ionicons name="home" size={20} color={primaryAccent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.domicilioDetalleTitulo, { color: c.textPrimary }]}>
+                {esDomicilioRetiro && esDomicilioDevolucion
+                  ? t("reserva.fechasLugar.entregaYDevolucionDomicilio", { defaultValue: "Entrega y Devolución a Domicilio" })
+                  : esDomicilioRetiro
+                  ? t("reserva.fechasLugar.entregaDomicilio", { defaultValue: "Entrega a Domicilio" })
+                  : t("reserva.fechasLugar.devolucionDomicilio", { defaultValue: "Devolución a Domicilio" })}
+              </Text>
+              <Text style={[styles.domicilioDetalleSubtitulo, { color: c.textSecondary }]}>
+                {t("reserva.fechasLugar.domicilioSubtitulo", {
+                  defaultValue: "Detalles de ubicación registrados para el servicio puerta a puerta",
+                })}
+              </Text>
+            </View>
+          </View>
+
+          {/* Bloque Entrega a Domicilio */}
+          {esDomicilioRetiro && (
+            <View
+              style={[
+                styles.domicilioBloque,
+                {
+                  backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
+                  borderColor: c.border,
+                  marginBottom: esDomicilioDevolucion ? 12 : 0,
+                },
+              ]}
+            >
+              <View style={styles.domicilioBloqueTituloRow}>
+                <View style={[styles.domicilioPill, { backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.2)" : "rgba(47, 78, 162, 0.12)" }]}>
+                  <Ionicons name="arrow-down-circle" size={15} color={primaryAccent} />
+                  <Text style={[styles.domicilioPillTexto, { color: primaryAccent }]}>
+                    {t("reserva.fechasLugar.infoEntregaDomicilio", { defaultValue: "Dirección de Entrega (Retiro)" })}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.domicilioFilaInfo}>
+                <Text style={[styles.domicilioEtiqueta, { color: c.textSecondary }]}>
+                  {t("reserva.fechasLugar.direccion", { defaultValue: "Dirección" })}:
+                </Text>
+                <Text style={[styles.domicilioValor, { color: c.textPrimary }]}>
+                  {fechasLugarEfectivas?.direccionRetiro || (reserva as any)?.direccionRetiro || "Dirección registrada"}
+                </Text>
+              </View>
+
+              {Boolean(fechasLugarEfectivas?.barrioRetiro || (reserva as any)?.barrioRetiro) && (
+                <View style={styles.domicilioFilaInfo}>
+                  <Text style={[styles.domicilioEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.fechasLugar.barrio", { defaultValue: "Barrio / Sector" })}:
+                  </Text>
+                  <Text style={[styles.domicilioValor, { color: c.textPrimary }]}>
+                    {fechasLugarEfectivas?.barrioRetiro || (reserva as any)?.barrioRetiro}
+                  </Text>
+                </View>
+              )}
+
+              {Boolean(fechasLugarEfectivas?.referenciasRetiro || (reserva as any)?.referenciasRetiro) && (
+                <View style={styles.domicilioFilaInfo}>
+                  <Text style={[styles.domicilioEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.fechasLugar.referenciasEntrega", { defaultValue: "Indicaciones" })}:
+                  </Text>
+                  <Text style={[styles.domicilioValor, { color: c.textPrimary }]}>
+                    {fechasLugarEfectivas?.referenciasRetiro || (reserva as any)?.referenciasRetiro}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Bloque Devolución a Domicilio */}
+          {esDomicilioDevolucion && (
+            <View
+              style={[
+                styles.domicilioBloque,
+                {
+                  backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
+                  borderColor: c.border,
+                },
+              ]}
+            >
+              <View style={styles.domicilioBloqueTituloRow}>
+                <View style={[styles.domicilioPill, { backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.2)" : "rgba(47, 78, 162, 0.12)" }]}>
+                  <Ionicons name="arrow-up-circle" size={15} color={primaryAccent} />
+                  <Text style={[styles.domicilioPillTexto, { color: primaryAccent }]}>
+                    {t("reserva.fechasLugar.infoDevolucionDomicilio", { defaultValue: "Dirección de Devolución" })}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.domicilioFilaInfo}>
+                <Text style={[styles.domicilioEtiqueta, { color: c.textSecondary }]}>
+                  {t("reserva.fechasLugar.direccion", { defaultValue: "Dirección" })}:
+                </Text>
+                <Text style={[styles.domicilioValor, { color: c.textPrimary }]}>
+                  {fechasLugarEfectivas?.direccionDevolucion || (reserva as any)?.direccionDevolucion || "Dirección registrada"}
+                </Text>
+              </View>
+
+              {Boolean(fechasLugarEfectivas?.barrioDevolucion || (reserva as any)?.barrioDevolucion) && (
+                <View style={styles.domicilioFilaInfo}>
+                  <Text style={[styles.domicilioEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.fechasLugar.barrio", { defaultValue: "Barrio / Sector" })}:
+                  </Text>
+                  <Text style={[styles.domicilioValor, { color: c.textPrimary }]}>
+                    {fechasLugarEfectivas?.barrioDevolucion || (reserva as any)?.barrioDevolucion}
+                  </Text>
+                </View>
+              )}
+
+              {Boolean(fechasLugarEfectivas?.referenciasDevolucion || (reserva as any)?.referenciasDevolucion) && (
+                <View style={styles.domicilioFilaInfo}>
+                  <Text style={[styles.domicilioEtiqueta, { color: c.textSecondary }]}>
+                    {t("reserva.fechasLugar.referenciasDevolucion", { defaultValue: "Indicaciones" })}:
+                  </Text>
+                  <Text style={[styles.domicilioValor, { color: c.textPrimary }]}>
+                    {fechasLugarEfectivas?.referenciasDevolucion || (reserva as any)?.referenciasDevolucion}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+      )}
 
       {esPendienteEfectivo && (
         <View style={[styles.card, styles.cardEfectivo, { backgroundColor: c.bgCard, borderColor: c.border }]}>
@@ -1941,5 +2100,67 @@ const styles = StyleSheet.create({
     height: 1,
     width: "100%",
     opacity: 0.6,
+  },
+  domicilioDetalleHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 14,
+  },
+  domicilioIconoHeaderWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  domicilioDetalleTitulo: {
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  domicilioDetalleSubtitulo: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  domicilioBloque: {
+    width: "100%",
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 12,
+  },
+  domicilioBloqueTituloRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  domicilioPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  domicilioPillTexto: {
+    fontSize: 12.5,
+    fontWeight: "700",
+  },
+  domicilioFilaInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingVertical: 4,
+    gap: 10,
+  },
+  domicilioEtiqueta: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  domicilioValor: {
+    fontSize: 12.5,
+    fontWeight: "700",
+    flex: 1,
+    textAlign: "right",
   },
 });
