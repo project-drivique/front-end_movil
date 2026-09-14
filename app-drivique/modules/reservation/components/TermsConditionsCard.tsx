@@ -107,7 +107,6 @@ export default function TarjetaTerminosCondiciones() {
     <>
       <View style={[styles.cardForm, { backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF", borderColor: c.border }]}>
         <View style={styles.cardHeaderFila}>
-          <Ionicons name="shield-checkmark-outline" size={14} color={primaryAccent} />
           <Text style={[styles.cardHeaderTitulo, { color: primaryAccent }]}>
             {t("reserva.terminos.politicasSeguridad", { defaultValue: "Políticas y seguridad" })}
           </Text>
