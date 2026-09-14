@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { COLOR_MARCA, VEHICULOS_MOCK } from "@/modules/catalog/constants/catalog.constants";
 import { GRADIENTES } from "@/constants/gradients";
 import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
@@ -28,6 +29,7 @@ import {
   DatosFechasLugar,
   DatosPersonales,
   DatosPlanes,
+  TipoKilometraje,
 } from "@/modules/reservation/types/reservation.types";
 import {
   ContratoGuardado,
@@ -112,7 +114,7 @@ export default function ContratoScreen() {
     placa: vehiculoSnap?.placa || (reserva as any)?.vehiculoPlaca || vehiculoCatalogo?.placa || "ABC-123",
     color: vehiculoSnap?.color || vehiculoCatalogo?.color || "Blanco Perla",
     año: vehiculoSnap?.año || vehiculoCatalogo?.año || 2024,
-    sucursal: vehiculoSnap?.sucursal || reserva?.lugarRetiro || vehiculoCatalogo?.sucursal || "Alamo Bogotá - Aeropuerto",
+    sucursal: vehiculoSnap?.sucursal || (reserva?.lugarRetiro as string) || vehiculoCatalogo?.sucursal || "Alamo Bogotá - Aeropuerto",
     precio: reserva?.total || vehiculoSnap?.precio || vehiculoCatalogo?.precio || 85000,
   } as Vehiculo;
 
@@ -127,24 +129,24 @@ export default function ContratoScreen() {
   };
 
   const fechasLugarEfectivas: DatosFechasLugar = {
-    fechaRetiro: fechasLugarSnap?.fechaRetiro || reserva?.fechaRetiro || new Date().toISOString().split("T")[0],
-    fechaDevolucion: fechasLugarSnap?.fechaDevolucion || reserva?.fechaDevolucion || new Date().toISOString().split("T")[0],
-    horaRetiro: fechasLugarSnap?.horaRetiro || reserva?.horaRetiro || (reserva as any)?.horaRetiro || "10:00",
-    horaDevolucion: fechasLugarSnap?.horaDevolucion || reserva?.horaDevolucion || (reserva as any)?.horaDevolucion || "10:00",
-    lugarRetiro: fechasLugarSnap?.lugarRetiro || reserva?.lugarRetiro || vehiculoEfectivo.sucursal || "Alamo Bogotá - Aeropuerto",
-    lugarDevolucion: fechasLugarSnap?.lugarDevolucion || reserva?.lugarDevolucion || vehiculoEfectivo.sucursal || "Alamo Bogotá - Aeropuerto",
-    direccionRetiro: fechasLugarSnap?.direccionRetiro || "",
-    barrioRetiro: fechasLugarSnap?.barrioRetiro || "",
-    referenciasRetiro: fechasLugarSnap?.referenciasRetiro || "",
-    direccionDevolucion: fechasLugarSnap?.direccionDevolucion || "",
-    barrioDevolucion: fechasLugarSnap?.barrioDevolucion || "",
-    referenciasDevolucion: fechasLugarSnap?.referenciasDevolucion || "",
-    metodoPago: fechasLugarSnap?.metodoPago || (reserva?.metodoPago as any) || "wompi",
+    fechaRetiro: (fechasLugarSnap?.fechaRetiro as string) || (reserva?.fechaRetiro as string) || new Date().toISOString().split("T")[0],
+    fechaDevolucion: (fechasLugarSnap?.fechaDevolucion as string) || (reserva?.fechaDevolucion as string) || new Date().toISOString().split("T")[0],
+    horaRetiro: (fechasLugarSnap?.horaRetiro as string) || (reserva?.horaRetiro as string) || (reserva as any)?.horaRetiro || "10:00",
+    horaDevolucion: (fechasLugarSnap?.horaDevolucion as string) || (reserva?.horaDevolucion as string) || (reserva as any)?.horaDevolucion || "10:00",
+    lugarRetiro: (fechasLugarSnap?.lugarRetiro as string) || (reserva?.lugarRetiro as string) || vehiculoEfectivo.sucursal || "Alamo Bogotá - Aeropuerto",
+    lugarDevolucion: (fechasLugarSnap?.lugarDevolucion as string) || (reserva?.lugarDevolucion as string) || vehiculoEfectivo.sucursal || "Alamo Bogotá - Aeropuerto",
+    direccionRetiro: (fechasLugarSnap?.direccionRetiro as string) || "",
+    barrioRetiro: (fechasLugarSnap?.barrioRetiro as string) || "",
+    referenciasRetiro: (fechasLugarSnap?.referenciasRetiro as string) || "",
+    direccionDevolucion: (fechasLugarSnap?.direccionDevolucion as string) || "",
+    barrioDevolucion: (fechasLugarSnap?.barrioDevolucion as string) || "",
+    referenciasDevolucion: (fechasLugarSnap?.referenciasDevolucion as string) || "",
+    metodoPago: (fechasLugarSnap?.metodoPago as any) || (reserva?.metodoPago as any) || "wompi",
   };
 
   const planesEfectivos: DatosPlanes = {
-    proteccion: planesSnap?.proteccion || reserva?.proteccion || "Básica",
-    tipoKilometraje: planesSnap?.tipoKilometraje || reserva?.tipoKilometraje || "ilimitado",
+    proteccion: (planesSnap?.proteccion as string) || (reserva?.proteccion as string) || "Básica",
+    tipoKilometraje: ((planesSnap?.tipoKilometraje as TipoKilometraje) || (reserva?.tipoKilometraje as TipoKilometraje) || "ilimitado") as TipoKilometraje,
     serviciosSeleccionados: planesSnap?.serviciosSeleccionados || [],
   };
 
