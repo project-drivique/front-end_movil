@@ -777,23 +777,15 @@ export default function EditDatesLocationSection({
       <SelectorHoraModal
         visible={horaVisible !== null}
         fecha={horaVisible === "retiro" ? draft.fechaRetiro : draft.fechaDevolucion}
-        minHora={
-          horaVisible === "devolucion" && draft.fechaRetiro === draft.fechaDevolucion
-            ? draft.horaRetiro
-            : null
-        }
+        minHora={null}
         maxHora={
-          horaVisible === "devolucion" &&
-          draft.fechaRetiro !== draft.fechaDevolucion &&
-          draft.horaRetiro
+          horaVisible === "devolucion" && draft.horaRetiro
             ? draft.horaRetiro
             : null
         }
         subtitulo={null}
         alertaInformativa={
-          horaVisible === "devolucion" &&
-          draft.fechaRetiro !== draft.fechaDevolucion &&
-          draft.horaRetiro
+          horaVisible === "devolucion" && draft.horaRetiro
             ? {
                 titulo: t("reserva.fechasLugar.alertaHoraDevolucionTitulo", {
                   defaultValue: `Hora máxima de devolución: ${formatHoraAmPm(draft.horaRetiro)}`,

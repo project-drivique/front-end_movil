@@ -652,23 +652,15 @@ export default function FormFechasLugar({ vehiculo }: Props) {
       <SelectorHoraModal
         visible={horaVisible !== null}
         fecha={horaVisible === "retiro" ? fechasLugar.fechaRetiro : fechasLugar.fechaDevolucion}
-        minHora={
-          horaVisible === "devolucion" && fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion
-            ? fechasLugar.horaRetiro
-            : null
-        }
+        minHora={null}
         maxHora={
-          horaVisible === "devolucion" &&
-          fechasLugar.fechaRetiro !== fechasLugar.fechaDevolucion &&
-          fechasLugar.horaRetiro
+          horaVisible === "devolucion" && fechasLugar.horaRetiro
             ? fechasLugar.horaRetiro
             : null
         }
         subtitulo={null}
         alertaInformativa={
-          horaVisible === "devolucion" &&
-          fechasLugar.fechaRetiro !== fechasLugar.fechaDevolucion &&
-          fechasLugar.horaRetiro
+          horaVisible === "devolucion" && fechasLugar.horaRetiro
             ? {
                 titulo: t("reserva.fechasLugar.alertaHoraDevolucionTitulo", {
                   defaultValue: `Hora máxima de devolución: ${formatHoraAmPm(fechasLugar.horaRetiro)}`,
