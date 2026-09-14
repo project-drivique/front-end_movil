@@ -1352,6 +1352,30 @@ export default function PagoRespuestaScreen() {
         </View>
       )}
 
+        {/* Botón Reportar Incidencia (solo cuando la reserva está en curso o finalizada) */}
+        {(grupo === "en_curso" || grupo === "finalizada") && (
+          <TouchableOpacity
+            style={[styles.btnDescargarWrap, { borderColor: c.border, backgroundColor: c.bgCard, marginBottom: 16 }]}
+            onPress={() => {
+              router.push({
+                pathname: "/(tabs)/support",
+                params: {
+                  reservaId: reserva.referencia,
+                  vehiculoNombre: reserva.vehiculoNombre,
+                  ...(vehiculoSnap?.placa ? { placa: vehiculoSnap.placa } : {}),
+                  tab: "reportar",
+                },
+              } as any);
+            }}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="build-outline" size={17} color={primaryAccent} />
+            <Text style={{ fontSize: 13.5, fontWeight: "700", color: primaryAccent }}>
+              {t("tabs.hacerReporte", { defaultValue: "Reportar Incidencia o Asistencia" })}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         </ScrollView>
       </KeyboardAvoidingView>
 

@@ -654,7 +654,7 @@ function TarjetaReserva({
             <Text style={[styles.tarjetaTotal, { color: c.textPrimary }]}>{fmt(reserva.total)}</Text>
           </View>
 
-          {(grupo === "confirmada" || grupo === "en_curso") && (
+          {(grupo === "en_curso" || grupo === "finalizada") && (
             <TouchableOpacity
               style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
               onPress={(e) => {
@@ -665,6 +665,7 @@ function TarjetaReserva({
                     reservaId: reserva.referencia,
                     vehiculoNombre: reserva.vehiculoNombre,
                     ...(vehiculoSnap?.placa ? { placa: vehiculoSnap.placa } : {}),
+                    tab: "reportar",
                   },
                 } as any);
               }}
