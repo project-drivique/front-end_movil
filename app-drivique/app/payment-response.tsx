@@ -15,6 +15,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -25,7 +26,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { GRADIENTES } from "@/constants/gradients";
-import { COLOR_MARCA, getCiudadPorSucursal, getDireccionSucursal } from "@/modules/catalog/constants/catalog.constants";
+import { COLOR_MARCA, VEHICULOS_MOCK, getCiudadPorSucursal, getDireccionSucursal } from "@/modules/catalog/constants/catalog.constants";
 import {
   calcularGrupoReserva,
   ReservaGuardada,
@@ -40,13 +41,13 @@ import {
   DatosPlanes,
 } from "@/modules/reservation/types/reservation.types";
 import { fechaCorta, fmt } from "@/modules/reservation/components/BookingSummaryModal.pieces";
+import { formatHoraAmPm } from "@/modules/reservation/constants/reservation.constants";
 import { contratoService, ContratoGuardado } from "@/modules/reservation/services/contractService";
 import {
   compartirContratoPdf,
   crearTextosContrato,
   generarContratoPdf,
 } from "@/modules/reservation/services/pdfService";
-import { PasswordInput } from "@/components/ui/PasswordInput";
 import {
   aCentavos,
   construirUrlCheckout,
@@ -54,6 +55,10 @@ import {
   WompiTransactionResponse,
 } from "@/modules/reservation/services/wompiService";
 import { documentosService, RegistroDocumentos } from "@/modules/reservation/services/documentsService";
+import { ModalCalificar } from "@/modules/reservation/components/ModalCalificar";
+import { ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
+import { AlertModal } from "@/components/ui/AlertModal";
+import { useUsuarioStore } from "@/store/userStore";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 
@@ -75,6 +80,15 @@ export default function PagoRespuestaScreen() {
   const [errorClave, setErrorClave] = useState("");
   const [mostrarFirma, setMostrarFirma] = useState(false);
   const [mostrarLectorContrato, setMostrarLectorContrato] = useState(false);
+  const [resenaGuardada, setResenaGuardada] = useState<ResenaGuardada | null>(null);
+  const [modalCalificarVisible, setModalCalificarVisible] = useState(false);
+  const [alertGuardadoVisible, setAlertGuardadoVisible] = useState(false);
+
+  const usuarioStore = useUsuarioStore((s) => s.usuario);
+  const usuarioKey = usuarioStore.id || usuarioStore.correo || usuarioStore.numeroDocumento || "cliente";
+  const usuarioNombre = usuarioStore.nombres
+    ? `${usuarioStore.nombres} ${usuarioStore.apellidos || ""}`.trim()
+    : "Cliente";
 
   useEffect(() => {
     let activo = true;
@@ -174,6 +188,19 @@ export default function PagoRespuestaScreen() {
       activo = false;
     };
   }, [ref, id]);
+
+  useEffect(() => {
+    if (!reserva?.referencia) return;
+    const grp = calcularGrupoReserva(reserva);
+    if (grp !== "finalizada") return;
+    let activo = true;
+    resenaService.obtenerPorReserva(reserva.referencia, usuarioKey).then((r) => {
+      if (activo) setResenaGuardada(r);
+    });
+    return () => {
+      activo = false;
+    };
+  }, [reserva, usuarioKey]);
 
   const irAMisReservas = () => router.replace("/(tabs)/my-bookings" as any);
   const irAlInicio = () => router.replace("/(tabs)/catalog" as any);
@@ -332,51 +359,99 @@ export default function PagoRespuestaScreen() {
     const fechasLugarSnap2 = reserva.fechasLugarSnapshot as DatosFechasLugar | undefined;
     const planesSnap2 = reserva.planesSnapshot as DatosPlanes | undefined;
 
-    if (vehiculoSnap2 && datosPersonalesSnap2 && fechasLugarSnap2 && planesSnap2) {
-      const nombreLicenciaSnap2 =
-        datosDocumentosSnap2?.licenciaConduccion?.nombre ||
-        docsUsuario?.licencia?.nombre ||
-        "Licencia verificada en perfil";
-      const nombreCedulaSnap2 =
-        datosDocumentosSnap2?.cedulaFrente?.nombre ||
-        docsUsuario?.identificacion?.nombre ||
-        null;
+    const vehiculoCatalogo2 = VEHICULOS_MOCK.find(
+      (v) => v.id === reserva?.vehiculoId || v.nombre === reserva?.vehiculoNombre
+    );
 
-      const datosDocumentosParaFirma: DatosDocumentos = {
-        cedulaFrente: nombreCedulaSnap2 ? { nombre: nombreCedulaSnap2 } : null,
-        cedulaReverso: datosDocumentosSnap2?.cedulaReverso ?? null,
-        licenciaConduccion: { nombre: nombreLicenciaSnap2 },
-      };
+    const vehiculoParaFirma: Vehiculo = {
+      ...(vehiculoCatalogo2 || {}),
+      ...(vehiculoSnap2 || {}),
+      id: vehiculoSnap2?.id || reserva?.vehiculoId || vehiculoCatalogo2?.id || 1,
+      nombre: vehiculoSnap2?.nombre || reserva?.vehiculoNombre || vehiculoCatalogo2?.nombre || "Toyota Corolla 2024",
+      marca: vehiculoSnap2?.marca || vehiculoCatalogo2?.marca || "Toyota",
+      modelo: vehiculoSnap2?.modelo || vehiculoCatalogo2?.modelo || "Corolla 2024",
+      placa: vehiculoSnap2?.placa || (reserva as any)?.vehiculoPlaca || vehiculoCatalogo2?.placa || "ABC-123",
+      color: vehiculoSnap2?.color || vehiculoCatalogo2?.color || "Blanco Perla",
+      año: vehiculoSnap2?.año || vehiculoCatalogo2?.año || 2024,
+      sucursal: vehiculoSnap2?.sucursal || reserva?.lugarRetiro || vehiculoCatalogo2?.sucursal || "Alamo Bogotá - Aeropuerto",
+      precio: reserva?.total || vehiculoSnap2?.precio || vehiculoCatalogo2?.precio || 85000,
+    } as Vehiculo;
 
-      return (
-        <View style={{ flex: 1, backgroundColor: c.bg }}>
-          <HeaderDetalle
-            insets={insets}
-            c={c}
-            titulo={t("reserva.contrato.title", { defaultValue: "Contrato de Alquiler" })}
-            onVolver={() => setMostrarFirma(false)}
-          />
-          <FirmaContrato
-            vehiculo={vehiculoSnap2}
-            datosPersonales={datosPersonalesSnap2}
-            datosDocumentos={datosDocumentosParaFirma}
-            fechasLugar={fechasLugarSnap2}
-            planes={planesSnap2}
-            total={reserva.total}
-            referencia={reserva.referencia}
-            onFirmado={async () => {
-              await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
-              const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
-              const contratoNuevo = await contratoService.obtenerPorReserva(reserva.referencia);
-              setReserva(actualizada ?? null);
-              setContratoActual(contratoNuevo);
-              setContratoFirmado(true);
-              setMostrarFirma(false);
-            }}
-          />
-        </View>
-      );
-    }
+    const datosPersonalesParaFirma: DatosPersonales = {
+      nombreCompleto: datosPersonalesSnap2?.nombreCompleto || (reserva as any)?.nombreCompleto || usuarioNombre || "Cliente Drivique",
+      tipoDocumento: datosPersonalesSnap2?.tipoDocumento || (reserva as any)?.tipoDocumento || "CC",
+      numeroDocumento: datosPersonalesSnap2?.numeroDocumento || (reserva as any)?.numeroDocumento || "1075228306",
+      correo: datosPersonalesSnap2?.correo || (reserva as any)?.correo || usuarioStore?.correo || "cliente@drivique.com",
+      celular: datosPersonalesSnap2?.celular || (reserva as any)?.celular || "3000000000",
+      nacionalidad: datosPersonalesSnap2?.nacionalidad || (reserva as any)?.nacionalidad || "Colombia",
+      terminosAceptados: true,
+    };
+
+    const fechasLugarParaFirma: DatosFechasLugar = {
+      fechaRetiro: (fechasLugarSnap2?.fechaRetiro as string) || (reserva?.fechaRetiro as string) || new Date().toISOString().split("T")[0],
+      fechaDevolucion: (fechasLugarSnap2?.fechaDevolucion as string) || (reserva?.fechaDevolucion as string) || new Date().toISOString().split("T")[0],
+      horaRetiro: (fechasLugarSnap2?.horaRetiro as string) || (reserva?.horaRetiro as string) || (reserva as any)?.horaRetiro || "10:00",
+      horaDevolucion: (fechasLugarSnap2?.horaDevolucion as string) || (reserva?.horaDevolucion as string) || (reserva as any)?.horaDevolucion || "10:00",
+      lugarRetiro: (fechasLugarSnap2?.lugarRetiro as string) || (reserva?.lugarRetiro as string) || vehiculoParaFirma.sucursal || "Alamo Bogotá - Aeropuerto",
+      lugarDevolucion: (fechasLugarSnap2?.lugarDevolucion as string) || (reserva?.lugarDevolucion as string) || vehiculoParaFirma.sucursal || "Alamo Bogotá - Aeropuerto",
+      direccionRetiro: (fechasLugarSnap2?.direccionRetiro as string) || "",
+      barrioRetiro: (fechasLugarSnap2?.barrioRetiro as string) || "",
+      referenciasRetiro: (fechasLugarSnap2?.referenciasRetiro as string) || "",
+      direccionDevolucion: (fechasLugarSnap2?.direccionDevolucion as string) || "",
+      barrioDevolucion: (fechasLugarSnap2?.barrioDevolucion as string) || "",
+      referenciasDevolucion: (fechasLugarSnap2?.referenciasDevolucion as string) || "",
+      metodoPago: (fechasLugarSnap2?.metodoPago as any) || (reserva?.metodoPago as any) || "wompi",
+    };
+
+    const planesParaFirma: DatosPlanes = {
+      proteccion: (planesSnap2?.proteccion as string) || (reserva?.proteccion as string) || "Básica",
+      tipoKilometraje: ((planesSnap2?.tipoKilometraje as any) || (reserva?.tipoKilometraje as any) || "ilimitado"),
+      serviciosSeleccionados: planesSnap2?.serviciosSeleccionados || [],
+    };
+
+    const nombreLicenciaSnap2 =
+      datosDocumentosSnap2?.licenciaConduccion?.nombre ||
+      docsUsuario?.licencia?.nombre ||
+      "Licencia de Conducción Verificada";
+    const nombreCedulaSnap2 =
+      datosDocumentosSnap2?.cedulaFrente?.nombre ||
+      docsUsuario?.identificacion?.nombre ||
+      "Cédula de Ciudadanía Verificada";
+
+    const datosDocumentosParaFirma: DatosDocumentos = {
+      cedulaFrente: { nombre: nombreCedulaSnap2 },
+      cedulaReverso: datosDocumentosSnap2?.cedulaReverso ?? null,
+      licenciaConduccion: { nombre: nombreLicenciaSnap2 },
+    };
+
+    return (
+      <View style={{ flex: 1, backgroundColor: c.bg }}>
+        <HeaderDetalle
+          insets={insets}
+          c={c}
+          titulo={t("reserva.contrato.title", { defaultValue: "Contrato de Alquiler" })}
+          onVolver={() => setMostrarFirma(false)}
+        />
+        <FirmaContrato
+          vehiculo={vehiculoParaFirma}
+          datosPersonales={datosPersonalesParaFirma}
+          datosDocumentos={datosDocumentosParaFirma}
+          fechasLugar={fechasLugarParaFirma}
+          planes={planesParaFirma}
+          total={reserva.total}
+          referencia={reserva.referencia}
+          onFirmado={async () => {
+            await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
+            const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
+            const contratoNuevo = await contratoService.obtenerPorReserva(reserva.referencia);
+            setReserva(actualizada ?? null);
+            setContratoActual(contratoNuevo);
+            setContratoFirmado(true);
+            setMostrarFirma(false);
+          }}
+        />
+      </View>
+    );
   }
 
   const estadoTexto = t(`reserva.confirmacion.estados.${reserva.estado}`, {
@@ -394,11 +469,11 @@ export default function PagoRespuestaScreen() {
       color: "#f59e0b",
       titulo:
         reserva.estado === "PENDIENTE_EFECTIVO"
-          ? t("misReservas.detalle.tituloPendienteEfectivo", { defaultValue: "Pendiente de pago en efectivo" })
+          ? t("misReservas.detalle.tituloPendienteEfectivo", { defaultValue: "Pago en efectivo en sucursal" })
           : reserva.estado === "PENDIENTE_VALIDACION"
           ? t("misReservas.detalle.tituloPendienteValidacion", { defaultValue: "Pago en validación" })
           : reserva.metodoPago === "wompi" || reserva.estado === "PENDIENTE"
-          ? t("misReservas.detalle.tituloPagoDigitalPendiente", { defaultValue: "Pago Digital Pendiente" })
+          ? t("misReservas.detalle.tituloPagoDigitalPendiente", { defaultValue: "Pago virtual con Wompi" })
           : t("misReservas.detalle.tituloPendiente", { defaultValue: "Reserva pendiente" }),
     },
     confirmada: { icono: "checkmark-done-circle-outline", color: COLOR_MARCA, titulo: t("misReservas.detalle.tituloConfirmada") },
@@ -475,8 +550,26 @@ export default function PagoRespuestaScreen() {
     horaDevolucion: (reserva as any)?.horaDevolucion || "10:00",
     lugarRetiro: reserva?.lugarRetiro || "Sucursal Principal",
     lugarDevolucion: reserva?.lugarDevolucion || "Sucursal Principal",
+    direccionRetiro: (reserva as any)?.direccionRetiro || "",
+    barrioRetiro: (reserva as any)?.barrioRetiro || "",
+    referenciasRetiro: (reserva as any)?.referenciasRetiro || "",
+    direccionDevolucion: (reserva as any)?.direccionDevolucion || "",
+    barrioDevolucion: (reserva as any)?.barrioDevolucion || "",
+    referenciasDevolucion: (reserva as any)?.referenciasDevolucion || "",
     metodoPago: (reserva?.metodoPago as any) || "wompi",
   }) as DatosFechasLugar;
+
+  const esDomicilioRetiro =
+    fechasLugarEfectivas?.lugarRetiro === "domicilio" ||
+    reserva?.lugarRetiro === "domicilio" ||
+    (reserva?.fechasLugarSnapshot as any)?.lugarRetiro === "domicilio";
+
+  const esDomicilioDevolucion =
+    fechasLugarEfectivas?.lugarDevolucion === "domicilio" ||
+    reserva?.lugarDevolucion === "domicilio" ||
+    (reserva?.fechasLugarSnapshot as any)?.lugarDevolucion === "domicilio";
+
+  const tieneDomicilio = esDomicilioRetiro || esDomicilioDevolucion;
 
   const planesEfectivos: DatosPlanes = (planesSnap || {
     proteccion: reserva?.proteccion || "Básica",
@@ -580,7 +673,7 @@ export default function PagoRespuestaScreen() {
           </View>
         )}
 
-        {/* Grid de 10 Tiles */}
+        {/* Grid de 12 Tiles */}
         <View style={styles.gridTiles}>
           <InfoTile
             icono="car-sport"
@@ -595,9 +688,29 @@ export default function PagoRespuestaScreen() {
             c={c}
           />
           <InfoTile
+            icono="time"
+            label={t("reserva.fechasLugar.horaDeRetiro", { defaultValue: "Hora de retiro" })}
+            valor={
+              fechasLugarEfectivas?.horaRetiro
+                ? formatHoraAmPm(String(fechasLugarEfectivas.horaRetiro))
+                : "—"
+            }
+            c={c}
+          />
+          <InfoTile
             icono="calendar-outline"
             label={t("misReservas.detalle.fechaFin", { defaultValue: "Fecha de devolución" })}
             valor={reserva.fechaDevolucion ? fechaCorta(String(reserva.fechaDevolucion)) : "—"}
+            c={c}
+          />
+          <InfoTile
+            icono="time-outline"
+            label={t("reserva.fechasLugar.horaDeDevolucion", { defaultValue: "Hora de devolución" })}
+            valor={
+              fechasLugarEfectivas?.horaDevolucion
+                ? formatHoraAmPm(String(fechasLugarEfectivas.horaDevolucion))
+                : "—"
+            }
             c={c}
           />
           <InfoTile
@@ -656,21 +769,132 @@ export default function PagoRespuestaScreen() {
                 ? t("reserva.confirmacion.estados.PENDIENTE", { defaultValue: "Pendiente" })
                 : estadoTexto
             }
-            colorValor={
-              esPendienteEfectivo || reserva.estado === "PENDIENTE_EFECTIVO" || grupo === "pendiente"
-                ? "#16A34A"
-                : grupo === "confirmada"
-                ? "#2563EB"
-                : grupo === "en_curso"
-                ? "#16A34A"
-                : grupo === "cancelada"
-                ? "#DC2626"
-                : c.textPrimary
-            }
+            colorValor={grupo === "cancelada" ? "#DC2626" : primaryAccent}
             c={c}
           />
         </View>
       </View>
+
+      {/* Tarjeta Informativa de Servicio a Domicilio (solo si retiro o devolución o ambos es a domicilio) */}
+      {tieneDomicilio && (
+        <View style={[styles.card, styles.cardEfectivo, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+          {/* Ícono Circular Superior Centrado */}
+          <View
+            style={[
+              styles.logoCircle,
+              {
+                backgroundColor: "#FFFFFF",
+                borderColor: c.oscuro ? "#334155" : "#F1F5F9",
+              },
+            ]}
+          >
+            <Ionicons name="home-outline" size={28} color={primaryAccent} />
+          </View>
+
+          <Text style={[styles.tituloEfectivo, { color: c.textPrimary }]}>
+            {esDomicilioRetiro && esDomicilioDevolucion
+              ? "Servicio a Domicilio"
+              : esDomicilioRetiro
+              ? "Entrega a Domicilio"
+              : "Devolución a Domicilio"}
+          </Text>
+
+          <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, marginBottom: 16 }]}>
+            {esDomicilioRetiro && esDomicilioDevolucion
+              ? "Nuestro equipo se encargará de llevar el vehículo hasta tu ubicación de entrega y recogerlo en el punto indicado al finalizar tu viaje. A continuación encuentras los datos registrados para la coordinación:"
+              : esDomicilioRetiro
+              ? "Llevaremos el vehículo directamente a tu dirección para mayor comodidad. Nuestro equipo se comunicará contigo previo a la entrega según los siguientes datos:"
+              : "Un asesor de nuestro equipo se presentará en la dirección indicada para recibir el vehículo al finalizar tu reserva con los siguientes datos:"}
+          </Text>
+
+          {esDomicilioRetiro && (
+            <View
+              style={[
+                styles.cajaReferencia,
+                {
+                  backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
+                  borderColor: c.border,
+                  marginBottom: esDomicilioDevolucion ? 12 : 0,
+                },
+              ]}
+            >
+              {esDomicilioDevolucion && (
+                <Text style={[styles.etiquetaSubtituloLimpio, { color: primaryAccent }]}>
+                  Lugar de retiro (Entrega):
+                </Text>
+              )}
+
+              <View style={styles.filaInfoEfectivo}>
+                <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Dirección:</Text>
+                <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
+                  {fechasLugarEfectivas?.direccionRetiro || (reserva as any)?.direccionRetiro || "—"}
+                </Text>
+              </View>
+
+              {Boolean(fechasLugarEfectivas?.barrioRetiro || (reserva as any)?.barrioRetiro) && (
+                <View style={styles.filaInfoEfectivo}>
+                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Barrio:</Text>
+                  <Text style={[styles.valorEfectivo, { color: c.textPrimary }]}>
+                    {fechasLugarEfectivas?.barrioRetiro || (reserva as any)?.barrioRetiro}
+                  </Text>
+                </View>
+              )}
+
+              {Boolean(fechasLugarEfectivas?.referenciasRetiro || (reserva as any)?.referenciasRetiro) && (
+                <View style={styles.filaInfoEfectivo}>
+                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Indicaciones:</Text>
+                  <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
+                    {fechasLugarEfectivas?.referenciasRetiro || (reserva as any)?.referenciasRetiro}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {esDomicilioDevolucion && (
+            <View
+              style={[
+                styles.cajaReferencia,
+                {
+                  backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
+                  borderColor: c.border,
+                },
+              ]}
+            >
+              {esDomicilioRetiro && (
+                <Text style={[styles.etiquetaSubtituloLimpio, { color: primaryAccent }]}>
+                  Lugar de devolución:
+                </Text>
+              )}
+
+              <View style={styles.filaInfoEfectivo}>
+                <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Dirección:</Text>
+                <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
+                  {fechasLugarEfectivas?.direccionDevolucion || (reserva as any)?.direccionDevolucion || "—"}
+                </Text>
+              </View>
+
+              {Boolean(fechasLugarEfectivas?.barrioDevolucion || (reserva as any)?.barrioDevolucion) && (
+                <View style={styles.filaInfoEfectivo}>
+                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Barrio:</Text>
+                  <Text style={[styles.valorEfectivo, { color: c.textPrimary }]}>
+                    {fechasLugarEfectivas?.barrioDevolucion || (reserva as any)?.barrioDevolucion}
+                  </Text>
+                </View>
+              )}
+
+              {Boolean(fechasLugarEfectivas?.referenciasDevolucion || (reserva as any)?.referenciasDevolucion) && (
+                <View style={styles.filaInfoEfectivo}>
+                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Indicaciones:</Text>
+                  <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
+                    {fechasLugarEfectivas?.referenciasDevolucion || (reserva as any)?.referenciasDevolucion}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+      )}
 
       {esPendienteEfectivo && (
         <View style={[styles.card, styles.cardEfectivo, { backgroundColor: c.bgCard, borderColor: c.border }]}>
@@ -694,8 +918,8 @@ export default function PagoRespuestaScreen() {
           {/* Título */}
           <Text style={[styles.tituloEfectivo, { color: c.textPrimary }]}>
             {pmTypeUpper.includes("COLLECT") || detLower.includes("efectivo en bancolombia") || detLower.includes("corresponsal")
-              ? "Pago en Efectivo - Bancolombia"
-              : t("reserva.confirmacion.efectivoConfirmadaTitulo", { defaultValue: "Reserva Registrada" })}
+              ? "Pago en Bancolombia"
+              : t("reserva.confirmacion.pagoEnSucursalCorto", { defaultValue: "Pago en sucursal" })}
           </Text>
 
           {/* Mensaje descriptivo */}
@@ -795,33 +1019,36 @@ export default function PagoRespuestaScreen() {
               {t("reserva.confirmacion.plazoParaPagarTitulo", { defaultValue: "PLAZO PARA PAGAR" })}
             </Text>
             <Text style={[styles.plazoTextoEfectivo, { color: c.oscuro ? "#FDE68A" : "#713F12" }]}>
-              {t("reserva.confirmacion.efectivoConfirmadaMensaje", {
-                defaultValue:
-                  "Tienes 72 horas desde ahora para realizar el pago. Si no pagas dentro de este plazo, la reserva se cancelará automáticamente.",
-                horas: 72,
-              })}
+              {(() => {
+                const horas = reserva.horasLimitePago || 72;
+                const textoHoras = horas === 1 ? "1 hora" : `${horas} horas`;
+                return `Tienes aproximadamente ${textoHoras} desde ahora para acercarte a la sucursal y realizar el pago. Si no realizas el pago dentro de este plazo, la reserva se cancelará automáticamente.`;
+              })()}
             </Text>
           </View>
         </View>
       )}
 
       {reserva.metodoPago === "wompi" && !esPendienteEfectivo && reserva.estado === "PENDIENTE" && (
-        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border, marginTop: 4, marginBottom: 16, alignItems: "center" }]}>
+        <View style={[styles.card, styles.cardEfectivo, { backgroundColor: c.bgCard, borderColor: c.border, marginTop: 4, marginBottom: 16 }]}>
+          {/* Logo Circular Superior */}
           <View
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: 26,
-              backgroundColor: c.oscuro ? "rgba(96, 165, 250, 0.18)" : "rgba(37, 99, 235, 0.1)",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 12,
-            }}
+            style={[
+              styles.logoCircle,
+              {
+                backgroundColor: "#FFFFFF",
+                borderColor: c.oscuro ? "#334155" : "#F1F5F9",
+              },
+            ]}
           >
-            <Ionicons name="card-outline" size={26} color={primaryAccent} />
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.logoImg}
+              resizeMode="contain"
+            />
           </View>
           <Text style={[styles.tituloEfectivo, { color: c.textPrimary, fontSize: 18, marginBottom: 6 }]}>
-            {t("reserva.confirmacion.pagoPendienteTitulo", { defaultValue: "Pago Digital Pendiente" })}
+            {t("reserva.confirmacion.pagoPendienteTitulo", { defaultValue: "Pago virtual con Wompi" })}
           </Text>
           <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, marginBottom: 14 }]}>
             {t("reserva.confirmacion.pagoPendienteTexto", {
@@ -842,6 +1069,30 @@ export default function PagoRespuestaScreen() {
               <Text style={[styles.valorTotalEfectivo, { color: primaryAccent }]}>{fmt(reserva.total)} COP</Text>
             </View>
           </View>
+
+          {/* Tarjeta Informativa de Plazo de Pago */}
+          <View
+            style={[
+              styles.plazoCardEfectivo,
+              {
+                backgroundColor: c.oscuro ? "#261C08" : "#FEFCE8",
+                borderColor: c.oscuro ? "#785C15" : "#FDE047",
+                marginBottom: 16,
+              },
+            ]}
+          >
+            <Text style={[styles.plazoTituloEfectivo, { color: c.oscuro ? "#FCD34D" : "#854D0E" }]}>
+              {t("reserva.confirmacion.plazoParaPagarTitulo", { defaultValue: "PLAZO PARA PAGAR" })}
+            </Text>
+            <Text style={[styles.plazoTextoEfectivo, { color: c.oscuro ? "#FDE68A" : "#713F12" }]}>
+              {(() => {
+                const horas = reserva.horasLimitePago || 72;
+                const textoHoras = horas === 1 ? "1 hora" : `${horas} horas`;
+                return `Tienes aproximadamente ${textoHoras} desde ahora para realizar el pago digital y confirmar tu reserva. Si no realizas el pago dentro de este plazo, la reserva se cancelará automáticamente.`;
+              })()}
+            </Text>
+          </View>
+
           <TouchableOpacity style={styles.btnWrap} onPress={handlePagarWompi} activeOpacity={0.88}>
             <LinearGradient
               colors={GRADIENTES.boton.colors}
@@ -949,9 +1200,20 @@ export default function PagoRespuestaScreen() {
                 "Para desbloquear el contrato con tu clave, primero se debe confirmar el pago y completar la firma digital del contrato.",
             })}
           </Text>
-          <View style={{ width: "100%", marginTop: 12, opacity: c.oscuro ? 0.75 : 0.6 }}>
-            <PasswordInput
-              placeholder={t("misReservas.claveContratoPlaceholder")}
+          <View
+            style={[
+              styles.inputDocWrapper,
+              {
+                backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
+                borderColor: c.border,
+                opacity: c.oscuro ? 0.75 : 0.6,
+              },
+            ]}
+          >
+            <TextInput
+              style={[styles.inputDoc, { color: c.textPrimary }]}
+              placeholder={t("misReservas.claveContratoPlaceholder", { defaultValue: "Número de documento" })}
+              placeholderTextColor={c.oscuro ? "#94A3B8" : "#64748B"}
               value=""
               editable={false}
               keyboardType="number-pad"
@@ -989,18 +1251,32 @@ export default function PagoRespuestaScreen() {
               defaultValue: "Ingresa el número de documento con el que confirmaste esta reserva para ver el contrato.",
             })}
           </Text>
-          <View style={{ width: "100%", marginTop: 12 }}>
-            <PasswordInput
-              placeholder={t("misReservas.claveContratoPlaceholder")}
+          <View
+            style={[
+              styles.inputDocWrapper,
+              {
+                backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
+                borderColor: errorClave ? "#EF4444" : c.border,
+              },
+            ]}
+          >
+            <TextInput
+              style={[styles.inputDoc, { color: c.textPrimary }]}
+              placeholder={t("misReservas.claveContratoPlaceholder", { defaultValue: "Número de documento" })}
+              placeholderTextColor={c.oscuro ? "#94A3B8" : "#64748B"}
               value={claveIngresada}
               onChangeText={(v) => {
                 setClaveIngresada(v);
                 if (errorClave) setErrorClave("");
               }}
-              error={errorClave}
               keyboardType="number-pad"
+              autoCorrect={false}
+              autoCapitalize="none"
             />
           </View>
+          {Boolean(errorClave) && (
+            <Text style={styles.errorDoc}>{errorClave}</Text>
+          )}
           <TouchableOpacity style={[styles.btnWrap, { marginTop: 4 }]} onPress={handleValidarClave} activeOpacity={0.85}>
             <LinearGradient
               colors={GRADIENTES.boton.colors}
@@ -1014,8 +1290,161 @@ export default function PagoRespuestaScreen() {
         </View>
       )}
 
+      {/* Tarjeta de Calificación de la Reserva (Exclusiva para estado FINALIZADA) */}
+      {grupo === "finalizada" && (
+        <View style={[styles.card, styles.cardEfectivo, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+          {/* Ícono Circular Superior Centrado */}
+          <View
+            style={[
+              styles.logoCircle,
+              {
+                backgroundColor: "#FFFFFF",
+                borderColor: c.oscuro ? "#334155" : "#F1F5F9",
+              },
+            ]}
+          >
+            <Ionicons name="star-outline" size={28} color={primaryAccent} />
+          </View>
+
+          <Text style={[styles.tituloEfectivo, { color: c.textPrimary }]}>
+            {t("misReservas.calificacionReservaTitulo", { defaultValue: "Calificación de la reserva" })}
+          </Text>
+
+          <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, marginBottom: 16 }]}>
+            {resenaGuardada
+              ? "Tu calificación ha sido registrada con éxito. Puedes ver el resumen a continuación o modificar tu opinión en cualquier momento:"
+              : "Calificar tu experiencia de alquiler es totalmente opcional. Si lo deseas, puedes calificar el estado del vehículo y el servicio para seguir mejorando:"}
+          </Text>
+
+          <View
+            style={[
+              styles.cajaReferencia,
+              {
+                backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
+                borderColor: c.border,
+                marginBottom: 16,
+              },
+            ]}
+          >
+            <View style={styles.filaInfoEfectivo}>
+              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Vehículo:</Text>
+              <Text style={[styles.valorEfectivo, { color: c.textPrimary, fontWeight: "700" }]} numberOfLines={1}>
+                {reserva.vehiculoNombre}
+              </Text>
+            </View>
+
+            <View style={styles.filaInfoEfectivo}>
+              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Estado de reseña:</Text>
+              <Text
+                style={[
+                  styles.valorEfectivo,
+                  {
+                    color: resenaGuardada ? "#10B981" : c.textSecondary,
+                    fontWeight: "700",
+                  },
+                ]}
+              >
+                {resenaGuardada ? "Calificada" : "Opcional (Sin calificar)"}
+              </Text>
+            </View>
+
+            {resenaGuardada && (
+              <>
+                <View style={[styles.divisorEfectivo, { backgroundColor: c.border }]} />
+
+                <View style={styles.filaInfoEfectivo}>
+                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Puntuación:</Text>
+                  <Text style={[styles.valorEfectivo, { color: primaryAccent, fontWeight: "700" }]}>
+                    {resenaGuardada.calificacion} / 5 estrellas
+                  </Text>
+                </View>
+
+                {Boolean(resenaGuardada.comentario) && (
+                  <View style={[styles.filaInfoEfectivo, { alignItems: "flex-start", marginTop: 2 }]}>
+                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Comentario:</Text>
+                    <Text style={[styles.valorEfectivo, { color: c.textPrimary, flex: 1, maxWidth: "60%" }]} numberOfLines={3}>
+                      {resenaGuardada.comentario}
+                    </Text>
+                  </View>
+                )}
+
+                {Boolean(resenaGuardada.fecha) && (
+                  <View style={styles.filaInfoEfectivo}>
+                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Fecha de registro:</Text>
+                    <Text style={[styles.valorEfectivo, { color: c.textPrimary }]}>
+                      {resenaGuardada.fecha}
+                    </Text>
+                  </View>
+                )}
+
+                {Boolean(resenaGuardada.fotos && resenaGuardada.fotos.length > 0) && (
+                  <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: c.border }}>
+                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, marginBottom: 8 }]}>Fotos adjuntas:</Text>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      {resenaGuardada.fotos?.map((uri, idx) => (
+                        <Image
+                          key={idx}
+                          source={{ uri }}
+                          style={{ width: 52, height: 52, borderRadius: 8, borderWidth: 1, borderColor: c.border }}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </>
+            )}
+          </View>
+
+          {/* Botón de Acción para calificar o editar */}
+          <TouchableOpacity
+            style={styles.btnWrap}
+            onPress={() => setModalCalificarVisible(true)}
+            activeOpacity={0.88}
+          >
+            <LinearGradient
+              colors={GRADIENTES.boton.colors}
+              start={GRADIENTES.boton.start}
+              end={GRADIENTES.boton.end}
+              style={styles.btn}
+            >
+              <Text style={styles.btnTexto}>
+                {resenaGuardada ? "Editar calificación" : "Calificar reserva"}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      )}
+
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Modal para calificar / editar reseña */}
+      {grupo === "finalizada" && (
+        <>
+          <ModalCalificar
+            visible={modalCalificarVisible}
+            referenciaReserva={reserva.referencia}
+            usuarioId={usuarioKey}
+            usuarioNombre={usuarioNombre}
+            vehiculoId={reserva.vehiculoId || (vehiculoSnap as any)?.id}
+            vehiculoNombre={reserva.vehiculoNombre}
+            valorInicial={resenaGuardada}
+            onCerrar={() => setModalCalificarVisible(false)}
+            onGuardado={(nueva) => {
+              setResenaGuardada(nueva);
+              setModalCalificarVisible(false);
+              setAlertGuardadoVisible(true);
+            }}
+          />
+          <AlertModal
+            visible={alertGuardadoVisible}
+            icono="checkmark-circle-outline"
+            titulo="¡Calificación guardada!"
+            mensaje="Tu reseña y fotografías se han guardado exitosamente."
+            onCerrar={() => setAlertGuardadoVisible(false)}
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -1300,6 +1729,26 @@ const styles = StyleSheet.create({
   btnTexto: { color: "#fff", fontSize: 14.5, fontWeight: "800" },
   tituloCandado: { fontSize: 15.5, fontWeight: "800", textAlign: "center" },
   textoCandado: { fontSize: 12.5, textAlign: "center", marginTop: 6, lineHeight: 18 },
+  inputDocWrapper: {
+    width: "100%",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  inputDoc: {
+    fontSize: 14,
+    fontWeight: "600",
+    padding: 0,
+  },
+  errorDoc: {
+    fontSize: 11.5,
+    color: "#EF4444",
+    marginBottom: 6,
+    textAlign: "center",
+  },
   btnDescargarWrap: {
     width: "100%",
     flexDirection: "row",
@@ -1434,5 +1883,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     fontWeight: "700",
+  },
+  tituloSeccionLimpio: {
+    fontSize: 15.5,
+    fontWeight: "800",
+  },
+  etiquetaSubtituloLimpio: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginBottom: 6,
   },
 });

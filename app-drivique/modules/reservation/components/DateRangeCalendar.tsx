@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
 import { Ionicons } from "@expo/vector-icons";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
-import { getDisponibilidadVehiculo } from "@/modules/catalog/constants/catalog.constants";
+import { getDisponibilidadVehiculo, getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
 import { COLOR_MARCA } from "../constants/reservation.constants";
+import { AlertModal } from "@/components/ui/AlertModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 
@@ -66,12 +67,25 @@ const COLOR_RESERVADO = "#EF4444";
 const COLOR_MANTENIMIENTO = "#64748B";
 const COLOR_SELECCIONADO = COLOR_MARCA;
 
+function getFechaHoyLocal(): string {
+  const ahora = new Date();
+  const year = ahora.getFullYear();
+  const month = String(ahora.getMonth() + 1).padStart(2, "0");
+  const day = String(ahora.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function getDiasEnRango(inicio: string, fin: string): string[] {
   const dias: string[] = [];
-  const cursor = new Date(inicio + "T00:00:00");
-  const finDate = new Date(fin + "T00:00:00");
+  const [y1, m1, d1] = inicio.split("-").map(Number);
+  const [y2, m2, d2] = fin.split("-").map(Number);
+  const cursor = new Date(y1, m1 - 1, d1);
+  const finDate = new Date(y2, m2 - 1, d2);
   while (cursor <= finDate) {
-    dias.push(cursor.toISOString().split("T")[0]);
+    const y = cursor.getFullYear();
+    const m = String(cursor.getMonth() + 1).padStart(2, "0");
+    const d = String(cursor.getDate()).padStart(2, "0");
+    dias.push(`${y}-${m}-${d}`);
     cursor.setDate(cursor.getDate() + 1);
   }
   return dias;
@@ -175,6 +189,15 @@ function DiaCalendario({
   );
 }
 
+function getFechaMananaLocal(): string {
+  const ahora = new Date();
+  const manana = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() + 1);
+  const year = manana.getFullYear();
+  const month = String(manana.getMonth() + 1).padStart(2, "0");
+  const day = String(manana.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export default function CalendarioRango({
   vehiculo,
   fechaRetiro,
@@ -202,7 +225,33 @@ export default function CalendarioRango({
     return mapa;
   }, [vehiculo.id]);
 
-  const hoy = new Date().toISOString().split("T")[0];
+  const horarioSucursal = useMemo(
+    () => getHorarioSucursal(vehiculo.sucursal),
+    [vehiculo.sucursal]
+  );
+
+  // Si ya pasó la hora de cierre de la sucursal de origen hoy,
+  // la fecha mínima para iniciar reserva es a partir de mañana a la hora de apertura.
+  const fechaMinimaRetiro = useMemo(() => {
+    const ahora = new Date();
+    const horaCierreNum = parseInt(horarioSucursal.horaCierre.split(":")[0], 10) || 20;
+    if (ahora.getHours() >= horaCierreNum) {
+      return getFechaMananaLocal();
+    }
+    return getFechaHoyLocal();
+  }, [horarioSucursal.horaCierre]);
+
+  const [alertaModal, setAlertaModal] = useState<{
+    visible: boolean;
+    icono?: keyof typeof Ionicons.glyphMap;
+    titulo: string;
+    mensaje: string;
+    botones?: { texto: string; onPress: () => void; variante?: "primario" | "secundario" }[];
+  }>({
+    visible: false,
+    titulo: "",
+    mensaje: "",
+  });
 
   const mensajePorMotivo = (motivo: "reservado" | "mantenimiento") =>
     motivo === "mantenimiento"
@@ -210,13 +259,43 @@ export default function CalendarioRango({
       : t("reserva.fechasLugar.vehiculoYaReservado");
 
   const alertarNoDisponible = (titulo: string, motivo: "reservado" | "mantenimiento") => {
-    Alert.alert(titulo, mensajePorMotivo(motivo), [
-      { text: t("reserva.fechasLugar.intentarDeNuevo"), style: "default" },
-    ]);
+    setAlertaModal({
+      visible: true,
+      icono: "alert-circle-outline",
+      titulo,
+      mensaje: mensajePorMotivo(motivo),
+      botones: [
+        {
+          texto: t("reserva.fechasLugar.intentarDeNuevo", { defaultValue: "Aceptar" }),
+          variante: "primario",
+          onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+        },
+      ],
+    });
   };
 
   const handleDayPress = (day: DateData) => {
     const fecha = day.dateString;
+
+    if (fecha < fechaMinimaRetiro) {
+      setAlertaModal({
+        visible: true,
+        icono: "time-outline",
+        titulo: t("reserva.fechasLugar.sucursalCerradaTitulo", { defaultValue: "Sucursal cerrada por hoy" }),
+        mensaje: t("reserva.fechasLugar.sucursalCerradaMensaje", {
+          defaultValue: `La sucursal ${vehiculo.sucursal || "seleccionada"} atiende ${horarioSucursal.textoHorario.toLowerCase()}. Puedes reservar a partir de mañana.`,
+        }),
+        botones: [
+          {
+            texto: t("comun.aceptar", { defaultValue: "Aceptar" }),
+            variante: "primario",
+            onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+          },
+        ],
+      });
+      return;
+    }
+
     const motivo = ocupados.get(fecha);
 
     if (motivo) {
@@ -237,14 +316,44 @@ export default function CalendarioRango({
     const rango = getDiasEnRango(fechaRetiro, fecha);
     const motivoEnMedio = rango.map((d) => ocupados.get(d)).find(Boolean);
     if (motivoEnMedio) {
-      Alert.alert(
-        t("reserva.fechasLugar.rangoNoDisponibleTitulo"),
-        motivoEnMedio === "mantenimiento"
-          ? t("reserva.fechasLugar.rangoConMantenimiento")
-          : t("reserva.fechasLugar.rangoConReservas"),
-        [{ text: t("reserva.fechasLugar.intentarDeNuevo"), style: "default" }]
-      );
+      setAlertaModal({
+        visible: true,
+        icono: "alert-circle-outline",
+        titulo: t("reserva.fechasLugar.rangoNoDisponibleTitulo"),
+        mensaje:
+          motivoEnMedio === "mantenimiento"
+            ? t("reserva.fechasLugar.rangoConMantenimiento")
+            : t("reserva.fechasLugar.rangoConReservas"),
+        botones: [
+          {
+            texto: t("reserva.fechasLugar.intentarDeNuevo", { defaultValue: "Aceptar" }),
+            variante: "primario",
+            onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+          },
+        ],
+      });
       onCambiarFechas(fecha, null);
+      return;
+    }
+
+    if (fecha === fechaRetiro) {
+      setAlertaModal({
+        visible: true,
+        icono: "information-circle-outline",
+        titulo: t("reserva.fechasLugar.mismoDiaTitulo", { defaultValue: "Reserva de 1 día (24 horas)" }),
+        mensaje: t("reserva.fechasLugar.mismoDiaMensaje", {
+          defaultValue: "Seleccionaste 1 día de reserva. Elige la hora de retiro y devolución; las 24 horas contarán a partir de la hora de retiro.",
+        }),
+        botones: [
+          {
+            texto: t("comun.aceptar", { defaultValue: "Aceptar" }),
+            variante: "primario",
+            onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
+          },
+        ],
+      });
+
+      onCambiarFechas(fechaRetiro, fecha);
       return;
     }
 
@@ -287,8 +396,8 @@ export default function CalendarioRango({
     <View style={[styles.container, { borderColor: c.border, backgroundColor: c.bgCard }]}>
       <Calendar
         key={`${c.oscuro ? "dark" : "light"}_${langKey}`}
-        current={hoy}
-        minDate={hoy}
+        current={fechaMinimaRetiro}
+        minDate={fechaMinimaRetiro}
         markedDates={markedDates}
         firstDay={1}
         hideExtraDays={true}
@@ -358,6 +467,15 @@ export default function CalendarioRango({
           </Text>
         </View>
       </View>
+
+      <AlertModal
+        visible={alertaModal.visible}
+        icono={alertaModal.icono}
+        titulo={alertaModal.titulo}
+        mensaje={alertaModal.mensaje}
+        botones={alertaModal.botones}
+        onCerrar={() => setAlertaModal((p) => ({ ...p, visible: false }))}
+      />
     </View>
   );
 }

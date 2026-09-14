@@ -205,6 +205,7 @@ export default function VehiculoDetallePage() {
         <Animated.View style={{ opacity: opacidad }}>
           {/* 1. Galería de Imágenes */}
           <VehicleGallery
+            nombre={vehiculo.nombre}
             imagenes={getSafeImages(vehiculo)}
             calificacion={vehiculo.calificacion}
             borderColor={colorBorde}
@@ -523,6 +524,8 @@ export default function VehiculoDetallePage() {
           <VehicleReviews
             comentarios={comentariosMostrar}
             calificacionPromedio={vehiculo.calificacion}
+            vehiculoId={vehiculo.id}
+            vehiculoNombre={vehiculo.nombre}
           />
         </Animated.View>
       </ScrollView>

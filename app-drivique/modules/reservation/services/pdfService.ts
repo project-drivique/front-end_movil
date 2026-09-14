@@ -114,6 +114,18 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<Resu
     datosDocumentos?.licenciaConduccion?.nombre ||
     "Licencia verificada en perfil";
 
+  const metodoPagoLabel =
+    fechasLugar?.metodoPago === "efectivo"
+      ? (tx?.paymentMethodCash || "Efectivo en sucursal")
+      : (tx?.paymentMethodWompi || "Pago digital Wompi");
+
+  const serviciosNombres = (vehiculo?.servicios || [])
+    .filter((s) => planes?.serviciosSeleccionados?.includes(s.nombre))
+    .map((s) => s.nombre);
+  const serviciosLabel = serviciosNombres.length
+    ? serviciosNombres.join(", ")
+    : (tx?.noneAdded || "Ninguno");
+
   const svgFirma = trazosASvgPaths(contrato?.firmaTrazos || "");
 
   const html = `
@@ -184,13 +196,17 @@ export async function generarContratoPdf(params: GenerarPdfParams): Promise<Resu
       <div class="grid">
         <div class="campo"><div class="campo-label">${esc(tx?.vehicle || "Vehículo")}</div><div class="campo-valor">${esc(marca)} ${esc(modelo)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx?.plate || "Placa")}</div><div class="campo-valor">${esc(vehiculo?.placa || "ABC-123")}</div></div>
-        <div class="campo"><div class="campo-label">${esc(tx?.branch || "Sucursal")}</div><div class="campo-valor">${esc(esDomicilioRetiro ? (tx?.domicileDelivery || "A domicilio") : fechasLugar?.lugarRetiro)}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx?.color || "Color")}</div><div class="campo-valor">${esc(vehiculo?.color || "Blanco Perla")}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx?.year || "Año")}</div><div class="campo-valor">${esc(String(vehiculo?.año || 2024))}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx?.branch || "Sucursal")}</div><div class="campo-valor">${esc(esDomicilioRetiro ? (tx?.domicileDelivery || "A domicilio") : (fechasLugar?.lugarRetiro || sucursalRetiroNombre))}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx?.branchCity || "Ciudad")}</div><div class="campo-valor">${esc(ciudadSucursal || "Bogotá")}</div></div>
         ${!esDomicilioRetiro ? `<div class="campo"><div class="campo-label">${esc(tx?.branchAddress || "Dirección")}</div><div class="campo-valor">${esc(direccionSucursal || "Sucursal Principal")}</div></div>` : ""}
         <div class="campo"><div class="campo-label">${esc(tx?.startDate || "Fecha inicio")}</div><div class="campo-valor">${esc(formatearFecha(fechasLugar?.fechaRetiro || null))}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx?.endDate || "Fecha fin")}</div><div class="campo-valor">${esc(formatearFecha(fechasLugar?.fechaDevolucion || null))}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx?.paymentMethod || "Método de pago")}</div><div class="campo-valor">${esc(metodoPagoLabel)}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx?.totalValue || "Total")}</div><div class="campo-valor">${esc(formatPrecio(total))}</div></div>
         <div class="campo"><div class="campo-label">${esc(tx?.protectionPlan || "Protección")}</div><div class="campo-valor">${esc(planes?.proteccion || "Básica")}</div></div>
+        <div class="campo"><div class="campo-label">${esc(tx?.additionalServices || "Servicios adicionales")}</div><div class="campo-valor">${esc(serviciosLabel)}</div></div>
       </div>
 
       <h2>${esc(tx?.signaturesTitle || "Firmas del contrato")}</h2>

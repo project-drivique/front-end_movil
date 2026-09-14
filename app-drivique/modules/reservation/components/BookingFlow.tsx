@@ -50,8 +50,24 @@ export default function FlujoReserva({ vehiculo }: Props) {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   }, [seccionActiva]);
 
+  const esDomicilioRetiroValido =
+    fechasLugar.lugarRetiro !== "domicilio" ||
+    (!!fechasLugar.barrioRetiro?.trim() && !!fechasLugar.direccionRetiro?.trim());
+
+  const esDomicilioDevolucionValido =
+    fechasLugar.lugarDevolucion !== "domicilio" ||
+    (!!fechasLugar.barrioDevolucion?.trim() && !!fechasLugar.direccionDevolucion?.trim());
+
   const puedeContinuarAPlanes =
-    !!fechasLugar.fechaRetiro && !!fechasLugar.fechaDevolucion && !!fechasLugar.metodoPago;
+    !!fechasLugar.metodoPago &&
+    !!fechasLugar.fechaRetiro &&
+    !!fechasLugar.fechaDevolucion &&
+    !!fechasLugar.horaRetiro &&
+    !!fechasLugar.horaDevolucion &&
+    !!fechasLugar.lugarRetiro &&
+    !!fechasLugar.lugarDevolucion &&
+    esDomicilioRetiroValido &&
+    esDomicilioDevolucionValido;
 
   const puedeContinuarADatos = !!planes.proteccion && !!planes.tipoKilometraje;
 
@@ -63,6 +79,10 @@ export default function FlujoReserva({ vehiculo }: Props) {
   ];
 
   const irASeccion = (seccion: SeccionReserva) => {
+    if (tabsDeshabilitados.includes(seccion)) {
+      setAlertaFaltantesVisible(true);
+      return;
+    }
     setSeccionActiva(seccion);
     setSeccionesAlcanzadas((prev) => (prev[seccion] ? prev : { ...prev, [seccion]: true }));
     scrollRef.current?.scrollTo({ y: 0, animated: true });

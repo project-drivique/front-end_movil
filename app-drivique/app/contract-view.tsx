@@ -19,7 +19,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { COLOR_MARCA } from "@/modules/catalog/constants/catalog.constants";
+import { COLOR_MARCA, VEHICULOS_MOCK } from "@/modules/catalog/constants/catalog.constants";
 import { GRADIENTES } from "@/constants/gradients";
 import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { PasswordInput } from "@/components/ui/PasswordInput";
@@ -29,6 +29,7 @@ import {
   DatosFechasLugar,
   DatosPersonales,
   DatosPlanes,
+  TipoKilometraje,
 } from "@/modules/reservation/types/reservation.types";
 import {
   ContratoGuardado,
@@ -99,39 +100,55 @@ export default function ContratoScreen() {
   const fechasLugarSnap = reserva?.fechasLugarSnapshot as DatosFechasLugar | undefined;
   const planesSnap = reserva?.planesSnapshot as DatosPlanes | undefined;
 
-  const vehiculoEfectivo: Vehiculo = (vehiculoSnap || {
-    id: reserva?.vehiculoId || 1,
-    nombre: reserva?.vehiculoNombre || "Vehículo",
-    placa: (reserva as any)?.vehiculoPlaca || "ABC-123",
-    precio: reserva?.total || 0,
-    sucursal: reserva?.lugarRetiro || "Bogotá",
-  }) as Vehiculo;
+  const vehiculoCatalogo = VEHICULOS_MOCK.find(
+    (v) => v.id === reserva?.vehiculoId || v.nombre === reserva?.vehiculoNombre
+  );
 
-  const datosPersonalesEfectivos: DatosPersonales = (datosPersonalesSnap || {
-    nombreCompleto: (reserva as any)?.nombreCompleto || "Cliente Demo",
-    tipoDocumento: (reserva as any)?.tipoDocumento || "CC",
-    numeroDocumento: (reserva as any)?.numeroDocumento || "1075228306",
-    correo: (reserva as any)?.correo || "cliente@drivique.com",
-    celular: (reserva as any)?.celular || "3000000000",
-    nacionalidad: "Colombia",
+  const vehiculoEfectivo: Vehiculo = {
+    ...(vehiculoCatalogo || {}),
+    ...(vehiculoSnap || {}),
+    id: vehiculoSnap?.id || reserva?.vehiculoId || vehiculoCatalogo?.id || 1,
+    nombre: vehiculoSnap?.nombre || reserva?.vehiculoNombre || vehiculoCatalogo?.nombre || "Toyota Corolla 2024",
+    marca: vehiculoSnap?.marca || vehiculoCatalogo?.marca || "Toyota",
+    modelo: vehiculoSnap?.modelo || vehiculoCatalogo?.modelo || "Corolla 2024",
+    placa: vehiculoSnap?.placa || (reserva as any)?.vehiculoPlaca || vehiculoCatalogo?.placa || "ABC-123",
+    color: vehiculoSnap?.color || vehiculoCatalogo?.color || "Blanco Perla",
+    año: vehiculoSnap?.año || vehiculoCatalogo?.año || 2024,
+    sucursal: vehiculoSnap?.sucursal || (reserva?.lugarRetiro as string) || vehiculoCatalogo?.sucursal || "Alamo Bogotá - Aeropuerto",
+    precio: reserva?.total || vehiculoSnap?.precio || vehiculoCatalogo?.precio || 85000,
+  } as Vehiculo;
+
+  const datosPersonalesEfectivos: DatosPersonales = {
+    nombreCompleto: datosPersonalesSnap?.nombreCompleto || (reserva as any)?.nombreCompleto || "Cliente Drivique",
+    tipoDocumento: datosPersonalesSnap?.tipoDocumento || (reserva as any)?.tipoDocumento || "CC",
+    numeroDocumento: datosPersonalesSnap?.numeroDocumento || (reserva as any)?.numeroDocumento || "1075228306",
+    correo: datosPersonalesSnap?.correo || (reserva as any)?.correo || "cliente@drivique.com",
+    celular: datosPersonalesSnap?.celular || (reserva as any)?.celular || "3000000000",
+    nacionalidad: datosPersonalesSnap?.nacionalidad || (reserva as any)?.nacionalidad || "Colombia",
     terminosAceptados: true,
-  }) as DatosPersonales;
+  };
 
-  const fechasLugarEfectivas: DatosFechasLugar = (fechasLugarSnap || {
-    fechaRetiro: reserva?.fechaRetiro || new Date().toISOString(),
-    fechaDevolucion: reserva?.fechaDevolucion || new Date().toISOString(),
-    horaRetiro: (reserva as any)?.horaRetiro || "10:00",
-    horaDevolucion: (reserva as any)?.horaDevolucion || "10:00",
-    lugarRetiro: reserva?.lugarRetiro || "Sucursal Principal",
-    lugarDevolucion: reserva?.lugarDevolucion || "Sucursal Principal",
-    metodoPago: (reserva?.metodoPago as any) || "wompi",
-  }) as DatosFechasLugar;
+  const fechasLugarEfectivas: DatosFechasLugar = {
+    fechaRetiro: (fechasLugarSnap?.fechaRetiro as string) || (reserva?.fechaRetiro as string) || new Date().toISOString().split("T")[0],
+    fechaDevolucion: (fechasLugarSnap?.fechaDevolucion as string) || (reserva?.fechaDevolucion as string) || new Date().toISOString().split("T")[0],
+    horaRetiro: (fechasLugarSnap?.horaRetiro as string) || (reserva?.horaRetiro as string) || (reserva as any)?.horaRetiro || "10:00",
+    horaDevolucion: (fechasLugarSnap?.horaDevolucion as string) || (reserva?.horaDevolucion as string) || (reserva as any)?.horaDevolucion || "10:00",
+    lugarRetiro: (fechasLugarSnap?.lugarRetiro as string) || (reserva?.lugarRetiro as string) || vehiculoEfectivo.sucursal || "Alamo Bogotá - Aeropuerto",
+    lugarDevolucion: (fechasLugarSnap?.lugarDevolucion as string) || (reserva?.lugarDevolucion as string) || vehiculoEfectivo.sucursal || "Alamo Bogotá - Aeropuerto",
+    direccionRetiro: (fechasLugarSnap?.direccionRetiro as string) || "",
+    barrioRetiro: (fechasLugarSnap?.barrioRetiro as string) || "",
+    referenciasRetiro: (fechasLugarSnap?.referenciasRetiro as string) || "",
+    direccionDevolucion: (fechasLugarSnap?.direccionDevolucion as string) || "",
+    barrioDevolucion: (fechasLugarSnap?.barrioDevolucion as string) || "",
+    referenciasDevolucion: (fechasLugarSnap?.referenciasDevolucion as string) || "",
+    metodoPago: (fechasLugarSnap?.metodoPago as any) || (reserva?.metodoPago as any) || "wompi",
+  };
 
-  const planesEfectivos: DatosPlanes = (planesSnap || {
-    proteccion: reserva?.proteccion || "Básica",
-    tipoKilometraje: reserva?.tipoKilometraje || "ilimitado",
-    serviciosSeleccionados: [],
-  }) as DatosPlanes;
+  const planesEfectivos: DatosPlanes = {
+    proteccion: (planesSnap?.proteccion as string) || (reserva?.proteccion as string) || "Básica",
+    tipoKilometraje: ((planesSnap?.tipoKilometraje as TipoKilometraje) || (reserva?.tipoKilometraje as TipoKilometraje) || "ilimitado") as TipoKilometraje,
+    serviciosSeleccionados: planesSnap?.serviciosSeleccionados || [],
+  };
 
   const handleValidarClave = () => {
     const docReserva = String(datosPersonalesEfectivos?.numeroDocumento || "");
@@ -147,10 +164,11 @@ export default function ContratoScreen() {
 
   const nombreLicenciaSnap =
     datosDocumentosSnap?.licenciaConduccion?.nombre || "Licencia verificada en perfil";
-  const nombreCedulaSnap = datosDocumentosSnap?.cedulaFrente?.nombre || null;
+  const nombreCedulaSnap =
+    datosDocumentosSnap?.cedulaFrente?.nombre || "Cédula de ciudadanía verificada";
 
   const datosDocumentosEfectivos: DatosDocumentos = {
-    cedulaFrente: nombreCedulaSnap ? { nombre: nombreCedulaSnap } : null,
+    cedulaFrente: { nombre: nombreCedulaSnap },
     cedulaReverso: datosDocumentosSnap?.cedulaReverso ?? null,
     licenciaConduccion: { nombre: nombreLicenciaSnap },
   };
