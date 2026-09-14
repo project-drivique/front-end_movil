@@ -777,17 +777,35 @@ export default function PagoRespuestaScreen() {
 
       {/* Tarjeta Informativa de Servicio a Domicilio (solo si retiro o devolución o ambos es a domicilio) */}
       {tieneDomicilio && (
-        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 }}>
-            <Ionicons name="home-outline" size={20} color={primaryAccent} />
-            <Text style={[styles.tituloSeccionLimpio, { color: c.textPrimary }]}>
-              {esDomicilioRetiro && esDomicilioDevolucion
-                ? "Servicio a Domicilio"
-                : esDomicilioRetiro
-                ? "Entrega a Domicilio"
-                : "Devolución a Domicilio"}
-            </Text>
+        <View style={[styles.card, styles.cardEfectivo, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+          {/* Ícono Circular Superior Centrado */}
+          <View
+            style={[
+              styles.logoCircle,
+              {
+                backgroundColor: "#FFFFFF",
+                borderColor: c.oscuro ? "#334155" : "#F1F5F9",
+              },
+            ]}
+          >
+            <Ionicons name="home-outline" size={28} color={primaryAccent} />
           </View>
+
+          <Text style={[styles.tituloEfectivo, { color: c.textPrimary }]}>
+            {esDomicilioRetiro && esDomicilioDevolucion
+              ? "Servicio a Domicilio"
+              : esDomicilioRetiro
+              ? "Entrega a Domicilio"
+              : "Devolución a Domicilio"}
+          </Text>
+
+          <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, marginBottom: 16 }]}>
+            {esDomicilioRetiro && esDomicilioDevolucion
+              ? "Detalle de las direcciones registradas para la entrega y devolución del vehículo:"
+              : esDomicilioRetiro
+              ? "Detalle de la dirección registrada para la entrega del vehículo:"
+              : "Detalle de la dirección registrada para la devolución del vehículo:"}
+          </Text>
 
           {esDomicilioRetiro && (
             <View
@@ -1274,12 +1292,25 @@ export default function PagoRespuestaScreen() {
 
       {/* Tarjeta de Calificación de la Reserva (Exclusiva para estado FINALIZADA) */}
       {grupo === "finalizada" && (
-        <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-          <Text style={[styles.tituloSeccionLimpio, { color: c.textPrimary, marginBottom: 8 }]}>
+        <View style={[styles.card, styles.cardEfectivo, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+          {/* Ícono Circular Superior Centrado */}
+          <View
+            style={[
+              styles.logoCircle,
+              {
+                backgroundColor: "#FFFFFF",
+                borderColor: c.oscuro ? "#334155" : "#F1F5F9",
+              },
+            ]}
+          >
+            <Ionicons name="star-outline" size={28} color={primaryAccent} />
+          </View>
+
+          <Text style={[styles.tituloEfectivo, { color: c.textPrimary }]}>
             {t("misReservas.calificacionReservaTitulo", { defaultValue: "Calificación de la reserva" })}
           </Text>
 
-          <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, textAlign: "left", paddingHorizontal: 0, marginBottom: 14 }]}>
+          <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, marginBottom: 16 }]}>
             {resenaGuardada
               ? "Tu calificación ha sido registrada con éxito. Puedes ver el resumen a continuación o modificar tu opinión en cualquier momento:"
               : "Calificar tu experiencia de alquiler es totalmente opcional. Si lo deseas, puedes calificar el estado del vehículo y el servicio para seguir mejorando:"}
