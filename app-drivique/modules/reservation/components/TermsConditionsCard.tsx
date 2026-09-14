@@ -97,7 +97,7 @@ export default function TarjetaTerminosCondiciones() {
       {
         titulo: "10. POLÍTICA DE DEVOLUCIÓN PUNTUAL",
         texto:
-          "Por favor entrega el vehículo en la fecha y hora acordadas. Cuentas con 30 minutos de cortesía. Si la entrega supera este tiempo, se aplicará el cobro automático por tiempo adicional.",
+          "Por favor entrega el vehículo en la fecha y hora acordadas. Cuentas con 30 minutos de cortesía. Pasado este tiempo, la hora adicional tendrá un valor de $30.000 COP. Si el retraso supera las 2 horas o pasa al siguiente día, se cobrará el valor equivalente a un (1) día completo de alquiler a la tarifa contratada.",
       },
     ],
     [valorKmFormateado]
