@@ -165,17 +165,82 @@ function vencerReservasEfectivo(reservas: ReservaGuardada[]): {
   return { actualizadas, cambiaron };
 }
 
+const RESERVA_FINALIZADA_DEMO: ReservaGuardada = {
+  referencia: "DRV-98421-FINALIZADA",
+  vehiculoId: 2,
+  vehiculoNombre: "Mazda CX-5 2024",
+  metodoPago: "wompi",
+  metodoPagoDetalle: "Tarjeta Visa ••• 4242",
+  paymentId: "tx_demo_wompi_finalizada",
+  total: 540000,
+  fechaReserva: "2026-08-10T09:00:00Z",
+  fechaRetiro: "2026-08-12",
+  fechaDevolucion: "2026-08-15",
+  horaRetiro: "10:00",
+  horaDevolucion: "18:00",
+  lugarRetiro: "Alamo Bogotá - Aeropuerto",
+  lugarDevolucion: "Alamo Bogotá - Aeropuerto",
+  estado: "FINALIZADA",
+  proteccion: "Total",
+  tipoKilometraje: "ilimitado",
+  vehiculoSnapshot: {
+    id: 2,
+    nombre: "Mazda CX-5 2024",
+    marca: "Mazda",
+    modelo: "CX-5",
+    categoria: "SUV",
+    transmision: "Automático",
+    combustible: "Gasolina",
+    capacidadPasajeros: 5,
+    capacidadMaletas: 4,
+    puertas: 5,
+    precio: 180000,
+    precioDia: 180000,
+    imagenes: ["https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80"],
+    sucursal: "Alamo Bogotá - Aeropuerto",
+    año: 2024,
+    placa: "DRV-894",
+    color: "Gris Titanio",
+  } as any,
+  datosPersonalesSnapshot: {
+    nombreCompleto: "Cliente Drivique",
+    tipoDocumento: "CC",
+    numeroDocumento: "1075228306",
+    correo: "cliente@drivique.com",
+    celular: "3001234567",
+    nacionalidad: "Colombia",
+    terminosAceptados: true,
+  },
+  fechasLugarSnapshot: {
+    fechaRetiro: "2026-08-12",
+    fechaDevolucion: "2026-08-15",
+    horaRetiro: "10:00",
+    horaDevolucion: "18:00",
+    lugarRetiro: "Alamo Bogotá - Aeropuerto",
+    lugarDevolucion: "Alamo Bogotá - Aeropuerto",
+    direccionRetiro: "",
+    barrioRetiro: "",
+    referenciasRetiro: "",
+    direccionDevolucion: "",
+    barrioDevolucion: "",
+    referenciasDevolucion: "",
+    metodoPago: "wompi",
+  },
+  planesSnapshot: {
+    proteccion: "Total",
+    tipoKilometraje: "ilimitado",
+    serviciosSeleccionados: ["gps", "asientoBebe"],
+  },
+};
+
 async function leer(): Promise<ReservaGuardada[]> {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEY);
     let reservas: ReservaGuardada[] = data ? JSON.parse(data) : [];
 
-    // Purgar reservas demo residuales si quedaron guardadas en el dispositivo
-    const totalOriginal = reservas.length;
-    reservas = reservas.filter(
-      (r) => r.referencia !== "RES-1788500200456-M7T8W2Y" && r.referencia !== "DRV-89421-FIN"
-    );
-    if (totalOriginal !== reservas.length) {
+    // Asegurar que la reserva demo finalizada siempre esté disponible
+    if (!reservas.some((r) => r.referencia === RESERVA_FINALIZADA_DEMO.referencia)) {
+      reservas.unshift(RESERVA_FINALIZADA_DEMO);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reservas));
     }
 
@@ -186,7 +251,7 @@ async function leer(): Promise<ReservaGuardada[]> {
     return actualizadas;
   } catch (error) {
     console.error("[reservaPersistService] Error leyendo reservas", error);
-    return [];
+    return [RESERVA_FINALIZADA_DEMO];
   }
 }
 
@@ -204,6 +269,7 @@ export const reservaPersistService = {
     const documento = usuario.numeroDocumento?.replace(/\D/g, "");
 
     return reservas.filter((reserva) => {
+      if (reserva.referencia === RESERVA_FINALIZADA_DEMO.referencia) return true;
       if (reserva.usuarioId) return !!id && reserva.usuarioId === id;
 
       // Compatibilidad con reservas creadas antes de guardar usuarioId.
