@@ -113,25 +113,42 @@ export function getDetalleDuracionAlquiler(
   let tiempoUso: string | null = null;
   let subtituloAnticipada: string | null = null;
 
-  if (fechaRetiro !== fechaDevolucion && horaRetiro && horaDevolucion) {
+  if (horaRetiro && horaDevolucion) {
     const minRetiro = parseHoraEnMinutos(horaRetiro);
     const minDev = parseHoraEnMinutos(horaDevolucion);
 
-    if (minRetiro !== null && minDev !== null && minDev < minRetiro) {
-      const diffMinutosAnticipo = minRetiro - minDev;
-      const diasUso = diasContratados - 1;
-      const minutosUsoUltimoDia = 24 * 60 - diffMinutosAnticipo;
-      const horasUso = Math.floor(minutosUsoUltimoDia / 60);
-      const minsUso = minutosUsoUltimoDia % 60;
+    if (minRetiro !== null && minDev !== null) {
+      if (fechaRetiro === fechaDevolucion) {
+        // Mismo día: el alquiler contratado es 1 día (24h). Devolver el mismo día es devolución anticipada.
+        if (minDev > minRetiro) {
+          const diffMinutos = minDev - minRetiro;
+          const horasUso = Math.floor(diffMinutos / 60);
+          const minsUso = diffMinutos % 60;
 
-      const partesUso: string[] = [];
-      if (diasUso > 0) partesUso.push(`${diasUso} ${diaTexto(diasUso)}`);
-      if (horasUso > 0 && minsUso === 0) partesUso.push(`${horasUso} ${horaTexto(horasUso)}`);
-      else if (horasUso > 0 && minsUso > 0) partesUso.push(`${horasUso} h ${minsUso} min`);
-      else if (horasUso === 0 && minsUso > 0) partesUso.push(`${minsUso} min`);
+          const partesUso: string[] = [];
+          if (horasUso > 0 && minsUso === 0) partesUso.push(`${horasUso} ${horaTexto(horasUso)}`);
+          else if (horasUso > 0 && minsUso > 0) partesUso.push(`${horasUso} h ${minsUso} min`);
+          else if (horasUso === 0 && minsUso > 0) partesUso.push(`${minsUso} min`);
 
-      tiempoUso = partesUso.join(", ") || "0 horas";
-      subtituloAnticipada = `Devolución anticipada: ${tiempoUso}`;
+          tiempoUso = partesUso.join(", ") || "0 horas";
+          subtituloAnticipada = `Devolución anticipada: ${tiempoUso}`;
+        }
+      } else if (minDev < minRetiro) {
+        const diffMinutosAnticipo = minRetiro - minDev;
+        const diasUso = diasContratados - 1;
+        const minutosUsoUltimoDia = 24 * 60 - diffMinutosAnticipo;
+        const horasUso = Math.floor(minutosUsoUltimoDia / 60);
+        const minsUso = minutosUsoUltimoDia % 60;
+
+        const partesUso: string[] = [];
+        if (diasUso > 0) partesUso.push(`${diasUso} ${diaTexto(diasUso)}`);
+        if (horasUso > 0 && minsUso === 0) partesUso.push(`${horasUso} ${horaTexto(horasUso)}`);
+        else if (horasUso > 0 && minsUso > 0) partesUso.push(`${horasUso} h ${minsUso} min`);
+        else if (horasUso === 0 && minsUso > 0) partesUso.push(`${minsUso} min`);
+
+        tiempoUso = partesUso.join(", ") || "0 horas";
+        subtituloAnticipada = `Devolución anticipada: ${tiempoUso}`;
+      }
     }
   }
 
