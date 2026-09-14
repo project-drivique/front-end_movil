@@ -25,7 +25,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { GRADIENTES } from "@/constants/gradients";
-import { COLOR_MARCA, getCiudadPorSucursal, getDireccionSucursal } from "@/modules/catalog/constants/catalog.constants";
+import { COLOR_MARCA, VEHICULOS_MOCK, getCiudadPorSucursal, getDireccionSucursal } from "@/modules/catalog/constants/catalog.constants";
 import {
   calcularGrupoReserva,
   ReservaGuardada,
@@ -359,51 +359,99 @@ export default function PagoRespuestaScreen() {
     const fechasLugarSnap2 = reserva.fechasLugarSnapshot as DatosFechasLugar | undefined;
     const planesSnap2 = reserva.planesSnapshot as DatosPlanes | undefined;
 
-    if (vehiculoSnap2 && datosPersonalesSnap2 && fechasLugarSnap2 && planesSnap2) {
-      const nombreLicenciaSnap2 =
-        datosDocumentosSnap2?.licenciaConduccion?.nombre ||
-        docsUsuario?.licencia?.nombre ||
-        "Licencia verificada en perfil";
-      const nombreCedulaSnap2 =
-        datosDocumentosSnap2?.cedulaFrente?.nombre ||
-        docsUsuario?.identificacion?.nombre ||
-        null;
+    const vehiculoCatalogo2 = VEHICULOS_MOCK.find(
+      (v) => v.id === reserva?.vehiculoId || v.nombre === reserva?.vehiculoNombre
+    );
 
-      const datosDocumentosParaFirma: DatosDocumentos = {
-        cedulaFrente: nombreCedulaSnap2 ? { nombre: nombreCedulaSnap2 } : null,
-        cedulaReverso: datosDocumentosSnap2?.cedulaReverso ?? null,
-        licenciaConduccion: { nombre: nombreLicenciaSnap2 },
-      };
+    const vehiculoParaFirma: Vehiculo = {
+      ...(vehiculoCatalogo2 || {}),
+      ...(vehiculoSnap2 || {}),
+      id: vehiculoSnap2?.id || reserva?.vehiculoId || vehiculoCatalogo2?.id || 1,
+      nombre: vehiculoSnap2?.nombre || reserva?.vehiculoNombre || vehiculoCatalogo2?.nombre || "Toyota Corolla 2024",
+      marca: vehiculoSnap2?.marca || vehiculoCatalogo2?.marca || "Toyota",
+      modelo: vehiculoSnap2?.modelo || vehiculoCatalogo2?.modelo || "Corolla 2024",
+      placa: vehiculoSnap2?.placa || (reserva as any)?.vehiculoPlaca || vehiculoCatalogo2?.placa || "ABC-123",
+      color: vehiculoSnap2?.color || vehiculoCatalogo2?.color || "Blanco Perla",
+      año: vehiculoSnap2?.año || vehiculoCatalogo2?.año || 2024,
+      sucursal: vehiculoSnap2?.sucursal || reserva?.lugarRetiro || vehiculoCatalogo2?.sucursal || "Alamo Bogotá - Aeropuerto",
+      precio: reserva?.total || vehiculoSnap2?.precio || vehiculoCatalogo2?.precio || 85000,
+    } as Vehiculo;
 
-      return (
-        <View style={{ flex: 1, backgroundColor: c.bg }}>
-          <HeaderDetalle
-            insets={insets}
-            c={c}
-            titulo={t("reserva.contrato.title", { defaultValue: "Contrato de Alquiler" })}
-            onVolver={() => setMostrarFirma(false)}
-          />
-          <FirmaContrato
-            vehiculo={vehiculoSnap2}
-            datosPersonales={datosPersonalesSnap2}
-            datosDocumentos={datosDocumentosParaFirma}
-            fechasLugar={fechasLugarSnap2}
-            planes={planesSnap2}
-            total={reserva.total}
-            referencia={reserva.referencia}
-            onFirmado={async () => {
-              await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
-              const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
-              const contratoNuevo = await contratoService.obtenerPorReserva(reserva.referencia);
-              setReserva(actualizada ?? null);
-              setContratoActual(contratoNuevo);
-              setContratoFirmado(true);
-              setMostrarFirma(false);
-            }}
-          />
-        </View>
-      );
-    }
+    const datosPersonalesParaFirma: DatosPersonales = {
+      nombreCompleto: datosPersonalesSnap2?.nombreCompleto || (reserva as any)?.nombreCompleto || usuario?.nombre || "Cliente Drivique",
+      tipoDocumento: datosPersonalesSnap2?.tipoDocumento || (reserva as any)?.tipoDocumento || "CC",
+      numeroDocumento: datosPersonalesSnap2?.numeroDocumento || (reserva as any)?.numeroDocumento || "1075228306",
+      correo: datosPersonalesSnap2?.correo || (reserva as any)?.correo || usuario?.correo || "cliente@drivique.com",
+      celular: datosPersonalesSnap2?.celular || (reserva as any)?.celular || "3000000000",
+      nacionalidad: datosPersonalesSnap2?.nacionalidad || (reserva as any)?.nacionalidad || "Colombia",
+      terminosAceptados: true,
+    };
+
+    const fechasLugarParaFirma: DatosFechasLugar = {
+      fechaRetiro: fechasLugarSnap2?.fechaRetiro || reserva?.fechaRetiro || new Date().toISOString().split("T")[0],
+      fechaDevolucion: fechasLugarSnap2?.fechaDevolucion || reserva?.fechaDevolucion || new Date().toISOString().split("T")[0],
+      horaRetiro: fechasLugarSnap2?.horaRetiro || reserva?.horaRetiro || (reserva as any)?.horaRetiro || "10:00",
+      horaDevolucion: fechasLugarSnap2?.horaDevolucion || reserva?.horaDevolucion || (reserva as any)?.horaDevolucion || "10:00",
+      lugarRetiro: fechasLugarSnap2?.lugarRetiro || reserva?.lugarRetiro || vehiculoParaFirma.sucursal || "Alamo Bogotá - Aeropuerto",
+      lugarDevolucion: fechasLugarSnap2?.lugarDevolucion || reserva?.lugarDevolucion || vehiculoParaFirma.sucursal || "Alamo Bogotá - Aeropuerto",
+      direccionRetiro: fechasLugarSnap2?.direccionRetiro || "",
+      barrioRetiro: fechasLugarSnap2?.barrioRetiro || "",
+      referenciasRetiro: fechasLugarSnap2?.referenciasRetiro || "",
+      direccionDevolucion: fechasLugarSnap2?.direccionDevolucion || "",
+      barrioDevolucion: fechasLugarSnap2?.barrioDevolucion || "",
+      referenciasDevolucion: fechasLugarSnap2?.referenciasDevolucion || "",
+      metodoPago: fechasLugarSnap2?.metodoPago || (reserva?.metodoPago as any) || "wompi",
+    };
+
+    const planesParaFirma: DatosPlanes = {
+      proteccion: planesSnap2?.proteccion || reserva?.proteccion || "Básica",
+      tipoKilometraje: planesSnap2?.tipoKilometraje || reserva?.tipoKilometraje || "ilimitado",
+      serviciosSeleccionados: planesSnap2?.serviciosSeleccionados || [],
+    };
+
+    const nombreLicenciaSnap2 =
+      datosDocumentosSnap2?.licenciaConduccion?.nombre ||
+      docsUsuario?.licencia?.nombre ||
+      "Licencia de Conducción Verificada";
+    const nombreCedulaSnap2 =
+      datosDocumentosSnap2?.cedulaFrente?.nombre ||
+      docsUsuario?.identificacion?.nombre ||
+      "Cédula de Ciudadanía Verificada";
+
+    const datosDocumentosParaFirma: DatosDocumentos = {
+      cedulaFrente: { nombre: nombreCedulaSnap2 },
+      cedulaReverso: datosDocumentosSnap2?.cedulaReverso ?? null,
+      licenciaConduccion: { nombre: nombreLicenciaSnap2 },
+    };
+
+    return (
+      <View style={{ flex: 1, backgroundColor: c.bg }}>
+        <HeaderDetalle
+          insets={insets}
+          c={c}
+          titulo={t("reserva.contrato.title", { defaultValue: "Contrato de Alquiler" })}
+          onVolver={() => setMostrarFirma(false)}
+        />
+        <FirmaContrato
+          vehiculo={vehiculoParaFirma}
+          datosPersonales={datosPersonalesParaFirma}
+          datosDocumentos={datosDocumentosParaFirma}
+          fechasLugar={fechasLugarParaFirma}
+          planes={planesParaFirma}
+          total={reserva.total}
+          referencia={reserva.referencia}
+          onFirmado={async () => {
+            await reservaPersistService.actualizarEstado(reserva.referencia, "CONFIRMADA");
+            const actualizada = await reservaPersistService.obtenerPorReferencia(reserva.referencia);
+            const contratoNuevo = await contratoService.obtenerPorReserva(reserva.referencia);
+            setReserva(actualizada ?? null);
+            setContratoActual(contratoNuevo);
+            setContratoFirmado(true);
+            setMostrarFirma(false);
+          }}
+        />
+      </View>
+    );
   }
 
   const estadoTexto = t(`reserva.confirmacion.estados.${reserva.estado}`, {
