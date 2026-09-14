@@ -801,10 +801,10 @@ export default function PagoRespuestaScreen() {
 
           <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, marginBottom: 16 }]}>
             {esDomicilioRetiro && esDomicilioDevolucion
-              ? "Detalle de las direcciones registradas para la entrega y devolución del vehículo:"
+              ? "Nuestro equipo se encargará de llevar el vehículo hasta tu ubicación de entrega y recogerlo en el punto indicado al finalizar tu viaje. A continuación encuentras los datos registrados para la coordinación:"
               : esDomicilioRetiro
-              ? "Detalle de la dirección registrada para la entrega del vehículo:"
-              : "Detalle de la dirección registrada para la devolución del vehículo:"}
+              ? "Llevaremos el vehículo directamente a tu dirección para mayor comodidad. Nuestro equipo se comunicará contigo previo a la entrega según los siguientes datos:"
+              : "Un asesor de nuestro equipo se presentará en la dirección indicada para recibir el vehículo al finalizar tu reserva con los siguientes datos:"}
           </Text>
 
           {esDomicilioRetiro && (
@@ -1414,30 +1414,6 @@ export default function PagoRespuestaScreen() {
           </TouchableOpacity>
         </View>
       )}
-
-        {/* Botón Reportar Incidencia (solo cuando la reserva está en curso o finalizada) */}
-        {(grupo === "en_curso" || grupo === "finalizada") && (
-          <TouchableOpacity
-            style={[styles.btnDescargarWrap, { borderColor: c.border, backgroundColor: c.bgCard, marginBottom: 16 }]}
-            onPress={() => {
-              router.push({
-                pathname: "/(tabs)/support",
-                params: {
-                  reservaId: reserva.referencia,
-                  vehiculoNombre: reserva.vehiculoNombre,
-                  ...(vehiculoSnap?.placa ? { placa: vehiculoSnap.placa } : {}),
-                  tab: "reportar",
-                },
-              } as any);
-            }}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="build-outline" size={17} color={primaryAccent} />
-            <Text style={{ fontSize: 13.5, fontWeight: "700", color: primaryAccent }}>
-              {t("tabs.hacerReporte", { defaultValue: "Reportar Incidencia o Asistencia" })}
-            </Text>
-          </TouchableOpacity>
-        )}
 
         </ScrollView>
       </KeyboardAvoidingView>
