@@ -7,7 +7,7 @@ import {
   Image,
   Modal,
   Pressable,
-  FlatList,
+  SectionList,
   StatusBar,
   StyleSheet,
   Text,
@@ -28,11 +28,8 @@ import {
   calcularGrupoReserva,
   reservaPersistService,
 } from "@/modules/reservation/services/reservationPersistService";
-import { ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
-import { ModalCalificar } from "@/modules/reservation/components/ModalCalificar";
 import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
-import { AlertModal } from "@/components/ui/AlertModal";
 import { useUsuarioStore } from "@/store/userStore";
 import { aCentavos, construirUrlCheckout, consultarTransaccionWompi } from "@/modules/reservation/services/wompiService";
 import { Platform } from "react-native";
@@ -72,6 +69,21 @@ function etiquetaMesCorto(claveYYYYMM: string, locale: string): string {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
+function formatFechaReserva(fechaStr?: string | null): string {
+  if (!fechaStr) return "—";
+  const clean = String(fechaStr).split("T")[0];
+  const ahora = new Date();
+  const year = ahora.getFullYear();
+  const month = String(ahora.getMonth() + 1).padStart(2, "0");
+  const day = String(ahora.getDate()).padStart(2, "0");
+  const hoyStr = `${year}-${month}-${day}`;
+
+  if (clean === hoyStr) {
+    return "Hoy";
+  }
+  return fechaCorta(clean);
+}
+
 function formatHora12(horaStr?: string | null): string {
   if (!horaStr) return "";
   const partes = String(horaStr).trim().split(":");
@@ -98,6 +110,63 @@ function formatFechaCompleta(fechaStr?: string | null, locale: string = "es-CO")
   });
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
+
+function obtenerTituloSeccionFecha(fechaIsoStr?: string | null, locale: string = "es-CO"): string {
+  if (!fechaIsoStr) return "Otras reservas";
+  const clean = String(fechaIsoStr).split("T")[0];
+  const [y, m, d] = clean.split("-").map(Number);
+  if (!y || !m || !d) return "Otras reservas";
+
+  const ahora = new Date();
+  const yearHoy = ahora.getFullYear();
+  const mesHoy = String(ahora.getMonth() + 1).padStart(2, "0");
+  const diaHoy = String(ahora.getDate()).padStart(2, "0");
+  const hoyStr = `${yearHoy}-${mesHoy}-${diaHoy}`;
+
+  const ayerDate = new Date(ahora);
+  ayerDate.setDate(ayerDate.getDate() - 1);
+  const ayerStr = `${ayerDate.getFullYear()}-${String(ayerDate.getMonth() + 1).padStart(2, "0")}-${String(ayerDate.getDate()).padStart(2, "0")}`;
+
+  if (clean === hoyStr) {
+    return "Reservas de hoy";
+  }
+  if (clean === ayerStr) {
+    return "Ayer";
+  }
+
+  const fechaItem = new Date(y, m - 1, d);
+  const hoyMid = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+  const diffDias = Math.round((hoyMid.getTime() - fechaItem.getTime()) / (1000 * 60 * 60 * 24));
+
+  const fechaFormateada = fechaItem.toLocaleDateString(locale, {
+    day: "numeric",
+    month: "long",
+    year: ahora.getFullYear() === y ? undefined : "numeric",
+  });
+
+  if (diffDias > 1 && diffDias <= 7) {
+    return `Hace ${diffDias} días · ${fechaFormateada}`;
+  }
+
+  return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
+}
+
+function getTimestampCreacion(r: ReservaGuardada): number {
+  if (r.fechaReserva) {
+    const t = new Date(r.fechaReserva).getTime();
+    if (!isNaN(t) && t > 0) return t;
+  }
+  const match = String(r.referencia || "").match(/\d{10,}/);
+  if (match) {
+    const t = parseInt(match[0], 10);
+    if (!isNaN(t) && t > 0) return t;
+  }
+  return 0;
+}
+
+const ordenarPorCreacionDesc = (a: ReservaGuardada, b: ReservaGuardada) => {
+  return getTimestampCreacion(b) - getTimestampCreacion(a);
+};
 
 export default function MisReservasScreen() {
   const insets = useSafeAreaInsets();
@@ -127,17 +196,7 @@ export default function MisReservasScreen() {
           numeroDocumento: usuarioDocumento,
         });
         if (activo) {
-          setReservas(
-            [...data].sort((a, b) => {
-              const fechaA = String(a.fechaRetiro || a.fechaReserva || "");
-              const horaA = String((a.fechasLugarSnapshot as any)?.horaRetiro || a.horaRetiro || "00:00");
-              const fechaB = String(b.fechaRetiro || b.fechaReserva || "");
-              const horaB = String((b.fechasLugarSnapshot as any)?.horaRetiro || b.horaRetiro || "00:00");
-              const fullA = `${fechaA}T${horaA}`;
-              const fullB = `${fechaB}T${horaB}`;
-              return fullB.localeCompare(fullA);
-            })
-          );
+          setReservas([...data].sort(ordenarPorCreacionDesc));
           setCargando(false);
 
           // Verificar en segundo plano si Wompi ya aprobó algún pago pendiente
@@ -165,17 +224,7 @@ export default function MisReservasScreen() {
                 correo: usuarioCorreo,
                 numeroDocumento: usuarioDocumento,
               });
-              setReservas(
-                [...dataActualizada].sort((a, b) => {
-                  const fechaA = String(a.fechaRetiro || a.fechaReserva || "");
-                  const horaA = String((a.fechasLugarSnapshot as any)?.horaRetiro || a.horaRetiro || "00:00");
-                  const fechaB = String(b.fechaRetiro || b.fechaReserva || "");
-                  const horaB = String((b.fechasLugarSnapshot as any)?.horaRetiro || b.horaRetiro || "00:00");
-                  const fullA = `${fechaA}T${horaA}`;
-                  const fullB = `${fechaB}T${horaB}`;
-                  return fullB.localeCompare(fullA);
-                })
-              );
+              setReservas([...dataActualizada].sort(ordenarPorCreacionDesc));
             }
           }
         }
@@ -227,6 +276,22 @@ export default function MisReservasScreen() {
       return true;
     });
   }, [reservas, filtroGrupo, filtroMes]);
+
+  const seccionesReservas = useMemo(() => {
+    const mapa = new Map<string, ReservaGuardada[]>();
+    for (const r of reservasFiltradas) {
+      const fechaKey = String(r.fechaReserva || "").split("T")[0] || String(r.fechaRetiro || "").split("T")[0] || "desconocida";
+      const lista = mapa.get(fechaKey) || [];
+      lista.push(r);
+      mapa.set(fechaKey, lista);
+    }
+    const fechasOrdenadas = Array.from(mapa.keys()).sort((a, b) => b.localeCompare(a));
+    return fechasOrdenadas.map((fechaKey) => ({
+      fechaKey,
+      titulo: obtenerTituloSeccionFecha(fechaKey === "desconocida" ? null : fechaKey, locale),
+      data: (mapa.get(fechaKey) || []).sort(ordenarPorCreacionDesc),
+    }));
+  }, [reservasFiltradas, locale]);
 
   const irADetalle = (referencia: string) =>
     router.push(`/payment-response?ref=${encodeURIComponent(referencia)}`);
@@ -400,54 +465,27 @@ export default function MisReservasScreen() {
       )}
 
       {!cargando && reservas.length > 0 && reservasFiltradas.length > 0 && (
-        <FlatList
-          data={reservasFiltradas}
+        <SectionList
+          sections={seccionesReservas}
           keyExtractor={(item) => item.referencia}
           contentContainerStyle={styles.lista}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => {
-            const horaRetiro = (item.fechasLugarSnapshot as any)?.horaRetiro || item.horaRetiro;
-            const horaDevolucion = (item.fechasLugarSnapshot as any)?.horaDevolucion || item.horaDevolucion;
-            const horaRetiroFmt = formatHora12(horaRetiro);
-            const horaDevolucionFmt = formatHora12(horaDevolucion);
-
-            return (
-              <View style={styles.itemWrapper}>
-                {/* ── Encabezado exterior de Fecha y Hora (Arriba de la tarjeta) ── */}
-                <View style={[styles.fechaHoraBarra, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-                  <View style={[styles.fechaHoraIconoWrap, { backgroundColor: c.primaryBg }]}>
-                    <Ionicons name="calendar-outline" size={14} color={c.primary} />
-                  </View>
-                  <View style={styles.fechaHoraInfo}>
-                    <Text style={[styles.fechaHoraTexto, { color: c.textPrimary }]} numberOfLines={1}>
-                      {item.fechaRetiro ? formatFechaCompleta(String(item.fechaRetiro), locale) : "—"}
-                      {"  →  "}
-                      {item.fechaDevolucion ? formatFechaCompleta(String(item.fechaDevolucion), locale) : "—"}
-                    </Text>
-                    {(horaRetiroFmt || horaDevolucionFmt) ? (
-                      <View style={styles.horasFila}>
-                        <Ionicons name="time-outline" size={12} color={c.textMuted} />
-                        <Text style={[styles.horasTexto, { color: c.textSecondary }]} numberOfLines={1}>
-                          {horaRetiroFmt ? `${t("misReservas.card.recogida", { defaultValue: "Recogida" })}: ${horaRetiroFmt}` : ""}
-                          {horaRetiroFmt && horaDevolucionFmt ? "  ·  " : ""}
-                          {horaDevolucionFmt ? `${t("misReservas.card.devolucion", { defaultValue: "Devolución" })}: ${horaDevolucionFmt}` : ""}
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
-                </View>
-
-                {/* ── Tarjeta de la Reserva ── */}
-                <TarjetaReserva
-                  reserva={item}
-                  usuarioId={usuarioKey}
-                  c={c}
-                  t={t}
-                  onPress={() => irADetalle(item.referencia)}
-                />
-              </View>
-            );
-          }}
+          stickySectionHeadersEnabled={false}
+          renderSectionHeader={({ section: { titulo } }) => (
+            <View style={styles.seccionHeader}>
+              <View style={[styles.seccionPunto, { backgroundColor: c.primary }]} />
+              <Text style={[styles.seccionTitulo, { color: c.textPrimary }]}>{titulo}</Text>
+            </View>
+          )}
+          renderItem={({ item }) => (
+            <TarjetaReserva
+              reserva={item}
+              usuarioId={usuarioKey}
+              c={c}
+              t={t}
+              onPress={() => irADetalle(item.referencia)}
+            />
+          )}
         />
       )}
 
@@ -548,21 +586,6 @@ function TarjetaReserva({
   const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
   const foto = vehiculoSnap?.imagenes?.[0];
 
-  const [resena, setResena] = useState<ResenaGuardada | null>(null);
-  const [modalCalificarVisible, setModalCalificarVisible] = useState(false);
-  const [alertGuardadoVisible, setAlertGuardadoVisible] = useState(false);
-
-  useEffect(() => {
-    if (grupo !== "finalizada") return;
-    let activo = true;
-    resenaService.obtenerPorReserva(reserva.referencia, usuarioId).then((r) => {
-      if (activo) setResena(r);
-    });
-    return () => {
-      activo = false;
-    };
-  }, [grupo, reserva.referencia, usuarioId]);
-
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -599,29 +622,21 @@ function TarjetaReserva({
             </View>
           </View>
 
-          {/* Detalles técnicos / entrega del vehículo */}
-          <View style={styles.tarjetaDetallesFila}>
-            {vehiculoSnap?.transmision ? (
-              <Text style={[styles.tarjetaDetallesTexto, { color: c.textSecondary }]} numberOfLines={1}>
-                {vehiculoSnap.transmision}
-                {vehiculoSnap.combustible ? ` · ${vehiculoSnap.combustible}` : ""}
-                {vehiculoSnap.categoria ? ` · ${vehiculoSnap.categoria}` : ""}
-              </Text>
-            ) : (
-              <Text style={[styles.tarjetaDetallesTexto, { color: c.textSecondary }]} numberOfLines={1}>
-                {reserva.lugarRetiro ? (reserva.lugarRetiro === "sucursal" ? "📍 Sucursal Principal" : "📍 Entrega a Domicilio") : "📍 Drivique Rent a Car"}
-              </Text>
-            )}
-          </View>
+          {/* Fechas de la reserva */}
+          <Text style={[styles.tarjetaFechas, { color: c.textSecondary }]} numberOfLines={1}>
+            {formatFechaReserva(reserva.fechaRetiro ? String(reserva.fechaRetiro) : null)}
+            {" → "}
+            {formatFechaReserva(reserva.fechaDevolucion ? String(reserva.fechaDevolucion) : null)}
+          </Text>
 
           <View style={styles.tarjetaFooter}>
-            <Text style={[styles.tarjetaReferencia, { color: c.textMuted }]} numberOfLines={1}>
-              #{reserva.referencia}
+            <Text style={[styles.tarjetaTotalLabel, { color: c.textSecondary }]}>
+              {t("reserva.confirmacion.respuesta.total", { defaultValue: "Total" })}
             </Text>
             <Text style={[styles.tarjetaTotal, { color: c.textPrimary }]}>{fmt(reserva.total)}</Text>
           </View>
 
-          {(grupo === "confirmada" || grupo === "en_curso") && (
+          {(grupo === "en_curso" || grupo === "finalizada") && (
             <TouchableOpacity
               style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
               onPress={(e) => {
@@ -632,6 +647,7 @@ function TarjetaReserva({
                     reservaId: reserva.referencia,
                     vehiculoNombre: reserva.vehiculoNombre,
                     ...(vehiculoSnap?.placa ? { placa: vehiculoSnap.placa } : {}),
+                    tab: "reportar",
                   },
                 } as any);
               }}
@@ -643,57 +659,8 @@ function TarjetaReserva({
               </Text>
             </TouchableOpacity>
           )}
-
-          {grupo === "finalizada" && (
-            <TouchableOpacity
-              style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
-              onPress={(e) => {
-                e.stopPropagation();
-                setModalCalificarVisible(true);
-              }}
-              activeOpacity={0.8}
-            >
-              <View style={{ flexDirection: "row", gap: 1 }}>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Ionicons
-                    key={i}
-                    name={i < (resena?.calificacion || 0) ? "star" : "star-outline"}
-                    size={13}
-                    color="#F59E0B"
-                  />
-                ))}
-              </View>
-              <Text style={[styles.reportarBtnText, { color: c.primary }]} numberOfLines={1}>
-                {resena ? t("misReservas.editarCalificacion") : t("misReservas.calificarViaje")}
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
       </View>
-
-      {grupo === "finalizada" && (
-        <>
-          <ModalCalificar
-            visible={modalCalificarVisible}
-            referenciaReserva={reserva.referencia}
-            usuarioId={usuarioId}
-            valorInicial={resena}
-            onCerrar={() => setModalCalificarVisible(false)}
-            onGuardado={(nuevaResena) => {
-              setResena(nuevaResena);
-              setModalCalificarVisible(false);
-              setAlertGuardadoVisible(true);
-            }}
-          />
-          <AlertModal
-            visible={alertGuardadoVisible}
-            icono="checkmark-circle-outline"
-            titulo={t("misReservas.calificacionGuardadaTitulo")}
-            mensaje={t("misReservas.calificacionGuardadaMensaje")}
-            onCerrar={() => setAlertGuardadoVisible(false)}
-          />
-        </>
-      )}
     </TouchableOpacity>
   );
 }
@@ -772,53 +739,35 @@ const styles = StyleSheet.create({
   },
   todosMesesTexto: { fontSize: 13.5 },
 
-  lista: { padding: 16, paddingBottom: 40 },
-  itemWrapper: {
-    marginBottom: 16,
-  },
-  fechaHoraBarra: {
+  seccionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
-    borderWidth: 1,
-    borderBottomWidth: 0,
-    gap: 10,
+    gap: 8,
+    marginTop: 14,
+    marginBottom: 8,
+    paddingHorizontal: 4,
   },
-  fechaHoraIconoWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
+  seccionPunto: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
   },
-  fechaHoraInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  fechaHoraTexto: {
-    fontSize: 12.5,
+  seccionTitulo: {
+    fontSize: 13,
     fontWeight: "800",
+    letterSpacing: -0.2,
   },
-  horasFila: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 1,
-  },
-  horasTexto: {
-    fontSize: 11,
-    fontWeight: "600",
-  },
+  lista: { padding: 16, paddingBottom: 40 },
   tarjeta: {
-    borderBottomLeftRadius: 14,
-    borderBottomRightRadius: 14,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 12,
+    marginBottom: 12,
+  },
+  tarjetaFechas: {
+    fontSize: 11.5,
+    fontWeight: "600",
+    marginTop: 3,
   },
   tarjetaFila: { flexDirection: "row", gap: 12 },
   tarjetaFoto: { width: 72, height: 72, borderRadius: 10, resizeMode: "cover" },
@@ -856,7 +805,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 8,
   },
-  tarjetaReferencia: { fontSize: 10, flexShrink: 1 },
+  tarjetaTotalLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
   tarjetaTotal: { fontSize: 14, fontWeight: "800" },
   reportarBtn: {
     flexDirection: "row",

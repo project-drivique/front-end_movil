@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loadingMap: {
-    ...StyleSheet.absoluteFillObject,
+    ...(StyleSheet.absoluteFill as any),
     alignItems: "center",
     justifyContent: "center",
   },

@@ -30,6 +30,7 @@ import {
 } from "../services/wompiService";
 import {
   HORAS_LIMITE_PAGO_EFECTIVO,
+  calcularLimitePago,
   reservaPersistService,
 } from "../services/reservationPersistService";
 import { documentosService } from "../services/documentsService";
@@ -251,6 +252,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       fechaReserva: new Date().toISOString(),
       fechaRetiro: fechasLugar.fechaRetiro,
       fechaDevolucion: fechasLugar.fechaDevolucion,
+      horaRetiro: fechasLugar.horaRetiro,
+      horaDevolucion: fechasLugar.horaDevolucion,
       lugarRetiro: fechasLugar.lugarRetiro,
       lugarDevolucion: fechasLugar.lugarDevolucion,
       proteccion: planes.proteccion,
@@ -298,17 +301,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     router.replace("/(tabs)");
   };
 
-  const handleContratoFirmado = async () => {
-    if (referenciaActual) {
-      await reservaPersistService.actualizarEstado(referenciaActual, "CONFIRMADA");
-    }
-    setMostrarContrato(false);
-    setAlertaEfectivoVisible(true);
-  };
-
   const handlePagarWompi = async () => {
     if (!referenciaActual) return;
-    setModalReservaVisible(false);
     setProcesandoPago(true);
 
     try {
@@ -321,9 +315,10 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         redirectUrl,
       });
 
-      limpiarReserva();
+      setModalReservaVisible(false);
 
       if (Platform.OS === "web" && typeof window !== "undefined") {
+        limpiarReserva();
         window.location.href = url;
         return;
       }
@@ -335,6 +330,10 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
           ref: encodeURIComponent(referenciaActual),
         },
       });
+
+      setTimeout(() => {
+        limpiarReserva();
+      }, 500);
     } catch (error) {
       console.error("[FormDatosPersonales] Error iniciando checkout de Wompi", error);
       Alert.alert(
@@ -345,24 +344,6 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       setProcesandoPago(false);
     }
   };
-
-  if (mostrarContrato && referenciaActual) {
-    return (
-      <FirmaContrato
-        vehiculo={vehiculo}
-        datosPersonales={datosPersonales}
-        datosDocumentos={{
-          ...documentos,
-          licenciaConduccion: documentos.licenciaConduccion || { nombre: "Licencia verificada en perfil" },
-        }}
-        fechasLugar={fechasLugar}
-        planes={planes}
-        total={total}
-        referencia={referenciaActual}
-        onFirmado={handleContratoFirmado}
-      />
-    );
-  }
 
   return (
     <View>
@@ -593,44 +574,67 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       </View>
 
       {/* Aviso informativo previo a la confirmación */}
-      <View
-        style={[
-          styles.bannerAviso,
-          {
-            backgroundColor: c.oscuro ? "#17255433" : "#EFF6FF",
-            borderColor: c.oscuro ? "#1D4ED8" : "#BFDBFE",
-          },
-        ]}
-      >
-        <Ionicons name="information-circle-outline" size={17} color={primaryAccent} style={{ marginTop: 1 }} />
-        <Text style={[styles.bannerAvisoTexto, { color: c.oscuro ? "#93C5FD" : "#1E40AF" }]}>
-          {t("reserva.confirmacion.avisoGuardadoAutomatico", {
-            defaultValue:
-              "Al confirmar la reserva, quedará guardada automáticamente en tu cuenta. Tendrás un plazo de 72 horas para completar el pago antes de su cancelación automática.",
-          })}
-        </Text>
-      </View>
+      {(() => {
+        const limiteInfo = calcularLimitePago(fechasLugar.fechaRetiro, fechasLugar.horaRetiro);
+        const horas = limiteInfo.horasLimitePago || 72;
+        const textoHoras = horas === 1 ? "1 hora" : `${horas} horas`;
 
-      <BarraTotalConfirmar
-        total={total}
-        onConfirmar={handleConfirmarReserva}
-        onCancelar={() => setAlertaCancelarProcesoVisible(true)}
-      />
+        return (
+          <>
+            <View
+              style={[
+                styles.bannerAviso,
+                {
+                  backgroundColor: c.oscuro ? "rgba(30, 64, 175, 0.15)" : "#EFF6FF",
+                  borderColor: c.oscuro ? "#1E40AF" : "#BFDBFE",
+                },
+              ]}
+            >
+              <Ionicons
+                name="information-circle-outline"
+                size={18}
+                color={c.oscuro ? "#60A5FA" : "#1E40AF"}
+                style={{ marginTop: 1 }}
+              />
+              <Text
+                style={[
+                  styles.bannerAvisoTexto,
+                  {
+                    color: c.oscuro ? "#93C5FD" : "#1E40AF",
+                  },
+                ]}
+              >
+                {`Al confirmar la reserva, quedará guardada automáticamente en tu cuenta. Tendrás un plazo de ${textoHoras} para completar el pago antes de su cancelación automática.`}
+              </Text>
+            </View>
 
-      <ModalReservaRegistrada
-        visible={modalReservaVisible}
-        onPagarWompi={handlePagarWompi}
-        onCerrar={handlePagarMasTarde}
-      />
+            <BarraTotalConfirmar
+              total={total}
+              cargando={procesandoPago}
+              onConfirmar={handleConfirmarReserva}
+              onCancelar={() => setAlertaCancelarProcesoVisible(true)}
+            />
 
-      <BranchCashPaymentModal
-        visible={modalInstruccionesEfectivoVisible}
-        referencia={referenciaActual || ""}
-        nombreSucursal={vehiculo.sucursal || ""}
-        total={total}
-        onIrAMisReservas={handleIrAMisReservas}
-        onVolverAlInicio={handleVolverAlInicio}
-      />
+            <ModalReservaRegistrada
+              visible={modalReservaVisible}
+              horasLimitePago={limiteInfo.horasLimitePago}
+              cargando={procesandoPago}
+              onPagarWompi={handlePagarWompi}
+              onCerrar={handlePagarMasTarde}
+            />
+
+            <BranchCashPaymentModal
+              visible={modalInstruccionesEfectivoVisible}
+              referencia={referenciaActual || ""}
+              nombreSucursal={vehiculo.sucursal || ""}
+              total={total}
+              horasLimitePago={limiteInfo.horasLimitePago}
+              onIrAMisReservas={handleIrAMisReservas}
+              onVolverAlInicio={handleVolverAlInicio}
+            />
+          </>
+        );
+      })()}
 
       <AlertModal
         visible={alertaCancelarProcesoVisible}

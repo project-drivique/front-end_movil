@@ -19,6 +19,7 @@ export interface CouponDummy {
     vehiculoId?: number;
     categoriasValidas?: string[];
     metodosPagoValidos?: string[];
+    descuentoFijo?: number;
   };
   minimoValor?: number;
   tituloPremio: string;
