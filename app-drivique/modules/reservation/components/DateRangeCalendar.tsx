@@ -337,35 +337,6 @@ export default function CalendarioRango({
     }
 
     if (fecha === fechaRetiro) {
-      const [y, m, d] = fechaRetiro.split("-").map(Number);
-      const sigDia = new Date(y, m - 1, d + 1);
-      const ySig = sigDia.getFullYear();
-      const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
-      const dSig = String(sigDia.getDate()).padStart(2, "0");
-      const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
-
-      const motivoSig = ocupados.get(fechaSigStr);
-      if (motivoSig) {
-        setAlertaModal({
-          visible: true,
-          icono: "alert-circle-outline",
-          titulo: t("reserva.fechasLugar.rangoNoDisponibleTitulo"),
-          mensaje:
-            motivoSig === "mantenimiento"
-              ? t("reserva.fechasLugar.rangoConMantenimiento")
-              : t("reserva.fechasLangoConReservas", { defaultValue: "El día siguiente no está disponible" }),
-          botones: [
-            {
-              texto: t("reserva.fechasLugar.intentarDeNuevo", { defaultValue: "Aceptar" }),
-              variante: "primario",
-              onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
-            },
-          ],
-        });
-        onCambiarFechas(fecha, null);
-        return;
-      }
-
       setAlertaModal({
         visible: true,
         icono: "information-circle-outline",
@@ -382,7 +353,7 @@ export default function CalendarioRango({
         ],
       });
 
-      onCambiarFechas(fechaRetiro, fechaSigStr);
+      onCambiarFechas(fechaRetiro, fecha);
       return;
     }
 

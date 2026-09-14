@@ -111,20 +111,11 @@ export default function FormFechasLugar({ vehiculo }: Props) {
   };
 
   const handleAbrirHoraDevolucion = () => {
-    if (fechasLugar.fechaRetiro && (!fechasLugar.fechaDevolucion || fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion)) {
-      const [y, m, d] = fechasLugar.fechaRetiro.split("-").map(Number);
-      const sigDia = new Date(y, m - 1, d + 1);
-      const ySig = sigDia.getFullYear();
-      const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
-      const dSig = String(sigDia.getDate()).padStart(2, "0");
-      const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
-      actualizarFechasLugar({ fechaDevolucion: fechaSigStr });
-    }
     setHoraVisible("devolucion");
   };
 
   const handleElegirHora = (hora: string) => {
-    const fecha = horaVisible === "retiro" ? fechasLugar.fechaRetiro : fechasLugar.fechaDevolucion;
+    const fecha = horaVisible === "retiro" ? fechasLugar.fechaRetiro : fechaDevolucionEfectiva;
 
     if (fecha) {
       const horasOcupadas = getDisponibilidadVehiculo(vehiculo.id).horasOcupadas?.[fecha] ?? [];
@@ -154,22 +145,16 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     }
 
     if (horaVisible === "retiro") {
-      let nuevaFechaDev = fechasLugar.fechaDevolucion;
-      if (fechasLugar.fechaRetiro && (!fechasLugar.fechaDevolucion || fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion)) {
-        const [y, m, d] = fechasLugar.fechaRetiro.split("-").map(Number);
-        const sigDia = new Date(y, m - 1, d + 1);
-        const ySig = sigDia.getFullYear();
-        const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
-        const dSig = String(sigDia.getDate()).padStart(2, "0");
-        nuevaFechaDev = `${ySig}-${mSig}-${dSig}`;
-      }
+      actualizarFechasLugar({ horaRetiro: hora });
+    } else if (horaVisible === "devolucion") {
+      const nuevaFechaDev = esUnSoloDia
+        ? getFechaSiguiente(fechasLugar.fechaRetiro) || fechasLugar.fechaDevolucion
+        : fechasLugar.fechaDevolucion;
 
       actualizarFechasLugar({
-        horaRetiro: hora,
-        ...(nuevaFechaDev !== fechasLugar.fechaDevolucion ? { fechaDevolucion: nuevaFechaDev } : {}),
+        horaDevolucion: hora,
+        fechaDevolucion: nuevaFechaDev,
       });
-    } else if (horaVisible === "devolucion") {
-      actualizarFechasLugar({ horaDevolucion: hora });
     }
   };
 
@@ -590,14 +575,18 @@ export default function FormFechasLugar({ vehiculo }: Props) {
 
       <SelectorHoraModal
         visible={horaVisible !== null}
-        fecha={horaVisible === "retiro" ? fechasLugar.fechaRetiro : fechasLugar.fechaDevolucion}
+        fecha={horaVisible === "retiro" ? fechasLugar.fechaRetiro : fechaDevolucionEfectiva}
         minHora={null}
         maxHora={
           horaVisible === "devolucion" && fechasLugar.horaRetiro
             ? fechasLugar.horaRetiro
             : null
         }
-        subtitulo={null}
+        subtitulo={
+          horaVisible === "devolucion" && esUnSoloDia && fechasLugar.fechaRetiro
+            ? `Devolución: ${fechaDevolucionEfectiva} (Día siguiente)`
+            : null
+        }
         alertaInformativa={
           horaVisible === "devolucion" && fechasLugar.horaRetiro
             ? {

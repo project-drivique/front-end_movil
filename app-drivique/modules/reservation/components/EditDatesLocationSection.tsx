@@ -156,21 +156,32 @@ export default function EditDatesLocationSection({
     setModalTipo(null);
   };
 
+function getFechaSiguiente(fechaStr: string | null | undefined): string | null {
+  if (!fechaStr) return null;
+  const [y, m, d] = fechaStr.split("-").map(Number);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return fechaStr;
+  const sig = new Date(y, m - 1, d + 1);
+  const ySig = sig.getFullYear();
+  const mSig = String(sig.getMonth() + 1).padStart(2, "0");
+  const dSig = String(sig.getDate()).padStart(2, "0");
+  return `${ySig}-${mSig}-${dSig}`;
+}
+
+  const esUnSoloDia =
+    !!draft.fechaRetiro &&
+    !!draft.fechaDevolucion &&
+    draft.fechaRetiro === draft.fechaDevolucion;
+
+  const fechaDevolucionEfectiva = esUnSoloDia
+    ? getFechaSiguiente(draft.fechaRetiro) || draft.fechaDevolucion
+    : draft.fechaDevolucion;
+
   const handleAbrirHoraDevolucion = () => {
-    if (draft.fechaRetiro && (!draft.fechaDevolucion || draft.fechaRetiro === draft.fechaDevolucion)) {
-      const [y, m, d] = draft.fechaRetiro.split("-").map(Number);
-      const sigDia = new Date(y, m - 1, d + 1);
-      const ySig = sigDia.getFullYear();
-      const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
-      const dSig = String(sigDia.getDate()).padStart(2, "0");
-      const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
-      setDraft((prev) => ({ ...prev, fechaDevolucion: fechaSigStr }));
-    }
     setHoraVisible("devolucion");
   };
 
   const handleElegirHora = (hora: string) => {
-    const fecha = horaVisible === "retiro" ? draft.fechaRetiro : draft.fechaDevolucion;
+    const fecha = horaVisible === "retiro" ? draft.fechaRetiro : fechaDevolucionEfectiva;
 
     if (fecha) {
       const horasOcupadas = getDisponibilidadVehiculo(vehiculo.id).horasOcupadas?.[fecha] ?? [];
@@ -200,23 +211,20 @@ export default function EditDatesLocationSection({
     }
 
     if (horaVisible === "retiro") {
-      let nuevaFechaDev = draft.fechaDevolucion;
-      if (draft.fechaRetiro && (!draft.fechaDevolucion || draft.fechaRetiro === draft.fechaDevolucion)) {
-        const [y, m, d] = draft.fechaRetiro.split("-").map(Number);
-        const sigDia = new Date(y, m - 1, d + 1);
-        const ySig = sigDia.getFullYear();
-        const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
-        const dSig = String(sigDia.getDate()).padStart(2, "0");
-        nuevaFechaDev = `${ySig}-${mSig}-${dSig}`;
-      }
-
       setDraft((prev) => ({
         ...prev,
         horaRetiro: hora,
-        ...(nuevaFechaDev !== prev.fechaDevolucion ? { fechaDevolucion: nuevaFechaDev } : {}),
       }));
     } else if (horaVisible === "devolucion") {
-      setDraft((prev) => ({ ...prev, horaDevolucion: hora }));
+      const nuevaFechaDev = esUnSoloDia
+        ? getFechaSiguiente(draft.fechaRetiro) || draft.fechaDevolucion
+        : draft.fechaDevolucion;
+
+      setDraft((prev) => ({
+        ...prev,
+        horaDevolucion: hora,
+        fechaDevolucion: nuevaFechaDev,
+      }));
     }
   };
 
@@ -717,14 +725,18 @@ export default function EditDatesLocationSection({
 
       <SelectorHoraModal
         visible={horaVisible !== null}
-        fecha={horaVisible === "retiro" ? draft.fechaRetiro : draft.fechaDevolucion}
+        fecha={horaVisible === "retiro" ? draft.fechaRetiro : fechaDevolucionEfectiva}
         minHora={null}
         maxHora={
           horaVisible === "devolucion" && draft.horaRetiro
             ? draft.horaRetiro
             : null
         }
-        subtitulo={null}
+        subtitulo={
+          horaVisible === "devolucion" && esUnSoloDia && draft.fechaRetiro
+            ? `Devolución: ${fechaDevolucionEfectiva} (Día siguiente)`
+            : null
+        }
         alertaInformativa={
           horaVisible === "devolucion" && draft.horaRetiro
             ? {
