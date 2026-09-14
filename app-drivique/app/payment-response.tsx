@@ -421,11 +421,11 @@ export default function PagoRespuestaScreen() {
       color: "#f59e0b",
       titulo:
         reserva.estado === "PENDIENTE_EFECTIVO"
-          ? t("misReservas.detalle.tituloPendienteEfectivo", { defaultValue: "Pendiente - Pago en efectivo en sucursal" })
+          ? t("misReservas.detalle.tituloPendienteEfectivo", { defaultValue: "Pago en efectivo en sucursal" })
           : reserva.estado === "PENDIENTE_VALIDACION"
           ? t("misReservas.detalle.tituloPendienteValidacion", { defaultValue: "Pago en validación" })
           : reserva.metodoPago === "wompi" || reserva.estado === "PENDIENTE"
-          ? t("misReservas.detalle.tituloPagoDigitalPendiente", { defaultValue: "Pendiente - Pago virtual con Wompi" })
+          ? t("misReservas.detalle.tituloPagoDigitalPendiente", { defaultValue: "Pago virtual con Wompi" })
           : t("misReservas.detalle.tituloPendiente", { defaultValue: "Reserva pendiente" }),
     },
     confirmada: { icono: "checkmark-done-circle-outline", color: COLOR_MARCA, titulo: t("misReservas.detalle.tituloConfirmada") },
@@ -741,8 +741,8 @@ export default function PagoRespuestaScreen() {
           {/* Título */}
           <Text style={[styles.tituloEfectivo, { color: c.textPrimary }]}>
             {pmTypeUpper.includes("COLLECT") || detLower.includes("efectivo en bancolombia") || detLower.includes("corresponsal")
-              ? "Pendiente - Pago en efectivo en Bancolombia"
-              : t("reserva.confirmacion.efectivoConfirmadaTitulo", { defaultValue: "Pendiente - Pago en efectivo en sucursal" })}
+              ? "Pago en efectivo en Bancolombia"
+              : t("reserva.confirmacion.efectivoConfirmadaTitulo", { defaultValue: "Pago en efectivo en sucursal" })}
           </Text>
 
           {/* Mensaje descriptivo */}
@@ -871,7 +871,7 @@ export default function PagoRespuestaScreen() {
             />
           </View>
           <Text style={[styles.tituloEfectivo, { color: c.textPrimary, fontSize: 18, marginBottom: 6 }]}>
-            {t("reserva.confirmacion.pagoPendienteTitulo", { defaultValue: "Pendiente - Pago virtual con Wompi" })}
+            {t("reserva.confirmacion.pagoPendienteTitulo", { defaultValue: "Pago virtual con Wompi" })}
           </Text>
           <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, marginBottom: 14 }]}>
             {t("reserva.confirmacion.pagoPendienteTexto", {
