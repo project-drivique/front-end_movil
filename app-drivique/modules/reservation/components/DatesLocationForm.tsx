@@ -23,6 +23,17 @@ function formatFecha(fecha: string | null, fallback: string): string {
   return d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+function getFechaSiguiente(fechaStr: string | null | undefined): string | null {
+  if (!fechaStr) return null;
+  const [y, m, d] = fechaStr.split("-").map(Number);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return fechaStr;
+  const sig = new Date(y, m - 1, d + 1);
+  const ySig = sig.getFullYear();
+  const mSig = String(sig.getMonth() + 1).padStart(2, "0");
+  const dSig = String(sig.getDate()).padStart(2, "0");
+  return `${ySig}-${mSig}-${dSig}`;
+}
+
 export default function FormFechasLugar({ vehiculo }: Props) {
   const c = useTemaColores();
   const { t } = useTranslation();
@@ -109,6 +120,15 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     if (modalTipo === "devolucion") actualizarFechasLugar({ lugarDevolucion: value });
     setModalTipo(null);
   };
+
+  const esUnSoloDia =
+    !!fechasLugar.fechaRetiro &&
+    !!fechasLugar.fechaDevolucion &&
+    fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion;
+
+  const fechaDevolucionEfectiva = esUnSoloDia
+    ? getFechaSiguiente(fechasLugar.fechaRetiro) || fechasLugar.fechaDevolucion
+    : fechasLugar.fechaDevolucion;
 
   const handleAbrirHoraDevolucion = () => {
     setHoraVisible("devolucion");
