@@ -11,13 +11,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 
 interface Props {
+  nombre?: string;
   imagenes: string[];
   calificacion?: number;
   borderColor?: string;
   style?: any;
 }
 
-export function VehicleGallery({ imagenes, calificacion, borderColor, style }: Props) {
+export function VehicleGallery({ nombre, imagenes, calificacion, borderColor, style }: Props) {
   const c = useTemaColores();
   const [activa, setActiva] = useState(0);
 
@@ -26,6 +27,14 @@ export function VehicleGallery({ imagenes, calificacion, borderColor, style }: P
   if (imagenes.length === 0) {
     return (
       <View style={[s.card, { backgroundColor: c.bgCard, borderColor: finalBorderColor }, style]}>
+        {!!nombre && (
+          <View style={s.cardHeaderRow}>
+            <Ionicons name="car-sport-outline" size={16} color={c.oscuro ? "#93C5FD" : "#1E3A8A"} />
+            <Text style={[s.cardHeaderTitulo, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]} numberOfLines={1}>
+              {nombre}
+            </Text>
+          </View>
+        )}
         <View style={[s.principal, s.principalVacio, { backgroundColor: c.bgInput }]}>
           <Ionicons name="car-outline" size={56} color={c.textMuted} />
         </View>
@@ -45,6 +54,16 @@ export function VehicleGallery({ imagenes, calificacion, borderColor, style }: P
 
   return (
     <View style={[s.card, { backgroundColor: c.bgCard, borderColor: finalBorderColor }, style]}>
+      {/* Encabezado con Nombre del Vehículo antes de la imagen */}
+      {!!nombre && (
+        <View style={s.cardHeaderRow}>
+          <Ionicons name="car-sport-outline" size={16} color={c.oscuro ? "#93C5FD" : "#1E3A8A"} />
+          <Text style={[s.cardHeaderTitulo, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]} numberOfLines={1}>
+            {nombre}
+          </Text>
+        </View>
+      )}
+
       {/* Imagen Principal */}
       <View style={[s.principalContainer, { backgroundColor: c.bgInput }]}>
         <Image source={{ uri: imagenes[activa] }} style={s.principal} resizeMode="cover" />
@@ -192,5 +211,16 @@ const s = StyleSheet.create({
   },
   miniaturaInactiva: {
     opacity: 0.75,
+  },
+  cardHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 10,
+  },
+  cardHeaderTitulo: {
+    fontSize: 14,
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
 });

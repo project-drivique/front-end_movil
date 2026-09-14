@@ -205,6 +205,7 @@ export default function VehiculoDetallePage() {
         <Animated.View style={{ opacity: opacidad }}>
           {/* 1. Galería de Imágenes */}
           <VehicleGallery
+            nombre={vehiculo.nombre}
             imagenes={getSafeImages(vehiculo)}
             calificacion={vehiculo.calificacion}
             borderColor={colorBorde}
