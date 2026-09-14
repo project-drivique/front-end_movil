@@ -111,6 +111,15 @@ export default function FormFechasLugar({ vehiculo }: Props) {
   };
 
   const handleAbrirHoraDevolucion = () => {
+    if (fechasLugar.fechaRetiro && (!fechasLugar.fechaDevolucion || fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion)) {
+      const [y, m, d] = fechasLugar.fechaRetiro.split("-").map(Number);
+      const sigDia = new Date(y, m - 1, d + 1);
+      const ySig = sigDia.getFullYear();
+      const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
+      const dSig = String(sigDia.getDate()).padStart(2, "0");
+      const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
+      actualizarFechasLugar({ fechaDevolucion: fechaSigStr });
+    }
     setHoraVisible("devolucion");
   };
 
@@ -145,7 +154,20 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     }
 
     if (horaVisible === "retiro") {
-      actualizarFechasLugar({ horaRetiro: hora });
+      let nuevaFechaDev = fechasLugar.fechaDevolucion;
+      if (fechasLugar.fechaRetiro && (!fechasLugar.fechaDevolucion || fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion)) {
+        const [y, m, d] = fechasLugar.fechaRetiro.split("-").map(Number);
+        const sigDia = new Date(y, m - 1, d + 1);
+        const ySig = sigDia.getFullYear();
+        const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
+        const dSig = String(sigDia.getDate()).padStart(2, "0");
+        nuevaFechaDev = `${ySig}-${mSig}-${dSig}`;
+      }
+
+      actualizarFechasLugar({
+        horaRetiro: hora,
+        ...(nuevaFechaDev !== fechasLugar.fechaDevolucion ? { fechaDevolucion: nuevaFechaDev } : {}),
+      });
     } else if (horaVisible === "devolucion") {
       actualizarFechasLugar({ horaDevolucion: hora });
     }

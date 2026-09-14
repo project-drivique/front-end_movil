@@ -157,6 +157,15 @@ export default function EditDatesLocationSection({
   };
 
   const handleAbrirHoraDevolucion = () => {
+    if (draft.fechaRetiro && (!draft.fechaDevolucion || draft.fechaRetiro === draft.fechaDevolucion)) {
+      const [y, m, d] = draft.fechaRetiro.split("-").map(Number);
+      const sigDia = new Date(y, m - 1, d + 1);
+      const ySig = sigDia.getFullYear();
+      const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
+      const dSig = String(sigDia.getDate()).padStart(2, "0");
+      const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
+      setDraft((prev) => ({ ...prev, fechaDevolucion: fechaSigStr }));
+    }
     setHoraVisible("devolucion");
   };
 
@@ -191,7 +200,21 @@ export default function EditDatesLocationSection({
     }
 
     if (horaVisible === "retiro") {
-      setDraft((prev) => ({ ...prev, horaRetiro: hora }));
+      let nuevaFechaDev = draft.fechaDevolucion;
+      if (draft.fechaRetiro && (!draft.fechaDevolucion || draft.fechaRetiro === draft.fechaDevolucion)) {
+        const [y, m, d] = draft.fechaRetiro.split("-").map(Number);
+        const sigDia = new Date(y, m - 1, d + 1);
+        const ySig = sigDia.getFullYear();
+        const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
+        const dSig = String(sigDia.getDate()).padStart(2, "0");
+        nuevaFechaDev = `${ySig}-${mSig}-${dSig}`;
+      }
+
+      setDraft((prev) => ({
+        ...prev,
+        horaRetiro: hora,
+        ...(nuevaFechaDev !== prev.fechaDevolucion ? { fechaDevolucion: nuevaFechaDev } : {}),
+      }));
     } else if (horaVisible === "devolucion") {
       setDraft((prev) => ({ ...prev, horaDevolucion: hora }));
     }
