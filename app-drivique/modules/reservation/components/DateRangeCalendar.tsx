@@ -337,41 +337,12 @@ export default function CalendarioRango({
     }
 
     if (fecha === fechaRetiro) {
-      const [y, m, d] = fechaRetiro.split("-").map(Number);
-      const sigDia = new Date(y, m - 1, d + 1);
-      const ySig = sigDia.getFullYear();
-      const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
-      const dSig = String(sigDia.getDate()).padStart(2, "0");
-      const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
-
-      const motivoSig = ocupados.get(fechaSigStr);
-      if (motivoSig) {
-        setAlertaModal({
-          visible: true,
-          icono: "alert-circle-outline",
-          titulo: t("reserva.fechasLugar.rangoNoDisponibleTitulo"),
-          mensaje:
-            motivoSig === "mantenimiento"
-              ? t("reserva.fechasLugar.rangoConMantenimiento")
-              : t("reserva.fechasLugar.rangoConReservas"),
-          botones: [
-            {
-              texto: t("reserva.fechasLugar.intentarDeNuevo", { defaultValue: "Aceptar" }),
-              variante: "primario",
-              onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
-            },
-          ],
-        });
-        onCambiarFechas(fecha, null);
-        return;
-      }
-
       setAlertaModal({
         visible: true,
         icono: "information-circle-outline",
         titulo: t("reserva.fechasLugar.mismoDiaTitulo", { defaultValue: "Reserva de 1 día (24 horas)" }),
         mensaje: t("reserva.fechasLugar.mismoDiaMensaje", {
-          defaultValue: `Esta reserva corresponde a 1 día de alquiler (24 horas). Las 24 horas empezarán a contar a partir de la hora de retiro que elijas y finalizarán al día siguiente (${fechaSigStr}), sujeto al horario de atención de la sucursal (${horarioSucursal.textoHorario}).`,
+          defaultValue: `Esta reserva corresponde a 1 día de alquiler (24 horas). Las 24 horas empezarán a contar a partir de la hora de retiro que elijas, sujeto al horario de atención de la sucursal (${horarioSucursal.textoHorario}).`,
         }),
         botones: [
           {
@@ -381,9 +352,6 @@ export default function CalendarioRango({
           },
         ],
       });
-
-      onCambiarFechas(fechaRetiro, fechaSigStr);
-      return;
     }
 
     onCambiarFechas(fechaRetiro, fecha);
