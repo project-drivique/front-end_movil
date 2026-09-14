@@ -111,42 +111,14 @@ export default function FormFechasLugar({ vehiculo }: Props) {
   };
 
   const handleAbrirHoraDevolucion = () => {
-    if (
-      fechasLugar.fechaRetiro &&
-      fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion &&
-      fechasLugar.horaRetiro === horarioRetiro.horaCierre
-    ) {
-      setAlertaModal({
-        visible: true,
-        icono: "time-outline",
-        titulo: t("reserva.fechasLugar.sinHorasMismoDiaTitulo", { defaultValue: "Hora de devolución" }),
-        mensaje: t("reserva.fechasLugar.sinHorasMismoDiaMensaje", {
-          defaultValue: `Como la hora de retiro es a las ${formatHoraAmPm(horarioRetiro.horaCierre)} (cierre de sucursal), la devolución debe realizarse a partir del día siguiente.`,
-        }),
-        botones: [
-          {
-            texto: t("comun.cancelar", { defaultValue: "Cancelar" }),
-            variante: "secundario",
-            onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
-          },
-          {
-            texto: t("reserva.fechasLugar.moverDiaSiguiente", { defaultValue: "Mover a mañana" }),
-            variante: "primario",
-            onPress: () => {
-              setAlertaModal((p) => ({ ...p, visible: false }));
-              const [y, m, d] = fechasLugar.fechaRetiro!.split("-").map(Number);
-              const sigDia = new Date(y, m - 1, d + 1);
-              const ySig = sigDia.getFullYear();
-              const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
-              const dSig = String(sigDia.getDate()).padStart(2, "0");
-              const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
-              actualizarFechasLugar({ fechaDevolucion: fechaSigStr, horaDevolucion: "" });
-              setHoraVisible("devolucion");
-            },
-          },
-        ],
-      });
-      return;
+    if (fechasLugar.fechaRetiro && (!fechasLugar.fechaDevolucion || fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion)) {
+      const [y, m, d] = fechasLugar.fechaRetiro.split("-").map(Number);
+      const sigDia = new Date(y, m - 1, d + 1);
+      const ySig = sigDia.getFullYear();
+      const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
+      const dSig = String(sigDia.getDate()).padStart(2, "0");
+      const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
+      actualizarFechasLugar({ fechaDevolucion: fechaSigStr });
     }
     setHoraVisible("devolucion");
   };
@@ -182,53 +154,20 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     }
 
     if (horaVisible === "retiro") {
-      if (
-        hora === horarioRetiro.horaCierre &&
-        fechasLugar.fechaRetiro &&
-        fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion
-      ) {
+      let nuevaFechaDev = fechasLugar.fechaDevolucion;
+      if (fechasLugar.fechaRetiro && (!fechasLugar.fechaDevolucion || fechasLugar.fechaRetiro === fechasLugar.fechaDevolucion)) {
         const [y, m, d] = fechasLugar.fechaRetiro.split("-").map(Number);
         const sigDia = new Date(y, m - 1, d + 1);
         const ySig = sigDia.getFullYear();
         const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
         const dSig = String(sigDia.getDate()).padStart(2, "0");
-        const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
-        actualizarFechasLugar({
-          horaRetiro: hora,
-          fechaDevolucion: fechaSigStr,
-          horaDevolucion: "",
-        });
-        setAlertaModal({
-          visible: true,
-          icono: "information-circle-outline",
-          titulo: t("reserva.fechasLugar.ajusteDevolucionTitulo", { defaultValue: "Fecha de devolución ajustada" }),
-          mensaje: t("reserva.fechasLugar.ajusteDevolucionMensaje", {
-            defaultValue: `Al retirar a las ${formatHoraAmPm(horarioRetiro.horaCierre)} (hora de cierre), la fecha de devolución se ajustó automáticamente para el día siguiente.`,
-          }),
-          botones: [
-            {
-              texto: t("comun.aceptar", { defaultValue: "Aceptar" }),
-              variante: "primario",
-              onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
-            },
-          ],
-        });
-      } else {
-        const esMismoDia = fechasLugar.fechaDevolucion === fechasLugar.fechaRetiro;
-
-        actualizarFechasLugar({
-          horaRetiro: hora,
-        });
-
-        // Si la hora de devolución quedó antes o igual en el mismo día, resetearla
-        if (
-          esMismoDia &&
-          fechasLugar.horaDevolucion &&
-          fechasLugar.horaDevolucion <= hora
-        ) {
-          actualizarFechasLugar({ horaDevolucion: "" });
-        }
+        nuevaFechaDev = `${ySig}-${mSig}-${dSig}`;
       }
+
+      actualizarFechasLugar({
+        horaRetiro: hora,
+        ...(nuevaFechaDev !== fechasLugar.fechaDevolucion ? { fechaDevolucion: nuevaFechaDev } : {}),
+      });
     } else if (horaVisible === "devolucion") {
       actualizarFechasLugar({ horaDevolucion: hora });
     }

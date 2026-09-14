@@ -157,42 +157,14 @@ export default function EditDatesLocationSection({
   };
 
   const handleAbrirHoraDevolucion = () => {
-    if (
-      draft.fechaRetiro &&
-      draft.fechaRetiro === draft.fechaDevolucion &&
-      draft.horaRetiro === horarioRetiro.horaCierre
-    ) {
-      setAlertaModal({
-        visible: true,
-        icono: "time-outline",
-        titulo: t("reserva.fechasLugar.sinHorasMismoDiaTitulo", { defaultValue: "Hora de devolución" }),
-        mensaje: t("reserva.fechasLugar.sinHorasMismoDiaMensaje", {
-          defaultValue: `Como la hora de retiro es a las ${formatHoraAmPm(horarioRetiro.horaCierre)} (cierre de sucursal), la devolución debe realizarse a partir del día siguiente.`,
-        }),
-        botones: [
-          {
-            texto: t("comun.cancelar", { defaultValue: "Cancelar" }),
-            variante: "secundario",
-            onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
-          },
-          {
-            texto: t("reserva.fechasLugar.moverDiaSiguiente", { defaultValue: "Mover a mañana" }),
-            variante: "primario",
-            onPress: () => {
-              setAlertaModal((p) => ({ ...p, visible: false }));
-              const [y, m, d] = draft.fechaRetiro!.split("-").map(Number);
-              const sigDia = new Date(y, m - 1, d + 1);
-              const ySig = sigDia.getFullYear();
-              const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
-              const dSig = String(sigDia.getDate()).padStart(2, "0");
-              const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
-              setDraft((prev) => ({ ...prev, fechaDevolucion: fechaSigStr, horaDevolucion: "" }));
-              setHoraVisible("devolucion");
-            },
-          },
-        ],
-      });
-      return;
+    if (draft.fechaRetiro && (!draft.fechaDevolucion || draft.fechaRetiro === draft.fechaDevolucion)) {
+      const [y, m, d] = draft.fechaRetiro.split("-").map(Number);
+      const sigDia = new Date(y, m - 1, d + 1);
+      const ySig = sigDia.getFullYear();
+      const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
+      const dSig = String(sigDia.getDate()).padStart(2, "0");
+      const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
+      setDraft((prev) => ({ ...prev, fechaDevolucion: fechaSigStr }));
     }
     setHoraVisible("devolucion");
   };
@@ -228,52 +200,21 @@ export default function EditDatesLocationSection({
     }
 
     if (horaVisible === "retiro") {
-      if (
-        hora === horarioRetiro.horaCierre &&
-        draft.fechaRetiro &&
-        draft.fechaRetiro === draft.fechaDevolucion
-      ) {
+      let nuevaFechaDev = draft.fechaDevolucion;
+      if (draft.fechaRetiro && (!draft.fechaDevolucion || draft.fechaRetiro === draft.fechaDevolucion)) {
         const [y, m, d] = draft.fechaRetiro.split("-").map(Number);
         const sigDia = new Date(y, m - 1, d + 1);
         const ySig = sigDia.getFullYear();
         const mSig = String(sigDia.getMonth() + 1).padStart(2, "0");
         const dSig = String(sigDia.getDate()).padStart(2, "0");
-        const fechaSigStr = `${ySig}-${mSig}-${dSig}`;
-        setDraft((prev) => ({
-          ...prev,
-          horaRetiro: hora,
-          fechaDevolucion: fechaSigStr,
-          horaDevolucion: "",
-        }));
-        setAlertaModal({
-          visible: true,
-          icono: "information-circle-outline",
-          titulo: t("reserva.fechasLugar.ajusteDevolucionTitulo", { defaultValue: "Fecha de devolución ajustada" }),
-          mensaje: t("reserva.fechasLugar.ajusteDevolucionMensaje", {
-            defaultValue: `Al retirar a las ${formatHoraAmPm(horarioRetiro.horaCierre)} (hora de cierre), la fecha de devolución se ajustó automáticamente para el día siguiente.`,
-          }),
-          botones: [
-            {
-              texto: t("comun.aceptar", { defaultValue: "Aceptar" }),
-              variante: "primario",
-              onPress: () => setAlertaModal((p) => ({ ...p, visible: false })),
-            },
-          ],
-        });
-      } else {
-        const esMismoDia = draft.fechaDevolucion === draft.fechaRetiro;
-
-        setDraft((prev) => {
-          const nuevoDraft = {
-            ...prev,
-            horaRetiro: hora,
-          };
-          if (esMismoDia && prev.horaDevolucion && prev.horaDevolucion <= hora) {
-            nuevoDraft.horaDevolucion = "";
-          }
-          return nuevoDraft;
-        });
+        nuevaFechaDev = `${ySig}-${mSig}-${dSig}`;
       }
+
+      setDraft((prev) => ({
+        ...prev,
+        horaRetiro: hora,
+        ...(nuevaFechaDev !== prev.fechaDevolucion ? { fechaDevolucion: nuevaFechaDev } : {}),
+      }));
     } else if (horaVisible === "devolucion") {
       setDraft((prev) => ({ ...prev, horaDevolucion: hora }));
     }
