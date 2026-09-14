@@ -15,6 +15,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -47,7 +48,6 @@ import {
   crearTextosContrato,
   generarContratoPdf,
 } from "@/modules/reservation/services/pdfService";
-import { PasswordInput } from "@/components/ui/PasswordInput";
 import {
   aCentavos,
   construirUrlCheckout,
@@ -900,8 +900,8 @@ export default function PagoRespuestaScreen() {
           {/* Título */}
           <Text style={[styles.tituloEfectivo, { color: c.textPrimary }]}>
             {pmTypeUpper.includes("COLLECT") || detLower.includes("efectivo en bancolombia") || detLower.includes("corresponsal")
-              ? "Pago en efectivo en Bancolombia"
-              : t("reserva.confirmacion.efectivoConfirmadaTitulo", { defaultValue: "Pago en efectivo en sucursal" })}
+              ? "Pago en Bancolombia"
+              : t("reserva.confirmacion.pagoEnSucursalCorto", { defaultValue: "Pago en sucursal" })}
           </Text>
 
           {/* Mensaje descriptivo */}
@@ -1182,9 +1182,20 @@ export default function PagoRespuestaScreen() {
                 "Para desbloquear el contrato con tu clave, primero se debe confirmar el pago y completar la firma digital del contrato.",
             })}
           </Text>
-          <View style={{ width: "100%", marginTop: 12, opacity: c.oscuro ? 0.75 : 0.6 }}>
-            <PasswordInput
-              placeholder={t("misReservas.claveContratoPlaceholder")}
+          <View
+            style={[
+              styles.inputDocWrapper,
+              {
+                backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
+                borderColor: c.border,
+                opacity: c.oscuro ? 0.75 : 0.6,
+              },
+            ]}
+          >
+            <TextInput
+              style={[styles.inputDoc, { color: c.textPrimary }]}
+              placeholder={t("misReservas.claveContratoPlaceholder", { defaultValue: "Número de documento" })}
+              placeholderTextColor={c.oscuro ? "#94A3B8" : "#64748B"}
               value=""
               editable={false}
               keyboardType="number-pad"
@@ -1222,18 +1233,32 @@ export default function PagoRespuestaScreen() {
               defaultValue: "Ingresa el número de documento con el que confirmaste esta reserva para ver el contrato.",
             })}
           </Text>
-          <View style={{ width: "100%", marginTop: 12 }}>
-            <PasswordInput
-              placeholder={t("misReservas.claveContratoPlaceholder")}
+          <View
+            style={[
+              styles.inputDocWrapper,
+              {
+                backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
+                borderColor: errorClave ? "#EF4444" : c.border,
+              },
+            ]}
+          >
+            <TextInput
+              style={[styles.inputDoc, { color: c.textPrimary }]}
+              placeholder={t("misReservas.claveContratoPlaceholder", { defaultValue: "Número de documento" })}
+              placeholderTextColor={c.oscuro ? "#94A3B8" : "#64748B"}
               value={claveIngresada}
               onChangeText={(v) => {
                 setClaveIngresada(v);
                 if (errorClave) setErrorClave("");
               }}
-              error={errorClave}
               keyboardType="number-pad"
+              autoCorrect={false}
+              autoCapitalize="none"
             />
           </View>
+          {Boolean(errorClave) && (
+            <Text style={styles.errorDoc}>{errorClave}</Text>
+          )}
           <TouchableOpacity style={[styles.btnWrap, { marginTop: 4 }]} onPress={handleValidarClave} activeOpacity={0.85}>
             <LinearGradient
               colors={GRADIENTES.boton.colors}
@@ -1700,6 +1725,26 @@ const styles = StyleSheet.create({
   btnTexto: { color: "#fff", fontSize: 14.5, fontWeight: "800" },
   tituloCandado: { fontSize: 15.5, fontWeight: "800", textAlign: "center" },
   textoCandado: { fontSize: 12.5, textAlign: "center", marginTop: 6, lineHeight: 18 },
+  inputDocWrapper: {
+    width: "100%",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  inputDoc: {
+    fontSize: 14,
+    fontWeight: "600",
+    padding: 0,
+  },
+  errorDoc: {
+    fontSize: 11.5,
+    color: "#EF4444",
+    marginBottom: 6,
+    textAlign: "center",
+  },
   btnDescargarWrap: {
     width: "100%",
     flexDirection: "row",
