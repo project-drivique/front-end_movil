@@ -1272,20 +1272,17 @@ export default function PagoRespuestaScreen() {
         </View>
       )}
 
-      {/* Tarjeta de Calificación del Vehículo (Exclusiva para estado FINALIZADA) */}
+      {/* Tarjeta de Calificación de la Reserva (Exclusiva para estado FINALIZADA) */}
       {grupo === "finalizada" && (
         <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <Ionicons name="star-outline" size={20} color={primaryAccent} />
-            <Text style={[styles.tituloSeccionLimpio, { color: c.textPrimary }]}>
-              {t("misReservas.calificacionVehiculoTitulo", { defaultValue: "Calificación del Vehículo" })}
-            </Text>
-          </View>
+          <Text style={[styles.tituloSeccionLimpio, { color: c.textPrimary, marginBottom: 8 }]}>
+            {t("misReservas.calificacionReservaTitulo", { defaultValue: "Calificación de la reserva" })}
+          </Text>
 
           <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, textAlign: "left", paddingHorizontal: 0, marginBottom: 14 }]}>
             {resenaGuardada
-              ? "Tu experiencia con este vehículo ha sido registrada con éxito. Puedes consultar el resumen de tu reseña o modificarla a continuación:"
-              : "Tu alquiler ha finalizado exitosamente. Califícanos y déjanos tu reseña sobre el estado, confort y desempeño del vehículo para seguir mejorando nuestro servicio:"}
+              ? "Tu calificación ha sido registrada con éxito. Puedes ver el resumen a continuación o modificar tu opinión en cualquier momento:"
+              : "Calificar tu experiencia de alquiler es totalmente opcional. Si lo deseas, puedes calificar el estado del vehículo y el servicio para seguir mejorando:"}
           </Text>
 
           <View
@@ -1311,12 +1308,12 @@ export default function PagoRespuestaScreen() {
                 style={[
                   styles.valorEfectivo,
                   {
-                    color: resenaGuardada ? "#10B981" : primaryAccent,
+                    color: resenaGuardada ? "#10B981" : c.textSecondary,
                     fontWeight: "700",
                   },
                 ]}
               >
-                {resenaGuardada ? "Calificada" : "Pendiente"}
+                {resenaGuardada ? "Calificada" : "Opcional (Sin calificar)"}
               </Text>
             </View>
 
@@ -1380,7 +1377,7 @@ export default function PagoRespuestaScreen() {
               style={styles.btn}
             >
               <Text style={styles.btnTexto}>
-                {resenaGuardada ? "Editar calificación" : "Calificar vehículo"}
+                {resenaGuardada ? "Editar calificación" : "Calificar reserva"}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
