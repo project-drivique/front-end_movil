@@ -661,10 +661,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContenedor: {
+    width: "100%",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: height * 0.85,
-    minHeight: height * 0.5,
+    height: height * 0.82,
+    maxHeight: height * 0.88,
     paddingBottom: 24,
     overflow: "hidden",
   },
