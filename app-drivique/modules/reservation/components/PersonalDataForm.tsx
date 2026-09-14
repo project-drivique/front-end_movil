@@ -301,14 +301,6 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     router.replace("/(tabs)");
   };
 
-  const handleContratoFirmado = async () => {
-    if (referenciaActual) {
-      await reservaPersistService.actualizarEstado(referenciaActual, "CONFIRMADA");
-    }
-    setMostrarContrato(false);
-    setAlertaEfectivoVisible(true);
-  };
-
   const handlePagarWompi = async () => {
     if (!referenciaActual) return;
     setProcesandoPago(true);
@@ -352,24 +344,6 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       setProcesandoPago(false);
     }
   };
-
-  if (mostrarContrato && referenciaActual) {
-    return (
-      <FirmaContrato
-        vehiculo={vehiculo}
-        datosPersonales={datosPersonales}
-        datosDocumentos={{
-          ...documentos,
-          licenciaConduccion: documentos.licenciaConduccion || { nombre: "Licencia verificada en perfil" },
-        }}
-        fechasLugar={fechasLugar}
-        planes={planes}
-        total={total}
-        referencia={referenciaActual}
-        onFirmado={handleContratoFirmado}
-      />
-    );
-  }
 
   return (
     <View>
