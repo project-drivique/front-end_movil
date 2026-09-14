@@ -273,40 +273,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     if (metodoPago === "efectivo") {
       setModalInstruccionesEfectivoVisible(true);
     } else {
-      setProcesandoPago(true);
-      try {
-        const redirectUrl = "https://localtest.me/respuesta";
-        const amountInCents = aCentavos(total);
-
-        const url = await construirUrlCheckout({
-          reference: referencia,
-          amountInCents,
-          redirectUrl,
-        });
-
-        if (Platform.OS === "web" && typeof window !== "undefined") {
-          limpiarReserva();
-          window.location.href = url;
-          return;
-        }
-
-        router.push({
-          pathname: "/wompi-checkout",
-          params: {
-            url: encodeURIComponent(url),
-            ref: encodeURIComponent(referencia),
-          },
-        });
-
-        setTimeout(() => {
-          limpiarReserva();
-        }, 500);
-      } catch (error) {
-        console.error("[FormDatosPersonales] Error iniciando checkout directo de Wompi", error);
-        setModalReservaVisible(true);
-      } finally {
-        setProcesandoPago(false);
-      }
+      setModalReservaVisible(true);
     }
   };
 
