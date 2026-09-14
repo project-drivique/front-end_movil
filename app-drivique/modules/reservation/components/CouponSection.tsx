@@ -212,7 +212,7 @@ export default function CouponSection({ vehiculo }: Props) {
   };
 
   return (
-    <View style={[styles.cardForm, { backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF", borderColor: cuponAplicado ? primaryAccent : c.border }]}>
+    <View style={[styles.cardForm, { backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF", borderColor: c.border }]}>
       <View style={styles.cardHeaderFila}>
         <Text style={[styles.cardHeaderTitulo, { color: primaryAccent }]}>
           {t("coupon.title", { defaultValue: "Cupón de descuento (Opcional)" })}
