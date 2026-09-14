@@ -66,7 +66,7 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
                 style={[
                   styles.opcionBtn,
                   { borderColor: c.border, backgroundColor: c.bgInput },
-                  temaActual === "claro" && styles.opcionBtnActivo,
+                  temaActual === "claro" && [styles.opcionBtnActivo, { backgroundColor: c.oscuro ? "#1E3A8A" : "#EEF2FF", borderColor: "#1D4ED8" }],
                 ]}
                 onPress={() => cambiarTema("claro")}
               >
@@ -89,7 +89,7 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
                 style={[
                   styles.opcionBtn,
                   { borderColor: c.border, backgroundColor: c.bgInput },
-                  temaActual === "oscuro" && styles.opcionBtnActivo,
+                  temaActual === "oscuro" && [styles.opcionBtnActivo, { backgroundColor: c.oscuro ? "#1E3A8A" : "#EEF2FF", borderColor: "#1D4ED8" }],
                 ]}
                 onPress={() => cambiarTema("oscuro")}
               >
@@ -121,7 +121,7 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
                   style={[
                     styles.idiomaBtn,
                     { borderColor: c.border, backgroundColor: c.bgInput },
-                    idiomaActual === key && styles.opcionBtnActivo,
+                    idiomaActual === key && [styles.opcionBtnActivo, { backgroundColor: c.oscuro ? "#1E3A8A" : "#EEF2FF", borderColor: "#1D4ED8" }],
                   ]}
                   onPress={() => cambiarIdioma(key)}
                 >
@@ -151,7 +151,7 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
                 style={[
                   styles.opcionBtn,
                   { borderColor: c.border, backgroundColor: c.bgInput },
-                  monedaActual === "COP" && styles.opcionBtnActivo,
+                  monedaActual === "COP" && [styles.opcionBtnActivo, { backgroundColor: c.oscuro ? "#1E3A8A" : "#EEF2FF", borderColor: "#1D4ED8" }],
                 ]}
                 onPress={() => handleCambiarMoneda("COP")}
               >
@@ -169,7 +169,7 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
                 style={[
                   styles.opcionBtn,
                   { borderColor: c.border, backgroundColor: c.bgInput },
-                  monedaActual === "USD" && styles.opcionBtnActivo,
+                  monedaActual === "USD" && [styles.opcionBtnActivo, { backgroundColor: c.oscuro ? "#1E3A8A" : "#EEF2FF", borderColor: "#1D4ED8" }],
                 ]}
                 onPress={() => handleCambiarMoneda("USD")}
               >
@@ -267,8 +267,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   opcionBtnActivo: {
-    backgroundColor: "#EEF2FF",
-    borderColor: "#1D4ED8",
+    // These will be overridden inline
   },
   opcionBtnTexto: {
     fontSize: 13,

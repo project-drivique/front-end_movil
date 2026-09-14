@@ -172,7 +172,8 @@ export default function SelectorHoraModal({
             keyboardShouldPersistTaps="handled"
           >
             {listaHoras.map(({ hora, bloqueada }) => {
-              const activa = hora === horaSeleccionada && !bloqueada;
+              if (bloqueada) return null;
+              const activa = hora === horaSeleccionada;
               return (
                 <TouchableOpacity
                   key={hora}
