@@ -340,9 +340,9 @@ export default function CalendarioRango({
       setAlertaModal({
         visible: true,
         icono: "information-circle-outline",
-        titulo: t("reserva.fechasLugar.mismoDiaTitulo", { defaultValue: "Reserva de 1 día" }),
+        titulo: t("reserva.fechasLugar.mismoDiaTitulo", { defaultValue: "Reserva de 1 día (24 horas)" }),
         mensaje: t("reserva.fechasLugar.mismoDiaMensaje", {
-          defaultValue: `Esta reserva dura 1 día. El vehículo se retira y se devuelve este mismo día dentro del horario de atención de la sucursal (${horarioSucursal.textoHorario}).`,
+          defaultValue: `Esta reserva corresponde a 1 día de alquiler (24 horas). Las 24 horas empezarán a contar a partir de la hora de retiro que elijas, sujeto al horario de atención de la sucursal (${horarioSucursal.textoHorario}).`,
         }),
         botones: [
           {
