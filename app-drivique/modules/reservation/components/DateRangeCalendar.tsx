@@ -371,7 +371,7 @@ export default function CalendarioRango({
         icono: "information-circle-outline",
         titulo: t("reserva.fechasLugar.mismoDiaTitulo", { defaultValue: "Reserva de 1 día (24 horas)" }),
         mensaje: t("reserva.fechasLugar.mismoDiaMensaje", {
-          defaultValue: `El alquiler es de 24 horas a partir de tu hora de retiro y finaliza el día siguiente (${fechaSigStr}).`,
+          defaultValue: "Seleccionaste 1 día de reserva. Elige la hora de retiro y devolución; las 24 horas contarán a partir de la hora de retiro.",
         }),
         botones: [
           {
