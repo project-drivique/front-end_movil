@@ -1,6 +1,6 @@
 // modules/reserva/components/BarraTotalConfirmar.tsx
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { GRADIENTES } from "@/constants/gradients";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
@@ -11,11 +11,12 @@ import { formatCurrency } from "@/utils/currencyUtils";
 
 interface Props {
   total: number;
+  cargando?: boolean;
   onConfirmar: () => void;
   onCancelar?: () => void;
 }
 
-export default function BarraTotalConfirmar({ total, onConfirmar, onCancelar }: Props) {
+export default function BarraTotalConfirmar({ total, cargando = false, onConfirmar, onCancelar }: Props) {
   const c = useTemaColores();
   const { t } = useTranslation();
   const monedaActual = useMonedaStore((s) => s.monedaActual);
@@ -42,10 +43,24 @@ export default function BarraTotalConfirmar({ total, onConfirmar, onCancelar }: 
         {t("reserva.confirmacion.notaTotalPagar", { defaultValue: "Impuestos incluidos (IVA 19%)" })}
       </Text>
 
-      <TouchableOpacity style={styles.botonBlanco} onPress={onConfirmar} activeOpacity={0.85}>
-        <Text style={[styles.botonTexto, { color: primaryAccent }]}>
-          {t("reserva.confirmacion.confirmarReserva", { defaultValue: "Confirmar reserva" })}
-        </Text>
+      <TouchableOpacity
+        style={[styles.botonBlanco, cargando && { opacity: 0.8 }]}
+        onPress={onConfirmar}
+        activeOpacity={0.85}
+        disabled={cargando}
+      >
+        {cargando ? (
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <ActivityIndicator size="small" color={primaryAccent} />
+            <Text style={[styles.botonTexto, { color: primaryAccent }]}>
+              {t("comun.procesando", { defaultValue: "Abriendo pasarela..." })}
+            </Text>
+          </View>
+        ) : (
+          <Text style={[styles.botonTexto, { color: primaryAccent }]}>
+            {t("reserva.confirmacion.confirmarReserva", { defaultValue: "Confirmar reserva" })}
+          </Text>
+        )}
       </TouchableOpacity>
 
       {onCancelar && (

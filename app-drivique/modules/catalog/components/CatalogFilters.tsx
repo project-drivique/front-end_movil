@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...(StyleSheet.absoluteFill as any),
   },
   sheetContainer: {
     width: "100%",
