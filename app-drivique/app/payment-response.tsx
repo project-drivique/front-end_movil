@@ -1250,86 +1250,97 @@ export default function PagoRespuestaScreen() {
       {/* Tarjeta de Calificación del Vehículo (Exclusiva para estado FINALIZADA) */}
       {grupo === "finalizada" && (
         <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
-            <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                backgroundColor: c.primaryBg,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Ionicons name="star" size={22} color="#F59E0B" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 15, fontWeight: "800", color: c.textPrimary }}>
-                {resenaGuardada ? "Tu calificación del vehículo" : "Califica tu experiencia"}
-              </Text>
-              <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 2 }}>
-                {resenaGuardada
-                  ? "Gracias por compartir tu opinión sobre este vehículo."
-                  : `¿Cómo estuvo tu viaje con el ${reserva.vehiculoNombre}?`}
-              </Text>
-            </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <Ionicons name="star-outline" size={20} color={primaryAccent} />
+            <Text style={[styles.tituloSeccionLimpio, { color: c.textPrimary }]}>
+              {t("misReservas.calificacionVehiculoTitulo", { defaultValue: "Calificación del Vehículo" })}
+            </Text>
           </View>
 
-          {/* Resumen de la reseña si ya fue guardada */}
-          {resenaGuardada && (
-            <View
-              style={{
-                backgroundColor: c.bgInput,
-                borderRadius: 14,
-                padding: 14,
-                borderWidth: 1,
+          <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, textAlign: "left", paddingHorizontal: 0, marginBottom: 14 }]}>
+            {resenaGuardada
+              ? "Tu experiencia con este vehículo ha sido registrada con éxito. Puedes consultar el resumen de tu reseña o modificarla a continuación:"
+              : "Tu alquiler ha finalizado exitosamente. Califícanos y déjanos tu reseña sobre el estado, confort y desempeño del vehículo para seguir mejorando nuestro servicio:"}
+          </Text>
+
+          <View
+            style={[
+              styles.cajaReferencia,
+              {
+                backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
                 borderColor: c.border,
-                marginBottom: 14,
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                <View style={{ flexDirection: "row", gap: 3 }}>
-                  {Array.from({ length: 5 }, (_, i) => {
-                    const lleno = i < resenaGuardada.calificacion;
-                    return (
-                      <Ionicons
-                        key={i}
-                        name={lleno ? "star" : "star-outline"}
-                        size={17}
-                        color={lleno ? "#F59E0B" : "#CBD5E1"}
-                      />
-                    );
-                  })}
-                </View>
-                <Text style={{ fontSize: 12, fontWeight: "700", color: "#F59E0B" }}>
-                  {resenaGuardada.calificacion}.0 / 5.0
-                </Text>
-              </View>
-
-              {!!resenaGuardada.comentario && (
-                <Text style={{ fontSize: 13, color: c.textPrimary, fontStyle: "italic", marginTop: 4, lineHeight: 18 }}>
-                  "{resenaGuardada.comentario}"
-                </Text>
-              )}
-
-              {/* Miniaturas de fotos */}
-              {resenaGuardada.fotos && resenaGuardada.fotos.length > 0 && (
-                <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
-                  {resenaGuardada.fotos.map((uri, idx) => (
-                    <Image
-                      key={idx}
-                      source={{ uri }}
-                      style={{ width: 56, height: 56, borderRadius: 10 }}
-                    />
-                  ))}
-                </View>
-              )}
-
-              <Text style={{ fontSize: 11, color: c.textMuted, marginTop: 8 }}>
-                Publicada el {resenaGuardada.fecha}
+                marginBottom: 16,
+              },
+            ]}
+          >
+            <View style={styles.filaInfoEfectivo}>
+              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Vehículo:</Text>
+              <Text style={[styles.valorEfectivo, { color: c.textPrimary, fontWeight: "700" }]} numberOfLines={1}>
+                {reserva.vehiculoNombre}
               </Text>
             </View>
-          )}
+
+            <View style={styles.filaInfoEfectivo}>
+              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Estado de reseña:</Text>
+              <Text
+                style={[
+                  styles.valorEfectivo,
+                  {
+                    color: resenaGuardada ? "#10B981" : primaryAccent,
+                    fontWeight: "700",
+                  },
+                ]}
+              >
+                {resenaGuardada ? "Calificada" : "Pendiente"}
+              </Text>
+            </View>
+
+            {resenaGuardada && (
+              <>
+                <View style={[styles.divisorEfectivo, { backgroundColor: c.border }]} />
+
+                <View style={styles.filaInfoEfectivo}>
+                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Puntuación:</Text>
+                  <Text style={[styles.valorEfectivo, { color: primaryAccent, fontWeight: "700" }]}>
+                    {resenaGuardada.calificacion} / 5 estrellas
+                  </Text>
+                </View>
+
+                {Boolean(resenaGuardada.comentario) && (
+                  <View style={[styles.filaInfoEfectivo, { alignItems: "flex-start", marginTop: 2 }]}>
+                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Comentario:</Text>
+                    <Text style={[styles.valorEfectivo, { color: c.textPrimary, flex: 1, maxWidth: "60%" }]} numberOfLines={3}>
+                      {resenaGuardada.comentario}
+                    </Text>
+                  </View>
+                )}
+
+                {Boolean(resenaGuardada.fecha) && (
+                  <View style={styles.filaInfoEfectivo}>
+                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Fecha de registro:</Text>
+                    <Text style={[styles.valorEfectivo, { color: c.textPrimary }]}>
+                      {resenaGuardada.fecha}
+                    </Text>
+                  </View>
+                )}
+
+                {Boolean(resenaGuardada.fotos && resenaGuardada.fotos.length > 0) && (
+                  <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: c.border }}>
+                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, marginBottom: 8 }]}>Fotos adjuntas:</Text>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      {resenaGuardada.fotos?.map((uri, idx) => (
+                        <Image
+                          key={idx}
+                          source={{ uri }}
+                          style={{ width: 52, height: 52, borderRadius: 8, borderWidth: 1, borderColor: c.border }}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </>
+            )}
+          </View>
 
           {/* Botón de Acción para calificar o editar */}
           <TouchableOpacity
@@ -1341,11 +1352,10 @@ export default function PagoRespuestaScreen() {
               colors={GRADIENTES.boton.colors}
               start={GRADIENTES.boton.start}
               end={GRADIENTES.boton.end}
-              style={[styles.btn, { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 }]}
+              style={styles.btn}
             >
-              <Ionicons name={resenaGuardada ? "create-outline" : "star-outline"} size={18} color="#fff" />
               <Text style={styles.btnTexto}>
-                {resenaGuardada ? "Editar calificación" : "⭐ Calificar vehículo"}
+                {resenaGuardada ? "Editar calificación" : "Calificar vehículo"}
               </Text>
             </LinearGradient>
           </TouchableOpacity>

@@ -28,11 +28,8 @@ import {
   calcularGrupoReserva,
   reservaPersistService,
 } from "@/modules/reservation/services/reservationPersistService";
-import { ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
-import { ModalCalificar } from "@/modules/reservation/components/ModalCalificar";
 import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
-import { AlertModal } from "@/components/ui/AlertModal";
 import { useUsuarioStore } from "@/store/userStore";
 import { aCentavos, construirUrlCheckout, consultarTransaccionWompi } from "@/modules/reservation/services/wompiService";
 import { Platform } from "react-native";
@@ -589,21 +586,6 @@ function TarjetaReserva({
   const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
   const foto = vehiculoSnap?.imagenes?.[0];
 
-  const [resena, setResena] = useState<ResenaGuardada | null>(null);
-  const [modalCalificarVisible, setModalCalificarVisible] = useState(false);
-  const [alertGuardadoVisible, setAlertGuardadoVisible] = useState(false);
-
-  useEffect(() => {
-    if (grupo !== "finalizada") return;
-    let activo = true;
-    resenaService.obtenerPorReserva(reserva.referencia, usuarioId).then((r) => {
-      if (activo) setResena(r);
-    });
-    return () => {
-      activo = false;
-    };
-  }, [grupo, reserva.referencia, usuarioId]);
-
   return (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -677,59 +659,8 @@ function TarjetaReserva({
               </Text>
             </TouchableOpacity>
           )}
-
-          {grupo === "finalizada" && (
-            <TouchableOpacity
-              style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
-              onPress={(e) => {
-                e.stopPropagation();
-                setModalCalificarVisible(true);
-              }}
-              activeOpacity={0.8}
-            >
-              <View style={{ flexDirection: "row", gap: 1 }}>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Ionicons
-                    key={i}
-                    name={i < (resena?.calificacion || 0) ? "star" : "star-outline"}
-                    size={13}
-                    color="#F59E0B"
-                  />
-                ))}
-              </View>
-              <Text style={[styles.reportarBtnText, { color: c.primary }]} numberOfLines={1}>
-                {resena ? t("misReservas.editarCalificacion") : t("misReservas.calificarViaje")}
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
       </View>
-
-      {grupo === "finalizada" && (
-        <>
-          <ModalCalificar
-            visible={modalCalificarVisible}
-            referenciaReserva={reserva.referencia}
-            usuarioId={usuarioId}
-            vehiculoId={reserva.vehiculoId || (vehiculoSnap as any)?.id}
-            vehiculoNombre={reserva.vehiculoNombre}
-            valorInicial={resena}
-            onCerrar={() => setModalCalificarVisible(false)}
-            onGuardado={(nuevaResena) => {
-              setResena(nuevaResena);
-              setModalCalificarVisible(false);
-              setAlertGuardadoVisible(true);
-            }}
-          />
-          <AlertModal
-            visible={alertGuardadoVisible}
-            icono="checkmark-circle-outline"
-            titulo={t("misReservas.calificacionGuardadaTitulo")}
-            mensaje={t("misReservas.calificacionGuardadaMensaje")}
-            onCerrar={() => setAlertGuardadoVisible(false)}
-          />
-        </>
-      )}
     </TouchableOpacity>
   );
 }
