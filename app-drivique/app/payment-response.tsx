@@ -223,7 +223,7 @@ export default function PagoRespuestaScreen() {
       }
 
       router.push({
-        pathname: "/wompi-checkout",
+        pathname: "/wompi-checkout" as any,
         params: {
           url: encodeURIComponent(url),
           ref: encodeURIComponent(reserva.referencia),
@@ -608,7 +608,7 @@ export default function PagoRespuestaScreen() {
     if ((numeroDocumento && claveNormalizada === numeroDocumento) || (docReserva && claveIngresada.trim() === docReserva.trim())) {
       setErrorClave("");
       setClaveIngresada("");
-      router.push(`/contract-view?ref=${encodeURIComponent(reserva.referencia)}&unlocked=true`);
+      router.push(`/contract-view?ref=${encodeURIComponent(reserva.referencia)}&unlocked=true` as any);
     } else {
       setErrorClave(t("misReservas.claveIncorrecta", { defaultValue: "Número de documento incorrecto." }));
     }
