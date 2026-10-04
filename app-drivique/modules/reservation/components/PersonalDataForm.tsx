@@ -331,7 +331,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       }
 
       router.push({
-        pathname: "/wompi-checkout",
+        pathname: "/wompi-checkout" as any,
         params: {
           url: encodeURIComponent(url),
           ref: encodeURIComponent(referenciaActual),
