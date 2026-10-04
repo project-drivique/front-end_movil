@@ -1,52 +1,44 @@
-const BASE_URL = 'https://tu-api.com/api/v1';
+import { apiClient } from '@/services/http/apiClient'
+import { sessionTokens } from '@/services/http/sessionTokens'
+
+export interface AuthSession {
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+  userProfile: {
+    id: string
+    firstName: string
+    lastName: string
+    email: string
+    phone?: string
+    roles: string[]
+    profileComplete: boolean
+    accountStatus: string
+  }
+}
 
 export const authService = {
-  async login(correo: string, contrasena: string) {
-    const response = await fetch(`${BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ correo, contrasena }),
-    });
-    if (!response.ok) throw new Error('Credenciales incorrectas');
-    return response.json();
+  async login(correo: string, contrasena: string): Promise<AuthSession> {
+    const { data } = await apiClient.post<AuthSession>('/auth/login', {
+      email: correo,
+      password: contrasena,
+      deviceInfo: 'Drivique móvil',
+    })
+    await sessionTokens.saveRefreshToken(data.refreshToken)
+    return data
   },
 
   async registro(datos: object) {
-    const response = await fetch(`${BASE_URL}/auth/registro`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datos),
-    });
-    if (!response.ok) throw new Error('Error en el registro');
-    return response.json();
+    return apiClient.post('/auth/register', datos).then(({ data }) => data)
   },
 
   async recuperarContrasena(correo: string) {
-    const response = await fetch(`${BASE_URL}/auth/recuperar-contrasena`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ correo }),
-    });
-    if (!response.ok) throw new Error('Correo no registrado');
-    return response.json();
+    return apiClient.post('/auth/forgot-password', { email: correo }).then(({ data }) => data)
   },
 
-  async cambiarContrasena(
-    token: string,
-    datos: { contrasenaActual: string; nuevaContrasena: string },
-  ) {
-    const response = await fetch(`${BASE_URL}/auth/cambiar-contrasena`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(datos),
-    });
-    if (!response.ok) {
-      const error = await response.json().catch(() => null);
-      throw new Error(error?.mensaje || 'No fue posible actualizar la contraseña');
-    }
-    return response.json();
-  },
-};
+  async cambiarContrasena(token: string, datos: { contrasenaActual: string; nuevaContrasena: string }) {
+    return apiClient.put('/users/me', {
+      currentPassword: datos.contrasenaActual,
+      newPassword: datos.nuevaContrasena,
+    }, { headers: { Authorization: `Bearer ${token}` } }).then(({ data }) => data)
+  },}
