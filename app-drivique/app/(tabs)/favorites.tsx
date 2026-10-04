@@ -68,13 +68,13 @@ export default function FavoritesScreen() {
             {formatCurrency(item.precio, monedaActual, tasaUSD)}
           </Text>
           <Text style={[styles.itemDescription, { color: c.textSecondary }]} numberOfLines={1}>
-            {item.categoria} · {item.transmision} · {item.pasajeros} {t("catalogo.plazas")}
+            {t(`catalogo.categoriaValores.${item.categoria}`, { defaultValue: item.categoria })} · {t(`catalogo.transmisionValores.${item.transmision}`, { defaultValue: item.transmision })} · {item.pasajeros} {t("catalogo.plazas", { defaultValue: "plazas" })}
           </Text>
 
           {/* Actions */}
           <View style={styles.actionsRow}>
             <TouchableOpacity style={styles.actionBtn} onPress={() => toggleFavorito(item.id)}>
-              <Text style={[styles.actionBtnText, { color: "#1D4ED8" }]}>{t("tabs.eliminar")}</Text>
+              <Text style={[styles.actionBtnText, { color: "#1D4ED8" }]}>{t("tabs.eliminar", { defaultValue: "Eliminar" })}</Text>
             </TouchableOpacity>
           </View>
         </View>

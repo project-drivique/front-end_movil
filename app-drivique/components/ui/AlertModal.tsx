@@ -42,6 +42,9 @@ export function AlertModal({
   contenido,
 }: Props) {
   const c = useTemaColores();
+  const alertAccent = c.oscuro ? "#60A5FA" : "#1E40AF";
+  const btnBgColor = c.oscuro ? "#2563EB" : "#1E40AF";
+
   const listaBotones: BotonAlerta[] =
     botones !== undefined
       ? botones
@@ -55,12 +58,22 @@ export function AlertModal({
       onRequestClose={onCerrar}
     >
       <Pressable style={s.alertOverlay} onPress={onCerrar}>
-        <Pressable style={[s.alertBox, { backgroundColor: c.bgCard }]} onPress={() => {}}>
+        <Pressable
+          style={[
+            s.alertBox,
+            {
+              backgroundColor: c.bgCard,
+              borderWidth: c.oscuro ? 1 : 0,
+              borderColor: c.border,
+            },
+          ]}
+          onPress={() => {}}
+        >
           <View style={[s.alertIconContainer, { backgroundColor: c.primaryBg }]}>
             <Ionicons
               name={icono ?? ICONO_DEFECTO}
               size={44}
-              color={COLOR}
+              color={alertAccent}
             />
           </View>
 
@@ -76,8 +89,14 @@ export function AlertModal({
                   key={btn.texto + i}
                   style={
                     btn.variante === "secundario"
-                      ? [s.alertCancelBtn, { borderColor: COLOR, backgroundColor: c.bgCard }]
-                      : [s.alertConfirmBtn, { backgroundColor: COLOR }]
+                      ? [
+                          s.alertCancelBtn,
+                          {
+                            borderColor: c.oscuro ? "#374151" : "#E5E7EB",
+                            backgroundColor: c.bgInput,
+                          },
+                        ]
+                      : [s.alertConfirmBtn, { backgroundColor: btnBgColor }]
                   }
                   onPress={btn.onPress}
                   activeOpacity={0.8}
@@ -85,7 +104,7 @@ export function AlertModal({
                   <Text
                     style={
                       btn.variante === "secundario"
-                        ? [s.alertCancelBtnText, { color: COLOR }]
+                        ? [s.alertCancelBtnText, { color: c.textSecondary }]
                         : s.alertConfirmBtnText
                     }
                   >

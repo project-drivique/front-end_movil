@@ -1,5 +1,6 @@
 import { Linking } from "react-native";
 import { IdiomaKey } from "@/modules/i18n";
+import { obtenerTasaActual } from "@/services/exchangeRateService";
 
 export interface ChatMessage {
   id: string;
@@ -177,28 +178,30 @@ export function procesarMensajeChatbot(
     q.includes("taux") ||
     q.includes("moedas")
   ) {
+    const tasaUSD = Math.round(obtenerTasaActual() || 4000);
+    const tasaUsdFmt = tasaUSD.toLocaleString("es-CO");
     if (lang === "en") {
       return {
         sender: "bot",
-        text: "💱 **Currencies & Exchange Rates in Drivique:**\n\n• Base prices are displayed in **COP** (Colombian Pesos).\n• We accept international credit/debit cards (Visa, Mastercard, Amex) processed via Wompi.\n• **Approximate conversion rates:**\n  - 🇺🇸 1 USD ≈ 4,000 COP\n  - 🇪🇺 1 EUR ≈ 4,300 COP\n  - 🇧🇷 1 BRL ≈ 780 COP\n\nYour bank will perform the automatic currency conversion at checkout.",
+        text: `💱 **Currencies & Exchange Rates in Drivique:**\n\n• Base prices are displayed in **COP** or converted to **USD** based on your currency preference.\n• We accept international credit/debit cards (Visa, Mastercard, Amex) processed via Wompi.\n• **Real-time API exchange rate:**\n  - 🇺🇸 1 USD ≈ $${tasaUsdFmt} COP\n\nYour bank will perform the automatic currency conversion at checkout.`,
         options: opts.slice(1, 4),
       };
     } else if (lang === "fr") {
       return {
         sender: "bot",
-        text: "💱 **Devises acceptées et conversion sur Drivique :**\n\n• Le tarif de base des véhicules est affiché en **Pesos Colombiens (COP)**.\n• Vous pouvez payer avec des cartes de crédit/débit internationales, PSE ou Wompi.\n• **Taux de change de référence estimé :**\n  - 🇺🇸 1 USD ≈ 4 000 COP\n  - 🇪🇺 1 EUR ≈ 4 300 COP\n  - 🇧🇷 1 BRL ≈ 780 COP\n\nVotre banque effectuera la conversion automatique au moment du paiement sécurisé.",
+        text: `💱 **Devises acceptées et conversion sur Drivique :**\n\n• Le tarif de base des véhicules est affiché en **Pesos Colombiens (COP)** ou converti en **USD** selon votre préférence.\n• Vous pouvez payer avec des cartes de crédit/débit internationales, PSE ou Wompi.\n• **Taux de change de référence API en temps réel :**\n  - 🇺🇸 1 USD ≈ $${tasaUsdFmt} COP\n\nVotre banque effectuera la conversion automatique au moment du paiement sécurisé.`,
         options: opts.slice(1, 4),
       };
     } else if (lang === "pt" || lang === "br") {
       return {
         sender: "bot",
-        text: "💱 **Moedas Aceitas e Conversão no Drivique:**\n\n• A tarifa base dos veículos é exibida em **Pesos Colombianos (COP)**.\n• Você pode pagar com cartões de crédito/débito internacionais, PSE ou Wompi.\n• **Taxa de câmbio de referência estimada:**\n  - 🇺🇸 1 USD ≈ $4.000 COP\n  - 🇪🇺 1 EUR ≈ $4.300 COP\n  - 🇧🇷 1 BRL ≈ $780 COP\n\nSeu banco fará a conversão automática ao efetuar o pagamento digital seguro.",
+        text: `💱 **Moedas Aceitas e Conversão no Drivique:**\n\n• A tarifa base dos veículos é exibida em **Pesos Colombianos (COP)** ou convertida para **USD** conforme sua preferência.\n• Você pode pagar com cartões de crédito/débito internacionais, PSE ou Wompi.\n• **Taxa de câmbio API em tempo real:**\n  - 🇺🇸 1 USD ≈ $${tasaUsdFmt} COP\n\nSeu banco fará a conversão automática ao efetuar o pagamento digital seguro.`,
         options: opts.slice(1, 4),
       };
     }
     return {
       sender: "bot",
-      text: "💱 **Monedas Aceptadas y Conversión en Drivique:**\n\n• La tarifa base de los vehículos se muestra en **Pesos Colombianos (COP)**.\n• Puedes pagar con tarjetas de crédito/débito internacionales, PSE o Wompi.\n• **Tasa de cambio de referencia estimada:**\n  - 🇺🇸 1 USD ≈ $4.000 COP\n  - 🇪🇺 1 EUR ≈ $4.300 COP\n  - 🇧🇷 1 BRL ≈ $780 COP\n\nTu banco realizará la conversión automática al momento de efectuar el pago digital seguro.",
+      text: `💱 **Monedas Aceptadas y Conversión en Drivique:**\n\n• La tarifa base de los vehículos se muestra en **Pesos Colombianos (COP)** o convertida a **USD** según tu preferencia.\n• Puedes pagar con tarjetas de crédito/débito internacionales, PSE o Wompi.\n• **Tasa de cambio API en tiempo real:**\n  - 🇺🇸 1 USD ≈ $${tasaUsdFmt} COP\n\nTu banco realizará la conversión automática al momento de efectuar el pago digital seguro.`,
       options: [
         { label: "💳 Ver métodos de pago", actionValue: "pagos" },
         { label: "🚗 Ver tarifas de alquiler", actionValue: "como_alquilar" },
@@ -272,25 +275,25 @@ export function procesarMensajeChatbot(
     if (lang === "en") {
       return {
         sender: "bot",
-        text: "📋 **Requirements to rent a vehicle:**\n\n• **Age:** Must be at least 16 years old.\n• **Driver's License:** Valid driver's license (national or international, at least 1 year old).\n• **Identification:** Valid national ID card or original Passport.\n• **Guarantee:** A credit or debit card under the main driver's name for the security deposit.",
+        text: "📋 **Requirements to rent a vehicle:**\n\n• **Age:** Must be at least 18 years old.\n• **Driver's License:** Valid driver's license (national or international, at least 1 year old).\n• **Identification:** Valid national ID card or original Passport.\n• **Guarantee:** A credit or debit card under the main driver's name for the security deposit.",
         options: [opts[2], opts[7]],
       };
     } else if (lang === "fr") {
       return {
         sender: "bot",
-        text: "📋 **Exigences pour louer un véhicule :**\n\n• **Âge :** Avoir au moins 16 ans.\n• **Permis de conduire :** Permis de conduire valide (national ou international, depuis au moins 1 an).\n• **Pièce d'identité :** Carte nationale d'identité ou Passeport original en cours de validité.\n• **Garantie :** Carte de crédit ou débit au nom du titulaire pour le dépôt de garantie.",
+        text: "📋 **Exigences pour louer un véhicule :**\n\n• **Âge :** Avoir au moins 18 ans.\n• **Permis de conduire :** Permis de conduire valide (national ou international, depuis au moins 1 an).\n• **Pièce d'identité :** Carte nationale d'identité ou Passeport original en cours de validité.\n• **Garantie :** Carte de crédit ou débit au nom du titulaire pour le dépôt de garantie.",
         options: [opts[2], opts[7]],
       };
     } else if (lang === "pt" || lang === "br") {
       return {
         sender: "bot",
-        text: "📋 **Requisitos para alugar um veículo:**\n\n• **Idade:** Ter pelo menos 16 anos.\n• **Carteira de Habilitação:** CNH válida (nacional ou internacional com no mínimo 1 ano de emissão).\n• **Documento de Identidade:** Cédula de identidade (RG) ou Passaporte original válido.\n• **Garantia:** Cartão de crédito ou débito no nome do titular para o depósito de garantia.",
+        text: "📋 **Requisitos para alugar um veículo:**\n\n• **Idade:** Ter pelo menos 18 anos.\n• **Carteira de Habilitação:** CNH válida (nacional ou internacional com no mínimo 1 ano de emissão).\n• **Documento de Identidade:** Cédula de identidade (RG) ou Passaporte original válido.\n• **Garantia:** Cartão de crédito ou débito no nome do titular para o depósito de garantia.",
         options: [opts[2], opts[7]],
       };
     }
     return {
       sender: "bot",
-      text: "📋 **Requisitos para alquilar un vehículo:**\n\n• **Edad:** Ser mayor de 16 años.\n• **Licencia de conducción:** Licencia de conducción vigente (nacional o internacional con mínimo 1 año de antigüedad).\n• **Documento de identidad:** Cédula de ciudadanía o Pasaporte vigente.\n• **Garantía:** Tarjeta de crédito o débito a nombre del titular para el depósito de garantía.",
+      text: "📋 **Requisitos para alquilar un vehículo:**\n\n• **Edad:** Ser mayor de 18 años.\n• **Licencia de conducción:** Licencia de conducción vigente (nacional o internacional con mínimo 1 año de antigüedad).\n• **Documento de identidad:** Cédula de ciudadanía o Pasaporte vigente.\n• **Garantía:** Tarjeta de crédito o débito a nombre del titular para el depósito de garantía.",
       options: [
         { label: "💳 Ver depósito de garantía", actionValue: "pagos" },
         { label: "💱 Ver tasas y monedas", actionValue: "monedas_pagos" },

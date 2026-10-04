@@ -13,12 +13,12 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import {
   COLOR_MARCA,
+  calcularRecargoLogistico,
   getPrefijoPorNacionalidad,
   getSiglaDocumento,
   NACIONALIDADES,
   PORCENTAJE_CARGOS_ADMINISTRATIVOS,
   PORCENTAJE_IVA,
-  RECARGO_LOGISTICO,
   getTiposDocumento,
 } from "../constants/reservation.constants";
 import { TipoDocumento } from "../types/reservation.types";
@@ -198,9 +198,10 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     const servAdic = servicios
       .filter((s) => planes.serviciosSeleccionados.includes(s.nombre))
       .reduce((a, s) => a + s.precio * dias, 0);
+    const recargoLogistico = calcularRecargoLogistico(fechasLugar.lugarRetiro, fechasLugar.lugarDevolucion);
     const subtotalBase = diarias + proteccion + kilometraje + servAdic;
     const cargos = Math.round(subtotalBase * PORCENTAJE_CARGOS_ADMINISTRATIVOS);
-    const subtotalBruto = subtotalBase + cargos + RECARGO_LOGISTICO;
+    const subtotalBruto = subtotalBase + cargos + recargoLogistico;
       
     let descuentoCupon = 0;
     if (cuponAplicado) {
@@ -214,7 +215,15 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     const subtotal = Math.max(subtotalBruto - descuentoCupon, 0);
     const iva = Math.round(subtotal * PORCENTAJE_IVA);
     return subtotal + iva;
-  }, [vehiculo, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, planes, cuponAplicado]);
+  }, [
+    vehiculo,
+    fechasLugar.fechaRetiro,
+    fechasLugar.fechaDevolucion,
+    fechasLugar.lugarRetiro,
+    fechasLugar.lugarDevolucion,
+    planes,
+    cuponAplicado,
+  ]);
 
   const handleConfirmarReserva = async () => {
     if (!datosCompletos) {
@@ -306,13 +315,11 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     setProcesandoPago(true);
 
     try {
-      const redirectUrl = "https://localtest.me/respuesta";
       const amountInCents = aCentavos(total);
 
       const url = await construirUrlCheckout({
         reference: referenciaActual,
         amountInCents,
-        redirectUrl,
       });
 
       setModalReservaVisible(false);
@@ -381,7 +388,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                 const { nombres, apellidos } = separarNombreCompleto(v);
                 actualizarUsuarioGlobal({ nombres, apellidos });
               }}
-              placeholder="Ej. Juan Pérez"
+              placeholder={t("perfil.placeholders.nombreCompleto", { defaultValue: "Ej. Juan Pérez" })}
               placeholderTextColor={c.textMuted}
               autoCapitalize="words"
             />
@@ -431,7 +438,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                 actualizarDatosPersonales({ correo: v });
                 actualizarUsuarioGlobal({ correo: v });
               }}
-              placeholder="cliente@drivique.com"
+              placeholder={t("perfil.placeholders.correo", { defaultValue: "cliente@drivique.com" })}
               placeholderTextColor={c.textMuted}
               keyboardType="email-address"
               autoCapitalize="none"
@@ -467,7 +474,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                     actualizarUsuarioGlobal({ telefono: digits });
                   }}
                   keyboardType="phone-pad"
-                  placeholder="Ej. 3144214909"
+                  placeholder={t("perfil.placeholders.telefono", { defaultValue: "Ej. 3144214909" })}
                   placeholderTextColor={c.textMuted}
                 />
               </View>
@@ -577,7 +584,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       {(() => {
         const limiteInfo = calcularLimitePago(fechasLugar.fechaRetiro, fechasLugar.horaRetiro);
         const horas = limiteInfo.horasLimitePago || 72;
-        const textoHoras = horas === 1 ? "1 hora" : `${horas} horas`;
+        const textoHoras = `${horas} ${horas === 1 ? t("comun.hora", { defaultValue: "hora" }) : t("comun.horas", { defaultValue: "horas" })}`;
 
         return (
           <>
@@ -604,7 +611,10 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                   },
                 ]}
               >
-                {`Al confirmar la reserva, quedará guardada automáticamente en tu cuenta. Tendrás un plazo de ${textoHoras} para completar el pago antes de su cancelación automática.`}
+                {t("reserva.datosPersonales.avisoGuardadoDinamico", {
+                  horas: textoHoras,
+                  defaultValue: `Al confirmar la reserva, quedará guardada automáticamente en tu cuenta. Tendrás un plazo de ${textoHoras} para completar el pago antes de su cancelación automática.`,
+                })}
               </Text>
             </View>
 

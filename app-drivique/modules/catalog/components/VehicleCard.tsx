@@ -23,6 +23,7 @@ import { Vehiculo } from "../types/catalog.types";
 import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { VEHICULO_PROMOS_DUMMY } from "@/modules/notifications/constants/notifications.dummy";
 
 interface Props {
   vehiculo: Vehiculo;
@@ -82,6 +83,25 @@ function VehiculoCard({
     (_, i) => i < Math.round(rating)
   );
 
+  // Detección de promoción activa para el vehículo
+  const promoVehiculo = estadoDisponible
+    ? VEHICULO_PROMOS_DUMMY.find(
+        (vp) => vp.vehiculoId === vehiculo.id && (!vp.expiracion || new Date(vp.expiracion) >= new Date())
+      )
+    : undefined;
+
+  let descuentoPorcentaje = 0;
+  if (promoVehiculo) {
+    const pctMatch = promoVehiculo.descuentoBadge ? promoVehiculo.descuentoBadge.match(/\d+/) : null;
+    descuentoPorcentaje = pctMatch ? Number(pctMatch[0]) : 0;
+  }
+
+  const tieneDescuento = descuentoPorcentaje > 0 && estadoDisponible;
+  const precioOriginal = vehiculo.precio ?? 0;
+  const precioConDescuento = tieneDescuento
+    ? Math.round(precioOriginal * (1 - descuentoPorcentaje / 100))
+    : precioOriginal;
+
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const x = e.nativeEvent.contentOffset.x;
     const width = e.nativeEvent.layoutMeasurement.width;
@@ -110,7 +130,19 @@ function VehiculoCard({
       onAccionRestringida?.("reservar");
       return;
     }
-    useReservaStore.getState().seleccionarVehiculo(vehiculo, datosPrecarga);
+    useReservaStore.getState().seleccionarVehiculo(
+      tieneDescuento
+        ? {
+            ...vehiculo,
+            precioOriginal: vehiculo.precio,
+            precio: precioConDescuento,
+          }
+        : vehiculo,
+      {
+        ...datosPrecarga,
+        descuentoPromocion: tieneDescuento ? descuentoPorcentaje : undefined,
+      }
+    );
     router.push("/(tabs)/reserve");
   };
 
@@ -226,6 +258,14 @@ function VehiculoCard({
               {vehiculo.sucursal ?? "Centro"}
             </Text>
           </View>
+          {tieneDescuento && (
+            <View style={[styles.tagPromo, { backgroundColor: c.oscuro ? "#064e3b" : "#ecfdf5", borderColor: c.oscuro ? "#059669" : "#a7f3d0" }]}>
+              <Ionicons name="pricetag" size={10} color={c.oscuro ? "#34d399" : "#047857"} />
+              <Text style={[styles.tagPromoText, { color: c.oscuro ? "#34d399" : "#047857" }]}>
+                {promoVehiculo?.descuentoBadge || `-${descuentoPorcentaje}%`}
+              </Text>
+            </View>
+          )}
         </View>
 
         <Text style={[styles.nombre, { color: c.textPrimary }]}>{vehiculo.nombre}</Text>
@@ -274,10 +314,29 @@ function VehiculoCard({
           )}
         </View>
 
-        <Text style={styles.precio}>
-          {formatCurrency(vehiculo.precio, monedaActual, tasaUSD)}
-          <Text style={[styles.precioDia, { color: c.textMuted }]}> /{t("catalogo.porDia")}</Text>
-        </Text>
+        {tieneDescuento ? (
+          <View style={styles.precioDescuentoContenedor}>
+            <View style={styles.precioAntesFila}>
+              <Text style={[styles.precioAntesTexto, { color: c.textMuted }]}>
+                {formatCurrency(precioOriginal, monedaActual, tasaUSD)}
+              </Text>
+              <View style={[styles.badgeDescuentoPill, { backgroundColor: c.oscuro ? "#064e3b" : "#d1fae5" }]}>
+                <Text style={[styles.badgeDescuentoPillTexto, { color: c.oscuro ? "#34d399" : "#047857" }]}>
+                  -{descuentoPorcentaje}%
+                </Text>
+              </View>
+            </View>
+            <Text style={[styles.precio, { color: c.oscuro ? "#93C5FD" : "#1E3A8A", marginBottom: 12 }]}>
+              {formatCurrency(precioConDescuento, monedaActual, tasaUSD)}
+              <Text style={[styles.precioDia, { color: c.textMuted }]}> /{t("catalogo.porDia")}</Text>
+            </Text>
+          </View>
+        ) : (
+          <Text style={[styles.precio, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
+            {formatCurrency(vehiculo.precio, monedaActual, tasaUSD)}
+            <Text style={[styles.precioDia, { color: c.textMuted }]}> /{t("catalogo.porDia")}</Text>
+          </Text>
+        )}
 
         <TouchableOpacity
           style={[
@@ -308,7 +367,15 @@ function VehiculoCard({
 
         <TouchableOpacity
           style={styles.detallesBtn}
-          onPress={() => router.push({ pathname: "/vehicle/[id]", params: { id: String(vehiculo.id) } })}
+          onPress={() =>
+            router.push({
+              pathname: "/vehicle/[id]",
+              params: {
+                id: String(vehiculo.id),
+                ...(tieneDescuento ? { descuentoPorcentaje: String(descuentoPorcentaje) } : {}),
+              },
+            })
+          }
           activeOpacity={0.7}
         >
           <View style={[styles.detallesTextWrap, { borderBottomColor: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
@@ -424,6 +491,39 @@ const styles = StyleSheet.create({
     borderColor: "#bbf7d0",
   },
   tagSucursalText: { fontSize: 11, fontWeight: "700", color: "#059669" },
+  tagPromo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  tagPromoText: { fontSize: 11, fontWeight: "800" },
+  precioDescuentoContenedor: {
+    marginBottom: 12,
+  },
+  precioAntesFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 2,
+  },
+  precioAntesTexto: {
+    fontSize: 13,
+    fontWeight: "600",
+    textDecorationLine: "line-through",
+  },
+  badgeDescuentoPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  badgeDescuentoPillTexto: {
+    fontSize: 10.5,
+    fontWeight: "800",
+  },
   nombre: {
     fontSize: 17,
     fontWeight: "800",

@@ -111,8 +111,8 @@ export function usePerfil() {
         nuevosErrores.fechaNacimiento = t("perfil.validacion.fechaFormato");
       } else if (new Date() < new Date(form.fechaNacimiento)) {
         nuevosErrores.fechaNacimiento = t("perfil.validacion.fechaFutura", { defaultValue: "La fecha no puede ser futura" });
-      } else if (edad < 16) {
-        nuevosErrores.fechaNacimiento = t("perfil.validacion.menorEdad", { defaultValue: "Debes tener al menos 16 años" });
+      } else if (edad < 18) {
+        nuevosErrores.fechaNacimiento = t("perfil.validacion.menorEdad", { defaultValue: "Debes tener al menos 18 años" });
       }
     }
 
@@ -290,8 +290,8 @@ export function useCompletarPerfil() {
         e.fechaNacimiento = t("perfil.validacion.fechaFormato");
       } else if (new Date() < new Date(form.fechaNacimiento)) {
         e.fechaNacimiento = t("perfil.validacion.fechaFutura", { defaultValue: "La fecha no puede ser futura" });
-      } else if (edad < 16) {
-        e.fechaNacimiento = t("perfil.validacion.menorEdad", { defaultValue: "Debes tener al menos 16 años" });
+      } else if (edad < 18) {
+        e.fechaNacimiento = t("perfil.validacion.menorEdad", { defaultValue: "Debes tener al menos 18 años" });
       }
     }
 

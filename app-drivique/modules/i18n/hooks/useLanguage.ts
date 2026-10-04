@@ -10,6 +10,8 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import i18n, { IdiomaKey } from "../index";
 
+export { useTranslation } from "react-i18next";
+
 export type TemaApp = "claro" | "oscuro";
 
 interface IdiomaStore {

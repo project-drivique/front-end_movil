@@ -34,6 +34,7 @@ import {
 import { VehicleGallery } from "@/modules/catalog/components/VehicleGallery";
 import { VehicleReviews } from "@/modules/catalog/components/VehicleReviews";
 import BranchDirectionsModal from "@/modules/reservation/components/BranchDirectionsModal";
+import { VEHICULO_PROMOS_DUMMY } from "@/modules/notifications/constants/notifications.dummy";
 
 const COLOR_AZUL_TITULO = "#1E3A8A";
 const COLOR_BORDE_CARD = "#E2E8F0";
@@ -61,7 +62,23 @@ export default function VehiculoDetallePage() {
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
 
-  const descuentoNum = descuentoPorcentaje ? Number(descuentoPorcentaje) : 10;
+  const vehiculo = VEHICULOS_MOCK.find((v) => v.id === Number(id));
+
+  // 1. Si viene por parámetro de navegación directa
+  // 2. O si el vehículo tiene una promoción destacada activa vigente y está disponible
+  let descuentoCalculado = descuentoPorcentaje ? Math.max(0, Number(descuentoPorcentaje)) : 0;
+  if (descuentoCalculado <= 0 && vehiculo && vehiculo.disponible !== false) {
+    const promoActiva = VEHICULO_PROMOS_DUMMY.find(
+      (vp) => vp.vehiculoId === vehiculo.id && (!vp.expiracion || new Date(vp.expiracion) >= new Date())
+    );
+    if (promoActiva) {
+      const pctMatch = promoActiva.descuentoBadge ? promoActiva.descuentoBadge.match(/\d+/) : null;
+      descuentoCalculado = pctMatch ? Number(pctMatch[0]) : 15;
+    }
+  }
+
+  const descuentoNum = descuentoCalculado;
+  const tieneDescuento = descuentoNum > 0 && vehiculo?.disponible !== false;
 
   const [alertaReservaVisible, setAlertaReservaVisible] = useState(false);
   const [modalComoLlegarVisible, setModalComoLlegarVisible] = useState(false);
@@ -70,8 +87,6 @@ export default function VehiculoDetallePage() {
   useEffect(() => {
     Animated.timing(opacidad, { toValue: 1, duration: 350, useNativeDriver: true }).start();
   }, [opacidad]);
-
-  const vehiculo = VEHICULOS_MOCK.find((v) => v.id === Number(id));
 
   const volverCatalogo = () =>
     router.canGoBack() ? router.back() : router.replace("/(tabs)/catalog");
@@ -95,7 +110,9 @@ export default function VehiculoDetallePage() {
   const ciudadSucursal = getCiudadPorSucursal(nombreSucursal);
   const direccionBase = getDireccionSucursal(nombreSucursal) || "Cra 5 # 12-34";
   const direccionCompleta = ciudadSucursal ? `${direccionBase}, ${ciudadSucursal}` : direccionBase;
-  const horarioAtencion = HORARIO_ATENCION_SUCURSAL || "Lun a sáb, 7:00 am - 7:00 pm";
+  const horarioAtencion = t("vehiculo.sucursal.horarioTodosLosDias", {
+    defaultValue: HORARIO_ATENCION_SUCURSAL || "Todos los días · 7:00 a.m. – 7:00 p.m.",
+  });
 
   // Comentarios reales del vehículo (sin mock forzado)
   const comentariosMostrar = vehiculo.comentarios ?? [];
@@ -108,42 +125,93 @@ export default function VehiculoDetallePage() {
   }[] = [];
 
   if (vehiculo.aireAcondicionado !== false) {
-    equipamiento.push({ icono: "snowflake", tipo: "mci", label: "Aire acondicionado" });
+    equipamiento.push({
+      icono: "snowflake",
+      tipo: "mci",
+      label: t("catalogo.detalles.aireAcondicionado", { defaultValue: "Aire acondicionado" }),
+    });
   }
   if (vehiculo.vidriosElectricos !== false) {
-    equipamiento.push({ icono: "dock-window", tipo: "mci", label: "Vidrios eléctricos" });
+    equipamiento.push({
+      icono: "dock-window",
+      tipo: "mci",
+      label: t("catalogo.detalles.vidriosElectricos", { defaultValue: "Vidrios eléctricos" }),
+    });
   }
   if (vehiculo.cierreCentralizado !== false) {
-    equipamiento.push({ icono: "lock-closed", tipo: "ion", label: "Cierre centralizado" });
+    equipamiento.push({
+      icono: "lock-closed",
+      tipo: "ion",
+      label: t("catalogo.detalles.cierreCentralizado", { defaultValue: "Cierre centralizado" }),
+    });
   }
   if (vehiculo.bluetooth) {
-    equipamiento.push({ icono: "bluetooth", tipo: "ion", label: "Bluetooth" });
+    equipamiento.push({
+      icono: "bluetooth",
+      tipo: "ion",
+      label: t("vehiculo.equipo.bluetooth", { defaultValue: "Bluetooth" }),
+    });
   }
   if (vehiculo.usb) {
-    equipamiento.push({ icono: "usb", tipo: "mat", label: "Puerto USB" });
+    equipamiento.push({
+      icono: "usb",
+      tipo: "mat",
+      label: t("vehiculo.equipo.usb", { defaultValue: "Puerto USB" }),
+    });
   }
   if (vehiculo.pantallaTactil) {
-    equipamiento.push({ icono: "tablet-landscape", tipo: "ion", label: "Pantalla táctil" });
+    equipamiento.push({
+      icono: "tablet-landscape",
+      tipo: "ion",
+      label: t("vehiculo.equipo.pantallaTactil", { defaultValue: "Pantalla táctil" }),
+    });
   }
   if (vehiculo.camaraReversa) {
-    equipamiento.push({ icono: "camera", tipo: "ion", label: "Cámara de reversa" });
+    equipamiento.push({
+      icono: "camera",
+      tipo: "ion",
+      label: t("vehiculo.equipo.camaraReversa", { defaultValue: "Cámara de reversa" }),
+    });
   }
   if (vehiculo.sensoresParqueo) {
-    equipamiento.push({ icono: "sensors", tipo: "mat", label: "Sensores de parqueo" });
+    equipamiento.push({
+      icono: "sensors",
+      tipo: "mat",
+      label: t("vehiculo.equipo.sensoresParqueo", { defaultValue: "Sensores de parqueo" }),
+    });
   }
   if ((vehiculo as any).gps) {
-    equipamiento.push({ icono: "navigate", tipo: "ion", label: "GPS" });
+    equipamiento.push({
+      icono: "navigate",
+      tipo: "ion",
+      label: t("catalogo.detalles.gps", { defaultValue: "GPS" }),
+    });
   }
 
   // Si por alguna razón la lista quedara vacía, aseguramos el equipamiento base
   if (equipamiento.length === 0) {
-    equipamiento.push({ icono: "snowflake", tipo: "mci", label: "Aire acondicionado" });
-    equipamiento.push({ icono: "dock-window", tipo: "mci", label: "Vidrios eléctricos" });
-    equipamiento.push({ icono: "lock-closed", tipo: "ion", label: "Cierre centralizado" });
+    equipamiento.push({
+      icono: "snowflake",
+      tipo: "mci",
+      label: t("catalogo.detalles.aireAcondicionado", { defaultValue: "Aire acondicionado" }),
+    });
+    equipamiento.push({
+      icono: "dock-window",
+      tipo: "mci",
+      label: t("catalogo.detalles.vidriosElectricos", { defaultValue: "Vidrios eléctricos" }),
+    });
+    equipamiento.push({
+      icono: "lock-closed",
+      tipo: "ion",
+      label: t("catalogo.detalles.cierreCentralizado", { defaultValue: "Cierre centralizado" }),
+    });
   }
 
   const precioOriginal = vehiculo.precio ?? 55000;
-  const precioConDescuento = Math.round(precioOriginal * (1 - (descuentoNum > 0 ? descuentoNum : 10) / 100));
+  const precioConDescuento = tieneDescuento
+    ? Math.round(precioOriginal * (1 - descuentoNum / 100))
+    : precioOriginal;
+  const precioFinal = precioConDescuento;
 
   const handleReservar = () => {
     if (!disponible) return;
@@ -152,7 +220,7 @@ export default function VehiculoDetallePage() {
       return;
     }
     useReservaStore.getState().seleccionarVehiculo(
-      descuentoNum > 0
+      tieneDescuento
         ? {
             ...vehiculo,
             precioOriginal: vehiculo.precio,
@@ -160,7 +228,7 @@ export default function VehiculoDetallePage() {
           }
         : vehiculo,
       {
-        descuentoPromocion: descuentoNum > 0 ? descuentoNum : undefined,
+        descuentoPromocion: tieneDescuento ? descuentoNum : undefined,
       }
     );
     router.push("/(tabs)/reserve");
@@ -220,7 +288,13 @@ export default function VehiculoDetallePage() {
                   {t("vehiculo.descripcion", { defaultValue: "Descripción" })}
                 </Text>
               </View>
-              <Text style={[s.parrafoTexto, { color: colorTextoSecundario }]}>{vehiculo.descripcion}</Text>
+              <Text style={[s.parrafoTexto, { color: colorTextoSecundario }]}>
+                {t(`vehiculo.descripciones.desc_${vehiculo.id}`, {
+                  defaultValue: t(`auth.invitado.desc_${vehiculo.id}`, {
+                    defaultValue: vehiculo.descripcion,
+                  }),
+                })}
+              </Text>
             </View>
           )}
 
@@ -335,16 +409,26 @@ export default function VehiculoDetallePage() {
 
             <View style={[s.subCardInner, { borderColor: colorBorde, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}>
               <View style={s.filaTarifa}>
-                <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>Protección Obligatoria</Text>
+                <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>
+                  {t("catalogo.detalles.proteccionObligatoria", { defaultValue: "Protección Obligatoria" })}
+                </Text>
                 <Text style={[s.filaTarifaPrecio, { color: colorTextoPrimario }]}>
-                  {formatCurrency(29000, monedaActual, tasaUSD)}/día
+                  {formatCurrency(29000, monedaActual, tasaUSD)}
+                  {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
+                    ? t("vehiculo.porDia", { defaultValue: "/día" })
+                    : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
                 </Text>
               </View>
               <View style={[s.divisorFila, { backgroundColor: colorBorde }]} />
               <View style={s.filaTarifa}>
-                <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>Protección Total</Text>
+                <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>
+                  {t("catalogo.detalles.proteccionTotal", { defaultValue: "Protección Total" })}
+                </Text>
                 <Text style={[s.filaTarifaPrecio, { color: colorTextoPrimario }]}>
-                  {formatCurrency(67000, monedaActual, tasaUSD)}/día
+                  {formatCurrency(67000, monedaActual, tasaUSD)}
+                  {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
+                    ? t("vehiculo.porDia", { defaultValue: "/día" })
+                    : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
                 </Text>
               </View>
             </View>
@@ -361,16 +445,26 @@ export default function VehiculoDetallePage() {
 
             <View style={[s.subCardInner, { borderColor: colorBorde, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}>
               <View style={s.filaTarifa}>
-                <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>Kilometraje limitado</Text>
+                <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>
+                  {t("catalogo.detalles.kmLimitado", { defaultValue: "Kilometraje limitado" })}
+                </Text>
                 <Text style={[s.filaTarifaPrecio, { color: colorTextoPrimario }]}>
-                  {formatCurrency(tarifas.kmLimitado?.precio ?? 60000, monedaActual, tasaUSD)}/día
+                  {formatCurrency(tarifas.kmLimitado?.precio ?? 60000, monedaActual, tasaUSD)}
+                  {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
+                    ? t("vehiculo.porDia", { defaultValue: "/día" })
+                    : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
                 </Text>
               </View>
               <View style={[s.divisorFila, { backgroundColor: colorBorde }]} />
               <View style={s.filaTarifa}>
-                <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>Kilometraje ilimitado</Text>
+                <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>
+                  {t("catalogo.detalles.kmIlimitado", { defaultValue: "Kilometraje ilimitado" })}
+                </Text>
                 <Text style={[s.filaTarifaPrecio, { color: colorTextoPrimario }]}>
-                  {formatCurrency(tarifas.kmIlimitado?.precio ?? 75000, monedaActual, tasaUSD)}/día
+                  {formatCurrency(tarifas.kmIlimitado?.precio ?? 75000, monedaActual, tasaUSD)}
+                  {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
+                    ? t("vehiculo.porDia", { defaultValue: "/día" })
+                    : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
                 </Text>
               </View>
             </View>
@@ -487,35 +581,72 @@ export default function VehiculoDetallePage() {
           </View>
 
           {/* 10. Precio por día ($COP) */}
-          <View style={[s.card, { backgroundColor: c.bgCard, borderColor: colorBorde }]}>
-            <View style={s.precioCardHeader}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <Ionicons name="pricetag" size={14} color={colorIconoHeader} />
-                <Text style={[s.cardHeaderTitulo, { color: colorTituloCard }]}>
-                  {t("vehiculo.precioPorDia", { defaultValue: "Precio por día ($COP)" })}
-                </Text>
+          {tieneDescuento ? (
+            <View style={[s.card, { backgroundColor: c.bgCard, borderColor: colorBorde }]}>
+              <View style={s.precioCardHeader}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Ionicons name="pricetag" size={14} color={colorIconoHeader} />
+                  <Text style={[s.cardHeaderTitulo, { color: colorTituloCard }]}>
+                    {`${t("vehiculo.precioPorDia", { defaultValue: "Precio por día" }).replace(/\(\$?[A-Z]+\)/g, "").trim()} (${monedaActual})`}
+                  </Text>
+                </View>
+                <View style={s.badgeDescuento}>
+                  <Text style={s.badgeDescuentoTexto}>-{descuentoNum}%</Text>
+                </View>
               </View>
-              <View style={s.badgeDescuento}>
-                <Text style={s.badgeDescuentoTexto}>-{descuentoNum}%</Text>
-              </View>
-            </View>
 
-            <View style={[s.subCardInner, { borderColor: colorBorde, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF", marginTop: 4 }]}>
-              <View style={s.filaTarifa}>
-                <Text style={[s.filaTarifaLabel, { color: colorTextoSecundario, fontWeight: "500", fontSize: 12 }]}>Antes</Text>
-                <Text style={[s.filaTarifaPrecio, { color: colorTextoSecundario, fontWeight: "500", fontSize: 12, textDecorationLine: "line-through" }]}>
-                  {formatCurrency(precioOriginal, monedaActual, tasaUSD)}/día
-                </Text>
-              </View>
-              <View style={[s.divisorFila, { backgroundColor: colorBorde }]} />
-              <View style={s.filaTarifa}>
-                <Text style={[s.filaTarifaLabel, { color: colorAzulAccion, fontSize: 12.5, fontWeight: "700" }]}>Ahora</Text>
-                <Text style={[s.filaTarifaPrecio, { color: colorAzulAccion, fontSize: 13.5, fontWeight: "800" }]}>
-                  {formatCurrency(precioConDescuento, monedaActual, tasaUSD)}/día
-                </Text>
+              <View style={[s.subCardInner, { borderColor: colorBorde, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF", marginTop: 4 }]}>
+                <View style={s.filaTarifa}>
+                  <Text style={[s.filaTarifaLabel, { color: colorTextoSecundario, fontWeight: "500", fontSize: 12 }]}>
+                    {t("vehiculo.antes", { defaultValue: "Antes" })}
+                  </Text>
+                  <Text style={[s.filaTarifaPrecio, { color: colorTextoSecundario, fontWeight: "500", fontSize: 12, textDecorationLine: "line-through" }]}>
+                    {formatCurrency(precioOriginal, monedaActual, tasaUSD)}
+                    {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
+                      ? t("vehiculo.porDia", { defaultValue: "/día" })
+                      : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
+                  </Text>
+                </View>
+                <View style={[s.divisorFila, { backgroundColor: colorBorde }]} />
+                <View style={s.filaTarifa}>
+                  <Text style={[s.filaTarifaLabel, { color: colorAzulAccion, fontSize: 12.5, fontWeight: "700" }]}>
+                    {t("vehiculo.ahoraConDescuento", { defaultValue: "Ahora (con descuento)" })}
+                  </Text>
+                  <Text style={[s.filaTarifaPrecio, { color: colorAzulAccion, fontSize: 13.5, fontWeight: "800" }]}>
+                    {formatCurrency(precioConDescuento, monedaActual, tasaUSD)}
+                    {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
+                      ? t("vehiculo.porDia", { defaultValue: "/día" })
+                      : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
+          ) : (
+            <View style={[s.card, { backgroundColor: c.bgCard, borderColor: colorBorde }]}>
+              <View style={s.precioCardHeader}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Ionicons name="pricetag" size={14} color={colorIconoHeader} />
+                  <Text style={[s.cardHeaderTitulo, { color: colorTituloCard }]}>
+                    {`${t("vehiculo.precioPorDia", { defaultValue: "Precio por día" }).replace(/\(\$?[A-Z]+\)/g, "").trim()} (${monedaActual})`}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={[s.subCardInner, { borderColor: colorBorde, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF", marginTop: 4 }]}>
+                <View style={s.filaTarifa}>
+                  <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario, fontWeight: "600", fontSize: 13 }]}>
+                    {t("vehiculo.tarifaEstandar", { defaultValue: "Tarifa estándar" })}
+                  </Text>
+                  <Text style={[s.filaTarifaPrecio, { color: colorAzulAccion, fontSize: 13.5, fontWeight: "800" }]}>
+                    {formatCurrency(precioOriginal, monedaActual, tasaUSD)}
+                    {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
+                      ? t("vehiculo.porDia", { defaultValue: "/día" })
+                      : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* Divisor entre Precio por día y Reseñas */}
           <View style={[s.divisorSeccion, { backgroundColor: colorBorde }]} />
@@ -533,9 +664,9 @@ export default function VehiculoDetallePage() {
       {/* Barra inferior fija: Precio + Reservar ahora */}
       <View style={[s.barraInferior, { backgroundColor: c.bgCard, borderTopColor: colorBorde, paddingBottom: insets.bottom + 10 }]}>
         <View>
-          <Text style={[s.barraPrecioLabel, { color: c.textMuted }]}>{t("catalogo.tarjeta.tarifaPorDia", { defaultValue: "Tarifa diaria" })}</Text>
+          <Text style={[s.barraPrecioLabel, { color: c.textMuted }]}>{t("vehiculo.tarifaDiaria", { defaultValue: "Tarifa diaria" })}</Text>
           <Text style={[s.barraPrecio, { color: colorTituloCard }]}>
-            {formatCurrency(precioConDescuento, monedaActual, tasaUSD)}
+            {formatCurrency(precioFinal, monedaActual, tasaUSD)}
             <Text style={[s.barraPrecioDia, { color: c.textMuted }]}>
               {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
                 ? ` ${t("vehiculo.porDia", { defaultValue: "/día" })}`
