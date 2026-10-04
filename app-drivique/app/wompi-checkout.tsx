@@ -68,7 +68,6 @@ export default function WompiCheckoutScreen() {
           const urlGen = await construirUrlCheckout({
             reference: reserva.referencia,
             amountInCents: aCentavos(reserva.total),
-            redirectUrl: "https://localtest.me/respuesta",
           });
           if (activo) setCheckoutUrl(urlGen);
         }

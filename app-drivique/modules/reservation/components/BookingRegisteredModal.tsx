@@ -85,8 +85,11 @@ export default function ModalReservaRegistrada({
             >
               {(() => {
                 const horas = horasLimitePago || 72;
-                const textoHoras = horas === 1 ? "1 hora" : `${horas} horas`;
-                return `Tienes aproximadamente ${textoHoras} para realizar el pago digital y confirmar tu reserva. Si no realizas el pago dentro de este plazo, la reserva se cancelará automáticamente.`;
+                const textoHoras = `${horas} ${horas === 1 ? t("comun.hora", { defaultValue: "hora" }) : t("comun.horas", { defaultValue: "horas" })}`;
+                return t("reserva.confirmacion.avisoPlazoPagoDinamico", {
+                  horas: textoHoras,
+                  defaultValue: `Tienes aproximadamente ${textoHoras} para realizar el pago digital y confirmar tu reserva. Si no realizas el pago dentro de este plazo, la reserva se cancelará automáticamente.`,
+                });
               })()}
             </Text>
           </View>

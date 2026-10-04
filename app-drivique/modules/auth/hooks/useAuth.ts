@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { LoginForm, RegistroForm, OlvideContrasenaForm, AuthError } from '../types/auth.types';
-import { buscarUsuarioDemo, UsuarioDemo, USUARIOS_DEMO } from '../../../mocks/demoUsers';
+import { buscarUsuarioDemo, registrarUsuarioDemo, UsuarioDemo, USUARIOS_DEMO } from '../../../mocks/demoUsers';
 import { esCorreoValido as validarCorreo, esContrasenaSegura as validarContrasenaSegura } from '@/utils/validators';
 import { useAuditStore } from '@/store/auditStore';
 import i18n from '@/modules/i18n';
@@ -159,6 +159,10 @@ export function useRegistro() {
     setCargando(true);
     try {
       await new Promise(r => setTimeout(r, 1200));
+      registrarUsuarioDemo({
+        correo: form.correo,
+        contrasena: form.contrasena,
+      });
       onExito();
     } catch {
       onError();

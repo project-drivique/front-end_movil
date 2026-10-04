@@ -33,7 +33,7 @@ import { perfilStyles as styles } from "@/modules/profile/styles/profile.styles"
 import { useAuthStore } from "@/store/authStore";
 import { useUsuarioStore } from "@/store/userStore";
 import { LinearGradient } from "expo-linear-gradient";
-import { GRADIENTES } from "@/constants/gradients";
+import { GRADIENTES, SOMBRA_BOTON_GRADIENTE } from "@/constants/gradients";
 import { eliminarUsuarioDemo } from "@/mocks/demoUsers";
 import { DateField } from "@/components/ui/DateField";
 import { SectionLabel } from "@/components/ui/SectionLabel";
@@ -486,9 +486,36 @@ export default function PerfilScreen() {
 
           {seccionConfig}
 
-          <View style={styles.eliminarWrap}>
-            <TouchableOpacity style={localS.registroBtn} onPress={irARegistro} activeOpacity={0.85}>
-              <Text style={localS.registroBtnTexto}>{t("perfil.registrateYa")}</Text>
+          <View style={localS.guestCtaContainer}>
+            <TouchableOpacity
+              style={[localS.guestBtnShadow, SOMBRA_BOTON_GRADIENTE]}
+              onPress={irARegistro}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={GRADIENTES.boton.colors}
+                start={GRADIENTES.boton.start}
+                end={GRADIENTES.boton.end}
+                style={localS.guestBtnGradient}
+              >
+                <Ionicons name="person-add" size={19} color="#FFFFFF" />
+                <Text style={localS.guestBtnText}>{t("perfil.registrateYa")}</Text>
+                <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                localS.guestLoginBtn,
+                { borderColor: c.border, backgroundColor: c.bgCard }
+              ]}
+              onPress={() => router.push("/(auth)/login")}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="log-in-outline" size={19} color="#1D4ED8" />
+              <Text style={[localS.guestLoginText, { color: c.textPrimary }]}>
+                {t("perfil.iniciarSesionInvitado", { defaultValue: "¿Ya tienes una cuenta? Inicia sesión" })}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -716,17 +743,46 @@ const localS = StyleSheet.create({
   bannerSub: {
     fontSize: 12,
     color: "#6B7280",
+    lineHeight: 17,
   },
-  registroBtn: {
-    backgroundColor: "#1D4ED8",
+  guestCtaContainer: {
+    marginHorizontal: 16,
+    marginTop: 20,
+    marginBottom: 20,
+    gap: 12,
+  },
+  guestBtnShadow: {
     borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: "center",
+    overflow: "hidden",
   },
-  registroBtnTexto: {
+  guestBtnGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    gap: 10,
+  },
+  guestBtnText: {
     color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 15,
+    letterSpacing: 0.3,
+  },
+  guestLoginBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 8,
+  },
+  guestLoginText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
 

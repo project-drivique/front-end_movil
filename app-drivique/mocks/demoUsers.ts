@@ -35,6 +35,34 @@ export function eliminarUsuarioDemo(correo: string): void {
   if (indice !== -1) USUARIOS_DEMO.splice(indice, 1);
 }
 
+export function registrarUsuarioDemo(usuario: {
+  correo: string;
+  contrasena: string;
+  nombres?: string;
+  apellidos?: string;
+}): UsuarioDemo {
+  const id = `u-${Date.now()}`;
+  const nuevo: UsuarioDemo = {
+    id,
+    correo: usuario.correo.trim(),
+    contrasena: usuario.contrasena,
+    nombres: usuario.nombres || usuario.correo.split("@")[0],
+    apellidos: usuario.apellidos || "Usuario",
+    rol: "cliente",
+    activo: true,
+    permisosValidos: true,
+  };
+  const idx = USUARIOS_DEMO.findIndex(
+    (u) => u.correo.toLowerCase() === nuevo.correo.toLowerCase()
+  );
+  if (idx !== -1) {
+    USUARIOS_DEMO[idx] = nuevo;
+  } else {
+    USUARIOS_DEMO.push(nuevo);
+  }
+  return nuevo;
+}
+
 export function cambiarContrasenaUsuarioDemo(
   correo: string,
   contrasenaActual: string,
@@ -48,3 +76,5 @@ export function cambiarContrasenaUsuarioDemo(
   usuario.contrasena = nuevaContrasena;
   return "actualizada";
 }
+
+

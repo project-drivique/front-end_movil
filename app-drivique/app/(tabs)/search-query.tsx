@@ -3,7 +3,7 @@
 import BuscadorCatalogo from "@/modules/catalog/components/CatalogSearch";
 import { useCatalogo } from "@/modules/catalog/hooks/useCatalog";
 import { useAuthStore } from "@/store/authStore";
-import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { useTemaColores, useTranslation } from "@/modules/i18n/hooks/useLanguage";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -20,6 +20,7 @@ export default function BusquedaScreen() {
   const usuario = useAuthStore((state) => state.usuario);
   const invitado = !usuario;
   const c = useTemaColores();
+  const { t } = useTranslation();
 
   // useFocusEffect asegura que la redirección ocurra inmediatamente el usuario pise la pestaña
   useFocusEffect(
@@ -62,10 +63,10 @@ export default function BusquedaScreen() {
 
       {/* HERO */}
       <View style={[styles.hero, { backgroundColor: c.bg }]}>
-        <Text style={[styles.heroEyebrow, { color: c.primary }]}>BIENVENIDO</Text>
-        <Text style={[styles.heroTitle, { color: c.textPrimary }]}>¿A dónde quieres{"\n"}ir hoy?</Text>
+        <Text style={[styles.heroEyebrow, { color: c.primary }]}>{t("buscador.bienvenido", { defaultValue: "BIENVENIDO" })}</Text>
+        <Text style={[styles.heroTitle, { color: c.textPrimary }]}>{t("buscador.heroTitulo", { defaultValue: "¿A dónde quieres\nir hoy?" })}</Text>
         <Text style={[styles.heroSub, { color: c.textSecondary }]}>
-          Encuentra el vehículo perfecto para tu viaje
+          {t("buscador.heroSubtitulo", { defaultValue: "Encuentra el vehículo perfecto para tu viaje" })}
         </Text>
       </View>
 

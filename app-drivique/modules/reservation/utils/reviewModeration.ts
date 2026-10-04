@@ -75,11 +75,11 @@ export function validarComentarioResena(comentario: string): ResultadoValidacion
   }
 
   // 1. Longitud máxima
-  if (limpio.length > 500) {
+  if (limpio.length > 400) {
     return {
       valido: false,
       tipo: "length",
-      mensajeError: "El comentario no puede exceder los 500 caracteres.",
+      mensajeError: "El comentario no puede exceder los 400 caracteres.",
     };
   }
 

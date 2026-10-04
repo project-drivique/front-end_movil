@@ -23,6 +23,7 @@ import {
   ErroresCambiarCorreo,
   FormCambiarCorreo,
 } from "../types/profile.types";
+import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 
 interface Props {
   visible: boolean;
@@ -47,6 +48,7 @@ export function ModalCambiarCorreo({
 }: Props) {
   const [verContrasena, setVerContrasena] = useState(false);
   const { t } = useTranslation();
+  const c = useTemaColores();
 
   return (
     <Modal
@@ -56,8 +58,8 @@ export function ModalCambiarCorreo({
       onRequestClose={onCerrar}
     >
       <View style={styles.overlay}>
-        <View style={styles.sheet}>
-          <View style={styles.handle} />
+        <View style={[styles.sheet, { backgroundColor: c.bgCard }]}>
+          <View style={[styles.handle, { backgroundColor: c.border }]} />
 
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -68,30 +70,31 @@ export function ModalCambiarCorreo({
           >
             {/* Encabezado */}
             <View style={styles.header}>
-              <Text style={styles.titulo}>{t("perfil.cambiarCorreo.titulo")}</Text>
-              <TouchableOpacity style={styles.btnCerrar} onPress={onCerrar}>
-                <Text style={styles.btnCerrarText}>✕</Text>
+              <Text style={[styles.titulo, { color: c.textPrimary }]}>{t("perfil.cambiarCorreo.titulo")}</Text>
+              <TouchableOpacity style={[styles.btnCerrar, { backgroundColor: c.bgInput }]} onPress={onCerrar}>
+                <Text style={[styles.btnCerrarText, { color: c.textSecondary }]}>✕</Text>
               </TouchableOpacity>
             </View>
 
             {/* Correo actual */}
-            <View style={styles.correoActualWrap}>
-              <Text style={styles.correoActualLabel}>{t("perfil.cambiarCorreo.correoActual")}</Text>
-              <Text style={styles.correoActualValor}>{correoActual}</Text>
+            <View style={[styles.correoActualWrap, { backgroundColor: c.bgInput, borderColor: c.border }]}>
+              <Text style={[styles.correoActualLabel, { color: c.textSecondary }]}>{t("perfil.cambiarCorreo.correoActual")}</Text>
+              <Text style={[styles.correoActualValor, { color: c.textPrimary }]}>{correoActual}</Text>
             </View>
 
             {/* Nuevo correo */}
             <View style={styles.campoWrap}>
-              <Text style={styles.campoLabel}>{t("perfil.cambiarCorreo.nuevoCorreo")}</Text>
+              <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t("perfil.cambiarCorreo.nuevoCorreo")}</Text>
               <TextInput
                 style={[
                   styles.input,
-                  errores.nuevoCorreo ? styles.inputError : null,
+                  { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary },
+                  errores.nuevoCorreo ? [styles.inputError, { backgroundColor: c.oscuro ? "#3B1818" : "#FEF2F2" }] : null,
                 ]}
                 value={form.nuevoCorreo}
                 onChangeText={(val) => onCambiar("nuevoCorreo", val)}
                 placeholder={t("perfil.cambiarCorreo.nuevoCorreoPlaceholder")}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={c.textMuted}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
@@ -102,16 +105,17 @@ export function ModalCambiarCorreo({
 
             {/* Confirmar correo */}
             <View style={styles.campoWrap}>
-              <Text style={styles.campoLabel}>{t("perfil.cambiarCorreo.confirmarNuevoCorreo")}</Text>
+              <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t("perfil.cambiarCorreo.confirmarNuevoCorreo")}</Text>
               <TextInput
                 style={[
                   styles.input,
-                  errores.confirmarCorreo ? styles.inputError : null,
+                  { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary },
+                  errores.confirmarCorreo ? [styles.inputError, { backgroundColor: c.oscuro ? "#3B1818" : "#FEF2F2" }] : null,
                 ]}
                 value={form.confirmarCorreo}
                 onChangeText={(val) => onCambiar("confirmarCorreo", val)}
                 placeholder={t("perfil.cambiarCorreo.confirmarNuevoCorreoPlaceholder")}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={c.textMuted}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
@@ -122,25 +126,26 @@ export function ModalCambiarCorreo({
 
             {/* Contraseña actual */}
             <View style={styles.campoWrap}>
-              <Text style={styles.campoLabel}>{t("perfil.cambiarCorreo.contrasenaActual")}</Text>
+              <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t("perfil.cambiarCorreo.contrasenaActual")}</Text>
               <View style={styles.inputRow}>
                 <TextInput
                   style={[
                     styles.inputFlex,
-                    errores.contrasenaActual ? styles.inputError : null,
+                    { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary },
+                    errores.contrasenaActual ? [styles.inputError, { backgroundColor: c.oscuro ? "#3B1818" : "#FEF2F2" }] : null,
                   ]}
                   value={form.contrasenaActual}
                   onChangeText={(val) => onCambiar("contrasenaActual", val)}
                   placeholder={t("perfil.cambiarCorreo.contrasenaActualPlaceholder")}
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={c.textMuted}
                   secureTextEntry={!verContrasena}
                   autoCapitalize="none"
                 />
                 <TouchableOpacity
-                  style={styles.btnVerContrasena}
+                  style={[styles.btnVerContrasena, { backgroundColor: c.bgInput, borderColor: c.border }]}
                   onPress={() => setVerContrasena(!verContrasena)}
                 >
-                  <Ionicons name={verContrasena ? "eye-off-outline" : "eye-outline"} size={18} color="#6B7280" />
+                  <Ionicons name={verContrasena ? "eye-off-outline" : "eye-outline"} size={18} color={c.textSecondary} />
                 </TouchableOpacity>
               </View>
               {errores.contrasenaActual && (
@@ -149,9 +154,9 @@ export function ModalCambiarCorreo({
             </View>
 
             {/* Nota seguridad */}
-            <View style={styles.notaWrap}>
-              <Ionicons name="lock-closed-outline" size={16} color="#1D4ED8" />
-              <Text style={styles.notaText}>
+            <View style={[styles.notaWrap, { backgroundColor: c.primaryBg, borderColor: c.oscuro ? "#1E3A8A" : "#DBEAFE" }]}>
+              <Ionicons name="lock-closed-outline" size={16} color={c.oscuro ? "#60A5FA" : "#1D4ED8"} />
+              <Text style={[styles.notaText, { color: c.oscuro ? "#93C5FD" : "#1D4ED8" }]}>
                 {t("perfil.cambiarCorreo.notaSeguridad")}
               </Text>
             </View>
@@ -180,11 +185,11 @@ export function ModalCambiarCorreo({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.btnCancelar}
+              style={[styles.btnCancelar, { backgroundColor: c.bgCard, borderColor: c.border }]}
               onPress={onCerrar}
               disabled={cargando}
             >
-              <Text style={styles.btnCancelarText}>{t("perfil.cambiarCorreo.cancelar")}</Text>
+              <Text style={[styles.btnCancelarText, { color: c.textSecondary }]}>{t("perfil.cambiarCorreo.cancelar")}</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
