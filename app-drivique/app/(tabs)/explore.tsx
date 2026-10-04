@@ -1,14 +1,15 @@
 import React from 'react';
 import { Text, StyleSheet, ScrollView } from 'react-native';
-import { useTemaColores } from '@/modules/i18n/hooks/useLanguage';
+import { useTemaColores, useTranslation } from '@/modules/i18n/hooks/useLanguage';
 
 // Pantalla temporal de exploración — se reemplaza en módulos siguientes
 export default function ExplorarScreen() {
   const c = useTemaColores();
+  const { t } = useTranslation();
   return (
     <ScrollView contentContainerStyle={[styles.contenedor, { backgroundColor: c.bg }]}>
-      <Text style={[styles.titulo, { color: c.textPrimary }]}>🔍 Explorar</Text>
-      <Text style={[styles.subtitulo, { color: c.textSecondary }]}>Próximamente: filtros avanzados y mapa de sucursales.</Text>
+      <Text style={[styles.titulo, { color: c.textPrimary }]}>🔍 {t("tabs.explorar", { defaultValue: "Explorar" })}</Text>
+      <Text style={[styles.subtitulo, { color: c.textSecondary }]}>{t("explorar.proximamente", { defaultValue: "Próximamente: filtros avanzados y mapa de sucursales." })}</Text>
     </ScrollView>
   );
 }

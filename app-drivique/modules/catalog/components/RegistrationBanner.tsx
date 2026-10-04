@@ -1,11 +1,10 @@
-// modules/catalogo/components/BannerRegistro.tsx
-
 import { GRADIENTES } from "@/constants/gradients";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 
 interface BannerRegistroProps {
   visible: boolean;
@@ -19,15 +18,16 @@ export function BannerRegistro({
   mensaje,
 }: BannerRegistroProps) {
   const { t } = useTranslation();
+  const c = useTemaColores();
   if (!visible) return null;
   const mensajeFinal = mensaje ?? t("catalogo.bannerRegistro.mensaje");
 
   return (
     <View style={styles.overlay}>
-      <View style={styles.banner}>
+      <View style={[styles.banner, { backgroundColor: c.bgCard, borderTopColor: c.border }]}>
         <Text style={styles.icono}>🔒</Text>
-        <Text style={styles.titulo}>{t("catalogo.bannerRegistro.titulo")}</Text>
-        <Text style={styles.mensaje}>{mensajeFinal}</Text>
+        <Text style={[styles.titulo, { color: c.textPrimary }]}>{t("catalogo.bannerRegistro.titulo")}</Text>
+        <Text style={[styles.mensaje, { color: c.textSecondary }]}>{mensajeFinal}</Text>
 
         <View style={styles.botones}>
           <TouchableOpacity
@@ -49,18 +49,18 @@ export function BannerRegistro({
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.botonLogin}
+            style={[styles.botonLogin, { backgroundColor: c.bgInput, borderWidth: 1, borderColor: c.border }]}
             onPress={() => {
               onCerrar();
               router.push("/(auth)/login");
             }}
           >
-            <Text style={styles.botonLoginTexto}>{t("catalogo.bannerRegistro.iniciarSesion")}</Text>
+            <Text style={[styles.botonLoginTexto, { color: c.oscuro ? "#60A5FA" : "#2563EB" }]}>{t("catalogo.bannerRegistro.iniciarSesion")}</Text>
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity style={styles.botonCerrar} onPress={onCerrar}>
-          <Text style={styles.botonCerrarTexto}>{t("catalogo.bannerRegistro.continuarInvitado")}</Text>
+          <Text style={[styles.botonCerrarTexto, { color: c.textMuted }]}>{t("catalogo.bannerRegistro.continuarInvitado")}</Text>
         </TouchableOpacity>
       </View>
     </View>

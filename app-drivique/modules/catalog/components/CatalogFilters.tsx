@@ -21,6 +21,7 @@ import {
   TRANSMISIONES,
 } from "../constants/catalog.constants";
 import { FiltrosCatalogoState } from "../types/catalog.types";
+import { useMonedaStore } from "@/store/currencyStore";
 
 interface Props {
   visible: boolean;
@@ -103,6 +104,7 @@ export default function FiltrosCatalogo({
 }: Props) {
   const insets = useSafeAreaInsets();
   const [dropdownAbierto, setDropdownAbierto] = useState<DropdownAbierto>(null);
+  const monedaActual = useMonedaStore((s) => s.monedaActual);
   const c = useTemaColores();
   const { t } = useTranslation();
 
@@ -110,25 +112,39 @@ export default function FiltrosCatalogo({
   const colorBorde = c.oscuro ? c.border : "#E2E8F0";
 
   const catLabels: Record<string, string> = {
-    Todos: "Todos",
-    Sedan: "Sedan",
-    SUV: "SUV",
-    Económico: "Económico",
-    Deportivo: "Deportivo",
+    Todos: t("catalogo.filtros.todos", { defaultValue: "Todos" }),
+    Sedan: t("catalogo.categorias.sedan", { defaultValue: "Sedán" }),
+    SUV: t("catalogo.categorias.suv", { defaultValue: "SUV" }),
+    Económico: t("catalogo.categorias.economico", { defaultValue: "Económico" }),
+    Deportivo: t("catalogo.categorias.deportivo", { defaultValue: "Deportivo" }),
   };
 
   const transLabels: Record<string, string> = {
-    Todas: "Todas",
-    Automática: "Automática",
-    Manual: "Manual",
+    Todas: t("catalogo.filtros.todas", { defaultValue: "Todas" }),
+    Automática: t("catalogo.filtros.automatica", { defaultValue: "Automática" }),
+    Manual: t("catalogo.filtros.manual", { defaultValue: "Manual" }),
   };
 
   const fuelLabels: Record<string, string> = {
-    Todos: "Todos",
-    Gasolina: "Gasolina",
-    Diesel: "Diesel",
-    Híbrido: "Híbrido",
-    Eléctrico: "Eléctrico",
+    Todos: t("catalogo.filtros.todos", { defaultValue: "Todos" }),
+    Gasolina: t("catalogo.filtros.gasolina", { defaultValue: "Gasolina" }),
+    Diesel: t("catalogo.filtros.diesel", { defaultValue: "Diesel" }),
+    Híbrido: t("catalogo.filtros.hibrido", { defaultValue: "Híbrido" }),
+    Eléctrico: t("catalogo.filtros.electrico", { defaultValue: "Eléctrico" }),
+  };
+
+  const getCiudadLabel = (item: string) => {
+    if (item === "Todas las ciudades") {
+      return t("catalogo.filtros.todasLasCiudades", { defaultValue: "Todas las ciudades" });
+    }
+    return item;
+  };
+
+  const getSucursalLabel = (s: string) => {
+    if (s === "Todas las sucursales") {
+      return t("catalogo.filtros.todasLasSucursales", { defaultValue: "Todas las sucursales" });
+    }
+    return s;
   };
 
   const toggleDropdown = (campo: "ciudad" | "sucursal") => {
@@ -182,7 +198,7 @@ export default function FiltrosCatalogo({
           >
             {/* FAVORITOS */}
             {usuario && (
-              <Seccion label="FAVORITOS" c={c}>
+              <Seccion label={t("catalogo.filtros.favoritos", { defaultValue: "FAVORITOS" })} c={c}>
                 <TouchableOpacity
                   style={[
                     styles.favoritoBtn,
@@ -209,7 +225,7 @@ export default function FiltrosCatalogo({
                       { color: soloFavoritos ? "#FFFFFF" : c.oscuro ? "#CBD5E1" : "#334155" },
                     ]}
                   >
-                    Mis favoritos
+                    {t("catalogo.filtros.misFavoritos", { defaultValue: "Mis favoritos" })}
                   </Text>
                   {totalFavoritos > 0 && (
                     <View
@@ -230,7 +246,7 @@ export default function FiltrosCatalogo({
             )}
 
             {/* CATEGORÍA */}
-            <Seccion label="CATEGORÍA" c={c}>
+            <Seccion label={t("catalogo.filtros.categoria", { defaultValue: "CATEGORÍA" })} c={c}>
               <View style={styles.chipsRow}>
                 {CATEGORIAS.map((cat) => (
                   <Chip
@@ -245,7 +261,7 @@ export default function FiltrosCatalogo({
             </Seccion>
 
             {/* CIUDAD */}
-            <Seccion label="CIUDAD" c={c}>
+            <Seccion label={t("catalogo.filtros.ciudad", { defaultValue: "CIUDAD" })} c={c}>
               <TouchableOpacity
                 style={[
                   styles.selectorBtn,
@@ -258,7 +274,7 @@ export default function FiltrosCatalogo({
                 activeOpacity={0.7}
               >
                 <Text style={[styles.selectorText, { color: c.textPrimary }]} numberOfLines={1}>
-                  {filtros.ciudad}
+                  {getCiudadLabel(filtros.ciudad)}
                 </Text>
                 <Ionicons
                   name={dropdownAbierto === "ciudad" ? "chevron-up" : "chevron-down"}
@@ -292,7 +308,7 @@ export default function FiltrosCatalogo({
                               esSeleccionada && { fontWeight: "700" },
                             ]}
                           >
-                            {item}
+                            {getCiudadLabel(item)}
                           </Text>
                         </TouchableOpacity>
                       );
@@ -303,7 +319,7 @@ export default function FiltrosCatalogo({
             </Seccion>
 
             {/* SUCURSAL */}
-            <Seccion label="SUCURSAL" c={c}>
+            <Seccion label={t("catalogo.filtros.sucursal", { defaultValue: "SUCURSAL" })} c={c}>
               <TouchableOpacity
                 style={[
                   styles.selectorBtn,
@@ -316,7 +332,7 @@ export default function FiltrosCatalogo({
                 activeOpacity={0.7}
               >
                 <Text style={[styles.selectorText, { color: c.textPrimary }]} numberOfLines={1}>
-                  {filtros.sucursal}
+                  {getSucursalLabel(filtros.sucursal)}
                 </Text>
                 <Ionicons
                   name={dropdownAbierto === "sucursal" ? "chevron-up" : "chevron-down"}
@@ -351,7 +367,7 @@ export default function FiltrosCatalogo({
                             ]}
                             numberOfLines={1}
                           >
-                            {s}
+                            {getSucursalLabel(s)}
                           </Text>
                         </TouchableOpacity>
                       );
@@ -361,8 +377,8 @@ export default function FiltrosCatalogo({
               )}
             </Seccion>
 
-            {/* PRECIO POR DÍA ($COP) */}
-            <Seccion label="PRECIO POR DÍA ($COP)" c={c}>
+            {/* PRECIO POR DÍA */}
+            <Seccion label={`${t("catalogo.filtros.precioPorDia", { defaultValue: "PRECIO POR DÍA" }).replace(/\(\$?[A-Z]+\)/g, "").trim()} (${monedaActual})`} c={c}>
               <View style={styles.precioRow}>
                 <TextInput
                   style={[
@@ -373,7 +389,7 @@ export default function FiltrosCatalogo({
                       color: c.textPrimary,
                     },
                   ]}
-                  placeholder="Mínimo"
+                  placeholder={t("catalogo.filtros.minimo", { defaultValue: "Mínimo" })}
                   placeholderTextColor={c.textMuted}
                   keyboardType="numeric"
                   value={filtros.precioMin}
@@ -388,7 +404,7 @@ export default function FiltrosCatalogo({
                       color: c.textPrimary,
                     },
                   ]}
-                  placeholder="Máximo"
+                  placeholder={t("catalogo.filtros.maximo", { defaultValue: "Máximo" })}
                   placeholderTextColor={c.textMuted}
                   keyboardType="numeric"
                   value={filtros.precioMax}
@@ -398,7 +414,7 @@ export default function FiltrosCatalogo({
             </Seccion>
 
             {/* TRANSMISIÓN */}
-            <Seccion label="TRANSMISIÓN" c={c}>
+            <Seccion label={t("catalogo.filtros.transmision", { defaultValue: "TRANSMISIÓN" })} c={c}>
               <View style={styles.chipsRow}>
                 {TRANSMISIONES.map((tr) => (
                   <Chip
@@ -413,7 +429,7 @@ export default function FiltrosCatalogo({
             </Seccion>
 
             {/* COMBUSTIBLE */}
-            <Seccion label="COMBUSTIBLE" c={c}>
+            <Seccion label={t("catalogo.filtros.combustible", { defaultValue: "COMBUSTIBLE" })} c={c}>
               <View style={styles.chipsRow}>
                 {COMBUSTIBLES.map((comb) => (
                   <Chip

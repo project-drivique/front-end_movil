@@ -114,7 +114,7 @@ export default function TarjetaVerificacionDocumental({ tipoDocumento, docsVerif
         >
           <Ionicons name="checkmark-circle" size={16} color={primaryAccent} style={styles.notaIcono} />
           <Text style={[styles.avisoVerificadoTexto, { color: primaryAccent }]}>
-            <Text style={{ fontWeight: "700" }}>Documentos ya registrados: </Text>
+            <Text style={{ fontWeight: "700" }}>{t("reserva.documentos.documentosYaRegistrados", { defaultValue: "Documentos ya registrados: " })}</Text>
             {t("reserva.documentos.yaVerificadosAvisoCuerpo", {
               defaultValue:
                 "Ya has subido tu cédula y licencia de conducción anteriormente. No es obligatorio volver a cargarlos, pero si lo deseas puedes reemplazarlos subiendo nuevos archivos PDF.",

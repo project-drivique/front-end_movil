@@ -12,6 +12,7 @@ import {
   FiltrosCatalogoState,
   Vehiculo,
 } from "../types/catalog.types";
+import { useMonedaStore } from "@/store/currencyStore";
 
 function estaDisponibleEnRango(
   vehiculo: Vehiculo,
@@ -79,6 +80,8 @@ interface OpcionesCatalogo {
 export function useCatalogo(opciones: OpcionesCatalogo = {}) {
   const { soloFavoritos = false, esFavorito, textoBusqueda = "" } = opciones;
   const { t } = useTranslation();
+  const monedaActual = useMonedaStore((s) => s.monedaActual);
+  const tasaUSD = useMonedaStore((s) => s.tasaUSD);
   const [vehiculos] = useState<Vehiculo[]>(VEHICULOS_MOCK);
   const [cargando] = useState(false);
   const [error] = useState<string | null>(null);
@@ -221,8 +224,11 @@ export function useCatalogo(opciones: OpcionesCatalogo = {}) {
       arr = arr.filter((v) => v.sucursal === filtros.sucursal);
     }
 
-    const min = filtros.precioMin ? Number(filtros.precioMin) : null;
-    const max = filtros.precioMax ? Number(filtros.precioMax) : null;
+    const rawMin = filtros.precioMin ? Number(filtros.precioMin) : null;
+    const rawMax = filtros.precioMax ? Number(filtros.precioMax) : null;
+    const factorConversion = monedaActual === "USD" && tasaUSD > 0 ? tasaUSD : 1;
+    const min = rawMin !== null ? rawMin * factorConversion : null;
+    const max = rawMax !== null ? rawMax * factorConversion : null;
     if (min !== null) arr = arr.filter((v) => v.precio >= min);
     if (max !== null) arr = arr.filter((v) => v.precio <= max);
 
@@ -233,7 +239,7 @@ export function useCatalogo(opciones: OpcionesCatalogo = {}) {
     }
 
     return arr;
-  }, [vehiculos, filtros, busquedaRealizada, busquedaForm, soloFavoritos, esFavorito, textoBusqueda]);
+  }, [vehiculos, filtros, busquedaRealizada, busquedaForm, soloFavoritos, esFavorito, textoBusqueda, monedaActual, tasaUSD]);
 
   // Si los filtros activos (categoría/ciudad/sucursal/precio/transmisión/
   // combustible/favoritos/texto) no dejan NINGÚN vehículo, no se deja el

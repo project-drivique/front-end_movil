@@ -88,7 +88,9 @@ export default function MasMenuScreen() {
 
       <ScrollView contentContainerStyle={styles.menuList} showsVerticalScrollIndicator={false}>
         {/* Main Section */}
-        <Text style={[styles.sectionTitle, { color: c.textMuted }]}>MENÚ PRINCIPAL</Text>
+        <Text style={[styles.sectionTitle, { color: c.textMuted }]}>
+          {t("menuLateral.menuPrincipal", { defaultValue: "MENÚ PRINCIPAL" })}
+        </Text>
 
         <TouchableOpacity
           style={[styles.menuItem, { backgroundColor: c.bgCard, borderColor: c.border }]}
@@ -103,7 +105,7 @@ export default function MasMenuScreen() {
 
         <TouchableOpacity
           style={[styles.menuItem, { backgroundColor: c.bgCard, borderColor: c.border }]}
-          onPress={() => handleNavigation("/(tabs)/notifications")}
+          onPress={() => handleNavigation("/(tabs)/notifications", true)}
         >
           <Ionicons name="notifications-outline" size={22} color={c.textSecondary} />
           <Text style={[styles.menuItemText, { color: c.textPrimary }]}>
@@ -129,7 +131,9 @@ export default function MasMenuScreen() {
         </TouchableOpacity>
 
         {/* Settings Section */}
-        <Text style={[styles.sectionTitle, { color: c.textMuted, marginTop: 24 }]}>AJUSTES Y PREFERENCIAS</Text>
+        <Text style={[styles.sectionTitle, { color: c.textMuted, marginTop: 24 }]}>
+          {t("menuLateral.ajustesPreferencias", { defaultValue: "AJUSTES Y PREFERENCIAS" })}
+        </Text>
 
         <TouchableOpacity
           style={[styles.menuItem, { backgroundColor: c.bgCard, borderColor: c.border }]}

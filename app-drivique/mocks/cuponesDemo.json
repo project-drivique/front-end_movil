@@ -66,24 +66,24 @@
   },
   {
     "id": "promo-4",
-    "codigo": "MUSTANG25",
-    "tag": "PROMO-MUSTANG-25",
-    "titulo": "Ford Mustang GT Deportivo VIP",
-    "tituloPremio": "Ford Mustang GT Deportivo VIP",
-    "descripcion": "Ford Mustang GT Deportivo VIP",
-    "recompensaDetalle": "Descuento del 25% exclusivo para reservas del vehículo Ford Mustang GT 2023.",
-    "condicionesDetalladas": "Descuento del 25% exclusivo para reservas del vehículo Ford Mustang GT 2023. Audiencia: Todos los usuarios.",
+    "codigo": "MAZDA25",
+    "tag": "PROMO-MAZDA-25",
+    "titulo": "Mazda CX-5 Especial VIP",
+    "tituloPremio": "Mazda CX-5 Especial VIP",
+    "descripcion": "Mazda CX-5 Especial VIP",
+    "recompensaDetalle": "Descuento del 25% exclusivo para reservas del vehículo Mazda CX-5 2024.",
+    "condicionesDetalladas": "Descuento del 25% exclusivo para reservas del vehículo Mazda CX-5 2024. Audiencia: Todos los usuarios.",
     "descuentoPorcentaje": 25,
     "descuentoTexto": "25% OFF",
-    "regla": "Ford Mustang GT 2023",
+    "regla": "Mazda CX-5 2024",
     "destacada": false,
     "estado": "activo",
     "fechaOtorgado": "2026-01-01T00:00:00Z",
     "fechaExpiracion": "2026-12-31T23:59:59Z",
     "reglas": {
-      "vehiculoId": 4,
+      "vehiculoId": 2,
       "categoriasValidas": [
-        "Deportivo"
+        "SUV"
       ]
     }
   },

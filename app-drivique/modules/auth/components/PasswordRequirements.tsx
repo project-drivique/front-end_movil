@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 
 interface Props {
   password: string;
@@ -8,6 +9,7 @@ interface Props {
 
 export function PasswordRequirements({ password }: Props) {
   const { t } = useTranslation();
+  const c = useTemaColores();
 
   const requisitos = [
     { key: "auth.pass.min8",      ok: password.length >= 8 },
@@ -45,21 +47,35 @@ export function PasswordRequirements({ password }: Props) {
   const barWidth = `${(cumplidos / requisitos.length) * 100}%` as `${number}%`;
 
   return (
-    <Animated.View style={[s.wrap, { maxHeight, opacity, marginTop, marginBottom, paddingVertical, borderWidth }]}>
+    <Animated.View
+      style={[
+        s.wrap,
+        {
+          maxHeight,
+          opacity,
+          marginTop,
+          marginBottom,
+          paddingVertical,
+          borderWidth,
+          backgroundColor: c.oscuro ? c.bgInput : "#F8FAFF",
+          borderColor: c.oscuro ? c.border : "#E0E7FF",
+        },
+      ]}
+    >
       {/* Barra de progreso */}
-      <View style={s.barFondo}>
+      <View style={[s.barFondo, { backgroundColor: c.oscuro ? "#374151" : "#E5E7EB" }]}>
         <View style={[s.barRelleno, { width: barWidth, backgroundColor: barColor }]} />
       </View>
 
       {/* Requisitos */}
       {requisitos.map(({ key, ok }) => (
         <View key={key} style={s.fila}>
-          <View style={[s.dot, ok ? s.dotOk : s.dotNo]}>
-            <Text style={[s.dotTxt, ok ? s.dotTxtOk : s.dotTxtNo]}>
+          <View style={[s.dot, ok ? s.dotOk : [s.dotNo, c.oscuro && { backgroundColor: "#374151" }]]}>
+            <Text style={[s.dotTxt, ok ? s.dotTxtOk : [s.dotTxtNo, c.oscuro && { color: "#9CA3AF" }]]}>
               {ok ? "✓" : "·"}
             </Text>
           </View>
-          <Text style={[s.label, ok ? s.labelOk : s.labelNo]}>
+          <Text style={[s.label, ok ? s.labelOk : [s.labelNo, { color: c.textSecondary }]]}>
             {t(key)}
           </Text>
         </View>

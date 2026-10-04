@@ -90,7 +90,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
 
       <InputField
         label={t("perfil.nombres")}
-        placeholder="Ej: Laura Vanessa"
+        placeholder={t("perfil.placeholders.nombres", { defaultValue: "Ej: Laura Vanessa" })}
         autoCapitalize="words"
         value={form.nombres}
         onChangeText={v => actualizarCampo("nombres", v)}
@@ -99,7 +99,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
       />
       <InputField
         label={t("perfil.apellidos")}
-        placeholder="Ej: Pérez Perdomo"
+        placeholder={t("perfil.placeholders.apellidos", { defaultValue: "Ej: Pérez Perdomo" })}
         autoCapitalize="words"
         value={form.apellidos}
         onChangeText={v => actualizarCampo("apellidos", v)}
@@ -177,7 +177,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
                 { borderColor: c.border, backgroundColor: c.bgInput, color: c.textPrimary },
                 errores.telefono ? inputFieldStyles.inputErrorWrapper : undefined,
               ]}
-              placeholder="Ej. 3144214909"
+              placeholder={t("perfil.placeholders.telefono", { defaultValue: "Ej. 3144214909" })}
               placeholderTextColor="#9CA3AF"
               autoCorrect={false}
               keyboardType="phone-pad"
