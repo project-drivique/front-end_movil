@@ -1,7 +1,3 @@
-/**
- * RF50 — Editar información del usuario
- * Componente que muestra la información actual del usuario
- */
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { GRADIENTES } from "@/constants/gradients";
@@ -12,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { useTranslation } from "react-i18next";
+import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { UsuarioPerfil } from "../types/profile.types";
 
 interface Props {
@@ -22,74 +19,76 @@ interface Props {
 
 export function InfoPersonal({ usuario, onEditar, onCambiarCorreo }: Props) {
   const { t } = useTranslation();
+  const c = useTemaColores();
+
   return (
     <View style={styles.container}>
       {/* Avatar */}
-      <View style={styles.avatarWrap}>
+      <View style={[styles.avatarWrap, { backgroundColor: c.bgCard, borderColor: c.border }]}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
             {usuario.nombres.charAt(0)}{usuario.apellidos.charAt(0)}
           </Text>
         </View>
-        <Text style={styles.nombreCompleto}>
+        <Text style={[styles.nombreCompleto, { color: c.textPrimary }]}>
           {usuario.nombres} {usuario.apellidos}
         </Text>
-        <Text style={styles.correoAvatar}>{usuario.correo}</Text>
+        <Text style={[styles.correoAvatar, { color: c.textSecondary }]}>{usuario.correo}</Text>
       </View>
 
       {/* Datos personales */}
-      <View style={styles.seccion}>
-        <Text style={styles.seccionLabel}>{t('perfil.datosPersonales')}</Text>
+      <View style={[styles.seccion, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+        <Text style={[styles.seccionLabel, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>{t('perfil.datosPersonales')}</Text>
 
         <View style={styles.campo}>
-          <Text style={styles.campoLabel}>{t('perfil.nombres')}</Text>
-          <Text style={styles.campoValor}>{usuario.nombres}</Text>
+          <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.nombres')}</Text>
+          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{usuario.nombres}</Text>
         </View>
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: c.border }]} />
 
         <View style={styles.campo}>
-          <Text style={styles.campoLabel}>{t('perfil.apellidos')}</Text>
-          <Text style={styles.campoValor}>{usuario.apellidos}</Text>
+          <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.apellidos')}</Text>
+          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{usuario.apellidos}</Text>
         </View>
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: c.border }]} />
 
         <View style={styles.campo}>
-          <Text style={styles.campoLabel}>{t('perfil.documento')}</Text>
-          <Text style={styles.campoValor}>{t(`reserva.datosPersonales.tiposDocumento.${usuario.tipoDocumento === "Doc. Extranjero" ? "DocExtranjero" : usuario.tipoDocumento}`, { defaultValue: usuario.tipoDocumento })} {usuario.numeroDocumento}</Text>
+          <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.documento')}</Text>
+          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{t(`reserva.datosPersonales.tiposDocumento.${usuario.tipoDocumento === "Doc. Extranjero" ? "DocExtranjero" : usuario.tipoDocumento}`, { defaultValue: usuario.tipoDocumento })} {usuario.numeroDocumento}</Text>
         </View>
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: c.border }]} />
 
         <View style={styles.campo}>
-          <Text style={styles.campoLabel}>{t('perfil.telefono')}</Text>
-          <Text style={styles.campoValor}>{usuario.telefono}</Text>
+          <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.telefono')}</Text>
+          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{usuario.telefono}</Text>
         </View>
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: c.border }]} />
 
         <View style={styles.campo}>
-          <Text style={styles.campoLabel}>{t('perfil.fechaNac')}</Text>
-          <Text style={styles.campoValor}>{usuario.fechaNacimiento}</Text>
+          <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.fechaNac')}</Text>
+          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{usuario.fechaNacimiento}</Text>
         </View>
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: c.border }]} />
 
         <View style={styles.campo}>
-          <Text style={styles.campoLabel}>{t('perfil.nacionalidad')}</Text>
-          <Text style={styles.campoValor}>{usuario.nacionalidad}</Text>
+          <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.nacionalidad')}</Text>
+          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{usuario.nacionalidad}</Text>
         </View>
       </View>
 
       {/* Correo con botón cambiar */}
-      <View style={styles.seccion}>
-        <Text style={styles.seccionLabel}>{t('perfil.correoElectronico')}</Text>
+      <View style={[styles.seccion, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+        <Text style={[styles.seccionLabel, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>{t('perfil.correoElectronico')}</Text>
         <View style={styles.correoRow}>
           <View style={styles.correoInfo}>
-            <Text style={styles.campoLabel}>{t('perfil.correoActual')}</Text>
-            <Text style={styles.campoValor}>{usuario.correo}</Text>
+            <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.correoActual')}</Text>
+            <Text style={[styles.campoValor, { color: c.textPrimary }]}>{usuario.correo}</Text>
           </View>
           <TouchableOpacity
-            style={styles.btnCambiarCorreo}
+            style={[styles.btnCambiarCorreo, { backgroundColor: c.primaryBg, borderColor: c.oscuro ? "#3B82F6" : "#1D4ED8" }]}
             onPress={onCambiarCorreo}
           >
-            <Text style={styles.btnCambiarCorreoText}>{t('perfil.cambiar')}</Text>
+            <Text style={[styles.btnCambiarCorreoText, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>{t('perfil.cambiar')}</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -10,10 +10,18 @@ import {
   Linking,
 } from "react-native";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
-import { WebView } from "react-native-webview";
 import { COLOR_MARCA } from "../constants/reservation.constants";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
+
+let WebView: any = null;
+if (Platform.OS !== "web") {
+  try {
+    WebView = require("react-native-webview").WebView;
+  } catch {
+    // fallback
+  }
+}
 
 interface Props {
   visible: boolean;
@@ -23,7 +31,7 @@ interface Props {
   onCerrar: () => void;
 }
 
-export default function BranchDirectionsModal({
+export function BranchDirectionsModal({
   visible,
   nombreSucursal,
   direccion,
@@ -289,3 +297,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 });
+
+export default BranchDirectionsModal;
+

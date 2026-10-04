@@ -38,18 +38,72 @@ import {
   CanalContacto,
 } from "@/modules/support/constants/support.dummy";
 
-// Fotos de prueba para evidencia opcional (sin emojis)
-const EVIDENCIAS_PRUEBA = [
-  "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=400&q=80",
-  "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=400&q=80",
-  "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=400&q=80",
-];
+import * as DocumentPicker from "expo-document-picker";
 
 export default function SupportScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t } = useTranslation();
   const usuarioProfile = useUsuarioStore((s) => s.usuario);
+
+  const getEstadoTexto = (estado: string) => {
+    switch (estado) {
+      case "Recibido":
+        return t("soporte.estado.recibido", { defaultValue: "Recibido" });
+      case "En revisión":
+        return t("soporte.estado.enRevision", { defaultValue: "En revisión" });
+      case "En atención":
+        return t("soporte.estado.enAtencion", { defaultValue: "En atención" });
+      case "Resuelto":
+        return t("soporte.estado.resuelto", { defaultValue: "Resuelto" });
+      default:
+        return estado;
+    }
+  };
+
+  const getTipoIncidenciaTexto = (idOrNombre: string) => {
+    switch (idOrNombre) {
+      case "mecanica":
+      case "Avería mecánica":
+        return t("soporte.tipo.mecanica", { defaultValue: "Avería mecánica" });
+      case "electrica":
+      case "Falla eléctrica / Batería":
+        return t("soporte.tipo.electrica", { defaultValue: "Falla eléctrica / Batería" });
+      case "neumatico":
+      case "Pinchazo / Neumático":
+        return t("soporte.tipo.neumatico", { defaultValue: "Pinchazo / Neumático" });
+      case "limpieza":
+      case "Limpieza / Estética":
+        return t("soporte.tipo.limpieza", { defaultValue: "Limpieza / Estética" });
+      case "documentacion":
+      case "Documentación / Licencia":
+        return t("soporte.tipo.documentacion", { defaultValue: "Documentación / Licencia" });
+      case "otro":
+      case "Otro problema":
+        return t("soporte.tipo.otro", { defaultValue: "Otro problema" });
+      default:
+        return idOrNombre;
+    }
+  };
+
+  const getTiempoEstimadoTexto = (tiempo: string) => {
+    switch (tiempo) {
+      case "2 a 4 horas":
+        return t("soporte.tiempo.2a4horas", { defaultValue: "2 a 4 horas" });
+      case "1 a 3 horas":
+        return t("soporte.tiempo.1a3horas", { defaultValue: "1 a 3 horas" });
+      case "1 a 2 horas":
+        return t("soporte.tiempo.1a2horas", { defaultValue: "1 a 2 horas" });
+      case "12 horas":
+        return t("soporte.tiempo.12horas", { defaultValue: "12 horas" });
+      case "24 horas":
+        return t("soporte.tiempo.24horas", { defaultValue: "24 horas" });
+      case "12 a 24 horas":
+        return t("soporte.tiempo.12a24horas", { defaultValue: "12 a 24 horas" });
+      default:
+        return tiempo;
+    }
+  };
 
   const params = useLocalSearchParams<{
     reservaId?: string;
@@ -167,13 +221,36 @@ export default function SupportScreen() {
     Linking.openURL(canal.urlAction);
   };
 
-  const agregarEvidencia = () => {
+  const agregarEvidencia = async () => {
     if (evidenciasAdjuntas.length >= 3) {
-      Alert.alert(t("tabs.reportarIncidencia"), "Puedes adjuntar máximo 3 fotos de evidencia.");
+      Alert.alert(
+        t("tabs.reportarIncidencia", { defaultValue: "Reportar incidencia" }),
+        t("soporte.incidencia.maxFotosAlerta", { defaultValue: "Puedes adjuntar un máximo de 3 fotos de evidencia." })
+      );
       return;
     }
-    const foto = EVIDENCIAS_PRUEBA[evidenciasAdjuntas.length % EVIDENCIAS_PRUEBA.length];
-    setEvidenciasAdjuntas([...evidenciasAdjuntas, foto]);
+
+    try {
+      const resultado = await DocumentPicker.getDocumentAsync({
+        type: ["image/*"],
+        multiple: true,
+        copyToCacheDirectory: true,
+      });
+
+      if (resultado.canceled || !resultado.assets || resultado.assets.length === 0) {
+        return;
+      }
+
+      const nuevasUris = resultado.assets.map((a) => a.uri).filter(Boolean);
+      const combinadas = [...evidenciasAdjuntas, ...nuevasUris].slice(0, 3);
+      setEvidenciasAdjuntas(combinadas);
+    } catch (error) {
+      console.error("[SupportScreen] Error seleccionando imagen", error);
+      Alert.alert(
+        t("comun.error", { defaultValue: "Error" }),
+        t("soporte.errorSeleccionImagen", { defaultValue: "No fue posible seleccionar la imagen." })
+      );
+    }
   };
 
   const eliminarEvidencia = (index: number) => {
@@ -184,24 +261,27 @@ export default function SupportScreen() {
     const nuevosErrores: Record<string, string> = {};
 
     if (!reservaId || !vehiculoNombre) {
-      nuevosErrores.vehiculoNombre = "Debes asociar una reserva válida para enviar la incidencia.";
+      nuevosErrores.vehiculoNombre = t("soporte.incidencia.errorReservaRequerida", { defaultValue: "Debes asociar una reserva válida para enviar la incidencia." });
     }
     if (!descripcion.trim() || descripcion.trim().length < 10) {
-      nuevosErrores.descripcion = "Escribe una descripción detallada (mínimo 10 caracteres).";
+      nuevosErrores.descripcion = t("soporte.incidencia.errorDescripcionMin", { defaultValue: "Escribe una descripción detallada (mínimo 10 caracteres)." });
     }
     if (!contactoNombre.trim()) {
-      nuevosErrores.contactoNombre = "Ingresa el nombre de contacto.";
+      nuevosErrores.contactoNombre = t("soporte.incidencia.errorNombre", { defaultValue: "Ingresa el nombre de contacto." });
     }
     if (!contactoTelefono.trim()) {
-      nuevosErrores.contactoTelefono = "Ingresa el número de teléfono.";
+      nuevosErrores.contactoTelefono = t("soporte.incidencia.errorTelefono", { defaultValue: "Ingresa el número de teléfono." });
     }
     if (!contactoEmail.trim() || !contactoEmail.includes("@")) {
-      nuevosErrores.contactoEmail = "Ingresa un correo electrónico válido.";
+      nuevosErrores.contactoEmail = t("soporte.incidencia.errorEmail", { defaultValue: "Ingresa un correo electrónico válido." });
     }
 
     if (Object.keys(nuevosErrores).length > 0) {
       setErrores(nuevosErrores);
-      Alert.alert(t("tabs.reportarIncidencia"), "Por favor completa todos los campos requeridos.");
+      Alert.alert(
+        t("tabs.reportarIncidencia", { defaultValue: "Reportar incidencia" }),
+        t("soporte.incidencia.alertaCamposRequeridos", { defaultValue: "Por favor completa todos los campos requeridos." })
+      );
       return;
     }
 
@@ -306,9 +386,11 @@ export default function SupportScreen() {
             <View style={[styles.iconContainer, { backgroundColor: c.oscuro ? "#1E293B" : "#EFF6FF" }]}>
               <Ionicons name="headset-outline" size={32} color="#2563EB" />
             </View>
-            <Text style={[styles.introTitle, { color: c.textPrimary }]}>Centro de Atención al Usuario</Text>
+            <Text style={[styles.introTitle, { color: c.textPrimary }]}>
+              {t("soporte.centroAtencionTitulo", { defaultValue: "Centro de Atención al Usuario" })}
+            </Text>
             <Text style={[styles.introSubtitle, { color: c.textSecondary }]}>
-              Asistencia personalizada para tus alquileres de vehículos en Drivique.
+              {t("soporte.centroAtencionSub", { defaultValue: "Asistencia personalizada para tus alquileres de vehículos en Drivique." })}
             </Text>
 
             <TouchableOpacity
@@ -370,7 +452,9 @@ export default function SupportScreen() {
                   onPress={() => toggleFaq(faq.id)}
                   activeOpacity={0.8}
                 >
-                  <Text style={[styles.faqQuestion, { color: c.textPrimary }]}>{faq.pregunta}</Text>
+                  <Text style={[styles.faqQuestion, { color: c.textPrimary }]}>
+                    {t(`soporte.faq.${faq.id}.q`, { defaultValue: faq.pregunta })}
+                  </Text>
                   <Ionicons
                     name={estaAbierto ? "chevron-up" : "chevron-down"}
                     size={20}
@@ -379,7 +463,7 @@ export default function SupportScreen() {
                 </TouchableOpacity>
                 {estaAbierto && (
                   <Text style={[styles.faqAnswer, { color: c.textSecondary }]}>
-                    {faq.respuesta}
+                    {t(`soporte.faq.${faq.id}.a`, { defaultValue: faq.respuesta })}
                   </Text>
                 )}
               </View>
@@ -398,10 +482,10 @@ export default function SupportScreen() {
               <Ionicons name="link-outline" size={20} color="#2563EB" />
               <View style={{ flex: 1, marginLeft: 8 }}>
                 <Text style={[styles.precargadoTitulo, { color: c.oscuro ? "#93C5FD" : "#1E40AF" }]}>
-                  Reserva vinculada desde Mis Reservas
+                  {t("soporte.incidencia.reservaVinculadaTitulo", { defaultValue: "Reserva vinculada desde Mis Reservas" })}
                 </Text>
                 <Text style={[styles.precargadoSub, { color: c.oscuro ? "#BFDBFE" : "#1D4ED8" }]}>
-                  {params.vehiculoNombre} · Ref: {params.reservaId} {params.placa ? `(Placa: ${params.placa})` : ""}
+                  {params.vehiculoNombre} · Ref: {params.reservaId} {params.placa ? `(${t("soporte.incidencia.placa", { defaultValue: "Placa" })}: ${params.placa})` : ""}
                 </Text>
               </View>
             </View>
@@ -409,7 +493,7 @@ export default function SupportScreen() {
             <View style={[styles.infoFormBanner, { backgroundColor: c.bgCard, borderColor: c.border }]}>
               <Ionicons name="information-circle-outline" size={20} color="#2563EB" />
               <Text style={[styles.infoFormText, { color: c.textSecondary }]}>
-                Completa el formulario para reportar cualquier problema técnico o mecánico durante tu reserva.
+                {t("soporte.infoBanner", { defaultValue: "Completa el formulario para reportar cualquier problema técnico o mecánico durante tu reserva." })}
               </Text>
             </View>
           )}
@@ -419,22 +503,24 @@ export default function SupportScreen() {
             <View style={styles.formCardHeader}>
               <Ionicons name="build-outline" size={22} color="#2563EB" />
               <Text style={[styles.formCardTitle, { color: c.textPrimary }]}>
-                Formulario de Incidencia
+                {t("soporte.incidencia.formularioTitulo", { defaultValue: "Formulario de Incidencia" })}
               </Text>
             </View>
 
             {/* Vehículo y Placa */}
-            <Text style={[styles.inputLabel, { color: c.textPrimary }]}>Vehículo / Reserva asociada</Text>
+            <Text style={[styles.inputLabel, { color: c.textPrimary }]}>
+              {t("soporte.incidencia.vehiculoAsociado", { defaultValue: "Vehículo / Reserva asociada" })}
+            </Text>
             {!params.reservaId && !cargandoReservas && reservasValidas.length === 0 ? (
               <View style={[styles.infoBoxModal, { backgroundColor: c.bgInput, marginVertical: 4, padding: 12 }]}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <Ionicons name="warning-outline" size={20} color="#EF4444" />
                   <Text style={{ color: c.textPrimary, fontSize: 13, fontWeight: "700", flex: 1 }}>
-                    No tienes reservas activas o confirmadas
+                    {t("soporte.incidencia.sinReservasActivasTitulo", { defaultValue: "No tienes reservas activas o confirmadas" })}
                   </Text>
                 </View>
                 <Text style={{ color: c.textSecondary, fontSize: 12, marginTop: 6, lineHeight: 16 }}>
-                  Solo puedes reportar incidencias técnicas si tienes reservas activas o confirmadas en este momento.
+                  {t("soporte.incidencia.sinReservasActivasMensaje", { defaultValue: "Solo puedes reportar incidencias técnicas si tienes reservas activas o confirmadas en este momento." })}
                 </Text>
               </View>
             ) : params.reservaId ? (
@@ -444,7 +530,7 @@ export default function SupportScreen() {
                   <Text style={{ color: c.textSecondary, fontSize: 13.5 }}>{vehiculoNombre}</Text>
                 </View>
                 <View style={[styles.input, { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", borderColor: c.border, flex: 1, justifyContent: "center" }]}>
-                  <Text style={{ color: c.textSecondary, fontSize: 13.5 }}>{placa || "Sin Placa"}</Text>
+                  <Text style={{ color: c.textSecondary, fontSize: 13.5 }}>{placa || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin Placa" })}</Text>
                 </View>
               </View>
             ) : (
@@ -468,7 +554,7 @@ export default function SupportScreen() {
                     activeOpacity={0.8}
                   >
                     <Text style={{ color: vehiculoNombre ? c.textPrimary : c.textMuted, fontSize: 13.5 }} numberOfLines={1}>
-                      {vehiculoNombre || "Selecciona un vehículo"}
+                      {vehiculoNombre || t("perfil.seleccionar", { defaultValue: "Seleccionar" })}
                     </Text>
                     <Ionicons name="chevron-down" size={16} color={c.textSecondary} />
                   </TouchableOpacity>
@@ -476,7 +562,7 @@ export default function SupportScreen() {
                   {/* Plate Read-only Input */}
                   <View style={[styles.input, { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", borderColor: c.border, flex: 1, justifyContent: "center" }]}>
                     <Text style={{ color: placa ? c.textPrimary : c.textMuted, fontSize: 13.5 }}>
-                      {placa || "Placa"}
+                      {placa || t("soporte.incidencia.placa", { defaultValue: "Placa" })}
                     </Text>
                   </View>
                 </View>
@@ -486,7 +572,7 @@ export default function SupportScreen() {
 
             {/* Selector de Tipo de Incidencia desde JSON */}
             <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 14 }]}>
-              Tipo de Incidencia *
+              {t("soporte.incidencia.tipoIncidencia", { defaultValue: "Tipo de Incidencia *" })}
             </Text>
             <View style={styles.tiposGrid}>
               {TIPOS_INCIDENCIA_DUMMY.map((tipo) => {
@@ -508,7 +594,7 @@ export default function SupportScreen() {
                       color={seleccionado ? "#FFFFFF" : "#2563EB"}
                     />
                     <Text style={[styles.tipoChipTexto, { color: seleccionado ? "#FFFFFF" : c.textPrimary }]}>
-                      {tipo.nombre}
+                      {getTipoIncidenciaTexto(tipo.id)}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -520,24 +606,24 @@ export default function SupportScreen() {
               <Ionicons name="time-outline" size={20} color={c.oscuro ? "#FBBF24" : "#D97706"} />
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={[styles.tiempoEstimadoLabel, { color: c.oscuro ? "#FDE68A" : "#B45309" }]}>
-                  Tiempo estimado de atención técnica:
+                  {t("soporte.incidencia.tiempoEstimadoLabel", { defaultValue: "Tiempo estimado de atención técnica:" })}
                 </Text>
                 <Text style={[styles.tiempoEstimadoValor, { color: c.oscuro ? "#FBBF24" : "#92400E" }]}>
-                  {tipoObj.tiempoEstimado}
+                  {getTiempoEstimadoTexto(tipoObj.tiempoEstimado)}
                 </Text>
               </View>
             </View>
 
             {/* Descripción Obligatoria */}
             <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 14 }]}>
-              Descripción del problema *
+              {t("soporte.incidencia.descripcionLabel", { defaultValue: "Descripción del problema *" })}
             </Text>
             <TextInput
               style={[
                 styles.inputMultiline,
                 { backgroundColor: c.bgInput, borderColor: errores.descripcion ? "#EF4444" : c.border, color: c.textPrimary },
               ]}
-              placeholder="Describe lo sucedido, ruidos, testigos en tablero o ubicación actual..."
+              placeholder={t("soporte.incidencia.descripcionPlaceholder", { defaultValue: "Describe lo sucedido, ruidos, testigos en tablero o ubicación actual..." })}
               placeholderTextColor={c.textMuted}
               multiline={true}
               numberOfLines={4}
@@ -553,9 +639,11 @@ export default function SupportScreen() {
             {/* Evidencias Opcionales */}
             <View style={styles.evidenciaHeaderRow}>
               <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 14 }]}>
-                Evidencias (Imágenes / Video opcionales)
+                {t("soporte.incidencia.evidenciasLabel", { defaultValue: "Evidencias (Imágenes / Video opcionales)" })}
               </Text>
-              <Text style={[styles.opcionalBadge, { color: c.textMuted }]}>Máx 3 fotos</Text>
+              <Text style={[styles.opcionalBadge, { color: c.textMuted }]}>
+                {t("soporte.incidencia.maxFotos", { defaultValue: "Máx 3 fotos" })}
+              </Text>
             </View>
 
             <View style={styles.evidenciasFila}>
@@ -577,7 +665,9 @@ export default function SupportScreen() {
                   onPress={agregarEvidencia}
                 >
                   <Ionicons name="camera-outline" size={22} color="#2563EB" />
-                  <Text style={styles.agregarEvidenciaTexto}>+ Adjuntar</Text>
+                  <Text style={styles.agregarEvidenciaTexto}>
+                    {t("soporte.incidencia.adjuntar", { defaultValue: "+ Adjuntar" })}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -588,14 +678,16 @@ export default function SupportScreen() {
             <View style={styles.contactoHeaderRow}>
               <Ionicons name="person-circle-outline" size={20} color="#2563EB" />
               <Text style={[styles.sectionSubtitle, { color: c.textPrimary, marginLeft: 6 }]}>
-                Datos de contacto para seguimiento
+                {t("soporte.incidencia.datosSeguimiento", { defaultValue: "Datos de contacto para seguimiento" })}
               </Text>
             </View>
             <Text style={[styles.contactoInfoHint, { color: c.textMuted }]}>
-              Precargados automáticamente desde tu perfil registrado (puedes editarlos si lo requieres).
+              {t("soporte.incidencia.datosSeguimientoHint", { defaultValue: "Precargados automáticamente desde tu perfil registrado (puedes editarlos si lo requieres)." })}
             </Text>
 
-            <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 8 }]}>Nombre completo *</Text>
+            <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 8 }]}>
+              {t("soporte.incidencia.nombreLabel", { defaultValue: "Nombre completo *" })}
+            </Text>
             <TextInput
               style={[
                 styles.input,
@@ -611,7 +703,9 @@ export default function SupportScreen() {
 
             <View style={styles.rowTwoInputs}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 10 }]}>Teléfono *</Text>
+                <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 10 }]}>
+                  {t("soporte.incidencia.telefonoLabel", { defaultValue: "Teléfono *" })}
+                </Text>
                 <TextInput
                   style={[
                     styles.input,
@@ -628,7 +722,9 @@ export default function SupportScreen() {
               </View>
 
               <View style={{ flex: 1.2 }}>
-                <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 10 }]}>Correo electrónico *</Text>
+                <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 10 }]}>
+                  {t("soporte.incidencia.emailLabel", { defaultValue: "Correo electrónico *" })}
+                </Text>
                 <TextInput
                   style={[
                     styles.input,
@@ -660,7 +756,9 @@ export default function SupportScreen() {
                 style={styles.submitBtnGradient}
               >
                 <Ionicons name="send-outline" size={18} color="#FFFFFF" />
-                <Text style={styles.submitBtnText}>Enviar Reporte de Incidencia</Text>
+                <Text style={styles.submitBtnText}>
+                  {t("soporte.incidencia.btnEnviar", { defaultValue: "Enviar Reporte de Incidencia" })}
+                </Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -674,15 +772,19 @@ export default function SupportScreen() {
           {reportes.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Ionicons name="clipboard-outline" size={54} color={c.textMuted} />
-              <Text style={[styles.emptyTitle, { color: c.textPrimary }]}>No tienes reportes registrados</Text>
+              <Text style={[styles.emptyTitle, { color: c.textPrimary }]}>
+                {t("soporte.incidencia.sinReportesTitulo", { defaultValue: "No tienes reportes registrados" })}
+              </Text>
               <Text style={[styles.emptySub, { color: c.textSecondary }]}>
-                Si tienes un problema durante tu alquiler, regístralo desde la pestaña &quot;Reportar Incidencia&quot;.
+                {t("soporte.incidencia.sinReportesSub", { defaultValue: "Si tienes un problema durante tu alquiler, regístralo desde la pestaña \"Reportar Incidencia\"." })}
               </Text>
               <TouchableOpacity
                 style={styles.emptyReportBtn}
                 onPress={() => setActiveTab("reportar")}
               >
-                <Text style={styles.emptyReportBtnText}>Crear primer reporte</Text>
+                <Text style={styles.emptyReportBtnText}>
+                  {t("soporte.incidencia.crearPrimerReporte", { defaultValue: "Crear primer reporte" })}
+                </Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -702,24 +804,26 @@ export default function SupportScreen() {
                       <Text style={[styles.reporteId, { color: c.textPrimary }]}>{item.id}</Text>
                       <View style={[styles.estadoBadge, { backgroundColor: `${colorEstado}18`, borderColor: `${colorEstado}40` }]}>
                         <View style={[styles.estadoDot, { backgroundColor: colorEstado }]} />
-                        <Text style={[styles.estadoTexto, { color: colorEstado }]}>{item.estado}</Text>
+                        <Text style={[styles.estadoTexto, { color: colorEstado }]}>{getEstadoTexto(item.estado)}</Text>
                       </View>
                     </View>
 
-                    <Text style={[styles.reporteTipo, { color: "#2563EB" }]}>{item.tipoIncidencia}</Text>
+                    <Text style={[styles.reporteTipo, { color: "#2563EB" }]}>{getTipoIncidenciaTexto(item.tipoIncidencia)}</Text>
                     <Text style={[styles.reporteVehiculo, { color: c.textSecondary }]}>
-                      {item.vehiculoNombre} {item.placa ? `(Placa: ${item.placa})` : ""}
+                      {item.vehiculoNombre} {item.placa ? `(${t("soporte.incidencia.placa", { defaultValue: "Placa" })}: ${item.placa})` : ""}
                     </Text>
 
                     <Text style={[styles.reporteDesc, { color: c.textPrimary }]} numberOfLines={2}>
-                      {item.descripcion}
+                      {t(item.descripcion, { defaultValue: item.descripcion })}
                     </Text>
 
                     <View style={styles.reporteFooterRow}>
                       <Text style={[styles.reporteTiempo, { color: c.textMuted }]}>
-                        Tiempo est: {item.tiempoEstimadoSolucion}
+                        {t("soporte.incidencia.tiempoEstimadoSolucion", { defaultValue: "Tiempo est." })}: {getTiempoEstimadoTexto(item.tiempoEstimadoSolucion)}
                       </Text>
-                      <Text style={[styles.reporteVerDetalle, { color: "#2563EB" }]}>Ver detalle →</Text>
+                      <Text style={[styles.reporteVerDetalle, { color: "#2563EB" }]}>
+                        {t("soporte.incidencia.verDetalle", { defaultValue: "Ver detalle →" })}
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 );
@@ -740,7 +844,7 @@ export default function SupportScreen() {
           <View style={[styles.modalCardLarge, { backgroundColor: c.bgCard, borderColor: c.border }]}>
             <View style={[styles.modalHeaderRow, { marginBottom: 16 }]}>
               <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
-                Selecciona tu Vehículo en Alquiler
+                {t("soporte.incidencia.seleccionaVehiculo", { defaultValue: "Selecciona tu Vehículo en Alquiler" })}
               </Text>
               <TouchableOpacity onPress={() => setIsDropdownOpen(false)}>
                 <Ionicons name="close" size={24} color={c.textPrimary} />
@@ -750,16 +854,18 @@ export default function SupportScreen() {
             {cargandoReservas ? (
               <View style={{ paddingVertical: 40, alignItems: "center" }}>
                 <ActivityIndicator size="large" color="#2563EB" />
-                <Text style={{ marginTop: 10, color: c.textSecondary }}>Cargando reservas...</Text>
+                <Text style={{ marginTop: 10, color: c.textSecondary }}>
+                  {t("soporte.incidencia.cargandoReservas", { defaultValue: "Cargando reservas..." })}
+                </Text>
               </View>
             ) : reservasValidas.length === 0 ? (
               <View style={{ paddingVertical: 40, alignItems: "center", paddingHorizontal: 16 }}>
                 <Ionicons name="warning-outline" size={48} color={c.textMuted} />
                 <Text style={{ fontSize: 15, fontWeight: "800", color: c.textPrimary, marginTop: 12, textAlign: "center" }}>
-                  No tienes reservas activas o confirmadas
+                  {t("soporte.incidencia.noReservasActivasTitulo", { defaultValue: "No tienes reservas activas o confirmadas" })}
                 </Text>
                 <Text style={{ fontSize: 12.5, color: c.textSecondary, marginTop: 6, textAlign: "center", lineHeight: 18 }}>
-                  Solo puedes reportar incidencias técnicas en vehículos con alquileres confirmados o en curso en este momento.
+                  {t("soporte.incidencia.noReservasActivasSub", { defaultValue: "Solo puedes reportar incidencias técnicas en vehículos con alquileres confirmados o en curso en este momento." })}
                 </Text>
               </View>
             ) : (
@@ -782,7 +888,7 @@ export default function SupportScreen() {
                       onPress={() => {
                         setReservaId(item.referencia);
                         setVehiculoNombre(item.vehiculoNombre);
-                        setPlaca(vehSnap?.placa || "Sin placa");
+                        setPlaca(vehSnap?.placa || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" }));
                         if (errores.vehiculoNombre) {
                           setErrores((prev) => ({ ...prev, vehiculoNombre: "" }));
                         }
@@ -795,7 +901,7 @@ export default function SupportScreen() {
                           {item.vehiculoNombre}
                         </Text>
                         <Text style={[styles.reservaSeleccionDetalle, { color: c.textSecondary }]}>
-                          Placa: <Text style={{ fontWeight: "700" }}>{vehSnap?.placa || "Sin placa"}</Text> · Ref: {item.referencia}
+                          {t("soporte.incidencia.placa", { defaultValue: "Placa" })}: <Text style={{ fontWeight: "700" }}>{vehSnap?.placa || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" })}</Text> · Ref: {item.referencia}
                         </Text>
                         <Text style={[styles.reservaSeleccionFechas, { color: c.textMuted }]}>
                           {item.fechaRetiro ? fechaCorta(String(item.fechaRetiro)) : ""} - {item.fechaDevolucion ? fechaCorta(String(item.fechaDevolucion)) : ""}
@@ -814,7 +920,7 @@ export default function SupportScreen() {
               style={[styles.modalCloseBtn, { marginTop: 10 }]}
               onPress={() => setIsDropdownOpen(false)}
             >
-              <Text style={styles.modalCloseBtnText}>Cancelar</Text>
+              <Text style={styles.modalCloseBtnText}>{t("comun.cancelar", { defaultValue: "Cancelar" })}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -831,29 +937,29 @@ export default function SupportScreen() {
           <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
             <Ionicons name="checkmark-circle" size={56} color="#16A34A" style={{ alignSelf: "center", marginBottom: 10 }} />
             <Text style={[styles.modalTitle, { color: c.textPrimary, textAlign: "center" }]}>
-              Reporte Registrado con Éxito
+              {t("soporte.incidencia.reporteRegistradoExito", { defaultValue: "Reporte Registrado con Éxito" })}
             </Text>
             <Text style={[styles.modalId, { color: "#2563EB", textAlign: "center" }]}>
-              Código de caso: {reporteExitoso?.id}
+              {t("soporte.incidencia.codigoCaso", { defaultValue: "Código de caso:" })} {reporteExitoso?.id}
             </Text>
 
             <View style={[styles.infoBoxModal, { backgroundColor: c.bgInput }]}>
               <View style={styles.infoRowModal}>
                 <Ionicons name="time-outline" size={18} color="#D97706" />
                 <Text style={[styles.infoTxtModal, { color: c.textPrimary }]}>
-                  Tiempo estimado de atención: <Text style={{ fontWeight: "800" }}>{reporteExitoso?.tiempoEstimadoSolucion}</Text>
+                  {t("soporte.incidencia.tiempoEstimadoAtencion", { defaultValue: "Tiempo estimado de atención:" })} <Text style={{ fontWeight: "800" }}>{reporteExitoso?.tiempoEstimadoSolucion ? getTiempoEstimadoTexto(reporteExitoso.tiempoEstimadoSolucion) : ""}</Text>
                 </Text>
               </View>
               <View style={[styles.infoRowModal, { marginTop: 8 }]}>
                 <Ionicons name="mail-outline" size={18} color="#2563EB" />
                 <Text style={[styles.infoTxtModal, { color: c.textPrimary }]}>
-                  Confirmación enviada a: <Text style={{ fontWeight: "700" }}>{reporteExitoso?.contactoEmail}</Text>
+                  {t("soporte.incidencia.confirmacionEnviadaA", { defaultValue: "Confirmación enviada a:" })} <Text style={{ fontWeight: "700" }}>{reporteExitoso?.contactoEmail}</Text>
                 </Text>
               </View>
             </View>
 
             <Text style={[styles.modalNotifAviso, { color: c.textSecondary }]}>
-              El equipo administrador revisará el reporte y actualizará el estado del caso. Recibirás notificaciones por correo y en la app.
+              {t("soporte.incidencia.notifAvisoModal", { defaultValue: "El equipo administrador revisará el reporte y actualizará el estado del caso. Recibirás notificaciones por correo y en la app." })}
             </Text>
 
             <TouchableOpacity
@@ -863,7 +969,9 @@ export default function SupportScreen() {
                 setActiveTab("mis_reportes");
               }}
             >
-              <Text style={styles.modalPrimaryBtnText}>Ver en Mis Reportes</Text>
+              <Text style={styles.modalPrimaryBtnText}>
+                {t("soporte.incidencia.verEnMisReportes", { defaultValue: "Ver en Mis Reportes" })}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -880,7 +988,7 @@ export default function SupportScreen() {
           <View style={[styles.modalCardLarge, { backgroundColor: c.bgCard, borderColor: c.border, height: '82%' }]}>
             <View style={styles.modalHeaderRow}>
               <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
-                Detalle de Reporte {reporteSeleccionado?.id}
+                {t("soporte.incidencia.detalleReporte", { defaultValue: "Detalle de Reporte" })} {reporteSeleccionado?.id}
               </Text>
               <TouchableOpacity onPress={() => setReporteSeleccionado(null)}>
                 <Ionicons name="close" size={24} color={c.textPrimary} />
@@ -891,33 +999,41 @@ export default function SupportScreen() {
               <ScrollView style={{ flex: 1, marginVertical: 10 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <Text style={{ fontSize: 15, fontWeight: "800", color: "#2563EB" }}>
-                    {reporteSeleccionado.tipoIncidencia}
+                    {getTipoIncidenciaTexto(reporteSeleccionado.tipoIncidencia)}
                   </Text>
                   <View style={[styles.estadoBadge, { backgroundColor: `${getEstadoColor(reporteSeleccionado.estado)}18`, borderColor: `${getEstadoColor(reporteSeleccionado.estado)}40` }]}>
                     <Text style={[styles.estadoTexto, { color: getEstadoColor(reporteSeleccionado.estado) }]}>
-                      {reporteSeleccionado.estado}
+                      {getEstadoTexto(reporteSeleccionado.estado)}
                     </Text>
                   </View>
                 </View>
 
-                <Text style={[styles.modalSubHeader, { color: c.textMuted }]}>Vehículo / Reserva:</Text>
+                <Text style={[styles.modalSubHeader, { color: c.textMuted }]}>
+                  {t("soporte.incidencia.vehiculoReserva", { defaultValue: "Vehículo / Reserva:" })}
+                </Text>
                 <Text style={[styles.modalVal, { color: c.textPrimary }]}>
-                  {reporteSeleccionado.vehiculoNombre} {reporteSeleccionado.placa ? `(Placa: ${reporteSeleccionado.placa})` : ""}
+                  {reporteSeleccionado.vehiculoNombre} {reporteSeleccionado.placa ? `(${t("soporte.incidencia.placa", { defaultValue: "Placa" })}: ${reporteSeleccionado.placa})` : ""}
                 </Text>
 
-                <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>Descripción:</Text>
+                <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>
+                  {t("soporte.incidencia.descripcion", { defaultValue: "Descripción:" })}
+                </Text>
                 <Text style={[styles.modalVal, { color: c.textSecondary, lineHeight: 18 }]}>
-                  {reporteSeleccionado.descripcion}
+                  {t(reporteSeleccionado.descripcion, { defaultValue: reporteSeleccionado.descripcion })}
                 </Text>
 
-                <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>Contacto registrado:</Text>
+                <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>
+                  {t("soporte.incidencia.contactoRegistrado", { defaultValue: "Contacto registrado:" })}
+                </Text>
                 <Text style={[styles.modalVal, { color: c.textPrimary }]}>
                   {reporteSeleccionado.contactoNombre} · {reporteSeleccionado.contactoTelefono}
                 </Text>
 
-                <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>Tiempo estimado de atención:</Text>
+                <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>
+                  {t("soporte.incidencia.tiempoEstimadoAtencion", { defaultValue: "Tiempo estimado de atención:" })}
+                </Text>
                 <Text style={[styles.modalVal, { color: "#D97706", fontWeight: "700" }]}>
-                  {reporteSeleccionado.tiempoEstimadoSolucion}
+                  {getTiempoEstimadoTexto(reporteSeleccionado.tiempoEstimadoSolucion)}
                 </Text>
 
                 {/* Historial de atención del Administrador */}
@@ -925,13 +1041,13 @@ export default function SupportScreen() {
                   <View style={[styles.adminNoteBox, { backgroundColor: c.bgInput, borderColor: c.border, marginTop: 16 }]}>
                     <Ionicons name="time-outline" size={18} color="#2563EB" />
                     <Text style={[styles.adminNoteText, { color: c.textSecondary }]}>
-                      Tu reporte ha sido recibido y está a la espera de ser asignado a un técnico. Recibirás una notificación cuando cambie de estado.
+                      {t("soporte.incidencia.reporteRecibidoAviso", { defaultValue: "Tu reporte ha sido recibido y está a la espera de ser asignado a un técnico. Recibirás una notificación cuando cambie de estado." })}
                     </Text>
                   </View>
                 ) : (
                   <>
                     <Text style={[styles.modalSubHeader, { color: c.textPrimary, marginTop: 16, fontWeight: "800", fontSize: 13.5 }]}>
-                      Historial de atención del Administrador:
+                      {t("soporte.incidencia.historialAdmin", { defaultValue: "Historial de atención del Administrador:" })}
                     </Text>
 
                     <View style={styles.timelineContainer}>
@@ -940,14 +1056,14 @@ export default function SupportScreen() {
                           <View style={[styles.timelineDot, { backgroundColor: getEstadoColor(h.estado) }]} />
                           <View style={styles.timelineContent}>
                             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                              <Text style={[styles.timelineEstado, { color: c.textPrimary }]}>{h.estado}</Text>
+                              <Text style={[styles.timelineEstado, { color: c.textPrimary }]}>{getEstadoTexto(h.estado)}</Text>
                               <Text style={[styles.timelineFecha, { color: c.textMuted }]}>
                                 {new Date(h.fecha).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                               </Text>
                             </View>
                             {h.comentario && (
                               <Text style={[styles.timelineComentario, { color: c.textSecondary }]}>
-                                {h.comentario}
+                                {t(h.comentario, { defaultValue: h.comentario })}
                               </Text>
                             )}
                           </View>
@@ -961,7 +1077,7 @@ export default function SupportScreen() {
                 <View style={[styles.adminNoteBox, { backgroundColor: c.bgInput, borderColor: c.border, marginTop: 12 }]}>
                   <Ionicons name="shield-checkmark-outline" size={18} color="#2563EB" />
                   <Text style={[styles.adminNoteText, { color: c.textSecondary }]}>
-                    El estado de este reporte es validado y actualizado directamente por el equipo administrador en la central de soporte.
+                    {t("soporte.incidencia.estadoValidadoAviso", { defaultValue: "El estado de este reporte es validado y actualizado directamente por el equipo administrador en la central de soporte." })}
                   </Text>
                 </View>
               </ScrollView>
@@ -971,7 +1087,7 @@ export default function SupportScreen() {
               style={styles.modalCloseBtn}
               onPress={() => setReporteSeleccionado(null)}
             >
-              <Text style={styles.modalCloseBtnText}>Cerrar</Text>
+              <Text style={styles.modalCloseBtnText}>{t("comun.cerrar", { defaultValue: "Cerrar" })}</Text>
             </TouchableOpacity>
           </View>
         </View>

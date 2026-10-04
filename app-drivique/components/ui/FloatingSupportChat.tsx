@@ -13,7 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { usePathname } from "expo-router";
-import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { useIdioma, useTemaColores, useTranslation } from "@/modules/i18n/hooks/useLanguage";
 import {
   ChatMessage,
   obtenerMensajeBienvenida,
@@ -30,6 +30,7 @@ export function FloatingSupportChat() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { idiomaActual } = useIdioma();
+  const { t } = useTranslation();
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Historial inicial de mensajes según idioma activo
@@ -306,7 +307,7 @@ export function FloatingSupportChat() {
                   borderColor: c.border,
                 },
               ]}
-              placeholder="Escribe tu consulta aquí..."
+              placeholder={t("soporte.chat.placeholder", { defaultValue: "Escribe tu consulta aquí..." })}
               placeholderTextColor={c.textMuted}
               value={inputText}
               onChangeText={setInputText}

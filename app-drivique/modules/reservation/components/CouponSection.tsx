@@ -23,7 +23,7 @@ interface Props {
 
 export default function CouponSection({ vehiculo }: Props) {
   const c = useTemaColores();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
@@ -125,7 +125,16 @@ export default function CouponSection({ vehiculo }: Props) {
     if (!isoString) return "";
     try {
       const date = new Date(isoString);
-      return date.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
+      const lang = i18n.language || "es";
+      const localeMap: Record<string, string> = {
+        es: "es-CO",
+        en: "en-US",
+        fr: "fr-FR",
+        pt: "pt-PT",
+        br: "pt-BR",
+      };
+      const loc = localeMap[lang] || "es-CO";
+      return date.toLocaleDateString(loc, { day: "2-digit", month: "short", year: "numeric" });
     } catch {
       return "";
     }
@@ -235,8 +244,8 @@ export default function CouponSection({ vehiculo }: Props) {
               <Text style={[styles.appliedCode, { color: primaryAccent }]}>{cuponAplicado.codigo}</Text>
               <Text style={[styles.appliedDesc, { color: c.textSecondary }]}>
                 {cuponAplicado.descuentoPorcentaje
-                  ? `${cuponAplicado.descuentoPorcentaje}% OFF aplicado`
-                  : `-$${cuponAplicado.descuentoFijo} aplicado`}
+                  ? `${cuponAplicado.descuentoPorcentaje}% ${t("coupon.offApplied", { defaultValue: "OFF aplicado" })}`
+                  : `-$${cuponAplicado.descuentoFijo} ${t("coupon.applied", { defaultValue: "aplicado" })}`}
               </Text>
             </View>
           </View>
@@ -356,7 +365,11 @@ export default function CouponSection({ vehiculo }: Props) {
                       }
                     ]}>
                       <Text style={[styles.modalSubtitleCenter, { color: primaryAccent }]}>
-                        {t(selectedConditionsCoupon.tituloPremio || selectedConditionsCoupon.descripcion)}
+                        {t(`coupon.couponItems.${selectedConditionsCoupon.id}`, {
+                          defaultValue: t(selectedConditionsCoupon.tituloPremio || selectedConditionsCoupon.descripcion, {
+                            defaultValue: selectedConditionsCoupon.tituloPremio || selectedConditionsCoupon.descripcion,
+                          }),
+                        })}
                       </Text>
 
                       <Text style={[styles.modalDescriptionCenter, { color: c.textSecondary }]}>
@@ -512,7 +525,17 @@ export default function CouponSection({ vehiculo }: Props) {
                     discountLabel = t(cpx.descripcion || "Descuento");
                   }
 
-                  const ruleLabel = cpx.regla || (cpx.reglas?.minimoDias ? `Min ${cpx.reglas.minimoDias} días` : "Todos los vehículos");
+                  const ruleLabel = cpx.regla === "Todos los vehículos"
+                    ? t("coupon.allVehicles", { defaultValue: "Todos los vehículos" })
+                    : cpx.reglas?.minimoDias
+                    ? t("coupon.minDaysShort", { days: cpx.reglas.minimoDias, defaultValue: `Min ${cpx.reglas.minimoDias} días` })
+                    : (cpx.regla ? t(`coupon.rules.${cpx.regla}`, { defaultValue: cpx.regla }) : t("coupon.allVehicles", { defaultValue: "Todos los vehículos" }));
+
+                  const couponTitle = t(`coupon.couponItems.${cpx.id}`, {
+                    defaultValue: t(cpx.tituloPremio || cpx.descripcion || "Cupón de Descuento", {
+                      defaultValue: cpx.tituloPremio || cpx.descripcion || "Cupón de Descuento",
+                    }),
+                  });
 
                   return (
                     <View key={cpx.codigo} style={styles.ticketWrapper}>
@@ -527,7 +550,7 @@ export default function CouponSection({ vehiculo }: Props) {
                           <View style={styles.couponTitleRow}>
                             <Ionicons name="ticket-outline" size={14} color={primaryAccent} style={{ marginRight: 4, marginTop: 1 }} />
                             <Text style={[styles.couponTitlePremio, { color: c.textPrimary }]} numberOfLines={2}>
-                              {t(cpx.tituloPremio || cpx.descripcion || "Cupón de Descuento")}
+                              {couponTitle}
                             </Text>
                           </View>
 

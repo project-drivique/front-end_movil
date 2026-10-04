@@ -5,14 +5,31 @@ import {
   COLOR_MARCA,
 } from "@/modules/catalog/constants/catalog.constants";
 import { TipoDocumento } from "@/modules/profile/types/profile.types";
+import { formatCurrency, Moneda } from "@/utils/currencyUtils";
+import { useMonedaStore } from "@/store/currencyStore";
 
 // Reutilizamos la paleta del catálogo, sin duplicar valores
 export { COLORES, COLOR_MARCA };
 
-// Placeholders de negocio — reemplazar cuando haya reglas reales de precios
+// Placeholders de negocio — sincronizados con las reglas de negocio oficiales
 export const PROTECCION_OBLIGATORIA_DIA = 29000;
 export const PORCENTAJE_CARGOS_ADMINISTRATIVOS = 0.1;
-export const RECARGO_LOGISTICO = 0;
+export const RECARGO_LOGISTICO = 50000; // Valor base unitario para domicilio
+export const RECARGOS_LOGISTICOS: Record<string, number> = {
+  domicilio: 50000,
+  aeropuerto: 40000,
+  terminal: 25000,
+};
+
+export function calcularRecargoLogistico(
+  lugarRetiro?: string | null,
+  lugarDevolucion?: string | null
+): number {
+  const rRetiro = lugarRetiro ? (RECARGOS_LOGISTICOS[lugarRetiro.toLowerCase()] || 0) : 0;
+  const rDevolucion = lugarDevolucion ? (RECARGOS_LOGISTICOS[lugarDevolucion.toLowerCase()] || 0) : 0;
+  return rRetiro + rDevolucion;
+}
+
 export const PORCENTAJE_IVA = 0.19;
 
 // Valor cobrado por cada kilómetro que supere el límite pactado en el
@@ -223,7 +240,6 @@ export const ICONOS_SERVICIOS: Record<string, string> = {
   "GPS Integrado": "navigate-outline",
   "Silla bebé": "body-outline",
   "Silla de bebé": "body-outline",
-  "Conductor adicional": "person-add-outline",
   "Lavado de auto post-entrega": "sparkles-outline",
   "Devolución con tanque vacío": "color-fill-outline",
   "Entrega en otra ciudad": "map-outline",
@@ -310,15 +326,20 @@ export function getResumenPoliticasImportantes(t: (key: string) => string): stri
 }
 
 export function getPuntosPolitica(
-  t: (key: string, opts?: any) => any
+  t: (key: string, opts?: any) => any,
+  moneda?: Moneda,
+  tasaUSD?: number
 ): PuntoPolitica[] {
-  const puntos = t("reserva.terminos.puntos", { returnObjects: true }) as PuntoPolitica[];
-  // Los puntos 3 y 4 (índices 2 y 3) mencionan el valor de excedente por
-  // kilómetro — se interpola acá porque viene de una constante numérica,
-  // no de la traducción.
-  const valorKm = VALOR_KM_EXCEDENTE.toLocaleString("es-CO");
-  return puntos.map((punto) => ({
-    ...punto,
-    items: punto.items.map((item) => item.replace(/\{\{valorKm\}\}/g, `$${valorKm}`)),
-  }));
+  const puntos = (t("reserva.terminos.puntos", { returnObjects: true }) || []) as PuntoPolitica[];
+  const m = moneda ?? useMonedaStore.getState().monedaActual;
+  const tasa = tasaUSD ?? useMonedaStore.getState().tasaUSD;
+  const valorKm = formatCurrency(VALOR_KM_EXCEDENTE, m, tasa);
+  return Array.isArray(puntos)
+    ? puntos.map((punto) => ({
+        ...punto,
+        items: (punto.items || []).map((item) =>
+          item.replace(/\(?\{\{valorKm\}\}(?:\s*COP)?(?:\/km)?\)?/g, `(${valorKm}/km)`).replace(/\{\{valorKm\}\}/g, valorKm)
+        ),
+      }))
+    : [];
 }

@@ -30,13 +30,18 @@ export const fmt = (n: number) => {
 };
 export const fmtPct = (n: number) => `${Math.round(n * 100)}%`;
 
-export const fechaCorta = (f: string | null) =>
+export const fechaCorta = (f: string | null, locale = "es-CO") =>
   f
-    ? new Date(f + "T00:00:00").toLocaleDateString("es-CO", { day: "2-digit", month: "short" })
+    ? new Date(f + "T00:00:00").toLocaleDateString(locale, { day: "2-digit", month: "short" })
     : "";
 
-export const fechaHora = (f: string | null, h: string, formatHoraAmPm: (h: string) => string, fallback: string) =>
-  [fechaCorta(f), h ? formatHoraAmPm(h) : ""].filter(Boolean).join(" · ") || fallback;
+export const fechaHora = (
+  f: string | null,
+  h: string,
+  formatHoraAmPm: (h: string) => string,
+  fallback: string,
+  locale = "es-CO"
+) => [fechaCorta(f, locale), h ? formatHoraAmPm(h) : ""].filter(Boolean).join(" · ") || fallback;
 
 export const diasEntre = (a: string | null, b: string | null) => {
   if (!a || !b) return 0;

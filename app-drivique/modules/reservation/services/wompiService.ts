@@ -73,11 +73,23 @@ interface ConstruirUrlCheckoutParams {
   redirectUrl?: string;
 }
 
+export function obtenerDefaultRedirectUrl(): string {
+  if (Platform.OS === "web" && typeof window !== "undefined" && window.location?.origin) {
+    return `${window.location.origin}/payment-response`;
+  }
+  try {
+    const linkingUrl = Linking.createURL("/payment-response");
+    if (linkingUrl && (linkingUrl.startsWith("http://") || linkingUrl.startsWith("https://"))) {
+      return linkingUrl;
+    }
+  } catch {}
+  return "https://drivique.app/payment-response";
+}
+
 /**
  * Construye la URL del Web Checkout de Wompi (redirección directa a /p/)
  * con todos los parámetros requeridos, incluida la firma de integridad
- * y el manejo seguro de redirección (reemplazando localhost por localtest.me
- * para evitar bloqueos del WAF/CloudFront de Wompi).
+ * y el manejo seguro de redirección sin romper servidores de desarrollo locales.
  */
 export async function construirUrlCheckout({
   reference,
@@ -103,23 +115,18 @@ export async function construirUrlCheckout({
     "signature:integrity": firma,
   });
 
-  // Validación estricta para evitar error "redirectUrl: URL inválida" en Wompi
-  let targetRedirect = "https://localtest.me/respuesta";
+  // URL de redirección compatible con Web local y Móvil
+  let targetRedirect = redirectUrl || obtenerDefaultRedirectUrl();
 
-  if (redirectUrl && typeof redirectUrl === "string" && redirectUrl.trim() !== "") {
-    let clean = redirectUrl.trim();
+  if (targetRedirect && typeof targetRedirect === "string" && targetRedirect.trim() !== "") {
+    let clean = targetRedirect.trim();
     if (clean.startsWith("http://") || clean.startsWith("https://")) {
-      if (clean.includes("localhost")) {
-        clean = clean.replace(/localhost/g, "localtest.me");
-      }
-      if (clean.startsWith("http://")) {
-        clean = clean.replace(/^http:\/\//, "https://");
-      }
       targetRedirect = clean;
     } else {
-      // Esquemas móviles como exp:// o rutas personalizadas se homologan a la URL HTTPS válida
-      targetRedirect = "https://localtest.me/respuesta";
+      targetRedirect = obtenerDefaultRedirectUrl();
     }
+  } else {
+    targetRedirect = obtenerDefaultRedirectUrl();
   }
 
   params.set("redirect-url", targetRedirect);
@@ -176,7 +183,7 @@ export async function consultarTransaccionWompi(transactionId: string): Promise<
 export async function iniciarFlujoWompi({
   reference,
   amountInCents,
-  redirectUrl = "https://localtest.me/respuesta",
+  redirectUrl,
 }: {
   reference: string;
   amountInCents: number;
