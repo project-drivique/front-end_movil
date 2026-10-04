@@ -313,7 +313,7 @@ export default function MisReservasScreen() {
       }
 
       router.push({
-        pathname: "/wompi-checkout",
+        pathname: "/wompi-checkout" as any,
         params: {
           url: encodeURIComponent(url),
           ref: encodeURIComponent(reserva.referencia),
