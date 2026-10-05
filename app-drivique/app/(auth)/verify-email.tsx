@@ -21,8 +21,6 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useVerificarCorreo } from "@/modules/auth/hooks/useAuth";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { OtpInput } from "@/components/ui/OtpInput";
-import { useAuthStore } from "@/store/authStore";
-import { useUsuarioStore } from "@/store/userStore";
 import { useAuditoria } from "@/store/auditStore";
 import { verificarCorreoStyles as styles } from "@/modules/auth/styles/verify-email.styles";
 
@@ -50,8 +48,6 @@ export default function VerificarCorreoScreen() {
     enviarCodigo,
     verificarCodigo,
   } = useVerificarCorreo(correo);
-  const setUsuario = useAuthStore((s) => s.setUsuario);
-  const actualizarUsuarioGlobal = useUsuarioStore((s) => s.actualizarUsuario);
   const { registrarEvento } = useAuditoria();
 
   const [codigo, setCodigo] = useState("");
@@ -84,16 +80,11 @@ export default function VerificarCorreoScreen() {
   }
 
   async function enviarOReenviarCodigo(tipoAuditoria: "codigo_enviado" | "codigo_reenviado") {
-    const codigoGenerado = await enviarCodigo();
+    await enviarCodigo();
     iniciarTemporizadores();
     setCodigo("");
     registrarEvento("verificacion_correo", tipoAuditoria);
-    // Demo: no hay servicio de correo real — se muestra el código acá
-    // mismo para poder probar el flujo completo.
-    Alert.alert(
-      t("auth.verificarCorreo.codigoEnviadoTitulo"),
-      `${t("auth.verificarCorreo.codigoEnviadoMsg")} ${codigoGenerado}`,
-    );
+    Alert.alert(t("auth.verificarCorreo.codigoEnviadoTitulo"), t("auth.verificarCorreo.codigoEnviadoMsg"));
   }
 
   async function handleVerificar() {
@@ -101,10 +92,7 @@ export default function VerificarCorreoScreen() {
     const ok = await verificarCodigo(codigo);
     if (ok) {
       registrarEvento("verificacion_correo", "codigo_correcto");
-      const id = `u-${Date.now()}`;
-      setUsuario({ id, correo, rol: "cliente" }, "token-demo");
-      actualizarUsuarioGlobal({ id, correo });
-      router.replace("/(tabs)/catalog");
+      router.replace('/(auth)/login');
     } else {
       registrarEvento("verificacion_correo", "codigo_incorrecto");
       setCodigo("");
