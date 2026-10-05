@@ -107,7 +107,7 @@ export default function LoginScreen() {
   }, [loginExitoso]);
 
   function handleLogin() {
-    iniciarSesion((usuarioEncontrado) => {
+    iniciarSesion((usuarioEncontrado, accessToken) => {
       setUsuario(
         {
           id: usuarioEncontrado.id,
@@ -120,7 +120,7 @@ export default function LoginScreen() {
           sucursalId: usuarioEncontrado.sucursalId,
           sucursalNombre: usuarioEncontrado.sucursalNombre,
         },
-        "token-demo",
+        accessToken,
       );
       actualizarUsuarioGlobal({
         id: usuarioEncontrado.id,
