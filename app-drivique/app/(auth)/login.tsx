@@ -7,6 +7,7 @@ import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { GRADIENTES } from "@/constants/gradients";
 import { SocialAuthButtons } from "@/modules/auth/components/SocialAuthButtons";
 import { useLogin } from "@/modules/auth/hooks/useAuth";
+import { useSocialAuth } from "@/modules/auth/hooks/useSocialAuth";
 import { loginStyles as styles } from "@/modules/auth/styles/login.styles";
 import { useAuthStore } from "@/store/authStore";
 import { useUsuarioStore } from "@/store/userStore";
@@ -58,6 +59,22 @@ export default function LoginScreen() {
   const actualizarUsuarioGlobal = useUsuarioStore((s) => s.actualizarUsuario);
   const errorGlobal = errores.find((e) => !e.campo)?.mensaje;
   const [loginExitoso, setLoginExitoso] = useState(false);
+
+  const {
+    cargandoGoogle,
+    cargandoFacebook,
+    iniciarGoogle,
+    iniciarFacebook,
+  } = useSocialAuth({
+    onExito: (usr, token) => {
+      setUsuario(usr, token);
+      actualizarUsuarioGlobal(usr);
+      setLoginExitoso(true);
+      setTimeout(() => {
+        router.replace("/(tabs)/catalog");
+      }, 800);
+    },
+  });
 
   useEffect(() => {
     if (authHydrated && authUsuario && !loginExitoso) {
@@ -323,8 +340,10 @@ export default function LoginScreen() {
                       ) : null}
 
                       <SocialAuthButtons
-                        onGoogle={() => {}}
-                        onFacebook={() => {}}
+                        onGoogle={iniciarGoogle}
+                        onFacebook={iniciarFacebook}
+                        cargandoGoogle={cargandoGoogle}
+                        cargandoFacebook={cargandoFacebook}
                       />
                     </View>
 
