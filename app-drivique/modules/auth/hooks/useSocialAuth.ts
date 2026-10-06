@@ -11,7 +11,7 @@ import { createPkceChallenge } from '@/utils/pkce';
 WebBrowser.maybeCompleteAuthSession();
 
 const GOOGLE_CLIENT_ID = '18960724578-h53pr526uva5mtb9doup86f5hjei231c.apps.googleusercontent.com';
-const FACEBOOK_APP_ID = '100000000000000';
+const FACEBOOK_APP_ID = '1072551762252390';
 
 function cargarGoogleWebSDK(): Promise<any> {
   if (typeof window === 'undefined') return Promise.resolve();
