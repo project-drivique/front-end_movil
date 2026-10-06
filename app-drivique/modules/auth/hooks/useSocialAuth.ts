@@ -1,7 +1,8 @@
-// modules/auth/hooks/useSocialAuth.ts
 import { useState } from 'react';
+import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import * as WebBrowser from 'expo-web-browser';
+import Constants from 'expo-constants';
 import { authService, SocialLoginPayload } from '../services/authService';
 import { useAuthStore, Usuario } from '@/store/authStore';
 import { useAuditStore } from '@/store/auditStore';
@@ -11,6 +12,14 @@ WebBrowser.maybeCompleteAuthSession();
 
 const GOOGLE_CLIENT_ID = '18960724578-h53pr526uva5mtb9doup86f5hjei231c.apps.googleusercontent.com';
 const FACEBOOK_APP_ID = '100000000000000';
+
+function getRedirectUri() {
+  if (Platform.OS === 'web') {
+    return (typeof window !== 'undefined' && window.location?.origin) || 'http://localhost:5173';
+  }
+  const host = Constants.expoConfig?.hostUri?.split(':')[0] || '10.3.235.201';
+  return `http://${host}:5173`;
+}
 
 export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token: string) => void } = {}) {
   const { t } = useTranslation();
@@ -28,7 +37,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
     try {
       const { codeVerifier, nonce, state } = await createPkceChallenge();
-      const redirectUri = 'http://localhost:5173';
+      const redirectUri = getRedirectUri();
 
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
         GOOGLE_CLIENT_ID
