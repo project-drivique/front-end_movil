@@ -28,13 +28,13 @@ import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { usePerfil } from "@/modules/profile/hooks/useProfile";
 import { ModalCambiarCorreo } from "@/modules/profile/components/ChangeEmailModal";
 import { ChangePasswordModal } from "@/modules/profile/components/ChangePasswordModal";
+import { DeleteAccountModal } from "@/modules/profile/components/DeleteAccountModal";
 import { FormCompletarPerfil } from "@/modules/profile/components/CompleteProfileForm";
 import { perfilStyles as styles } from "@/modules/profile/styles/profile.styles";
 import { useAuthStore } from "@/store/authStore";
 import { useUsuarioStore } from "@/store/userStore";
 import { LinearGradient } from "expo-linear-gradient";
-import { GRADIENTES } from "@/constants/gradients";
-import { eliminarUsuarioDemo } from "@/mocks/demoUsers";
+import { GRADIENTES, SOMBRA_BOTON_GRADIENTE } from "@/constants/gradients";
 import { DateField } from "@/components/ui/DateField";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Ionicons } from "@expo/vector-icons";
@@ -44,6 +44,7 @@ import { useMoneda } from "@/hooks/useCurrency";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { Moneda } from "@/utils/currencyUtils";
 import { useNotificationStore } from "@/store/notificationStore";
+import { sessionTokens } from "@/services/http/sessionTokens";
 
 const OPCIONES_NACIONALIDAD = NACIONALIDADES.map((n) => ({
   id: n.nombre,
@@ -64,6 +65,7 @@ export default function PerfilScreen() {
   const [errorMensaje, setErrorMensaje] = useState("");
   const [mostrarCambioContrasena, setMostrarCambioContrasena] = useState(false);
   const [resultadoContrasena, setResultadoContrasena] = useState<"exito" | "error" | null>(null);
+  const [mostrarEliminarCuenta, setMostrarEliminarCuenta] = useState(false);
 
   // Al elegir USD, la moneda solo cambia la referencia visual de los
   // precios; el cobro real con Wompi siempre se hace en COP. Se avisa
@@ -236,30 +238,14 @@ export default function PerfilScreen() {
     </View>
   );
 
-  const handleEliminarCuenta = () => {
-    Alert.alert(
-      t("perfil.eliminarTitulo"),
-      t("perfil.eliminarMsg"),
-      [
-        { text: t("perfil.cancelar"), style: "cancel" },
-        {
-          text: t("perfil.confirmarEliminar"),
-          style: "destructive",
-          onPress: () => {
-            // RF52 — Eliminar cuenta
-            // En producción esto llama a DELETE /usuarios/:id contra el
-            // backend. Mientras tanto, con datos mock, quitamos al usuario
-            // de USUARIOS_DEMO (mocks/demoUsers.ts) para que ya no
-            // pueda volver a iniciar sesión, y limpiamos ambos stores.
-            const correo = authUsuario?.correo || usuario.correo;
-            if (correo) eliminarUsuarioDemo(correo);
-            cerrarSesionAuth();
-            limpiarUsuario();
-            router.replace("/(auth)/login");
-          },
-        },
-      ]
-    );
+  const handleEliminarCuenta = () => setMostrarEliminarCuenta(true);
+
+  const cuentaEliminada = async () => {
+    await sessionTokens.clearRefreshToken();
+    setMostrarEliminarCuenta(false);
+    cerrarSesionAuth();
+    limpiarUsuario();
+    router.replace("/(auth)/login");
   };
 
   // ── Vista completar perfil ────────────────────────────────────────────────
@@ -486,9 +472,36 @@ export default function PerfilScreen() {
 
           {seccionConfig}
 
-          <View style={styles.eliminarWrap}>
-            <TouchableOpacity style={localS.registroBtn} onPress={irARegistro} activeOpacity={0.85}>
-              <Text style={localS.registroBtnTexto}>{t("perfil.registrateYa")}</Text>
+          <View style={localS.guestCtaContainer}>
+            <TouchableOpacity
+              style={[localS.guestBtnShadow, SOMBRA_BOTON_GRADIENTE]}
+              onPress={irARegistro}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={GRADIENTES.boton.colors}
+                start={GRADIENTES.boton.start}
+                end={GRADIENTES.boton.end}
+                style={localS.guestBtnGradient}
+              >
+                <Ionicons name="person-add" size={19} color="#FFFFFF" />
+                <Text style={localS.guestBtnText}>{t("perfil.registrateYa")}</Text>
+                <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                localS.guestLoginBtn,
+                { borderColor: c.border, backgroundColor: c.bgCard }
+              ]}
+              onPress={() => router.push("/(auth)/login")}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="log-in-outline" size={19} color="#1D4ED8" />
+              <Text style={[localS.guestLoginText, { color: c.textPrimary }]}>
+                {t("perfil.iniciarSesionInvitado", { defaultValue: "¿Ya tienes una cuenta? Inicia sesión" })}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -628,6 +641,12 @@ export default function PerfilScreen() {
         onError={() => setResultadoContrasena("error")}
       />
 
+      <DeleteAccountModal
+        visible={mostrarEliminarCuenta}
+        onCerrar={() => setMostrarEliminarCuenta(false)}
+        onEliminada={cuentaEliminada}
+      />
+
       <AlertModal
         visible={resultadoContrasena === "exito"}
         icono="checkmark-circle-outline"
@@ -716,17 +735,46 @@ const localS = StyleSheet.create({
   bannerSub: {
     fontSize: 12,
     color: "#6B7280",
+    lineHeight: 17,
   },
-  registroBtn: {
-    backgroundColor: "#1D4ED8",
+  guestCtaContainer: {
+    marginHorizontal: 16,
+    marginTop: 20,
+    marginBottom: 20,
+    gap: 12,
+  },
+  guestBtnShadow: {
     borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: "center",
+    overflow: "hidden",
   },
-  registroBtnTexto: {
+  guestBtnGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    gap: 10,
+  },
+  guestBtnText: {
     color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 15,
+    letterSpacing: 0.3,
+  },
+  guestLoginBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 8,
+  },
+  guestLoginText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
 

@@ -12,6 +12,7 @@ import {
   COLOR_MARCA,
   PORCENTAJE_CARGOS_ADMINISTRATIVOS,
   PORCENTAJE_IVA,
+  calcularRecargoLogistico,
   formatHoraAmPm,
   getDetalleDuracionAlquiler,
 } from "../constants/reservation.constants";
@@ -115,7 +116,12 @@ export default function ResumenReservaModal({
   const kmLimitado = vehiculo.tarifas?.kmLimitado;
   const kmIlimitado = vehiculo.tarifas?.kmIlimitado;
   const servicios = useMemo(
-    () => (vehiculo.servicios ?? []).filter((s) => !s.nombre.toLowerCase().includes("otra ciudad")),
+    () =>
+      (vehiculo.servicios ?? []).filter(
+        (s) =>
+          !s.nombre.toLowerCase().includes("conductor") &&
+          !s.nombre.toLowerCase().includes("otra ciudad")
+      ),
     [vehiculo.servicios]
   );
 
@@ -181,9 +187,10 @@ export default function ResumenReservaModal({
       .filter((s) => planes.serviciosSeleccionados.includes(s.nombre))
       .reduce((a, s) => a + s.precio * dias, 0);
 
+    const recargoLogistico = calcularRecargoLogistico(fechasLugar.lugarRetiro, fechasLugar.lugarDevolucion);
     const subtotalBase = diarias + proteccion + kilometraje + servAdic;
     const cargos = Math.round(subtotalBase * PORCENTAJE_CARGOS_ADMINISTRATIVOS);
-    const subtotalBruto = subtotalBase + cargos;
+    const subtotalBruto = subtotalBase + cargos + recargoLogistico;
 
     let descuentoCupon = 0;
     if (cuponAplicado) {
@@ -204,6 +211,7 @@ export default function ResumenReservaModal({
       kilometraje,
       servAdic,
       cargos,
+      recargoLogistico,
       subtotalBruto,
       descuentoCupon,
       subtotal,
@@ -214,6 +222,8 @@ export default function ResumenReservaModal({
     vehiculo.precio,
     fechasLugar.fechaRetiro,
     fechasLugar.fechaDevolucion,
+    fechasLugar.lugarRetiro,
+    fechasLugar.lugarDevolucion,
     seguroElegido,
     kmElegido,
     servicios,
@@ -528,6 +538,18 @@ export default function ResumenReservaModal({
                   {fmt(desglose.cargos)}
                 </Text>
               </View>
+
+              {/* Fila Recargo Logístico / Domicilio si aplica */}
+              {desglose.recargoLogistico > 0 && (
+                <View style={styles.filaDesglose}>
+                  <Text style={[styles.filaDesgloseLabel, { color: c.textSecondary }]}>
+                    {t("reserva.resumen.recargoLogistico", { defaultValue: "Recargo logístico / Entrega" })}
+                  </Text>
+                  <Text style={[styles.filaDesgloseValor, { color: c.textPrimary }]}>
+                    {fmt(desglose.recargoLogistico)}
+                  </Text>
+                </View>
+              )}
 
               {/* Divisor fino */}
               <View style={[styles.divisorFino, { backgroundColor: c.border }]} />

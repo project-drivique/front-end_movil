@@ -25,7 +25,11 @@ export default function VehicleDescriptionCard({ vehiculo }: Props) {
         </Text>
       </View>
       <Text style={[styles.descripcionTexto, { color: c.textSecondary }]}>
-        {vehiculo.descripcion}
+        {t(`vehiculo.descripciones.desc_${vehiculo.id}`, {
+          defaultValue: t(`auth.invitado.desc_${vehiculo.id}`, {
+            defaultValue: vehiculo.descripcion,
+          }),
+        })}
       </Text>
     </View>
   );

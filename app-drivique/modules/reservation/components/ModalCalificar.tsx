@@ -30,7 +30,7 @@ import { ResenaGuardada, resenaService } from "../services/resenaService";
 import { validarComentarioResena } from "../utils/reviewModeration";
 
 const MAX_FOTOS = 3;
-const MAX_CARACTERES = 500;
+const MAX_CARACTERES = 400;
 
 interface Props {
   visible: boolean;
@@ -85,9 +85,35 @@ export function ModalCalificar({
     return validarComentarioResena(comentario);
   }, [comentario]);
 
+  const getMensajeModeracion = () => {
+    if (!validacion.tipo) return validacion.mensajeError;
+    switch (validacion.tipo) {
+      case "length":
+        return comentario.length > 400
+          ? t("reserva.calificar.moderacion.lengthMax", { defaultValue: "El comentario no puede exceder los 400 caracteres." })
+          : t("reserva.calificar.moderacion.lengthMin", { defaultValue: "El comentario debe tener al menos 8 caracteres." });
+      case "links":
+        return t("reserva.calificar.moderacion.links", { defaultValue: "Por seguridad, no se permiten enlaces o páginas web en la reseña." });
+      case "privacy":
+        return t("reserva.calificar.moderacion.privacy", { defaultValue: "Por tu seguridad, no incluyas datos personales, correos ni teléfonos." });
+      case "spam":
+        return t("reserva.calificar.moderacion.spam", { defaultValue: "Por favor evita la repetición excesiva de caracteres." });
+      case "profanity":
+        return t("reserva.calificar.moderacion.profanity", { defaultValue: "Por favor mantén un lenguaje respetuoso y cordial en tu reseña." });
+      default:
+        return validacion.mensajeError;
+    }
+  };
+
   const handleSeleccionarFotos = async () => {
     if (fotos.length >= MAX_FOTOS) {
-      Alert.alert("Límite de fotos", `Puedes adjuntar un máximo de ${MAX_FOTOS} fotos.`);
+      Alert.alert(
+        t("reserva.calificar.limiteFotosTitulo", { defaultValue: "Límite de fotos" }),
+        t("reserva.calificar.limiteFotosMensaje", {
+          max: MAX_FOTOS,
+          defaultValue: `Puedes adjuntar un máximo de ${MAX_FOTOS} fotos.`,
+        })
+      );
       return;
     }
 
@@ -107,7 +133,10 @@ export function ModalCalificar({
       setFotos(combinadas);
     } catch (error) {
       console.error("[ModalCalificar] Error seleccionando imagen", error);
-      Alert.alert("Error", "No fue posible seleccionar la imagen.");
+      Alert.alert(
+        t("comun.error", { defaultValue: "Error" }),
+        t("reserva.calificar.errorSeleccionImagen", { defaultValue: "No fue posible seleccionar la imagen." })
+      );
     }
   };
 
@@ -116,7 +145,25 @@ export function ModalCalificar({
   };
 
   const handleGuardar = async () => {
-    if (calificacion < 1 || !validacion.valido || guardando) return;
+    if (calificacion < 1) {
+      Alert.alert(
+        t("reserva.calificar.calificarVehiculo", { defaultValue: "Calificar vehículo" }),
+        t("reserva.calificar.seleccionaEstrellasAlerta", {
+          defaultValue: "Por favor selecciona una calificación de 1 a 5 estrellas.",
+        })
+      );
+      return;
+    }
+
+    if (!validacion.valido) {
+      Alert.alert(
+        t("reserva.calificar.calificarVehiculo", { defaultValue: "Calificar vehículo" }),
+        getMensajeModeracion()
+      );
+      return;
+    }
+
+    if (guardando) return;
 
     setGuardando(true);
     try {
@@ -131,7 +178,10 @@ export function ModalCalificar({
       onGuardado(resena);
     } catch (error) {
       console.error("[ModalCalificar] Error guardando reseña", error);
-      Alert.alert("Error", "Ocurrió un error al guardar la calificación.");
+      Alert.alert(
+        t("comun.error", { defaultValue: "Error" }),
+        t("reserva.calificar.errorGuardarCalificacion", { defaultValue: "Ocurrió un error al guardar la calificación." })
+      );
     } finally {
       setGuardando(false);
     }
@@ -144,37 +194,49 @@ export function ModalCalificar({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCerrar}>
       <Pressable style={s.overlay} onPress={onCerrar}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={s.keyboardWrap}
         >
           <Pressable
             style={[s.card, { backgroundColor: c.bgCard, borderColor: c.border }]}
             onPress={(e) => e.stopPropagation()}
           >
+            {/* Cabecera con botón de cerrar X */}
+            <View style={s.header}>
+              <TouchableOpacity
+                style={s.closeBtn}
+                onPress={onCerrar}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={22} color={c.textMuted} />
+              </TouchableOpacity>
+              <View style={[s.iconoCabecera, { backgroundColor: c.primaryBg }]}>
+                <Ionicons name="star" size={22} color="#F59E0B" />
+              </View>
+              <Text style={[s.titulo, { color: c.textPrimary }]}>
+                {valorInicial
+                  ? t("reserva.calificar.editarCalificacion", { defaultValue: "Editar calificación" })
+                  : t("reserva.calificar.calificarVehiculo", { defaultValue: "Calificar vehículo" })}
+              </Text>
+              {!!vehiculoNombre && (
+                <Text style={[s.subtituloVehiculo, { color: c.textSecondary }]} numberOfLines={1}>
+                  {vehiculoNombre}
+                </Text>
+              )}
+            </View>
+
+            {/* Contenido scrolleable para estrellas, comentario y fotos */}
             <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 6 }}
+              style={s.scrollContainer}
+              showsVerticalScrollIndicator={true}
+              contentContainerStyle={{ paddingVertical: 4, paddingBottom: 10 }}
               keyboardShouldPersistTaps="handled"
             >
-              {/* Cabecera */}
-              <View style={s.header}>
-                <View style={[s.iconoCabecera, { backgroundColor: c.primaryBg }]}>
-                  <Ionicons name="star" size={22} color="#F59E0B" />
-                </View>
-                <Text style={[s.titulo, { color: c.textPrimary }]}>
-                  {valorInicial ? "Editar calificación" : "Calificar vehículo"}
-                </Text>
-                {!!vehiculoNombre && (
-                  <Text style={[s.subtituloVehiculo, { color: c.textSecondary }]} numberOfLines={1}>
-                    {vehiculoNombre}
-                  </Text>
-                )}
-              </View>
-
               {/* Selector de Estrellas */}
               <View style={s.bloqueEstrellas}>
                 <Text style={[s.label, { color: c.textSecondary }]}>
-                  ¿Cómo calificarías el vehículo y tu experiencia?
+                  {t("reserva.calificar.comoCalificarias", { defaultValue: "¿Cómo calificarías el vehículo y tu experiencia?" })}
                 </Text>
                 <View style={s.estrellasWrap}>
                   <SelectorEstrellas valor={calificacion} onCambiar={setCalificacion} tamano={34} />
@@ -184,12 +246,12 @@ export function ModalCalificar({
                   <View style={[s.etiquetaFeedback, { backgroundColor: c.bgInput }]}>
                     <Text style={s.emojiFeedback}>{etiquetaActual.emoji}</Text>
                     <Text style={[s.textoFeedback, { color: c.textPrimary }]}>
-                      {etiquetaActual.texto}
+                      {t(`reserva.calificar.estrellas.${calificacion}`, { defaultValue: etiquetaActual.texto })}
                     </Text>
                   </View>
                 ) : (
                   <Text style={[s.textoPuntajeVacio, { color: c.textMuted }]}>
-                    Toca las estrellas para calificar (1 a 5)
+                    {t("reserva.calificar.tocaEstrellas", { defaultValue: "Toca las estrellas para calificar (1 a 5)" })}
                   </Text>
                 )}
               </View>
@@ -198,7 +260,7 @@ export function ModalCalificar({
               <View style={s.bloqueComentario}>
                 <View style={s.labelFila}>
                   <Text style={[s.label, { color: c.textSecondary }]}>
-                    Cuéntanos tu opinión (opcional)
+                    {t("reserva.calificar.cuentanosOpinion", { defaultValue: "Cuéntanos tu opinión (opcional)" })}
                   </Text>
                   <Text
                     style={[
@@ -219,7 +281,7 @@ export function ModalCalificar({
                       borderColor: !validacion.valido ? "#EF4444" : c.border,
                     },
                   ]}
-                  placeholder="Describe el estado del auto, limpieza, confort o rendimiento..."
+                  placeholder={t("reserva.calificar.placeholderComentario", { defaultValue: "Describe el estado del auto, limpieza, confort o rendimiento..." })}
                   placeholderTextColor={c.textMuted}
                   value={comentario}
                   onChangeText={setComentario}
@@ -233,7 +295,7 @@ export function ModalCalificar({
                 {!validacion.valido && validacion.mensajeError && (
                   <View style={s.alertaModeracion}>
                     <Ionicons name="alert-circle" size={15} color="#EF4444" style={{ marginTop: 1 }} />
-                    <Text style={s.alertaTexto}>{validacion.mensajeError}</Text>
+                    <Text style={s.alertaTexto}>{getMensajeModeracion()}</Text>
                   </View>
                 )}
               </View>
@@ -241,7 +303,9 @@ export function ModalCalificar({
               {/* Selector de Fotos */}
               <View style={s.bloqueFotos}>
                 <View style={s.labelFila}>
-                  <Text style={[s.label, { color: c.textSecondary }]}>Fotos del vehículo (opcional)</Text>
+                  <Text style={[s.label, { color: c.textSecondary }]}>
+                    {t("reserva.calificar.fotosOpcional", { defaultValue: "Fotos del vehículo (opcional)" })}
+                  </Text>
                   <Text style={[s.contadorTexto, { color: c.textMuted }]}>
                     {fotos.length}/{MAX_FOTOS}
                   </Text>
@@ -271,46 +335,55 @@ export function ModalCalificar({
                       activeOpacity={0.75}
                     >
                       <Ionicons name="camera-outline" size={22} color={c.primary} />
-                      <Text style={[s.btnAnadirFotoTexto, { color: c.primary }]}>+ Añadir</Text>
+                      <Text style={[s.btnAnadirFotoTexto, { color: c.primary }]}>
+                        {t("reserva.calificar.anadirFoto", { defaultValue: "+ Añadir" })}
+                      </Text>
                     </TouchableOpacity>
                   )}
                 </View>
               </View>
-
-              {/* Botones de Acción */}
-              <View style={s.botones}>
-                <TouchableOpacity
-                  style={[s.btnCancelar, { borderColor: c.border }]}
-                  onPress={onCerrar}
-                  activeOpacity={0.8}
-                  disabled={guardando}
-                >
-                  <Text style={[s.btnCancelarTexto, { color: c.textSecondary }]}>Cancelar</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[s.btnGuardarWrap, { opacity: puedeGuardar ? 1 : 0.5 }]}
-                  onPress={handleGuardar}
-                  activeOpacity={0.85}
-                  disabled={!puedeGuardar}
-                >
-                  <LinearGradient
-                    colors={GRADIENTES.boton.colors}
-                    start={GRADIENTES.boton.start}
-                    end={GRADIENTES.boton.end}
-                    style={s.btnGuardarGradiente}
-                  >
-                    {guardando ? (
-                      <ActivityIndicator size="small" color="#FFF" />
-                    ) : (
-                      <Text style={s.btnGuardarTexto}>
-                        {valorInicial ? "Actualizar reseña" : "Publicar reseña"}
-                      </Text>
-                    )}
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
             </ScrollView>
+
+            {/* Botones de Acción FIJOS en la parte inferior del Modal */}
+            <View style={[s.botones, { borderTopColor: c.border }]}>
+              <TouchableOpacity
+                style={[s.btnCancelar, { borderColor: c.border, backgroundColor: c.bgInput }]}
+                onPress={onCerrar}
+                activeOpacity={0.8}
+                disabled={guardando}
+              >
+                <Text style={[s.btnCancelarTexto, { color: c.textSecondary }]}>
+                  {t("comun.cancelar", { defaultValue: "Cancelar" })}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[s.btnGuardarWrap, { opacity: guardando ? 0.7 : 1 }]}
+                onPress={handleGuardar}
+                activeOpacity={0.85}
+                disabled={guardando}
+              >
+                <LinearGradient
+                  colors={puedeGuardar ? GRADIENTES.boton.colors : ["#94A3B8", "#64748B"]}
+                  start={GRADIENTES.boton.start}
+                  end={GRADIENTES.boton.end}
+                  style={s.btnGuardarGradiente}
+                >
+                  {guardando ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      <Ionicons name="checkmark-circle-outline" size={18} color="#FFF" />
+                      <Text style={s.btnGuardarTexto}>
+                        {valorInicial
+                          ? t("reserva.calificar.actualizarResena", { defaultValue: "Actualizar reseña" })
+                          : t("reserva.calificar.publicarResena", { defaultValue: "Publicar reseña" })}
+                      </Text>
+                    </View>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
           </Pressable>
         </KeyboardAvoidingView>
       </Pressable>
@@ -324,21 +397,22 @@ const s = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.55)",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
   },
   keyboardWrap: {
     width: "100%",
-    maxWidth: 390,
+    maxWidth: 400,
     alignItems: "center",
+    justifyContent: "center",
   },
   card: {
     width: "100%",
-    maxHeight: "90%",
+    maxHeight: Platform.OS === "web" ? 640 : "88%",
     borderRadius: 20,
     borderWidth: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingHorizontal: 18,
+    paddingTop: 16,
     paddingBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -348,7 +422,22 @@ const s = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: 14,
+    marginBottom: 10,
+    position: "relative",
+  },
+  closeBtn: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+  },
+  scrollContainer: {
+    flexShrink: 1,
   },
   iconoCabecera: {
     width: 44,
@@ -485,7 +574,9 @@ const s = StyleSheet.create({
   botones: {
     flexDirection: "row",
     gap: 10,
-    marginTop: 6,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   btnCancelar: {
     flex: 1,

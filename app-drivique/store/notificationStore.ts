@@ -156,18 +156,19 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     {
       id: "p4",
       tipo: "promocion",
-      titulo: "Ford Mustang GT Deportivo VIP",
-      mensaje: "Descuento del 25% exclusivo para reservas del Ford Mustang GT 2023 con el cupón MUSTANG25.",
+      titulo: "Mazda CX-5 Especial VIP",
+      mensaje: "Descuento del 25% exclusivo para reservas de la Mazda CX-5 2024 con el cupón MAZDA25.",
       fecha: "2026-01-01T09:00:00Z",
       leido: true,
       icono: "speedometer-outline",
       expiracion: "2026-12-31T23:59:59Z",
       cupon: {
-        codigo: "MUSTANG25",
+        codigo: "MAZDA25",
         descuentoPorcentaje: 25,
-        descripcion: "25% de descuento en Ford Mustang GT.",
+        descripcion: "25% de descuento en Mazda CX-5 2024.",
         reglas: {
-          categoriasValidas: ["Deportivo"]
+          vehiculoId: 2,
+          categoriasValidas: ["SUV"]
         }
       }
     },

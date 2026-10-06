@@ -53,6 +53,8 @@ export default function LoginScreen() {
   const [tab, setTab] = useState<Tab>("login");
   const { form, errores, cargando, bloqueado, actualizarCampo, iniciarSesion } =
     useLogin();
+  const authUsuario = useAuthStore((s) => s.usuario);
+  const authHydrated = useAuthStore((s) => s._hasHydrated);
   const setUsuario = useAuthStore((s) => s.setUsuario);
   const actualizarUsuarioGlobal = useUsuarioStore((s) => s.actualizarUsuario);
   const errorGlobal = errores.find((e) => !e.campo)?.mensaje;
@@ -73,6 +75,12 @@ export default function LoginScreen() {
       }, 800);
     },
   });
+
+  useEffect(() => {
+    if (authHydrated && authUsuario && !loginExitoso) {
+      router.replace("/(tabs)/catalog");
+    }
+  }, [authHydrated, authUsuario, loginExitoso]);
 
   // ── Toast para restablecimiento de contraseña ─────────────────
   const { success } = useLocalSearchParams<{ success?: string }>();
@@ -116,7 +124,7 @@ export default function LoginScreen() {
   }, [loginExitoso]);
 
   function handleLogin() {
-    iniciarSesion((usuarioEncontrado) => {
+    iniciarSesion((usuarioEncontrado, accessToken) => {
       setUsuario(
         {
           id: usuarioEncontrado.id,
@@ -129,7 +137,7 @@ export default function LoginScreen() {
           sucursalId: usuarioEncontrado.sucursalId,
           sucursalNombre: usuarioEncontrado.sucursalNombre,
         },
-        "token-demo",
+        accessToken,
       );
       actualizarUsuarioGlobal({
         id: usuarioEncontrado.id,
@@ -141,8 +149,9 @@ export default function LoginScreen() {
       setLoginExitoso(true);
 
       setTimeout(() => {
+        setAlertaExitoVisible(false);
         router.replace("/(tabs)/catalog");
-      }, 1200);
+      }, 1000);
     });
   }
 

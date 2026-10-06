@@ -31,6 +31,7 @@ import {
 import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { useUsuarioStore } from "@/store/userStore";
+import { useAuthStore } from "@/store/authStore";
 import { aCentavos, construirUrlCheckout, consultarTransaccionWompi } from "@/modules/reservation/services/wompiService";
 import { Platform } from "react-native";
 
@@ -174,8 +175,9 @@ export default function MisReservasScreen() {
   const { t } = useTranslation();
   const { idiomaActual, temaActual, toggleTema } = useIdioma();
   const usuario = useUsuarioStore((state) => state.usuario);
-  const usuarioId = usuario.id;
-  const usuarioCorreo = usuario.correo;
+  const usuarioAuth = useAuthStore((state) => state.usuario);
+  const usuarioId = usuario.id || usuarioAuth?.id;
+  const usuarioCorreo = usuario.correo || usuarioAuth?.correo;
   const usuarioDocumento = usuario.numeroDocumento;
   const usuarioKey = usuarioId || usuarioCorreo || usuarioDocumento;
   const [reservas, setReservas] = useState<ReservaGuardada[]>([]);
@@ -298,13 +300,11 @@ export default function MisReservasScreen() {
 
   const handlePagarWompi = async (reserva: ReservaGuardada) => {
     try {
-      const redirectUrl = "https://localtest.me/respuesta";
       const amountInCents = aCentavos(reserva.total);
       const attemptRef = `${reserva.referencia}_${Date.now()}`;
       const url = await construirUrlCheckout({
         reference: attemptRef,
         amountInCents,
-        redirectUrl,
       });
 
       if (Platform.OS === "web" && typeof window !== "undefined") {
@@ -313,7 +313,7 @@ export default function MisReservasScreen() {
       }
 
       router.push({
-        pathname: "/wompi-checkout",
+        pathname: "/wompi-checkout" as any,
         params: {
           url: encodeURIComponent(url),
           ref: encodeURIComponent(reserva.referencia),

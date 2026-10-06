@@ -83,6 +83,8 @@ export default function PagoRespuestaScreen() {
   const [resenaGuardada, setResenaGuardada] = useState<ResenaGuardada | null>(null);
   const [modalCalificarVisible, setModalCalificarVisible] = useState(false);
   const [alertGuardadoVisible, setAlertGuardadoVisible] = useState(false);
+  const [revelarPin, setRevelarPin] = useState(false);
+  const [verMasDomicilio, setVerMasDomicilio] = useState(false);
 
   const usuarioStore = useUsuarioStore((s) => s.usuario);
   const usuarioKey = usuarioStore.id || usuarioStore.correo || usuarioStore.numeroDocumento || "cliente";
@@ -208,13 +210,11 @@ export default function PagoRespuestaScreen() {
   const handlePagarWompi = async () => {
     if (!reserva) return;
     try {
-      const redirectUrl = "https://localtest.me/respuesta";
       const amountInCents = aCentavos(reserva.total);
       const attemptRef = `${reserva.referencia}_${Date.now()}`;
       const url = await construirUrlCheckout({
         reference: attemptRef,
         amountInCents,
-        redirectUrl,
       });
 
       if (Platform.OS === "web" && typeof window !== "undefined") {
@@ -223,7 +223,7 @@ export default function PagoRespuestaScreen() {
       }
 
       router.push({
-        pathname: "/wompi-checkout",
+        pathname: "/wompi-checkout" as any,
         params: {
           url: encodeURIComponent(url),
           ref: encodeURIComponent(reserva.referencia),
@@ -571,6 +571,30 @@ export default function PagoRespuestaScreen() {
 
   const tieneDomicilio = esDomicilioRetiro || esDomicilioDevolucion;
 
+  const domicilioEstado =
+    (reserva as any).domicilioEstado ||
+    (reserva as any)?.fechasLugarSnapshot?.domicilioEstado ||
+    "EN_PREPARACION";
+  const domicilioConductor =
+    (reserva as any).domicilioConductor ||
+    (reserva as any)?.fechasLugarSnapshot?.domicilioConductor ||
+    "";
+  const domicilioTelefonoConductor =
+    (reserva as any).domicilioTelefonoConductor ||
+    (reserva as any)?.fechasLugarSnapshot?.domicilioTelefonoConductor ||
+    "";
+  const domicilioPin =
+    (reserva as any).domicilioPin ||
+    (reserva as any)?.fechasLugarSnapshot?.domicilioPin ||
+    String(
+      Math.abs(
+        Array.from(String(reserva?.referencia || reserva?.id || "1234")).reduce(
+          (acc, char) => (acc * 31 + char.charCodeAt(0)) | 0,
+          0
+        )
+      ) % 9000 + 1000
+    );
+
   const planesEfectivos: DatosPlanes = (planesSnap || {
     proteccion: reserva?.proteccion || "Básica",
     tipoKilometraje: reserva?.tipoKilometraje || "ilimitado",
@@ -584,7 +608,7 @@ export default function PagoRespuestaScreen() {
     if ((numeroDocumento && claveNormalizada === numeroDocumento) || (docReserva && claveIngresada.trim() === docReserva.trim())) {
       setErrorClave("");
       setClaveIngresada("");
-      router.push(`/contract-view?ref=${encodeURIComponent(reserva.referencia)}&unlocked=true`);
+      router.push(`/contract-view?ref=${encodeURIComponent(reserva.referencia)}&unlocked=true` as any);
     } else {
       setErrorClave(t("misReservas.claveIncorrecta", { defaultValue: "Número de documento incorrecto." }));
     }
@@ -778,121 +802,307 @@ export default function PagoRespuestaScreen() {
       {/* Tarjeta Informativa de Servicio a Domicilio (solo si retiro o devolución o ambos es a domicilio) */}
       {tieneDomicilio && (
         <View style={[styles.card, styles.cardEfectivo, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-          {/* Ícono Circular Superior Centrado */}
+          {/* Encabezado con Título y Subtítulo */}
+          <View style={{ width: "100%", alignItems: "center", marginBottom: 14, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: c.border }}>
+            <Text style={[styles.tituloEfectivo, { color: c.textPrimary, margin: 0, fontSize: 20 }]}>
+              {t("reserva.fechasLugar.domicilioTitulo", { defaultValue: "Domicilio" })}
+            </Text>
+            <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, margin: 0, marginTop: 4, paddingHorizontal: 0 }]}>
+              {t("reserva.fechasLugar.domicilioSubtitulo", { defaultValue: "Código de seguridad para validación al momento de la entrega." })}
+            </Text>
+          </View>
+
+          {/* 1. Logo circular */}
           <View
             style={[
               styles.logoCircle,
               {
                 backgroundColor: "#FFFFFF",
                 borderColor: c.oscuro ? "#334155" : "#F1F5F9",
+                marginBottom: 14,
               },
             ]}
           >
-            <Ionicons name="home-outline" size={28} color={primaryAccent} />
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.logoImg}
+              resizeMode="contain"
+            />
           </View>
 
-          <Text style={[styles.tituloEfectivo, { color: c.textPrimary }]}>
-            {esDomicilioRetiro && esDomicilioDevolucion
-              ? "Servicio a Domicilio"
-              : esDomicilioRetiro
-              ? "Entrega a Domicilio"
-              : "Devolución a Domicilio"}
-          </Text>
-
-          <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, marginBottom: 16 }]}>
-            {esDomicilioRetiro && esDomicilioDevolucion
-              ? "Nuestro equipo se encargará de llevar el vehículo hasta tu ubicación de entrega y recogerlo en el punto indicado al finalizar tu viaje. A continuación encuentras los datos registrados para la coordinación:"
-              : esDomicilioRetiro
-              ? "Llevaremos el vehículo directamente a tu dirección para mayor comodidad. Nuestro equipo se comunicará contigo previo a la entrega según los siguientes datos:"
-              : "Un asesor de nuestro equipo se presentará en la dirección indicada para recibir el vehículo al finalizar tu reserva con los siguientes datos:"}
-          </Text>
-
-          {esDomicilioRetiro && (
-            <View
-              style={[
-                styles.cajaReferencia,
-                {
-                  backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
-                  borderColor: c.border,
-                  marginBottom: esDomicilioDevolucion ? 12 : 0,
-                },
-              ]}
-            >
-              {esDomicilioDevolucion && (
-                <Text style={[styles.etiquetaSubtituloLimpio, { color: primaryAccent }]}>
-                  Lugar de retiro (Entrega):
-                </Text>
-              )}
-
-              <View style={styles.filaInfoEfectivo}>
-                <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Dirección:</Text>
-                <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
-                  {fechasLugarEfectivas?.direccionRetiro || (reserva as any)?.direccionRetiro || "—"}
-                </Text>
-              </View>
-
-              {Boolean(fechasLugarEfectivas?.barrioRetiro || (reserva as any)?.barrioRetiro) && (
-                <View style={styles.filaInfoEfectivo}>
-                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Barrio:</Text>
-                  <Text style={[styles.valorEfectivo, { color: c.textPrimary }]}>
-                    {fechasLugarEfectivas?.barrioRetiro || (reserva as any)?.barrioRetiro}
+          {/* 2. CÓDIGO NEQUI + OJO MOSTRAR/OCULTAR */}
+          <View
+            style={[
+              styles.cajaReferencia,
+              {
+                backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
+                borderColor: c.border,
+                paddingVertical: 14,
+                paddingHorizontal: 16,
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 16,
+              },
+            ]}
+          >
+            <View style={styles.pinBoxesFila}>
+              {String(domicilioPin || "4829").padStart(4, "0").slice(0, 4).split("").map((char, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.pinBox,
+                    {
+                      backgroundColor: c.oscuro ? "rgba(255, 255, 255, 0.06)" : "#FFFFFF",
+                      borderColor: primaryAccent,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.pinBoxTexto, { color: primaryAccent }]}>
+                    {revelarPin ? char : "•"}
                   </Text>
                 </View>
-              )}
-
-              {Boolean(fechasLugarEfectivas?.referenciasRetiro || (reserva as any)?.referenciasRetiro) && (
-                <View style={styles.filaInfoEfectivo}>
-                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Indicaciones:</Text>
-                  <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
-                    {fechasLugarEfectivas?.referenciasRetiro || (reserva as any)?.referenciasRetiro}
-                  </Text>
-                </View>
-              )}
+              ))}
+              <TouchableOpacity
+                style={styles.pinOjoBtn}
+                onPress={() => setRevelarPin((v) => !v)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name={revelarPin ? "eye-off-outline" : "eye-outline"}
+                  size={22}
+                  color={c.textSecondary}
+                />
+              </TouchableOpacity>
             </View>
-          )}
 
-          {esDomicilioDevolucion && (
-            <View
-              style={[
-                styles.cajaReferencia,
-                {
-                  backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC",
-                  borderColor: c.border,
-                },
-              ]}
-            >
-              {esDomicilioRetiro && (
-                <Text style={[styles.etiquetaSubtituloLimpio, { color: primaryAccent }]}>
-                  Lugar de devolución:
-                </Text>
-              )}
+            <Text style={{ fontSize: 11.5, color: c.textSecondary, textAlign: "center", fontWeight: "500", marginTop: 2 }}>
+              {t("reserva.fechasLugar.domicilioPinAviso", {
+                defaultValue: "Confírmale este código al conductor encargado de entregar el vehículo.",
+              })}
+            </Text>
+          </View>
 
-              <View style={styles.filaInfoEfectivo}>
-                <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Dirección:</Text>
-                <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
-                  {fechasLugarEfectivas?.direccionDevolucion || (reserva as any)?.direccionDevolucion || "—"}
-                </Text>
-              </View>
-
-              {Boolean(fechasLugarEfectivas?.barrioDevolucion || (reserva as any)?.barrioDevolucion) && (
-                <View style={styles.filaInfoEfectivo}>
-                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Barrio:</Text>
-                  <Text style={[styles.valorEfectivo, { color: c.textPrimary }]}>
-                    {fechasLugarEfectivas?.barrioDevolucion || (reserva as any)?.barrioDevolucion}
-                  </Text>
-                </View>
-              )}
-
-              {Boolean(fechasLugarEfectivas?.referenciasDevolucion || (reserva as any)?.referenciasDevolucion) && (
-                <View style={styles.filaInfoEfectivo}>
-                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Indicaciones:</Text>
-                  <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
-                    {fechasLugarEfectivas?.referenciasDevolucion || (reserva as any)?.referenciasDevolucion}
-                  </Text>
-                </View>
-              )}
+          {/* 3. INFORMACIÓN UNIFICADA EN TARJETA CON DESPLEGABLE */}
+          <View
+            style={[
+              styles.cajaReferencia,
+              {
+                backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF",
+                borderColor: c.border,
+                padding: 14,
+                gap: 10,
+                marginBottom: 4,
+              },
+            ]}
+          >
+            {/* Ciudad */}
+            <View style={styles.filaInfoEfectivo}>
+              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, textTransform: "uppercase", fontSize: 11, fontWeight: "800" }]}>
+                {t("reserva.confirmacion.ciudad", { defaultValue: "Ciudad" })}:
+              </Text>
+              <Text style={[styles.valorEfectivo, { color: c.textPrimary, fontSize: 13, fontWeight: "700" }]}>
+                {ciudadSucursal || "Bogotá"}
+              </Text>
             </View>
-          )}
+
+            <View style={[styles.divisorEfectivo, { backgroundColor: c.border }]} />
+
+            {/* Estado del Domicilio */}
+            <View style={styles.filaInfoEfectivo}>
+              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, textTransform: "uppercase", fontSize: 11, fontWeight: "800" }]}>
+                {t("reserva.detalle.estadoDomicilio", { defaultValue: "Estado del Domicilio:" })}
+              </Text>
+              <Text
+                style={[
+                  styles.valorEfectivo,
+                  {
+                    fontSize: 13,
+                    fontWeight: "700",
+                    color:
+                      domicilioEstado === "ENTREGADO" || domicilioEstado === "RECOGIDO"
+                        ? "#047857"
+                        : domicilioEstado === "EN_CAMINO"
+                        ? "#1D4ED8"
+                        : "#B45309",
+                  },
+                ]}
+              >
+                {domicilioEstado === "EN_PREPARACION"
+                  ? t("reserva.detalle.enProceso", { defaultValue: "En proceso" })
+                  : domicilioEstado === "EN_CAMINO"
+                  ? t("reserva.detalle.agenteEnCamino", { defaultValue: "Agente en camino" })
+                  : domicilioEstado === "ENTREGADO"
+                  ? t("reserva.detalle.entregado", { defaultValue: "Entregado" })
+                  : domicilioEstado === "RECOGIDO"
+                  ? t("reserva.detalle.recogido", { defaultValue: "Recogido" })
+                  : t("reserva.detalle.enProceso", { defaultValue: "En proceso" })}
+              </Text>
+            </View>
+
+            <View style={[styles.divisorEfectivo, { backgroundColor: c.border }]} />
+
+            {/* Conductor Asignado + WhatsApp */}
+            <View style={styles.filaInfoEfectivo}>
+              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, textTransform: "uppercase", fontSize: 11, fontWeight: "800" }]}>
+                {t("reserva.detalle.conductorAsignado", { defaultValue: "Conductor Asignado:" })}
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text
+                  style={[
+                    styles.valorEfectivo,
+                    {
+                      fontSize: 13,
+                      fontWeight: "700",
+                      color: domicilioConductor ? c.textPrimary : "#B45309",
+                    },
+                  ]}
+                >
+                  {domicilioConductor || t("reserva.detalle.enProceso", { defaultValue: "En proceso" })}
+                </Text>
+
+                {Boolean(domicilioTelefonoConductor) && (
+                  <TouchableOpacity
+                    style={styles.btnWhatsapp}
+                    onPress={() => {
+                      const cleanPhone = String(domicilioTelefonoConductor).replace(/[^0-9]/g, "");
+                      Linking.openURL(`https://wa.me/${cleanPhone}`).catch(() => {});
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="logo-whatsapp" size={13} color="#fff" />
+                    <Text style={styles.btnWhatsappTexto}>WhatsApp</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            {/* Detalles desplegables */}
+            {verMasDomicilio && (
+              <>
+                <View style={[styles.divisorEfectivo, { backgroundColor: c.border }]} />
+
+                {esDomicilioRetiro && (
+                  <View style={{ gap: 6, marginVertical: 2 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "800", color: c.textSecondary, textTransform: "uppercase" }}>
+                      {t("reserva.detalle.informacionEntrega", { defaultValue: "Información de Entrega:" })}
+                    </Text>
+
+                    <View style={styles.filaInfoEfectivo}>
+                      <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                        {t("reserva.detalle.direccionExacta", { defaultValue: "Dirección Exacta:" })}
+                      </Text>
+                      <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
+                        {fechasLugarEfectivas?.direccionRetiro || (reserva as any)?.direccionRetiro || t("reserva.detalle.aConvenir", { defaultValue: "A convenir" })}
+                      </Text>
+                    </View>
+
+                    {Boolean(fechasLugarEfectivas?.barrioRetiro || (reserva as any)?.barrioRetiro) && (
+                      <View style={styles.filaInfoEfectivo}>
+                        <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                          {t("reserva.detalle.barrio", { defaultValue: "Barrio:" })}
+                        </Text>
+                        <Text style={[styles.valorEfectivo, { color: c.textPrimary }]}>
+                          {fechasLugarEfectivas?.barrioRetiro || (reserva as any)?.barrioRetiro}
+                        </Text>
+                      </View>
+                    )}
+
+                    {Boolean(fechasLugarEfectivas?.referenciasRetiro || (reserva as any)?.referenciasRetiro) && (
+                      <View style={styles.filaInfoEfectivo}>
+                        <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                          {t("reserva.detalle.indicacionesRef", { defaultValue: "Indicaciones / Ref:" })}
+                        </Text>
+                        <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
+                          {fechasLugarEfectivas?.referenciasRetiro || (reserva as any)?.referenciasRetiro}
+                        </Text>
+                      </View>
+                    )}
+
+                    <View style={[styles.filaInfoEfectivo, { paddingTop: 4, marginTop: 2, borderTopWidth: 1, borderTopColor: c.border, borderStyle: "dashed" }]}>
+                      <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                        {t("reserva.detalle.horaEntregaRetiro", { defaultValue: "Hora de Entrega (Retiro):" })}
+                      </Text>
+                      <Text style={[styles.valorEfectivo, { color: c.textPrimary, fontWeight: "700" }]}>
+                        {fechasLugarEfectivas?.horaRetiro ? formatHoraAmPm(String(fechasLugarEfectivas.horaRetiro)) : "N/A"}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {esDomicilioDevolucion && (
+                  <>
+                    {esDomicilioRetiro && <View style={[styles.divisorEfectivo, { backgroundColor: c.border }]} />}
+                    <View style={{ gap: 6, marginVertical: 2 }}>
+                      <Text style={{ fontSize: 11, fontWeight: "800", color: c.textSecondary, textTransform: "uppercase" }}>
+                        {t("reserva.detalle.informacionRecogida", { defaultValue: "Información de Recogida:" })}
+                      </Text>
+
+                      <View style={styles.filaInfoEfectivo}>
+                        <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                          {t("reserva.detalle.direccionExacta", { defaultValue: "Dirección Exacta:" })}
+                        </Text>
+                        <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
+                          {fechasLugarEfectivas?.direccionDevolucion || (reserva as any)?.direccionDevolucion || fechasLugarEfectivas?.direccionRetiro || t("reserva.detalle.aConvenir", { defaultValue: "A convenir" })}
+                        </Text>
+                      </View>
+
+                      {Boolean(fechasLugarEfectivas?.barrioDevolucion || (reserva as any)?.barrioDevolucion || fechasLugarEfectivas?.barrioRetiro) && (
+                        <View style={styles.filaInfoEfectivo}>
+                          <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                            {t("reserva.detalle.barrio", { defaultValue: "Barrio:" })}
+                          </Text>
+                          <Text style={[styles.valorEfectivo, { color: c.textPrimary }]}>
+                            {fechasLugarEfectivas?.barrioDevolucion || (reserva as any)?.barrioDevolucion || fechasLugarEfectivas?.barrioRetiro}
+                          </Text>
+                        </View>
+                      )}
+
+                      {Boolean(fechasLugarEfectivas?.referenciasDevolucion || (reserva as any)?.referenciasDevolucion || fechasLugarEfectivas?.referenciasRetiro) && (
+                        <View style={styles.filaInfoEfectivo}>
+                          <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                            {t("reserva.detalle.indicacionesRef", { defaultValue: "Indicaciones / Ref:" })}
+                          </Text>
+                          <Text style={[styles.valorEfectivo, { color: c.textPrimary }]} numberOfLines={2}>
+                            {fechasLugarEfectivas?.referenciasDevolucion || (reserva as any)?.referenciasDevolucion || fechasLugarEfectivas?.referenciasRetiro}
+                          </Text>
+                        </View>
+                      )}
+
+                      <View style={[styles.filaInfoEfectivo, { paddingTop: 4, marginTop: 2, borderTopWidth: 1, borderTopColor: c.border, borderStyle: "dashed" }]}>
+                        <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                          {t("reserva.detalle.horaRecogidaDevolucion", { defaultValue: "Hora de Recogida (Devolución):" })}
+                        </Text>
+                        <Text style={[styles.valorEfectivo, { color: c.textPrimary, fontWeight: "700" }]}>
+                          {fechasLugarEfectivas?.horaDevolucion ? formatHoraAmPm(String(fechasLugarEfectivas.horaDevolucion)) : "N/A"}
+                        </Text>
+                      </View>
+                    </View>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Botón Ver más / Ocultar detalles */}
+            <View style={{ borderTopWidth: 1, borderTopColor: c.border, paddingTop: 6, marginTop: 4, alignItems: "center" }}>
+              <TouchableOpacity
+                style={styles.desplegableBtn}
+                onPress={() => setVerMasDomicilio((v) => !v)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.desplegableBtnTexto, { color: primaryAccent }]}>
+                  {verMasDomicilio
+                    ? t("reserva.detalle.ocultarDetalles", { defaultValue: "Ocultar detalles" })
+                    : t("reserva.detalle.verMasDetalles", { defaultValue: "Ver más detalles" })}
+                </Text>
+                <Ionicons
+                  name={verMasDomicilio ? "chevron-up" : "chevron-down"}
+                  size={14}
+                  color={primaryAccent}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       )}
 
@@ -918,17 +1128,17 @@ export default function PagoRespuestaScreen() {
           {/* Título */}
           <Text style={[styles.tituloEfectivo, { color: c.textPrimary }]}>
             {pmTypeUpper.includes("COLLECT") || detLower.includes("efectivo en bancolombia") || detLower.includes("corresponsal")
-              ? "Pago en Bancolombia"
+              ? t("reserva.confirmacion.pagoEnBancolombia", { defaultValue: "Pago en Bancolombia" })
               : t("reserva.confirmacion.pagoEnSucursalCorto", { defaultValue: "Pago en sucursal" })}
           </Text>
 
           {/* Mensaje descriptivo */}
           <Text style={[styles.descripcionEfectivo, { color: c.textSecondary }]}>
             {pmTypeUpper.includes("COLLECT") || detLower.includes("efectivo en bancolombia") || detLower.includes("corresponsal")
-              ? "Acércate a un Corresponsal Bancario Bancolombia con los datos mostrados a continuación y efectúa el pago antes del plazo límite para confirmar tu reserva:"
+              ? t("reserva.confirmacion.acercateCorresponsalBancolombia", { defaultValue: "Acércate a un Corresponsal Bancario Bancolombia con los datos mostrados a continuación y efectúa el pago antes del plazo límite para confirmar tu reserva:" })
               : sucursalNombre
-              ? `Tu reserva quedó registrada. Para confirmarla, realiza el pago en efectivo en el punto autorizado ${sucursalNombre}.`
-              : "Tu reserva quedó registrada. Para confirmarla, realiza el pago en efectivo en la sucursal seleccionada."}
+              ? t("reserva.confirmacion.reservaRegistradaPuntoAutorizado", { sucursal: sucursalNombre, defaultValue: `Tu reserva quedó registrada. Para confirmarla, realiza el pago en efectivo en el punto autorizado ${sucursalNombre}.` })
+              : t("reserva.confirmacion.reservaRegistradaSucursalSeleccionada", { defaultValue: "Tu reserva quedó registrada. Para confirmarla, realiza el pago en efectivo en la sucursal seleccionada." })}
           </Text>
 
           {/* Caja de Referencia y Total */}
@@ -936,14 +1146,18 @@ export default function PagoRespuestaScreen() {
             {pmTypeUpper.includes("COLLECT") || detLower.includes("efectivo en bancolombia") || detLower.includes("corresponsal") ? (
               <>
                 <View style={styles.filaInfoEfectivo}>
-                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, fontWeight: "700" }]}>Número de convenio:</Text>
+                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, fontWeight: "700" }]}>
+                    {t("reserva.confirmacion.numeroConvenio", { defaultValue: "Número de convenio:" })}
+                  </Text>
                   <Text style={[styles.valorEfectivo, { color: primaryAccent, fontWeight: "800", fontSize: 16 }]}>
                     {(reserva as any).convenioWompi || "00000"}
                   </Text>
                 </View>
 
                 <View style={styles.filaInfoEfectivo}>
-                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, fontWeight: "700" }]}>Referencia de pago:</Text>
+                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, fontWeight: "700" }]}>
+                    {t("reserva.confirmacion.referenciaPago", { defaultValue: "Referencia de pago:" })}
+                  </Text>
                   <Text style={[styles.valorRefEfectivo, { color: primaryAccent, fontWeight: "800", fontSize: 16 }]}>
                     {(reserva as any).referenciaWompi ||
                      (reserva as any).wompiExtra?.payment_reference ||
@@ -1066,7 +1280,7 @@ export default function PagoRespuestaScreen() {
               <Text style={[styles.etiquetaTotalEfectivo, { color: c.textSecondary }]}>
                 {t("reserva.confirmacion.totalAPagar", { defaultValue: "TOTAL A PAGAR" })}:
               </Text>
-              <Text style={[styles.valorTotalEfectivo, { color: primaryAccent }]}>{fmt(reserva.total)} COP</Text>
+              <Text style={[styles.valorTotalEfectivo, { color: primaryAccent }]}>{fmt(reserva.total)}</Text>
             </View>
           </View>
 
@@ -1312,8 +1526,8 @@ export default function PagoRespuestaScreen() {
 
           <Text style={[styles.descripcionEfectivo, { color: c.textSecondary, marginBottom: 16 }]}>
             {resenaGuardada
-              ? "Tu calificación ha sido registrada con éxito. Puedes ver el resumen a continuación o modificar tu opinión en cualquier momento:"
-              : "Calificar tu experiencia de alquiler es totalmente opcional. Si lo deseas, puedes calificar el estado del vehículo y el servicio para seguir mejorando:"}
+              ? t("misReservas.calificacionExitosaDesc", { defaultValue: "Tu calificación ha sido registrada con éxito. Puedes ver el resumen a continuación o modificar tu opinión en cualquier momento:" })
+              : t("misReservas.calificarOpcionalDesc", { defaultValue: "Calificar tu experiencia de alquiler es totalmente opcional. Si lo deseas, puedes calificar el estado del vehículo y el servicio para seguir mejorando:" })}
           </Text>
 
           <View
@@ -1327,14 +1541,18 @@ export default function PagoRespuestaScreen() {
             ]}
           >
             <View style={styles.filaInfoEfectivo}>
-              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Vehículo:</Text>
+              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                {t("reserva.detalle.vehiculo", { defaultValue: "Vehículo:" })}
+              </Text>
               <Text style={[styles.valorEfectivo, { color: c.textPrimary, fontWeight: "700" }]} numberOfLines={1}>
                 {reserva.vehiculoNombre}
               </Text>
             </View>
 
             <View style={styles.filaInfoEfectivo}>
-              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Estado de reseña:</Text>
+              <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                {t("misReservas.estadoResena", { defaultValue: "Estado de reseña:" })}
+              </Text>
               <Text
                 style={[
                   styles.valorEfectivo,
@@ -1344,7 +1562,9 @@ export default function PagoRespuestaScreen() {
                   },
                 ]}
               >
-                {resenaGuardada ? "Calificada" : "Opcional (Sin calificar)"}
+                {resenaGuardada
+                  ? t("misReservas.calificada", { defaultValue: "Calificada" })
+                  : t("misReservas.sinCalificar", { defaultValue: "Opcional (Sin calificar)" })}
               </Text>
             </View>
 
@@ -1353,15 +1573,19 @@ export default function PagoRespuestaScreen() {
                 <View style={[styles.divisorEfectivo, { backgroundColor: c.border }]} />
 
                 <View style={styles.filaInfoEfectivo}>
-                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Puntuación:</Text>
+                  <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                    {t("misReservas.puntuacion", { defaultValue: "Puntuación:" })}
+                  </Text>
                   <Text style={[styles.valorEfectivo, { color: primaryAccent, fontWeight: "700" }]}>
-                    {resenaGuardada.calificacion} / 5 estrellas
+                    {resenaGuardada.calificacion} / 5 {t("catalogo.estrellas", { defaultValue: "estrellas" })}
                   </Text>
                 </View>
 
                 {Boolean(resenaGuardada.comentario) && (
                   <View style={[styles.filaInfoEfectivo, { alignItems: "flex-start", marginTop: 2 }]}>
-                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Comentario:</Text>
+                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                      {t("misReservas.comentario", { defaultValue: "Comentario:" })}
+                    </Text>
                     <Text style={[styles.valorEfectivo, { color: c.textPrimary, flex: 1, maxWidth: "60%" }]} numberOfLines={3}>
                       {resenaGuardada.comentario}
                     </Text>
@@ -1370,7 +1594,9 @@ export default function PagoRespuestaScreen() {
 
                 {Boolean(resenaGuardada.fecha) && (
                   <View style={styles.filaInfoEfectivo}>
-                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>Fecha de registro:</Text>
+                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary }]}>
+                      {t("misReservas.fechaRegistro", { defaultValue: "Fecha de registro:" })}
+                    </Text>
                     <Text style={[styles.valorEfectivo, { color: c.textPrimary }]}>
                       {resenaGuardada.fecha}
                     </Text>
@@ -1379,7 +1605,9 @@ export default function PagoRespuestaScreen() {
 
                 {Boolean(resenaGuardada.fotos && resenaGuardada.fotos.length > 0) && (
                   <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: c.border }}>
-                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, marginBottom: 8 }]}>Fotos adjuntas:</Text>
+                    <Text style={[styles.etiquetaEfectivo, { color: c.textSecondary, marginBottom: 8 }]}>
+                      {t("misReservas.fotosAdjuntas", { defaultValue: "Fotos adjuntas:" })}
+                    </Text>
                     <View style={{ flexDirection: "row", gap: 8 }}>
                       {resenaGuardada.fotos?.map((uri, idx) => (
                         <Image
@@ -1408,7 +1636,9 @@ export default function PagoRespuestaScreen() {
               style={styles.btn}
             >
               <Text style={styles.btnTexto}>
-                {resenaGuardada ? "Editar calificación" : "Calificar reserva"}
+                {resenaGuardada
+                  ? t("reserva.calificar.editarCalificacion", { defaultValue: "Editar calificación" })
+                  : t("reserva.calificar.calificarVehiculo", { defaultValue: "Calificar reserva" })}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -1439,8 +1669,8 @@ export default function PagoRespuestaScreen() {
           <AlertModal
             visible={alertGuardadoVisible}
             icono="checkmark-circle-outline"
-            titulo="¡Calificación guardada!"
-            mensaje="Tu reseña y fotografías se han guardado exitosamente."
+            titulo={t("reserva.calificar.guardadaTitulo", { defaultValue: "¡Calificación guardada!" })}
+            mensaje={t("reserva.calificar.guardadaMensaje", { defaultValue: "Tu reseña y fotografías se han guardado exitosamente." })}
             onCerrar={() => setAlertGuardadoVisible(false)}
           />
         </>
@@ -1892,5 +2122,55 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     marginBottom: 6,
+  },
+  pinBoxesFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginVertical: 4,
+  },
+  pinBox: {
+    width: 44,
+    height: 48,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pinBoxTexto: {
+    fontSize: 22,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  pinOjoBtn: {
+    padding: 8,
+    marginLeft: 4,
+  },
+  btnWhatsapp: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#25D366",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  btnWhatsappTexto: {
+    color: "#FFFFFF",
+    fontSize: 11.5,
+    fontWeight: "800",
+  },
+  desplegableBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 6,
+    marginTop: 4,
+  },
+  desplegableBtnTexto: {
+    fontSize: 12,
+    fontWeight: "700",
   },
 });

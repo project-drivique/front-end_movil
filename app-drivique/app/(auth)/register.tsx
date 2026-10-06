@@ -236,9 +236,13 @@ export default function RegistroScreen() {
                     </View>
 
                     <View style={styles.loginRow}>
-                      <Text style={[styles.loginTexto, { color: c.textSecondary }]}>¿Ya tiene una cuenta? </Text>
+                      <Text style={[styles.loginTexto, { color: c.textSecondary }]}>
+                        {t('auth.registro.yaTieneCuenta', { defaultValue: '¿Ya tiene una cuenta?' })}{' '}
+                      </Text>
                       <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
-                        <Text style={[styles.loginLink, { color: c.primary }]}>Inicie sesión aquí</Text>
+                        <Text style={[styles.loginLink, { color: c.primary }]}>
+                          {t('auth.registro.inicieSesionLink', { defaultValue: 'Inicie sesión aquí' })}
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -254,13 +258,13 @@ export default function RegistroScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContenedor, { backgroundColor: c.bgCard }]}>
             <View style={[styles.modalHandle, { backgroundColor: c.border }]} />
-            <View style={styles.modalEncabezado}>
+            <View style={[styles.modalEncabezado, { borderBottomColor: c.border }]}>
               <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>{t('auth.registro.modalTitulo')}</Text>
               <TouchableOpacity
-                style={styles.modalBotonCerrar}
+                style={[styles.modalBotonCerrar, { backgroundColor: c.oscuro ? c.bgInput : '#F3F4F6' }]}
                 onPress={() => setModalTerminos(false)}
               >
-                <Ionicons name="close" size={16} color="#6B7280" />
+                <Ionicons name="close" size={16} color={c.textSecondary} />
               </TouchableOpacity>
             </View>
             <ScrollView 
@@ -269,35 +273,19 @@ export default function RegistroScreen() {
               onScroll={handleScrollTerminos}
               scrollEventThrottle={16}
             >
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc1Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc1Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc2Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc2Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc3Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc3Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc4Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc4Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc5Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc5Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc6Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc6Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc7Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc7Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc8Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc8Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc9Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc9Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc10Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc10Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc11Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc11Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc12Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc12Texto')}</Text>
-              <Text style={styles.modalSeccionTitulo}>{t('auth.registro.tc13Titulo')}</Text>
-              <Text style={styles.modalTexto}>{t('auth.registro.tc13Texto')}</Text>
+              {[1,2,3,4,5,6,7,8,9,10,11,12,13].map((num) => (
+                <View key={num}>
+                  <Text style={[styles.modalSeccionTitulo, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>
+                    {t(`auth.registro.tc${num}Titulo`)}
+                  </Text>
+                  <Text style={[styles.modalTexto, { color: c.textSecondary }]}>
+                    {t(`auth.registro.tc${num}Texto`)}
+                  </Text>
+                </View>
+              ))}
               
               {t('auth.registro.tcFooter') !== 'auth.registro.tcFooter' && (
-                <Text style={styles.modalFooterTexto}>{t('auth.registro.tcFooter')}</Text>
+                <Text style={[styles.modalFooterTexto, { color: c.textMuted }]}>{t('auth.registro.tcFooter')}</Text>
               )}
             </ScrollView>
             
@@ -305,11 +293,11 @@ export default function RegistroScreen() {
               {/* Botón Cerrar Secundario */}
               <TouchableOpacity
                 onPress={() => setModalTerminos(false)}
-                style={styles.modalBotonCerrarSecundario}
+                style={[styles.modalBotonCerrarSecundario, { backgroundColor: c.oscuro ? c.bgInput : '#FFFFFF', borderColor: c.border }]}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalBotonCerrarSecundarioTexto}>
-                  Cerrar
+                <Text style={[styles.modalBotonCerrarSecundarioTexto, { color: c.textPrimary }]}>
+                  {t('comun.cerrar', 'Cerrar')}
                 </Text>
               </TouchableOpacity>
 
@@ -321,12 +309,12 @@ export default function RegistroScreen() {
                   style={{ width: '100%' }}
                 >
                   <LinearGradient
-                    colors={terminosLeidos ? GRADIENTES.boton.colors : ['#E5E7EB', '#D1D5DB']}
+                    colors={terminosLeidos ? GRADIENTES.boton.colors : (c.oscuro ? ['#1F2937', '#111827'] : ['#E5E7EB', '#D1D5DB'])}
                     start={GRADIENTES.boton.start}
                     end={GRADIENTES.boton.end}
                     style={styles.modalBotonAceptar}
                   >
-                    <Text style={[styles.modalBotonAceptarTexto, !terminosLeidos && { color: '#9CA3AF' }]}>
+                    <Text style={[styles.modalBotonAceptarTexto, !terminosLeidos && { color: c.textMuted }]}>
                       {t('auth.registro.modalAceptar', 'Acepto los términos')}
                     </Text>
                   </LinearGradient>

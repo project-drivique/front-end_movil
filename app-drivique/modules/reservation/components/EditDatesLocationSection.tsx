@@ -94,18 +94,20 @@ export default function EditDatesLocationSection({
         label: t("reserva.fechasLugar.entregaDomicilio"),
         icono: "home-outline",
       });
-      if (ciudadInfo?.tieneAeropuerto !== false) {
+      if (ciudadInfo?.tieneAeropuerto === true) {
         base.push({
           value: "aeropuerto",
           label: t("reserva.fechasLugar.entregaAeropuerto"),
           icono: "airplane-outline",
         });
       }
-      base.push({
-        value: "terminal",
-        label: t("reserva.fechasLugar.entregaTerminal"),
-        icono: "bus-outline",
-      });
+      if (ciudadInfo?.tieneTerminal === true) {
+        base.push({
+          value: "terminal",
+          label: t("reserva.fechasLugar.entregaTerminal"),
+          icono: "bus-outline",
+        });
+      }
     }
     return base;
   }, [nombreSucursal, esWompi, ciudadInfo, t]);
@@ -124,18 +126,20 @@ export default function EditDatesLocationSection({
         label: t("reserva.fechasLugar.devolucionDomicilio"),
         icono: "home-outline",
       });
-      if (ciudadInfo?.tieneAeropuerto !== false) {
+      if (ciudadInfo?.tieneAeropuerto === true) {
         base.push({
           value: "aeropuerto",
           label: t("reserva.fechasLugar.devolucionAeropuerto"),
           icono: "airplane-outline",
         });
       }
-      base.push({
-        value: "terminal",
-        label: t("reserva.fechasLugar.devolucionTerminal"),
-        icono: "bus-outline",
-      });
+      if (ciudadInfo?.tieneTerminal === true) {
+        base.push({
+          value: "terminal",
+          label: t("reserva.fechasLugar.devolucionTerminal"),
+          icono: "bus-outline",
+        });
+      }
     }
     return base;
   }, [nombreSucursal, esWompi, ciudadInfo, t]);
@@ -146,26 +150,60 @@ export default function EditDatesLocationSection({
         ...prev,
         lugarRetiro: nombreSucursal,
         lugarDevolucion: nombreSucursal,
+        barrioRetiro: "",
+        direccionRetiro: "",
+        referenciasRetiro: "",
+        barrioDevolucion: "",
+        direccionDevolucion: "",
+        referenciasDevolucion: "",
       }));
     }
   }, [draft.metodoPago, nombreSucursal]);
 
   const handleElegirSucursal = (value: string) => {
-    if (modalTipo === "retiro") setDraft((prev) => ({ ...prev, lugarRetiro: value }));
-    if (modalTipo === "devolucion") setDraft((prev) => ({ ...prev, lugarDevolucion: value }));
+    const horarioNuevo = getHorarioSucursal(value || nombreSucursal);
+    const [hMinOpen, mMinOpen] = (horarioNuevo.horaApertura || "08:00").split(":").map(Number);
+    const [hMaxClose, mMaxClose] = (horarioNuevo.horaCierre || "18:00").split(":").map(Number);
+    const minMins = hMinOpen * 60 + mMinOpen;
+    const maxMins = hMaxClose * 60 + mMaxClose;
+
+    if (modalTipo === "retiro") {
+      setDraft((prev) => {
+        const next = { ...prev, lugarRetiro: value };
+        if (prev.horaRetiro) {
+          const [hr, mr] = prev.horaRetiro.split(":").map(Number);
+          const totalMins = hr * 60 + mr;
+          if (totalMins < minMins) next.horaRetiro = horarioNuevo.horaApertura;
+          else if (totalMins > maxMins) next.horaRetiro = horarioNuevo.horaCierre;
+        }
+        return next;
+      });
+    }
+    if (modalTipo === "devolucion") {
+      setDraft((prev) => {
+        const next = { ...prev, lugarDevolucion: value };
+        if (prev.horaDevolucion) {
+          const [hd, md] = prev.horaDevolucion.split(":").map(Number);
+          const totalMins = hd * 60 + md;
+          if (totalMins < minMins) next.horaDevolucion = horarioNuevo.horaApertura;
+          else if (totalMins > maxMins) next.horaDevolucion = horarioNuevo.horaCierre;
+        }
+        return next;
+      });
+    }
     setModalTipo(null);
   };
 
-function getFechaSiguiente(fechaStr: string | null | undefined): string | null {
-  if (!fechaStr) return null;
-  const [y, m, d] = fechaStr.split("-").map(Number);
-  if (isNaN(y) || isNaN(m) || isNaN(d)) return fechaStr;
-  const sig = new Date(y, m - 1, d + 1);
-  const ySig = sig.getFullYear();
-  const mSig = String(sig.getMonth() + 1).padStart(2, "0");
-  const dSig = String(sig.getDate()).padStart(2, "0");
-  return `${ySig}-${mSig}-${dSig}`;
-}
+  function getFechaSiguiente(fechaStr: string | null | undefined): string | null {
+    if (!fechaStr) return null;
+    const [y, m, d] = fechaStr.split("-").map(Number);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return fechaStr;
+    const sig = new Date(y, m - 1, d + 1);
+    const ySig = sig.getFullYear();
+    const mSig = String(sig.getMonth() + 1).padStart(2, "0");
+    const dSig = String(sig.getDate()).padStart(2, "0");
+    return `${ySig}-${mSig}-${dSig}`;
+  }
 
   const esUnSoloDia =
     !!draft.fechaRetiro &&
@@ -214,6 +252,7 @@ function getFechaSiguiente(fechaStr: string | null | undefined): string | null {
       setDraft((prev) => ({
         ...prev,
         horaRetiro: hora,
+        ...((!prev.horaDevolucion || prev.horaDevolucion > hora) ? { horaDevolucion: hora } : {}),
       }));
     } else if (horaVisible === "devolucion") {
       const nuevaFechaDev = esUnSoloDia
@@ -1059,3 +1098,6 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
 });
+
+export { EditDatesLocationSection };
+

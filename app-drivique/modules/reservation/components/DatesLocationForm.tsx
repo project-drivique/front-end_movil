@@ -77,10 +77,12 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     ];
     if (esWompi) {
       base.push({ value: "domicilio", label: t("reserva.fechasLugar.entregaDomicilio"), icono: "home-outline" });
-      if (ciudadInfo?.tieneAeropuerto !== false) {
+      if (ciudadInfo?.tieneAeropuerto === true) {
         base.push({ value: "aeropuerto", label: t("reserva.fechasLugar.entregaAeropuerto"), icono: "airplane-outline" });
       }
-      base.push({ value: "terminal", label: t("reserva.fechasLugar.entregaTerminal"), icono: "bus-outline" });
+      if (ciudadInfo?.tieneTerminal === true) {
+        base.push({ value: "terminal", label: t("reserva.fechasLugar.entregaTerminal"), icono: "bus-outline" });
+      }
     }
     return base;
   }, [nombreSucursal, esWompi, ciudadInfo, t]);
@@ -91,33 +93,70 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     ];
     if (esWompi) {
       base.push({ value: "domicilio", label: t("reserva.fechasLugar.devolucionDomicilio"), icono: "home-outline" });
-      if (ciudadInfo?.tieneAeropuerto !== false) {
+      if (ciudadInfo?.tieneAeropuerto === true) {
         base.push({ value: "aeropuerto", label: t("reserva.fechasLugar.devolucionAeropuerto"), icono: "airplane-outline" });
       }
-      base.push({ value: "terminal", label: t("reserva.fechasLugar.devolucionTerminal"), icono: "bus-outline" });
+      if (ciudadInfo?.tieneTerminal === true) {
+        base.push({ value: "terminal", label: t("reserva.fechasLugar.devolucionTerminal"), icono: "bus-outline" });
+      }
     }
     return base;
   }, [nombreSucursal, esWompi, ciudadInfo, t]);
 
   useEffect(() => {
     if (fechasLugar.metodoPago === "efectivo") {
-      const actualizacion: Partial<typeof fechasLugar> = {};
+      const actualizacion: Partial<typeof fechasLugar> = {
+        barrioRetiro: "",
+        direccionRetiro: "",
+        referenciasRetiro: "",
+        barrioDevolucion: "",
+        direccionDevolucion: "",
+        referenciasDevolucion: "",
+      };
       if (fechasLugar.lugarRetiro !== nombreSucursal) {
         actualizacion.lugarRetiro = nombreSucursal;
       }
       if (fechasLugar.lugarDevolucion !== nombreSucursal) {
         actualizacion.lugarDevolucion = nombreSucursal;
       }
-      if (Object.keys(actualizacion).length > 0) {
-        actualizarFechasLugar(actualizacion);
-      }
+      actualizarFechasLugar(actualizacion);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fechasLugar.metodoPago, nombreSucursal]);
 
   const handleElegirSucursal = (value: string) => {
-    if (modalTipo === "retiro") actualizarFechasLugar({ lugarRetiro: value });
-    if (modalTipo === "devolucion") actualizarFechasLugar({ lugarDevolucion: value });
+    const horarioNuevo = getHorarioSucursal(value || nombreSucursal);
+    const [hMinOpen, mMinOpen] = (horarioNuevo.horaApertura || "08:00").split(":").map(Number);
+    const [hMaxClose, mMaxClose] = (horarioNuevo.horaCierre || "18:00").split(":").map(Number);
+    const minMins = hMinOpen * 60 + mMinOpen;
+    const maxMins = hMaxClose * 60 + mMaxClose;
+
+    if (modalTipo === "retiro") {
+      const actualizacion: Partial<typeof fechasLugar> = { lugarRetiro: value };
+      if (fechasLugar.horaRetiro) {
+        const [hr, mr] = fechasLugar.horaRetiro.split(":").map(Number);
+        const totalMins = hr * 60 + mr;
+        if (totalMins < minMins) {
+          actualizacion.horaRetiro = horarioNuevo.horaApertura;
+        } else if (totalMins > maxMins) {
+          actualizacion.horaRetiro = horarioNuevo.horaCierre;
+        }
+      }
+      actualizarFechasLugar(actualizacion);
+    }
+    if (modalTipo === "devolucion") {
+      const actualizacion: Partial<typeof fechasLugar> = { lugarDevolucion: value };
+      if (fechasLugar.horaDevolucion) {
+        const [hd, md] = fechasLugar.horaDevolucion.split(":").map(Number);
+        const totalMins = hd * 60 + md;
+        if (totalMins < minMins) {
+          actualizacion.horaDevolucion = horarioNuevo.horaApertura;
+        } else if (totalMins > maxMins) {
+          actualizacion.horaDevolucion = horarioNuevo.horaCierre;
+        }
+      }
+      actualizarFechasLugar(actualizacion);
+    }
     setModalTipo(null);
   };
 
@@ -165,7 +204,11 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     }
 
     if (horaVisible === "retiro") {
-      actualizarFechasLugar({ horaRetiro: hora });
+      const actualizacion: Partial<typeof fechasLugar> = { horaRetiro: hora };
+      if (!fechasLugar.horaDevolucion || fechasLugar.horaDevolucion > hora) {
+        actualizacion.horaDevolucion = hora;
+      }
+      actualizarFechasLugar(actualizacion);
     } else if (horaVisible === "devolucion") {
       const nuevaFechaDev = esUnSoloDia
         ? getFechaSiguiente(fechasLugar.fechaRetiro) || fechasLugar.fechaDevolucion

@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { Comentario } from "../types/catalog.types";
 import { resenaService, ResenaGuardada } from "@/modules/reservation/services/resenaService";
+import { useUsuarioStore } from "@/store/userStore";
 
 interface Props {
   comentarios: Comentario[];
@@ -50,9 +51,13 @@ function inicialesDe(nombre: string): string {
 export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, vehiculoNombre }: Props) {
   const c = useTemaColores();
   const { t } = useTranslation();
-  const [visibles, setVisibles] = useState(2);
+  const usuarioStore = useUsuarioStore((s) => s.usuario);
+  const [visibles, setVisibles] = useState(4);
   const [resenasLocales, setResenasLocales] = useState<ResenaGuardada[]>([]);
   const [fotoModalUri, setFotoModalUri] = useState<string | null>(null);
+
+  const usuarioNombreActual = `${usuarioStore.nombres || ""} ${usuarioStore.apellidos || ""}`.trim().toLowerCase();
+  const usuarioIdActual = usuarioStore.id;
 
   useEffect(() => {
     let activo = true;
@@ -190,9 +195,18 @@ export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, 
             {/* Contenido de la reseña */}
             <View style={s.comentarioCuerpo}>
               <View style={s.comentarioHeaderRow}>
-                <Text style={[s.autorNombre, { color: c.oscuro ? "#F8FAFC" : "#0F172A" }]}>
-                  {r.autor}
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Text style={[s.autorNombre, { color: c.oscuro ? "#F8FAFC" : "#0F172A" }]}>
+                    {r.autor}
+                  </Text>
+                  {(Boolean(usuarioNombreActual && r.autor?.trim().toLowerCase() === usuarioNombreActual) || (r as any).esPropia) && (
+                    <View style={{ backgroundColor: c.primaryBg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: "700", color: c.primary }}>
+                        {t("vehiculo.resenas.tuResena", { defaultValue: "Tu reseña" })}
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 <Estrellas valor={r.calificacion} tamano={13} />
               </View>
 
@@ -229,12 +243,12 @@ export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, 
       </View>
 
       {/* Botón Ver más / Ocultar */}
-      {total > 2 && (
+      {total > 4 && (
         <>
           <View style={[s.divisor, { backgroundColor: colorBorde }]} />
           <TouchableOpacity
             style={s.verMasBtn}
-            onPress={() => setVisibles((v) => (v >= total ? 2 : total))}
+            onPress={() => setVisibles((v) => (v >= total ? 4 : total))}
             activeOpacity={0.7}
           >
             <Text style={[s.verMasTexto, { color: colorScore }]}>

@@ -17,15 +17,19 @@ import { useTranslation } from "react-i18next";
 import {
   COLOR_MARCA,
   VALOR_KM_EXCEDENTE,
+  getPuntosPolitica,
 } from "../constants/reservation.constants";
 import { GRADIENTES } from "@/constants/gradients";
 import { useReservaStore } from "@/store/reservationStore";
+import { useMonedaStore } from "@/store/currencyStore";
 
 const { height } = Dimensions.get("window");
 
 export default function TarjetaTerminosCondiciones() {
   const datosPersonales = useReservaStore((s) => s.datosPersonales);
   const actualizarDatosPersonales = useReservaStore((s) => s.actualizarDatosPersonales);
+  const monedaActual = useMonedaStore((s) => s.monedaActual);
+  const tasaUSD = useMonedaStore((s) => s.tasaUSD);
   const [modalTerminos, setModalTerminos] = useState(false);
   const [terminosLeidos, setTerminosLeidos] = useState(false);
   const c = useTemaColores();
@@ -33,7 +37,6 @@ export default function TarjetaTerminosCondiciones() {
 
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
   const brandBg = c.oscuro ? "#3B82F6" : COLOR_MARCA;
-  const valorKmFormateado = VALOR_KM_EXCEDENTE.toLocaleString("es-CO");
 
   const handleScrollTerminos = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
@@ -48,60 +51,9 @@ export default function TarjetaTerminosCondiciones() {
     setModalTerminos(false);
   };
 
-  const clausulasAlquiler = useMemo(
-    () => [
-      {
-        titulo: "1. OBJETO DEL CONTRATO",
-        texto:
-          "El arrendador entrega al arrendatario el vehículo descrito en las condiciones óptimas de funcionamiento para su uso personal o comercial autorizado.",
-      },
-      {
-        titulo: "2. USO DEL VEHÍCULO",
-        texto:
-          "Queda estrictamente prohibido utilizar el vehículo para fines ilícitos, subarrendar, transporte de carga pesada no autorizada o conducir bajo los efectos del alcohol o sustancias psicoactivas. El vehículo debe ser usado únicamente dentro del territorio colombiano.",
-      },
-      {
-        titulo: "3. DOCUMENTACIÓN OBLIGATORIA",
-        texto:
-          "El conductor debe presentar documento de identidad original válido y licencia de conducción vigente al momento de la entrega del vehículo.",
-      },
-      {
-        titulo: "4. POLÍTICA DE CANCELACIÓN Y NO REEMBOLSO",
-        texto:
-          "No se realizarán devoluciones de dinero. Las cancelaciones se gestionan mediante saldo a favor para futuras reservas.",
-      },
-      {
-        titulo: "5. HORARIOS Y ENTREGA",
-        texto:
-          "El retiro del vehículo debe efectuarse en la fecha, hora y sede acordadas dentro de los horarios de atención establecidos por la sucursal.",
-      },
-      {
-        titulo: "6. KILOMETRAJE Y EXCEDENTES",
-        texto: `En plan Limitado se incluye un cupo de km por día; el kilómetro adicional excedente tendrá un valor de $${valorKmFormateado} COP/km calculado al devolver el auto. En plan Ilimitado no aplica cobro por distancia recorrida.`,
-      },
-      {
-        titulo: "7. PAGOS Y TARIFAS",
-        texto:
-          "El valor pactado incluye la renta diaria del vehículo, coberturas de protección seleccionadas, cargos administrativos e impuestos de ley.",
-      },
-      {
-        titulo: "8. DAÑOS Y RESPONSABILIDAD",
-        texto:
-          "El arrendatario es responsable del cuidado del vehículo durante el periodo contratado. En caso de siniestro o eventualidad, se deberá notificar de forma inmediata a Drivique y a las autoridades competentes.",
-      },
-      {
-        titulo: "9. LEGISLACIÓN APLICABLE",
-        texto:
-          "El presente contrato de alquiler se rige en su totalidad por las leyes de la República de Colombia.",
-      },
-      {
-        titulo: "10. POLÍTICA DE DEVOLUCIÓN PUNTUAL",
-        texto:
-          "Por favor entrega el vehículo en la fecha y hora acordadas. Cuentas con 30 minutos de cortesía. Pasado este tiempo, la hora adicional tendrá un valor de $30.000 COP. Si el retraso supera las 2 horas o pasa al siguiente día, se cobrará el valor equivalente a un (1) día completo de alquiler a la tarifa contratada.",
-      },
-    ],
-    [valorKmFormateado]
-  );
+  const clausulasAlquiler = useMemo(() => {
+    return getPuntosPolitica(t, monedaActual, tasaUSD);
+  }, [t, monedaActual, tasaUSD]);
 
   return (
     <>
@@ -205,27 +157,36 @@ export default function TarjetaTerminosCondiciones() {
                   ]}
                 >
                   <Text style={[styles.documentoHeaderTitulo, { color: primaryAccent }]}>
-                    POLÍTICAS IMPORTANTES DEL CONTRATO
+                    {t("reserva.terminos.politicasImportantesContrato", {
+                      defaultValue: "POLÍTICAS IMPORTANTES DEL CONTRATO",
+                    })}
                   </Text>
                   <Text style={[styles.documentoHeaderTexto, { color: c.textPrimary }]}>
-                    <Text style={{ fontWeight: "700" }}>Política de No Reembolso: </Text>
-                    Una vez confirmada y pagada la reserva, no se realizan devoluciones de dinero bajo ninguna
-                    circunstancia. El cliente podrá reprogramar su fecha de alquiler notificando con al menos 48 horas
-                    de anticipación.
+                    <Text style={{ fontWeight: "700" }}>
+                      {t("reserva.terminos.politicaNoReembolsoTitulo", {
+                        defaultValue: "Política de No Reembolso: ",
+                      })}
+                    </Text>
+                    {t("reserva.terminos.politicaNoReembolsoTexto", {
+                      defaultValue:
+                        "Una vez confirmada y pagada la reserva, no se realizan devoluciones de dinero bajo ninguna circunstancia. El cliente podrá reprogramar su fecha de alquiler notificando con al menos 48 horas de anticipación.",
+                    })}
                   </Text>
                 </View>
 
                 {/* Cuerpo de Términos en formato de texto continuo */}
                 <View style={styles.documentoCuerpo}>
                   <Text style={[styles.documentoSubtitulo, { color: c.textMuted }]}>
-                    TÉRMINOS Y CONDICIONES DE ALQUILER DRIVIQUE
+                    {t("reserva.terminos.terminosYCondicionesDrivique", {
+                      defaultValue: "TÉRMINOS Y CONDICIONES DE ALQUILER DRIVIQUE",
+                    })}
                   </Text>
 
                   {clausulasAlquiler.map((clausula, idx) => (
                     <View key={idx} style={styles.parrafoFila}>
                       <Text style={[styles.parrafoTexto, { color: c.textSecondary }]}>
                         <Text style={[styles.parrafoTitulo, { color: c.textPrimary }]}>{clausula.titulo}: </Text>
-                        {clausula.texto}
+                        {clausula.items ? clausula.items.join(" ") : (clausula as any).texto}
                       </Text>
                     </View>
                   ))}

@@ -14,6 +14,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useNotificationStore, Notificacion } from "@/store/notificationStore";
+import { useAuthStore } from "@/store/authStore";
+import { GRADIENTES, SOMBRA_BOTON_GRADIENTE } from "@/constants/gradients";
 import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { VEHICULOS_MOCK } from "@/modules/catalog/constants/catalog.constants";
@@ -30,8 +32,9 @@ import CUPONES_DEMO from "@/mocks/cuponesDemo.json";
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const primaryAccent = c.oscuro ? "#60A5FA" : "#1D4ED8";
+  const usuario = useAuthStore((s) => s.usuario);
 
   const { notificaciones, marcarComoLeida, marcarTodasComoLeidas } = useNotificationStore();
   const monedaActual = useMonedaStore((s) => s.monedaActual);
@@ -60,16 +63,29 @@ export default function NotificationsScreen() {
     [notificaciones]
   );
 
-  // Cupones activos (no expirados), desde dummy JSON
+
+  // Cupones activos (no expirados), filtrando vehículos que no estén disponibles
   const cupones = useMemo(
-    () => (CUPONES_DEMO as unknown as CouponDummy[]).filter((c) => !isExpired(c.fechaExpiracion || c.expiracion)),
+    () =>
+      (CUPONES_DEMO as unknown as CouponDummy[]).filter((c) => {
+        if (isExpired(c.fechaExpiracion || c.expiracion)) return false;
+        if (c.reglas?.vehiculoId) {
+          const v = VEHICULOS_MOCK.find((item) => item.id === c.reglas?.vehiculoId);
+          if (v && v.disponible === false) return false;
+        }
+        return true;
+      }),
     []
   );
 
-  // Promos de vehiculos activas (no expiradas), imagen resuelta desde VEHICULOS_MOCK
+  // Promos de vehiculos activas (no expiradas), imagen resuelta desde VEHICULOS_MOCK, SOLO vehículos disponibles
   const vehiculoPromos = useMemo(() => {
-    return VEHICULO_PROMOS_DUMMY.filter((vp) => !isExpired(vp.expiracion)).map((vp) => {
-      const vehiculo = VEHICULOS_MOCK.find((v) => v.id === vp.vehiculoId) ?? VEHICULOS_MOCK[0];
+    return VEHICULO_PROMOS_DUMMY.filter((vp) => {
+      if (isExpired(vp.expiracion)) return false;
+      const vehiculo = VEHICULOS_MOCK.find((v) => v.id === vp.vehiculoId);
+      return Boolean(vehiculo && vehiculo.disponible !== false);
+    }).map((vp) => {
+      const vehiculo = VEHICULOS_MOCK.find((v) => v.id === vp.vehiculoId)!;
       return {
         ...vp,
         imagen: vehiculo.imagen || (vehiculo.imagenes && vehiculo.imagenes[0]) || "",
@@ -77,6 +93,7 @@ export default function NotificationsScreen() {
       };
     });
   }, []);
+
 
 
   const handleApplyCoupon = (coupon: CouponDummy) => {
@@ -138,12 +155,20 @@ export default function NotificationsScreen() {
     return imgs.slice(0, 3);
   };
 
+  const getLocale = () => {
+    const lang = (i18n.language || "es").toLowerCase();
+    if (lang.startsWith("pt") || lang.startsWith("br")) return "pt-BR";
+    if (lang.startsWith("fr")) return "fr-FR";
+    if (lang.startsWith("en")) return "en-US";
+    return "es-CO";
+  };
+
   // Helper: Format ISO date -> human readable date + time
   const formatDateTime = (isoString?: string) => {
     if (!isoString) return "";
     try {
       const date = new Date(isoString);
-      return date.toLocaleDateString("es-CO", {
+      return date.toLocaleDateString(getLocale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -160,7 +185,7 @@ export default function NotificationsScreen() {
     if (!isoString) return "";
     try {
       const date = new Date(isoString);
-      return date.toLocaleDateString("es-CO", {
+      return date.toLocaleDateString(getLocale(), {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -233,7 +258,7 @@ export default function NotificationsScreen() {
                   style={{ marginRight: 3 }}
                 />
                 <Text style={[styles.expiryPillText, { color: dias <= 2 ? "#DC2626" : "#D97706" }]}>
-                  {dias === 1 ? "Vence hoy" : `Vence en ${dias} días`}
+                  {dias === 1 ? t("notificaciones.venceHoy", { defaultValue: "Vence hoy" }) : t("notificaciones.venceEnDias", { defaultValue: `Vence en ${dias} días`, count: dias, dias })}
                 </Text>
               </View>
             )}
@@ -246,6 +271,123 @@ export default function NotificationsScreen() {
       </TouchableOpacity>
     );
   };
+
+  if (!usuario) {
+    return (
+      <View style={[styles.container, { backgroundColor: c.bg }]}>
+        {/* Gradient Header */}
+        <LinearGradient
+          colors={["#1e3a8a", "#2563eb"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.header, { paddingTop: insets.top + 12 }]}
+        >
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t("tabs.notificaciones")}</Text>
+          <View style={{ width: 40 }} />
+        </LinearGradient>
+
+        <ScrollView
+          contentContainerStyle={{ padding: 24, alignItems: "center", justifyContent: "center", flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: c.primaryBg,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 20,
+            }}
+          >
+            <Ionicons name="notifications-outline" size={42} color={c.primary} />
+          </View>
+
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "700",
+              color: c.textPrimary,
+              textAlign: "center",
+              marginBottom: 10,
+            }}
+          >
+            {t("tabs.alertaMisReservasTitulo", "Inicia sesión")}
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 14,
+              color: c.textSecondary,
+              textAlign: "center",
+              lineHeight: 22,
+              marginBottom: 32,
+              paddingHorizontal: 12,
+            }}
+          >
+            {t("tabs.notificacionesInvitadoMsg", {
+              defaultValue:
+                "Para consultar tus alertas del sistema, avisos de reservas y cupones de promociones exclusivas, inicia sesión o crea una cuenta en Drivique.",
+            })}
+          </Text>
+
+          <View style={{ width: "100%", gap: 14 }}>
+            <TouchableOpacity
+              style={[SOMBRA_BOTON_GRADIENTE, { borderRadius: 14, overflow: "hidden" }]}
+              onPress={() => router.push("/(auth)/register")}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={GRADIENTES.boton.colors}
+                start={GRADIENTES.boton.start}
+                end={GRADIENTES.boton.end}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingVertical: 14,
+                  paddingHorizontal: 20,
+                  gap: 10,
+                }}
+              >
+                <Ionicons name="person-add" size={19} color="#FFFFFF" />
+                <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
+                  {t("perfil.registrateYa", "Crear una cuenta")}
+                </Text>
+                <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 13,
+                paddingHorizontal: 20,
+                borderRadius: 14,
+                borderWidth: 1.5,
+                borderColor: c.border,
+                backgroundColor: c.bgCard,
+                gap: 8,
+              }}
+              onPress={() => router.push("/(auth)/login")}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="log-in-outline" size={19} color="#1D4ED8" />
+              <Text style={{ color: c.textPrimary, fontSize: 14, fontWeight: "600" }}>
+                {t("perfil.iniciarSesionInvitado", { defaultValue: "¿Ya tienes una cuenta? Inicia sesión" })}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: c.bg }]}>
@@ -320,11 +462,15 @@ export default function NotificationsScreen() {
 
             // Calculate coupon text dynamically
             const discountLabel =
-              cpx.descuentoTexto === "VALOR_FIJO"
-                ? `${formatCurrency(cpx.valorFijo ?? 0, monedaActual, tasaUSD)} OFF`
+              cpx.descuentoPorcentaje
+                ? `${cpx.descuentoPorcentaje}% OFF`
+                : (cpx.descuentoFijo || cpx.valorFijo)
+                ? `${formatCurrency((cpx.descuentoFijo || cpx.valorFijo) ?? 0, monedaActual, tasaUSD)} OFF`
                 : cpx.descuentoTexto;
 
-            const ruleLabel = cpx.regla || "";
+            const ruleLabel = cpx.regla === "Todos los vehículos"
+              ? t("coupon.todosLosVehiculos", { defaultValue: "Todos los vehículos" })
+              : t(cpx.regla || "", { defaultValue: cpx.regla || "" });
 
             return (
               <View key={cpx.id} style={styles.ticketWrapper}>
@@ -362,14 +508,18 @@ export default function NotificationsScreen() {
                     <View style={styles.couponConditionRow}>
                       <View style={{ flex: 1 }}>
                         {cpx.agotandose && (
-                          <Text style={styles.expiringText}>¡Por agotarse!</Text>
+                          <Text style={styles.expiringText}>
+                            {t("coupon.almostGone", { defaultValue: "¡Por agotarse!" })}
+                          </Text>
                         )}
                         <Text style={[styles.couponDateText, { color: c.textMuted }]}>
                           {formatDateShort(cpx.fechaOtorgado)}
                         </Text>
                       </View>
                       <TouchableOpacity onPress={() => setSelectedConditionsCoupon(cpx)}>
-                        <Text style={styles.conditionsLink}>Condiciones</Text>
+                        <Text style={styles.conditionsLink}>
+                          {t("coupon.conditions", { defaultValue: "Condiciones" })}
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -398,7 +548,7 @@ export default function NotificationsScreen() {
                       disabled={isApplied}
                     >
                       <Text style={[styles.couponApplyBtnText, { color: isApplied ? c.textMuted : "#FFFFFF" }]}>
-                        {isApplied ? "✓ Aplicado" : "Aplicar"}
+                        {isApplied ? t("coupon.appliedCheck", { defaultValue: "✓ Aplicado" }) : t("coupon.applyBtnSimple", { defaultValue: "Aplicar" })}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -409,7 +559,7 @@ export default function NotificationsScreen() {
 
           {/* Section 2: Specific Car Promos */}
           <Text style={[styles.promoSectionTitle, { color: c.textPrimary, marginTop: 24 }]}>
-            Promociones destacadas
+            {t("notificaciones.promocionesDestacadas", { defaultValue: "Promociones destacadas" })}
           </Text>
 
           {vehiculoPromos.map((vp) => (
@@ -469,7 +619,7 @@ export default function NotificationsScreen() {
                         style={{ marginRight: 3 }}
                       />
                       <Text style={[styles.expiryPillText, { color: d <= 2 ? (c.oscuro ? "#f87171" : "#DC2626") : (c.oscuro ? "#fbbf24" : "#D97706") }]}>
-                        {d === 1 ? "Vence hoy" : `Vence en ${d} días`}
+                        {d === 1 ? t("notificaciones.venceHoy", { defaultValue: "Vence hoy" }) : t("notificaciones.venceEnDias", { defaultValue: `Vence en ${d} días`, count: d, dias: d })}
                       </Text>
                     </View>
                   );

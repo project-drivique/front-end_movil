@@ -51,7 +51,12 @@ export default function EditAdditionalServicesSection({
 
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
   const todosLosServicios = useMemo(
-    () => (vehiculo.servicios ?? []).filter((s) => !s.nombre.toLowerCase().includes("otra ciudad")),
+    () =>
+      (vehiculo.servicios ?? []).filter(
+        (s) =>
+          !s.nombre.toLowerCase().includes("conductor") &&
+          !s.nombre.toLowerCase().includes("otra ciudad")
+      ),
     [vehiculo.servicios]
   );
 
@@ -371,3 +376,6 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
 });
+
+export { EditAdditionalServicesSection };
+

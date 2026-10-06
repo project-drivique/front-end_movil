@@ -137,7 +137,7 @@ export default function OlvideContrasenaScreen() {
               <>
                 <InputField
                   label={t("auth.olvide.correo")}
-                  placeholder="ejemplo@correo.com"
+                  placeholder={t("auth.registro.correoPlaceholder", { defaultValue: "ejemplo@correo.com" })}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={form.correo}

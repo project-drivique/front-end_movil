@@ -85,24 +85,25 @@ export default function OnboardingScreen1() {
             <View style={localStyles.modalHeader}>
               <Text style={[localStyles.modalTitulo, { color: c.textPrimary }]}>⚙️ {t("config.tema")}</Text>
               <TouchableOpacity
-                style={localStyles.modalCloseBtnX}
+                style={[localStyles.modalCloseBtnX, { backgroundColor: c.bgInput }]}
                 onPress={() => setModalConfig(false)}
               >
-                <Text style={localStyles.modalCloseBtnXText}>✕</Text>
+                <Text style={[localStyles.modalCloseBtnXText, { color: c.textSecondary }]}>✕</Text>
               </TouchableOpacity>
             </View>
 
             {/* Tema */}
-            <Text style={localStyles.seccionLabel}>{t("config.tema")}</Text>
+            <Text style={[localStyles.seccionLabel, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>{t("config.tema")}</Text>
             <View style={localStyles.temaRow}>
               <TouchableOpacity
                 style={[
                   localStyles.temaBtn,
+                  { backgroundColor: c.bgInput, borderColor: c.border },
                   temaActual === "claro" && localStyles.temaBtnActive,
                 ]}
                 onPress={() => cambiarTema("claro")}
               >
-                <Text style={localStyles.temaBtnText}>{t("config.claro")}</Text>
+                <Text style={[localStyles.temaBtnText, { color: temaActual === "claro" ? "#1D4ED8" : c.textPrimary }]}>{t("config.claro")}</Text>
                 {temaActual === "claro" && (
                   <Text style={localStyles.temaCheck}>✓</Text>
                 )}
@@ -110,24 +111,25 @@ export default function OnboardingScreen1() {
               <TouchableOpacity
                 style={[
                   localStyles.temaBtn,
-                  temaActual === "oscuro" && localStyles.temaBtnActiveDark,
+                  { backgroundColor: c.bgInput, borderColor: c.border },
+                  temaActual === "oscuro" && [localStyles.temaBtnActiveDark, { backgroundColor: c.primaryBg, borderColor: "#3B82F6" }],
                 ]}
                 onPress={() => cambiarTema("oscuro")}
               >
                 <Text style={[
                   localStyles.temaBtnText,
-                  temaActual === "oscuro" && { color: "#F0F4FF" },
+                  { color: temaActual === "oscuro" ? "#60A5FA" : c.textPrimary },
                 ]}>
                   {t("config.oscuro")}
                 </Text>
                 {temaActual === "oscuro" && (
-                  <Text style={localStyles.temaCheck}>✓</Text>
+                  <Text style={[localStyles.temaCheck, { color: "#60A5FA" }]}>✓</Text>
                 )}
               </TouchableOpacity>
             </View>
 
             {/* Idioma */}
-            <Text style={[localStyles.seccionLabel, { marginTop: 16 }]}>
+            <Text style={[localStyles.seccionLabel, { marginTop: 16, color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>
               {t("config.idioma")}
             </Text>
             {(Object.keys(IDIOMAS) as IdiomaKey[]).map((key) => (
@@ -135,19 +137,21 @@ export default function OnboardingScreen1() {
                 key={key}
                 style={[
                   localStyles.idiomaOption,
-                  idiomaActual === key && localStyles.idiomaOptionActive,
+                  { backgroundColor: c.bgInput, borderColor: c.border },
+                  idiomaActual === key && [localStyles.idiomaOptionActive, { backgroundColor: c.primaryBg, borderColor: c.oscuro ? "#3B82F6" : "#1D4ED8" }],
                 ]}
                 onPress={() => cambiarIdioma(key)}
               >
                 <Text style={localStyles.idiomaFlag}>{IDIOMAS[key].flag}</Text>
                 <Text style={[
                   localStyles.idiomaLabel,
-                  idiomaActual === key && localStyles.idiomaLabelActive,
+                  { color: c.textPrimary },
+                  idiomaActual === key && { color: c.oscuro ? "#60A5FA" : "#1D4ED8", fontWeight: "700" },
                 ]}>
                   {IDIOMAS[key].label}
                 </Text>
                 {idiomaActual === key && (
-                  <View style={localStyles.idiomaCheck}>
+                  <View style={[localStyles.idiomaCheck, { backgroundColor: c.oscuro ? "#2563EB" : "#1D4ED8" }]}>
                     <Text style={{ fontSize: 12, color: "#fff", fontWeight: "800" }}>✓</Text>
                   </View>
                 )}
@@ -155,10 +159,10 @@ export default function OnboardingScreen1() {
             ))}
 
             <TouchableOpacity
-              style={localStyles.modalBtnCerrar}
+              style={[localStyles.modalBtnCerrar, { backgroundColor: c.bgInput }]}
               onPress={() => setModalConfig(false)}
             >
-              <Text style={localStyles.modalBtnCerrarText}>Cerrar</Text>
+              <Text style={[localStyles.modalBtnCerrarText, { color: c.textPrimary }]}>{t("comun.cerrar", { defaultValue: "Cerrar" })}</Text>
             </TouchableOpacity>
           </View>
         </View>
