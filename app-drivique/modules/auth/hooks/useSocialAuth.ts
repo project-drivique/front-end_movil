@@ -81,10 +81,16 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const token = res.accessToken || res.token || 'mock_token_google';
       const userProfile = res.userProfile || res.user || res.usuario || {};
 
+      const capitalizar = (str: string) =>
+        str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+
+      let primerNombre = nombre;
+      let primerApellido = apellido ? apellido.split(' ')[0] : '';
+
       const usuario: Usuario = {
         id: userProfile.id || `social-google-${Date.now()}`,
-        nombres: nombre || userProfile.firstName || userProfile.nombres || 'Usuario',
-        apellidos: apellido || userProfile.lastName || userProfile.apellidos || 'Google',
+        nombres: capitalizar(primerNombre) || userProfile.firstName || userProfile.nombres || 'Usuario',
+        apellidos: capitalizar(primerApellido) || userProfile.lastName || userProfile.apellidos || '',
         correo: email || userProfile.email || userProfile.correo || '',
         rol: 'cliente',
         activo: userProfile.accountStatus === 'ACTIVE' || true,
@@ -145,10 +151,16 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const token = res.accessToken || res.token || 'mock_token_facebook';
       const userProfile = res.userProfile || res.user || res.usuario || {};
 
+      const capitalizar = (str: string) =>
+        str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+
+      let primerNombre = nombre;
+      let primerApellido = apellido ? apellido.split(' ')[0] : '';
+
       const usuario: Usuario = {
         id: userProfile.id || `social-facebook-${Date.now()}`,
-        nombres: nombre || userProfile.firstName || userProfile.nombres || 'Usuario',
-        apellidos: apellido || userProfile.lastName || userProfile.apellidos || 'Facebook',
+        nombres: capitalizar(primerNombre) || userProfile.firstName || userProfile.nombres || 'Usuario',
+        apellidos: capitalizar(primerApellido) || userProfile.lastName || userProfile.apellidos || '',
         correo: email || userProfile.email || userProfile.correo || '',
         rol: 'cliente',
         activo: userProfile.accountStatus === 'ACTIVE' || true,
