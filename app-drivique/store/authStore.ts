@@ -3,18 +3,32 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { useUsuarioStore } from "./userStore";
 
-export type RolUsuario = "cliente";
+export type RolUsuario =
+  | "CUSTOMER"
+  | "EMPLOYEE"
+  | "BRANCH_ADMIN"
+  | "SUPER_ADMIN"
+  | "cliente"
+  | "usuario"
+  | "administrador"
+  | "encargado_sucursal";
 
 export interface Usuario {
   id: string;
   correo: string;
   nombres?: string;
   apellidos?: string;
+  nombreCompleto?: string;
   rol: RolUsuario;
+  roles?: string[];
+  permisos?: string[];
   activo?: boolean;
   permisosValidos?: boolean;
   sucursalId?: string;
   sucursalNombre?: string;
+  branchId?: string;
+  branchName?: string;
+  accountStatus?: string;
 }
 
 interface AuthStore {
@@ -22,6 +36,7 @@ interface AuthStore {
   token: string | null;
   _hasHydrated: boolean;
   setUsuario: (usuario: Usuario, token: string) => void;
+  actualizarUsuario: (datosActualizados: Partial<Usuario>) => void;
   cerrarSesion: () => void;
   setHasHydrated: (state: boolean) => void;
 }
@@ -60,6 +75,10 @@ export const useAuthStore = create<AuthStore>()(
       token: initialAuth.token,
       _hasHydrated: initialAuth._hasHydrated,
       setUsuario: (usuario, token) => set({ usuario, token }),
+      actualizarUsuario: (datosActualizados) =>
+        set((state) => ({
+          usuario: state.usuario ? { ...state.usuario, ...datosActualizados } : null,
+        })),
       cerrarSesion: () => {
         set({ usuario: null, token: null });
         try {
