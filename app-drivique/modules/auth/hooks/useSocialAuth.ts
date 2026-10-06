@@ -15,31 +15,52 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
   const [cargandoFacebook, setCargandoFacebook] = useState(false);
   const [errorSocial, setErrorSocial] = useState<string | null>(null);
 
-  const iniciarGoogle = async () => {
+  const [modalConsentimiento, setModalConsentimiento] = useState<{
+    visible: boolean;
+    provider: 'GOOGLE' | 'FACEBOOK';
+  }>({
+    visible: false,
+    provider: 'GOOGLE',
+  });
+
+  const procesarLoginSocial = async ({
+    provider,
+    email,
+    firstName,
+    lastName,
+  }: {
+    provider: 'GOOGLE' | 'FACEBOOK';
+    email: string;
+    firstName: string;
+    lastName: string;
+  }) => {
+    const isGoogle = provider === 'GOOGLE';
+    if (isGoogle) setCargandoGoogle(true);
+    else setCargandoFacebook(true);
     setErrorSocial(null);
-    setCargandoGoogle(true);
     const ipSimulada = `192.168.1.${Math.floor(10 + Math.random() * 80)}`;
 
     try {
       const { codeVerifier, nonce } = await createPkceChallenge();
 
       const payload: SocialLoginPayload = {
-        provider: 'GOOGLE',
-        idToken: 'sandbox_google_token:cliente.movil.google@drivique.com',
+        provider,
+        idToken: isGoogle ? `mobile_google_token:${email}` : undefined,
+        accessToken: !isGoogle ? `mobile_fb_token:${email}` : undefined,
         codeVerifier,
         nonce,
         deviceInfo: 'Expo Mobile Client / React Native',
       };
 
-      const res = await authService.loginGoogle(payload);
-      const token = res.accessToken || res.token || 'mock_token_google';
+      const res = isGoogle ? await authService.loginGoogle(payload) : await authService.loginFacebook(payload);
+      const token = res.accessToken || res.token || `mock_token_${provider.toLowerCase()}`;
       const userProfile = res.userProfile || res.user || res.usuario || {};
 
       const usuario: Usuario = {
-        id: userProfile.id || 'social-google-user',
-        nombres: userProfile.firstName || userProfile.nombres || 'Usuario',
-        apellidos: userProfile.lastName || userProfile.apellidos || 'Google',
-        correo: userProfile.email || userProfile.correo || 'cliente.movil.google@drivique.com',
+        id: userProfile.id || `social-${provider.toLowerCase()}-${Date.now()}`,
+        nombres: firstName || userProfile.firstName || userProfile.nombres || 'Usuario',
+        apellidos: lastName || userProfile.lastName || userProfile.apellidos || (isGoogle ? 'Google' : 'Facebook'),
+        correo: email || userProfile.email || userProfile.correo || '',
         rol: 'cliente',
         activo: userProfile.accountStatus === 'ACTIVE' || true,
         permisosValidos: true,
@@ -52,77 +73,45 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
         rol: usuario.rol,
         ip: ipSimulada,
         resultado: 'Exitoso',
-        sucursal: 'Móvil / App (Google)',
+        sucursal: `Móvil / App (${provider})`,
       });
 
       onExito?.(usuario, token);
     } catch (err: any) {
-      const msg = err?.message || t('auth.social.errorGoogle', 'Error al iniciar sesión con Google');
+      const msg = err?.message || t('auth.social.error', 'Error al iniciar sesión');
       setErrorSocial(msg);
       registrarAuditoria({
-        correo: 'google.auth@drivique.com',
+        correo: email || 'social.auth@drivique.com',
         rol: 'visitante',
         ip: ipSimulada,
         resultado: 'Fallido - Credenciales incorrectas',
       });
     } finally {
-      setCargandoGoogle(false);
+      if (isGoogle) setCargandoGoogle(false);
+      else setCargandoFacebook(false);
     }
   };
 
-  const iniciarFacebook = async () => {
-    setErrorSocial(null);
-    setCargandoFacebook(true);
-    const ipSimulada = `192.168.1.${Math.floor(10 + Math.random() * 80)}`;
+  const iniciarGoogle = () => {
+    setModalConsentimiento({ visible: true, provider: 'GOOGLE' });
+  };
 
-    try {
-      const { codeVerifier, nonce } = await createPkceChallenge();
+  const iniciarFacebook = () => {
+    setModalConsentimiento({ visible: true, provider: 'FACEBOOK' });
+  };
 
-      const payload: SocialLoginPayload = {
-        provider: 'FACEBOOK',
-        accessToken: 'sandbox_facebook_token:cliente.movil.facebook@drivique.com',
-        codeVerifier,
-        nonce,
-        deviceInfo: 'Expo Mobile Client / React Native',
-      };
+  const cerrarConsentimiento = () => {
+    setModalConsentimiento((prev) => ({ ...prev, visible: false }));
+  };
 
-      const res = await authService.loginFacebook(payload);
-      const token = res.accessToken || res.token || 'mock_token_facebook';
-      const userProfile = res.userProfile || res.user || res.usuario || {};
-
-      const usuario: Usuario = {
-        id: userProfile.id || 'social-fb-user',
-        nombres: userProfile.firstName || userProfile.nombres || 'Usuario',
-        apellidos: userProfile.lastName || userProfile.apellidos || 'Facebook',
-        correo: userProfile.email || userProfile.correo || 'cliente.movil.facebook@drivique.com',
-        rol: 'cliente',
-        activo: userProfile.accountStatus === 'ACTIVE' || true,
-        permisosValidos: true,
-      };
-
-      setUsuario(usuario, token);
-
-      registrarAuditoria({
-        correo: usuario.correo,
-        rol: usuario.rol,
-        ip: ipSimulada,
-        resultado: 'Exitoso',
-        sucursal: 'Móvil / App (Facebook)',
-      });
-
-      onExito?.(usuario, token);
-    } catch (err: any) {
-      const msg = err?.message || t('auth.social.errorFacebook', 'Error al iniciar sesión con Facebook');
-      setErrorSocial(msg);
-      registrarAuditoria({
-        correo: 'facebook.auth@drivique.com',
-        rol: 'visitante',
-        ip: ipSimulada,
-        resultado: 'Fallido - Credenciales incorrectas',
-      });
-    } finally {
-      setCargandoFacebook(false);
-    }
+  const confirmarConsentimiento = (datos: { email: string; firstName: string; lastName: string; provider: string }) => {
+    cerrarConsentimiento();
+    procesarLoginSocial({
+      provider: datos.provider as 'GOOGLE' | 'FACEBOOK',
+      email: datos.email,
+      firstName: datos.firstName,
+      lastName: datos.lastName,
+    });
   };
 
   return {
@@ -131,5 +120,8 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
     errorSocial,
     iniciarGoogle,
     iniciarFacebook,
+    modalConsentimiento,
+    cerrarConsentimiento,
+    confirmarConsentimiento,
   };
 }

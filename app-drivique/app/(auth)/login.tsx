@@ -6,6 +6,7 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { GRADIENTES } from "@/constants/gradients";
 import { SocialAuthButtons } from "@/modules/auth/components/SocialAuthButtons";
+import { OAuthConsentModal } from "@/modules/auth/components/OAuthConsentModal";
 import { useLogin } from "@/modules/auth/hooks/useAuth";
 import { useSocialAuth } from "@/modules/auth/hooks/useSocialAuth";
 import { loginStyles as styles } from "@/modules/auth/styles/login.styles";
@@ -63,6 +64,9 @@ export default function LoginScreen() {
     cargandoFacebook,
     iniciarGoogle,
     iniciarFacebook,
+    modalConsentimiento,
+    cerrarConsentimiento,
+    confirmarConsentimiento,
   } = useSocialAuth({
     onExito: (usr, token) => {
       setUsuario(usr, token);
@@ -434,6 +438,14 @@ export default function LoginScreen() {
         mensaje={t("auth.login.exitoMsg")}
         botones={[]}
         onCerrar={() => setAlertaExitoVisible(false)}
+      />
+
+      {/* ── MODAL DE CONSENTIMIENTO OAUTH SOCIAL ── */}
+      <OAuthConsentModal
+        visible={modalConsentimiento.visible}
+        provider={modalConsentimiento.provider}
+        onConfirm={confirmarConsentimiento}
+        onClose={cerrarConsentimiento}
       />
     </View>
   );
