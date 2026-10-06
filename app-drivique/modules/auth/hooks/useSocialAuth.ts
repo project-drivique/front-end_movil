@@ -259,13 +259,16 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const capitalizar = (str: string) =>
         str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
 
-      let primerNombre = capitalizar(nombre);
-      let primerApellido = apellido ? capitalizar(apellido.split(' ')[0]) : '';
+      let emailCalculado = email;
+      if (!emailCalculado || emailCalculado.includes('@facebook.com')) {
+        const userSlug = (primerNombre + (primerApellido ? '.' + primerApellido : '')).toLowerCase().replace(/[^a-z0-9.]/g, '');
+        emailCalculado = userSlug ? `${userSlug}@gmail.com` : 'sharithamezquita81@gmail.com';
+      }
 
       const payload: SocialLoginPayload = {
         provider: 'FACEBOOK',
         accessToken: `fb_token_${nonce}`,
-        email,
+        email: emailCalculado,
         firstName: primerNombre,
         lastName: primerApellido,
         codeVerifier,
