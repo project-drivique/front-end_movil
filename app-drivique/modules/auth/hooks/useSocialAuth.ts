@@ -27,45 +27,56 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
     const ipSimulada = `192.168.1.${Math.floor(10 + Math.random() * 80)}`;
 
     try {
-      const { codeVerifier, codeChallenge, nonce, state } = await createPkceChallenge();
+      const { codeVerifier, nonce, state } = await createPkceChallenge();
+      const redirectUri = 'http://localhost:5173';
 
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
         GOOGLE_CLIENT_ID
       )}&response_type=token%20id_token&scope=${encodeURIComponent(
         'openid email profile'
       )}&redirect_uri=${encodeURIComponent(
-        'https://drivique.com/auth/callback'
-      )}&code_challenge=${encodeURIComponent(
-        codeChallenge
-      )}&code_challenge_method=S256&nonce=${encodeURIComponent(
+        redirectUri
+      )}&nonce=${encodeURIComponent(
         nonce
       )}&state=${encodeURIComponent(state)}&prompt=select_account`;
 
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, 'https://drivique.com/auth/callback');
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
-      let email = 'sharithamezquita81@gmail.com';
-      let nombre = 'Emily Sharith';
-      let apellido = 'Amezquita Saavedra';
+      let email = 'mimisaavedra09@gmail.com';
+      let nombre = 'Sharith';
+      let apellido = 'Saavedra';
 
       if (result.type === 'success' && result.url) {
-        // Parse token if returned from deep link
         const hash = result.url.split('#')[1] || result.url.split('?')[1] || '';
         const params = new URLSearchParams(hash);
-        const idToken = params.get('id_token') || params.get('access_token');
-        if (idToken) {
+        const accessToken = params.get('access_token');
+        const idToken = params.get('id_token');
+
+        if (accessToken) {
+          try {
+            const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            if (userRes.ok) {
+              const uData = await userRes.json();
+              if (uData.email) email = uData.email;
+              if (uData.given_name) nombre = uData.given_name;
+              else if (uData.name) nombre = uData.name.split(' ')[0];
+              if (uData.family_name) apellido = uData.family_name;
+              else if (uData.name && uData.name.split(' ').length > 1) apellido = uData.name.split(' ')[1];
+            }
+          } catch {}
+        } else if (idToken) {
           try {
             const base64Url = idToken.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
             const parsed = JSON.parse(decodeURIComponent(escape(atob(base64))));
             if (parsed.email) email = parsed.email;
-            if (parsed.name) {
-              const parts = parsed.name.split(' ');
-              nombre = parts[0];
-              apellido = parts.slice(1).join(' ');
-            }
-          } catch {
-            // keep fallback
-          }
+            if (parsed.given_name) nombre = parsed.given_name;
+            else if (parsed.name) nombre = parsed.name.split(' ')[0];
+            if (parsed.family_name) apellido = parsed.family_name;
+            else if (parsed.name && parsed.name.split(' ').length > 1) apellido = parsed.name.split(' ')[1];
+          } catch {}
         }
       }
 
