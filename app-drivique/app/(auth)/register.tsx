@@ -17,6 +17,9 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTemaColores } from '@/modules/i18n/hooks/useLanguage';
 import { useRegistro } from '@/modules/auth/hooks/useAuth';
+import { useSocialAuth } from '@/modules/auth/hooks/useSocialAuth';
+import { useAuthStore } from '@/store/authStore';
+import { useUsuarioStore } from '@/store/userStore';
 import { InputField } from '@/components/ui/InputField';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
@@ -29,6 +32,9 @@ export default function RegistroScreen() {
   const { t } = useTranslation();
   const c = useTemaColores();
   const insets = useSafeAreaInsets();
+  const setUsuario = useAuthStore((s) => s.setUsuario);
+  const actualizarUsuarioGlobal = useUsuarioStore((s) => s.actualizarUsuario);
+
   const {
     form,
     cargando,
@@ -36,6 +42,19 @@ export default function RegistroScreen() {
     registrar,
     getError,
   } = useRegistro();
+
+  const {
+    cargandoGoogle,
+    cargandoFacebook,
+    iniciarGoogle,
+    iniciarFacebook,
+  } = useSocialAuth({
+    onExito: (usr, token) => {
+      setUsuario(usr, token);
+      actualizarUsuarioGlobal(usr);
+      router.replace('/(tabs)/catalog');
+    },
+  });
 
   const [modalTerminos, setModalTerminos] = useState(false);
   const [terminosLeidos, setTerminosLeidos] = useState(false);
@@ -208,8 +227,10 @@ export default function RegistroScreen() {
                       />
                       <View style={{ marginTop: 6 }}>
                         <SocialAuthButtons
-                          onGoogle={() => console.log('Google registro')}
-                          onFacebook={() => console.log('Facebook registro')}
+                          onGoogle={iniciarGoogle}
+                          onFacebook={iniciarFacebook}
+                          cargandoGoogle={cargandoGoogle}
+                          cargandoFacebook={cargandoFacebook}
                         />
                       </View>
                     </View>
