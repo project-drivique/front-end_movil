@@ -13,6 +13,26 @@ WebBrowser.maybeCompleteAuthSession();
 const GOOGLE_CLIENT_ID = '18960724578-h53pr526uva5mtb9doup86f5hjei231c.apps.googleusercontent.com';
 const FACEBOOK_APP_ID = '100000000000000';
 
+function cargarGoogleWebSDK(): Promise<any> {
+  if (typeof window === 'undefined') return Promise.resolve();
+  if ((window as any).google?.accounts?.oauth2) return Promise.resolve((window as any).google);
+  return new Promise((resolve, reject) => {
+    const existing = document.getElementById('google-jssdk');
+    if (existing) {
+      existing.addEventListener('load', () => resolve((window as any).google));
+      return;
+    }
+    const script = document.createElement('script');
+    script.id = 'google-jssdk';
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve((window as any).google);
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
 function getRedirectUri() {
   if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin;
@@ -36,34 +56,30 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
     try {
       const { codeVerifier, nonce, state } = await createPkceChallenge();
-      const redirectUri = getRedirectUri();
-
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
-        GOOGLE_CLIENT_ID
-      )}&response_type=token%20id_token&scope=${encodeURIComponent(
-        'openid email profile'
-      )}&redirect_uri=${encodeURIComponent(
-        redirectUri
-      )}&nonce=${encodeURIComponent(
-        nonce
-      )}&state=${encodeURIComponent(state)}&prompt=select_account`;
-
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
-
       let email = 'mimisaavedra09@gmail.com';
       let nombre = 'Sharith';
       let apellido = 'Saavedra';
 
-      if (result.type === 'success' && result.url) {
-        const hash = result.url.split('#')[1] || result.url.split('?')[1] || '';
-        const params = new URLSearchParams(hash);
-        const accessToken = params.get('access_token');
-        const idToken = params.get('id_token');
+      if (Platform.OS === 'web') {
+        await cargarGoogleWebSDK();
+        const googleObj = (window as any).google;
+        if (googleObj?.accounts?.oauth2) {
+          const tokenResp: any = await new Promise((resolve, reject) => {
+            const client = googleObj.accounts.oauth2.initTokenClient({
+              client_id: GOOGLE_CLIENT_ID,
+              scope: 'openid email profile',
+              callback: (resp: any) => {
+                if (resp.error) reject(new Error(resp.error_description || resp.error));
+                else resolve(resp);
+              },
+              error_callback: (err: any) => reject(new Error(err?.message || 'popup_closed')),
+            });
+            client.requestAccessToken({ prompt: 'select_account' });
+          });
 
-        if (accessToken) {
-          try {
+          if (tokenResp?.access_token) {
             const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-              headers: { Authorization: `Bearer ${accessToken}` },
+              headers: { Authorization: `Bearer ${tokenResp.access_token}` },
             });
             if (userRes.ok) {
               const uData = await userRes.json();
@@ -73,18 +89,54 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
               if (uData.family_name) apellido = uData.family_name;
               else if (uData.name && uData.name.split(' ').length > 1) apellido = uData.name.split(' ')[1];
             }
-          } catch {}
-        } else if (idToken) {
-          try {
-            const base64Url = idToken.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const parsed = JSON.parse(decodeURIComponent(escape(atob(base64))));
-            if (parsed.email) email = parsed.email;
-            if (parsed.given_name) nombre = parsed.given_name;
-            else if (parsed.name) nombre = parsed.name.split(' ')[0];
-            if (parsed.family_name) apellido = parsed.family_name;
-            else if (parsed.name && parsed.name.split(' ').length > 1) apellido = parsed.name.split(' ')[1];
-          } catch {}
+          }
+        }
+      } else {
+        const redirectUri = getRedirectUri();
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
+          GOOGLE_CLIENT_ID
+        )}&response_type=token%20id_token&scope=${encodeURIComponent(
+          'openid email profile'
+        )}&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&nonce=${encodeURIComponent(
+          nonce
+        )}&state=${encodeURIComponent(state)}&prompt=select_account`;
+
+        const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+
+        if (result.type === 'success' && result.url) {
+          const hash = result.url.split('#')[1] || result.url.split('?')[1] || '';
+          const params = new URLSearchParams(hash);
+          const accessToken = params.get('access_token');
+          const idToken = params.get('id_token');
+
+          if (accessToken) {
+            try {
+              const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              });
+              if (userRes.ok) {
+                const uData = await userRes.json();
+                if (uData.email) email = uData.email;
+                if (uData.given_name) nombre = uData.given_name;
+                else if (uData.name) nombre = uData.name.split(' ')[0];
+                if (uData.family_name) apellido = uData.family_name;
+                else if (uData.name && uData.name.split(' ').length > 1) apellido = uData.name.split(' ')[1];
+              }
+            } catch {}
+          } else if (idToken) {
+            try {
+              const base64Url = idToken.split('.')[1];
+              const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+              const parsed = JSON.parse(decodeURIComponent(escape(atob(base64))));
+              if (parsed.email) email = parsed.email;
+              if (parsed.given_name) nombre = parsed.given_name;
+              else if (parsed.name) nombre = parsed.name.split(' ')[0];
+              if (parsed.family_name) apellido = parsed.family_name;
+              else if (parsed.name && parsed.name.split(' ').length > 1) apellido = parsed.name.split(' ')[1];
+            } catch {}
+          }
         }
       }
 
@@ -128,7 +180,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       onExito?.(usuario, token);
     } catch (err: any) {
-      if (err?.message?.includes('cancel') || err?.type === 'cancel') return;
+      if (err?.message?.includes('cancel') || err?.type === 'cancel' || err?.message?.includes('popup_closed')) return;
       const msg = err?.message || t('auth.social.errorGoogle', 'Error al autenticar con Google');
       setErrorSocial(msg);
     } finally {
