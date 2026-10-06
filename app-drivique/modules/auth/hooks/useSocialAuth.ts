@@ -198,20 +198,63 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
     try {
       const { codeVerifier, nonce, state } = await createPkceChallenge();
-
-      const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${encodeURIComponent(
-        FACEBOOK_APP_ID
-      )}&redirect_uri=${encodeURIComponent(
-        'https://drivique.com/auth/callback'
-      )}&response_type=token&scope=${encodeURIComponent(
-        'public_profile,email'
-      )}&state=${encodeURIComponent(state)}`;
-
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, 'https://drivique.com/auth/callback');
-
       let email = 'sharithamezquita81@gmail.com';
       let nombre = 'Emily Sharith';
       let apellido = 'Amezquita Saavedra';
+
+      const redirectUri = getRedirectUri();
+      const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${encodeURIComponent(
+        FACEBOOK_APP_ID
+      )}&redirect_uri=${encodeURIComponent(
+        redirectUri
+      )}&response_type=token&scope=public_profile&state=${encodeURIComponent(state)}`;
+
+      if (Platform.OS === 'web') {
+        const popup = window.open(authUrl, 'facebook_oauth', 'width=600,height=700,top=100,left=100');
+        if (popup) {
+          await new Promise((resolve) => {
+            const pollTimer = setInterval(() => {
+              try {
+                if (popup.closed) {
+                  clearInterval(pollTimer);
+                  resolve(null);
+                  return;
+                }
+                const currentUrl = popup.location?.href || '';
+                if (currentUrl.includes('access_token=') || currentUrl.includes(redirectUri)) {
+                  const hash = currentUrl.split('#')[1] || currentUrl.split('?')[1] || '';
+                  const params = new URLSearchParams(hash);
+                  const accessToken = params.get('access_token');
+                  if (accessToken) {
+                    clearInterval(pollTimer);
+                    popup.close();
+                    resolve(accessToken);
+                  }
+                }
+              } catch {}
+            }, 500);
+          });
+        }
+      } else {
+        const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+        if (result.type === 'success' && result.url) {
+          const hash = result.url.split('#')[1] || result.url.split('?')[1] || '';
+          const params = new URLSearchParams(hash);
+          const accessToken = params.get('access_token');
+          if (accessToken) {
+            try {
+              const resFb = await fetch(`https://graph.facebook.com/me?fields=id,name,first_name,last_name,email&access_token=${accessToken}`);
+              if (resFb.ok) {
+                const fbData = await resFb.json();
+                if (fbData.email) email = fbData.email;
+                if (fbData.first_name) nombre = fbData.first_name;
+                else if (fbData.name) nombre = fbData.name.split(' ')[0];
+                if (fbData.last_name) apellido = fbData.last_name;
+              }
+            } catch {}
+          }
+        }
+      }
 
       const capitalizar = (str: string) =>
         str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
