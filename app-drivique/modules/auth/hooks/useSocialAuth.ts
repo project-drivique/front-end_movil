@@ -14,11 +14,10 @@ const GOOGLE_CLIENT_ID = '18960724578-h53pr526uva5mtb9doup86f5hjei231c.apps.goog
 const FACEBOOK_APP_ID = '100000000000000';
 
 function getRedirectUri() {
-  if (Platform.OS === 'web') {
-    return (typeof window !== 'undefined' && window.location?.origin) || 'http://localhost:5173';
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
   }
-  const host = Constants.expoConfig?.hostUri?.split(':')[0] || '10.3.235.201';
-  return `http://${host}:5173`;
+  return 'http://localhost:5173';
 }
 
 export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token: string) => void } = {}) {
