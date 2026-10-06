@@ -54,5 +54,8 @@ async function refreshSession(): Promise<string> {
   const { data } = await apiClient.post('/auth/refresh', { refreshToken })
   await sessionTokens.saveRefreshToken(data.refreshToken)
   useAuthStore.setState({ token: data.accessToken })
+  if (data.userProfile) {
+    useAuthStore.getState().actualizarUsuario(data.userProfile)
+  }
   return data.accessToken
 }
