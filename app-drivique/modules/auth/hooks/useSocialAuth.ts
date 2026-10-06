@@ -140,9 +140,18 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
         }
       }
 
+      const capitalizar = (str: string) =>
+        str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+
+      let primerNombre = capitalizar(nombre);
+      let primerApellido = apellido ? capitalizar(apellido.split(' ')[0]) : '';
+
       const payload: SocialLoginPayload = {
         provider: 'GOOGLE',
         idToken: `google_token_${nonce}`,
+        email,
+        firstName: primerNombre,
+        lastName: primerApellido,
         codeVerifier,
         nonce,
         deviceInfo: 'Expo Mobile Client / React Native',
@@ -152,16 +161,10 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const token = res.accessToken || res.token || 'mock_token_google';
       const userProfile = res.userProfile || res.user || res.usuario || {};
 
-      const capitalizar = (str: string) =>
-        str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
-
-      let primerNombre = nombre;
-      let primerApellido = apellido ? apellido.split(' ')[0] : '';
-
       const usuario: Usuario = {
         id: userProfile.id || `social-google-${Date.now()}`,
-        nombres: capitalizar(primerNombre) || userProfile.firstName || userProfile.nombres || 'Usuario',
-        apellidos: capitalizar(primerApellido) || userProfile.lastName || userProfile.apellidos || '',
+        nombres: primerNombre || userProfile.firstName || userProfile.nombres || 'Usuario',
+        apellidos: primerApellido || userProfile.lastName || userProfile.apellidos || '',
         correo: email || userProfile.email || userProfile.correo || '',
         rol: 'cliente',
         activo: userProfile.accountStatus === 'ACTIVE' || true,
@@ -210,9 +213,18 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       let nombre = 'Emily Sharith';
       let apellido = 'Amezquita Saavedra';
 
+      const capitalizar = (str: string) =>
+        str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+
+      let primerNombre = capitalizar(nombre);
+      let primerApellido = apellido ? capitalizar(apellido.split(' ')[0]) : '';
+
       const payload: SocialLoginPayload = {
         provider: 'FACEBOOK',
         accessToken: `fb_token_${nonce}`,
+        email,
+        firstName: primerNombre,
+        lastName: primerApellido,
         codeVerifier,
         nonce,
         deviceInfo: 'Expo Mobile Client / React Native',
@@ -222,16 +234,10 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const token = res.accessToken || res.token || 'mock_token_facebook';
       const userProfile = res.userProfile || res.user || res.usuario || {};
 
-      const capitalizar = (str: string) =>
-        str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
-
-      let primerNombre = nombre;
-      let primerApellido = apellido ? apellido.split(' ')[0] : '';
-
       const usuario: Usuario = {
         id: userProfile.id || `social-facebook-${Date.now()}`,
-        nombres: capitalizar(primerNombre) || userProfile.firstName || userProfile.nombres || 'Usuario',
-        apellidos: capitalizar(primerApellido) || userProfile.lastName || userProfile.apellidos || '',
+        nombres: primerNombre || userProfile.firstName || userProfile.nombres || 'Usuario',
+        apellidos: primerApellido || userProfile.lastName || userProfile.apellidos || '',
         correo: email || userProfile.email || userProfile.correo || '',
         rol: 'cliente',
         activo: userProfile.accountStatus === 'ACTIVE' || true,
