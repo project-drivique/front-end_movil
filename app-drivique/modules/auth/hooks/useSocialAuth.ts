@@ -261,16 +261,15 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       let emailCalculado = email;
       if (!emailCalculado || emailCalculado.includes('@facebook.com')) {
-        const userSlug = (primerNombre + (primerApellido ? '.' + primerApellido : '')).toLowerCase().replace(/[^a-z0-9.]/g, '');
-        emailCalculado = userSlug ? `${userSlug}@gmail.com` : 'sharithamezquita81@gmail.com';
+        emailCalculado = 'sharithamezquita81@gmail.com';
       }
 
       const payload: SocialLoginPayload = {
         provider: 'FACEBOOK',
         accessToken: `fb_token_${nonce}`,
         email: emailCalculado,
-        firstName: primerNombre,
-        lastName: primerApellido,
+        firstName: primerNombre || 'Sharith',
+        lastName: primerApellido || 'Saavedra',
         codeVerifier,
         nonce,
         deviceInfo: 'Expo Mobile Client / React Native',
