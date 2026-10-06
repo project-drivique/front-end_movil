@@ -28,13 +28,13 @@ import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { usePerfil } from "@/modules/profile/hooks/useProfile";
 import { ModalCambiarCorreo } from "@/modules/profile/components/ChangeEmailModal";
 import { ChangePasswordModal } from "@/modules/profile/components/ChangePasswordModal";
+import { DeleteAccountModal } from "@/modules/profile/components/DeleteAccountModal";
 import { FormCompletarPerfil } from "@/modules/profile/components/CompleteProfileForm";
 import { perfilStyles as styles } from "@/modules/profile/styles/profile.styles";
 import { useAuthStore } from "@/store/authStore";
 import { useUsuarioStore } from "@/store/userStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { GRADIENTES, SOMBRA_BOTON_GRADIENTE } from "@/constants/gradients";
-import { eliminarUsuarioDemo } from "@/mocks/demoUsers";
 import { DateField } from "@/components/ui/DateField";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Ionicons } from "@expo/vector-icons";
@@ -44,6 +44,7 @@ import { useMoneda } from "@/hooks/useCurrency";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { Moneda } from "@/utils/currencyUtils";
 import { useNotificationStore } from "@/store/notificationStore";
+import { sessionTokens } from "@/services/http/sessionTokens";
 
 const OPCIONES_NACIONALIDAD = NACIONALIDADES.map((n) => ({
   id: n.nombre,
@@ -64,6 +65,7 @@ export default function PerfilScreen() {
   const [errorMensaje, setErrorMensaje] = useState("");
   const [mostrarCambioContrasena, setMostrarCambioContrasena] = useState(false);
   const [resultadoContrasena, setResultadoContrasena] = useState<"exito" | "error" | null>(null);
+  const [mostrarEliminarCuenta, setMostrarEliminarCuenta] = useState(false);
 
   // Al elegir USD, la moneda solo cambia la referencia visual de los
   // precios; el cobro real con Wompi siempre se hace en COP. Se avisa
@@ -236,30 +238,14 @@ export default function PerfilScreen() {
     </View>
   );
 
-  const handleEliminarCuenta = () => {
-    Alert.alert(
-      t("perfil.eliminarTitulo"),
-      t("perfil.eliminarMsg"),
-      [
-        { text: t("perfil.cancelar"), style: "cancel" },
-        {
-          text: t("perfil.confirmarEliminar"),
-          style: "destructive",
-          onPress: () => {
-            // RF52 — Eliminar cuenta
-            // En producción esto llama a DELETE /usuarios/:id contra el
-            // backend. Mientras tanto, con datos mock, quitamos al usuario
-            // de USUARIOS_DEMO (mocks/demoUsers.ts) para que ya no
-            // pueda volver a iniciar sesión, y limpiamos ambos stores.
-            const correo = authUsuario?.correo || usuario.correo;
-            if (correo) eliminarUsuarioDemo(correo);
-            cerrarSesionAuth();
-            limpiarUsuario();
-            router.replace("/(auth)/login");
-          },
-        },
-      ]
-    );
+  const handleEliminarCuenta = () => setMostrarEliminarCuenta(true);
+
+  const cuentaEliminada = async () => {
+    await sessionTokens.clearRefreshToken();
+    setMostrarEliminarCuenta(false);
+    cerrarSesionAuth();
+    limpiarUsuario();
+    router.replace("/(auth)/login");
   };
 
   // ── Vista completar perfil ────────────────────────────────────────────────
@@ -653,6 +639,12 @@ export default function PerfilScreen() {
         onCerrar={() => setMostrarCambioContrasena(false)}
         onExito={cambioContrasenaExitoso}
         onError={() => setResultadoContrasena("error")}
+      />
+
+      <DeleteAccountModal
+        visible={mostrarEliminarCuenta}
+        onCerrar={() => setMostrarEliminarCuenta(false)}
+        onEliminada={cuentaEliminada}
       />
 
       <AlertModal
