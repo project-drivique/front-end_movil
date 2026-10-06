@@ -20,6 +20,9 @@ export const authService = {
   async restablecerContrasena(correo: string, codigo: string, nuevaContrasena: string) { return apiClient.post('/auth/reset-password', { email: correo, code: codigo, newPassword: nuevaContrasena }).then(({ data }) => data) },
   async reenviarVerificacion(correo: string) { return apiClient.post('/auth/resend-verification', { email: correo }).then(({ data }) => data) },
   async verificarCorreo(correo: string, codigo: string) { return apiClient.post('/auth/verify-email', { email: correo, code: codigo }).then(({ data }) => data) },
+  async eliminarCuenta(contrasena: string) {
+    await apiClient.delete('/users/me', { data: { password: contrasena } })
+  },
   async cambiarContrasena(token: string, datos: { contrasenaActual: string; nuevaContrasena: string }) {
     return apiClient.put('/users/me', { currentPassword: datos.contrasenaActual, newPassword: datos.nuevaContrasena }, { headers: { Authorization: `Bearer ${token}` } }).then(({ data }) => data)
   },
