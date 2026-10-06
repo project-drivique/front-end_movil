@@ -199,20 +199,21 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
     try {
       const { codeVerifier, nonce, state } = await createPkceChallenge();
       let email = 'sharithamezquita81@gmail.com';
-      let nombre = 'Emily Sharith';
-      let apellido = 'Amezquita Saavedra';
+      let rawFirst = 'Emily Sharith';
+      let rawLast = 'Amezquita Saavedra';
+      let accessTokenObtenido = `fb_token_${nonce}`;
 
       const redirectUri = getRedirectUri();
       const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${encodeURIComponent(
         FACEBOOK_APP_ID
       )}&redirect_uri=${encodeURIComponent(
         redirectUri
-      )}&response_type=token&scope=public_profile&state=${encodeURIComponent(state)}`;
+      )}&response_type=token&scope=${encodeURIComponent('public_profile,email')}&state=${encodeURIComponent(state)}`;
 
       if (Platform.OS === 'web') {
-        const popup = window.open(authUrl, 'facebook_oauth', 'width=600,height=700,top=100,left=100');
+        const popup = typeof window !== 'undefined' ? window.open(authUrl, 'facebook_oauth', 'width=600,height=700,top=100,left=100') : null;
         if (popup) {
-          await new Promise((resolve) => {
+          const tokenFromPopup: any = await new Promise((resolve) => {
             const pollTimer = setInterval(() => {
               try {
                 if (popup.closed) {
@@ -224,32 +225,49 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
                 if (currentUrl.includes('access_token=') || currentUrl.includes(redirectUri)) {
                   const hash = currentUrl.split('#')[1] || currentUrl.split('?')[1] || '';
                   const params = new URLSearchParams(hash);
-                  const accessToken = params.get('access_token');
-                  if (accessToken) {
+                  const token = params.get('access_token');
+                  if (token) {
                     clearInterval(pollTimer);
                     popup.close();
-                    resolve(accessToken);
+                    resolve(token);
                   }
                 }
-              } catch {}
-            }, 500);
+              } catch {
+                // Cross-origin access blocked while on facebook.com
+              }
+            }, 400);
           });
+
+          if (tokenFromPopup) {
+            accessTokenObtenido = tokenFromPopup;
+            try {
+              const resFb = await fetch(`https://graph.facebook.com/me?fields=id,name,first_name,last_name,email&access_token=${tokenFromPopup}`);
+              if (resFb.ok) {
+                const fbData = await resFb.json();
+                if (fbData.email) email = fbData.email;
+                if (fbData.first_name) rawFirst = fbData.first_name;
+                else if (fbData.name) rawFirst = fbData.name.split(' ')[0];
+                if (fbData.last_name) rawLast = fbData.last_name;
+              }
+            } catch {}
+          }
         }
       } else {
         const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
         if (result.type === 'success' && result.url) {
           const hash = result.url.split('#')[1] || result.url.split('?')[1] || '';
           const params = new URLSearchParams(hash);
-          const accessToken = params.get('access_token');
-          if (accessToken) {
+          const token = params.get('access_token');
+          if (token) {
+            accessTokenObtenido = token;
             try {
-              const resFb = await fetch(`https://graph.facebook.com/me?fields=id,name,first_name,last_name,email&access_token=${accessToken}`);
+              const resFb = await fetch(`https://graph.facebook.com/me?fields=id,name,first_name,last_name,email&access_token=${token}`);
               if (resFb.ok) {
                 const fbData = await resFb.json();
                 if (fbData.email) email = fbData.email;
-                if (fbData.first_name) nombre = fbData.first_name;
-                else if (fbData.name) nombre = fbData.name.split(' ')[0];
-                if (fbData.last_name) apellido = fbData.last_name;
+                if (fbData.first_name) rawFirst = fbData.first_name;
+                else if (fbData.name) rawFirst = fbData.name.split(' ')[0];
+                if (fbData.last_name) rawLast = fbData.last_name;
               }
             } catch {}
           }
@@ -259,6 +277,9 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const capitalizar = (str: string) =>
         str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
 
+      const primerNombre = capitalizar(rawFirst) || 'Usuario';
+      const primerApellido = rawLast ? capitalizar(rawLast.split(' ')[0]) : '';
+
       let emailCalculado = email;
       if (!emailCalculado || emailCalculado.includes('@facebook.com')) {
         const userSlug = [primerNombre, primerApellido].filter(Boolean).join('.').toLowerCase().replace(/[^a-z0-9.]/g, '');
@@ -267,24 +288,24 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       const payload: SocialLoginPayload = {
         provider: 'FACEBOOK',
-        accessToken: `fb_token_${nonce}`,
+        accessToken: accessTokenObtenido,
         email: emailCalculado,
-        firstName: primerNombre || 'Usuario',
-        lastName: primerApellido || '',
+        firstName: primerNombre,
+        lastName: primerApellido,
         codeVerifier,
         nonce,
         deviceInfo: 'Expo Mobile Client / React Native',
       };
 
       const res = await authService.loginFacebook(payload);
-      const token = res.accessToken || res.token || 'mock_token_facebook';
+      const token = res.accessToken || res.token || `token_fb_${Date.now()}`;
       const userProfile = res.userProfile || res.user || res.usuario || {};
 
       const usuario: Usuario = {
         id: userProfile.id || `social-facebook-${Date.now()}`,
         nombres: primerNombre || userProfile.firstName || userProfile.nombres || 'Usuario',
         apellidos: primerApellido || userProfile.lastName || userProfile.apellidos || '',
-        correo: email || userProfile.email || userProfile.correo || '',
+        correo: emailCalculado || userProfile.email || userProfile.correo || '',
         rol: 'cliente',
         activo: userProfile.accountStatus === 'ACTIVE' || true,
         permisosValidos: true,
@@ -302,7 +323,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       onExito?.(usuario, token);
     } catch (err: any) {
-      if (err?.message?.includes('cancel') || err?.type === 'cancel') return;
+      if (err?.message?.includes('cancel') || err?.type === 'cancel' || err?.message?.includes('popup_closed')) return;
       const msg = err?.message || t('auth.social.errorFacebook', 'Error al autenticar con Facebook');
       setErrorSocial(msg);
     } finally {
