@@ -24,8 +24,6 @@ import { InputField } from '@/components/ui/InputField';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { SocialAuthButtons } from '@/modules/auth/components/SocialAuthButtons';
-import { GoogleOAuthModal } from '@/modules/auth/components/GoogleOAuthModal';
-import { FacebookOAuthModal } from '@/modules/auth/components/FacebookOAuthModal';
 import { PasswordRequirements } from '@/modules/auth/components/PasswordRequirements';
 import { registroStyles as styles } from '@/modules/auth/styles/register.styles';
 import { GRADIENTES } from '@/constants/gradients';
@@ -50,9 +48,6 @@ export default function RegistroScreen() {
     cargandoFacebook,
     iniciarGoogle,
     iniciarFacebook,
-    modalConsentimiento,
-    cerrarConsentimiento,
-    confirmarConsentimiento,
   } = useSocialAuth({
     onExito: (usr, token) => {
       setUsuario(usr, token);
@@ -375,23 +370,6 @@ export default function RegistroScreen() {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
-
-      {/* ── MODALES OAUTH SOCIAL ── */}
-      {modalConsentimiento.visible && modalConsentimiento.provider === 'GOOGLE' && (
-        <GoogleOAuthModal
-          visible={true}
-          onConfirm={confirmarConsentimiento}
-          onClose={cerrarConsentimiento}
-        />
-      )}
-
-      {modalConsentimiento.visible && modalConsentimiento.provider === 'FACEBOOK' && (
-        <FacebookOAuthModal
-          visible={true}
-          onConfirm={confirmarConsentimiento}
-          onClose={cerrarConsentimiento}
-        />
-      )}
     </View>
   );
 }

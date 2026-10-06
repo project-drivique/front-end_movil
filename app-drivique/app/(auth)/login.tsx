@@ -6,8 +6,6 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { GRADIENTES } from "@/constants/gradients";
 import { SocialAuthButtons } from "@/modules/auth/components/SocialAuthButtons";
-import { GoogleOAuthModal } from "@/modules/auth/components/GoogleOAuthModal";
-import { FacebookOAuthModal } from "@/modules/auth/components/FacebookOAuthModal";
 import { useLogin } from "@/modules/auth/hooks/useAuth";
 import { useSocialAuth } from "@/modules/auth/hooks/useSocialAuth";
 import { loginStyles as styles } from "@/modules/auth/styles/login.styles";
@@ -65,9 +63,6 @@ export default function LoginScreen() {
     cargandoFacebook,
     iniciarGoogle,
     iniciarFacebook,
-    modalConsentimiento,
-    cerrarConsentimiento,
-    confirmarConsentimiento,
   } = useSocialAuth({
     onExito: (usr, token) => {
       setUsuario(usr, token);
@@ -440,23 +435,6 @@ export default function LoginScreen() {
         botones={[]}
         onCerrar={() => setAlertaExitoVisible(false)}
       />
-
-      {/* ── MODALES OAUTH SOCIAL ── */}
-      {modalConsentimiento.visible && modalConsentimiento.provider === 'GOOGLE' && (
-        <GoogleOAuthModal
-          visible={true}
-          onConfirm={confirmarConsentimiento}
-          onClose={cerrarConsentimiento}
-        />
-      )}
-
-      {modalConsentimiento.visible && modalConsentimiento.provider === 'FACEBOOK' && (
-        <FacebookOAuthModal
-          visible={true}
-          onConfirm={confirmarConsentimiento}
-          onClose={cerrarConsentimiento}
-        />
-      )}
     </View>
   );
 }
