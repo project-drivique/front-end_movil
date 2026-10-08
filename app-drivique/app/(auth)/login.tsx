@@ -152,6 +152,9 @@ export default function LoginScreen() {
         setAlertaExitoVisible(false);
         router.replace("/(tabs)/catalog");
       }, 1000);
+    }, (correo) => {
+      // Redirigir a verificar-correo e iniciar reenvío de OTP automáticamente (HU de mejora)
+      router.push({ pathname: "/(auth)/verify-email", params: { correo, autoSend: 'true' } });
     });
   }
 

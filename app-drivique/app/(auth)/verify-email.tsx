@@ -36,7 +36,7 @@ function formatoTiempo(segundos: number): string {
 export default function VerificarCorreoScreen() {
   const { t } = useTranslation();
   const c = useTemaColores();
-  const { correo: correoParam } = useLocalSearchParams<{ correo?: string }>();
+  const { correo: correoParam, autoSend } = useLocalSearchParams<{ correo?: string; autoSend?: string }>();
   const correo = correoParam ?? "";
 
   const {
@@ -62,6 +62,12 @@ export default function VerificarCorreoScreen() {
   useEffect(() => {
     if (!correo) router.replace("/(auth)/register");
   }, [correo]);
+
+  useEffect(() => {
+    if (autoSend === 'true' && !codigoEnviado && !cargando && correo) {
+      enviarOReenviarCodigo("codigo_enviado");
+    }
+  }, [autoSend, correo, codigoEnviado, cargando]);
 
   useEffect(() => {
     return () => {
@@ -92,10 +98,14 @@ export default function VerificarCorreoScreen() {
     const ok = await verificarCodigo(codigo);
     if (ok) {
       registrarEvento("verificacion_correo", "codigo_correcto");
-      router.replace('/(auth)/login');
+      router.replace('/(tabs)/catalog');
     } else {
       registrarEvento("verificacion_correo", "codigo_incorrecto");
       setCodigo("");
+      Alert.alert(
+        t("auth.verificarCorreo.errorTitulo", { defaultValue: "Código incorrecto" }),
+        t("auth.verificarCorreo.errorMsg", { defaultValue: "El código ingresado no es válido. Por favor verifica e intenta de nuevo." })
+      );
     }
   }
 

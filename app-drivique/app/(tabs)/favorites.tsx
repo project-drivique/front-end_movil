@@ -13,12 +13,26 @@ import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useAuthStore } from "@/store/authStore";
 import { useFavoritos } from "@/modules/catalog/hooks/useFavorites";
-import { VEHICULOS_MOCK } from "@/modules/catalog/constants/catalog.constants";
 import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useState } from "react";
+import { apiClient } from "@/services/http/apiClient";
+
+// Tipo básico para la UI
+interface VehiculoFav {
+  id: number;
+  marca: string;
+  modelo: string;
+  precio: number;
+  categoria: string;
+  transmision: string;
+  pasajeros: number;
+  imagen?: string;
+  imagenes?: string[];
+}
 
 export default function FavoritesScreen() {
   const insets = useSafeAreaInsets();
@@ -31,8 +45,30 @@ export default function FavoritesScreen() {
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
 
-  // Get only the favorited vehicles
-  const favoritedVehicles = VEHICULOS_MOCK.filter((v) => favoritos.includes(v.id));
+  const [favoritedVehicles, setFavoritedVehicles] = useState<VehiculoFav[]>([]);
+  const [cargandoVehiculos, setCargandoVehiculos] = useState(false);
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      if (!favoritos.length) {
+        setFavoritedVehicles([]);
+        return;
+      }
+      setCargandoVehiculos(true);
+      try {
+        // En una API real, podríamos pedir los favoritos por ID o un endpoint que devuelve los vehículos favoritos.
+        // Aquí pedimos los favoritos hidratados
+        const response = await apiClient.get<VehiculoFav[]>('/v1/users/me/favorites');
+        setFavoritedVehicles(response.data || []);
+      } catch (e) {
+        console.error("Error fetching favorite vehicles:", e);
+      } finally {
+        setCargandoVehiculos(false);
+      }
+    };
+    fetchVehicles();
+  }, [favoritos.length]);
+
 
   const handleCardPress = (id: number) => {
     router.push({
@@ -41,7 +77,7 @@ export default function FavoritesScreen() {
     } as any);
   };
 
-  const renderFavoriteItem = ({ item }: { item: typeof VEHICULOS_MOCK[0] }) => {
+  const renderFavoriteItem = ({ item }: { item: VehiculoFav }) => {
     const mainImage = item.imagenes && item.imagenes.length > 0 ? item.imagenes[0] : item.imagen;
 
     return (
