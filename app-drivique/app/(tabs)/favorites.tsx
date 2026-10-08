@@ -12,28 +12,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useAuthStore } from "@/store/authStore";
-import { useFavoritos } from "@/modules/catalog/hooks/useFavorites";
+import { useFavoritos, type FavoriteVehicle } from "@/modules/catalog/hooks/useFavorites";
 import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useState } from "react";
-import { apiClient } from "@/services/http/apiClient";
 
 // Tipo básico para la UI
-interface VehiculoFav {
-  id: number;
-  marca: string;
-  modelo: string;
-  precio: number;
-  categoria: string;
-  transmision: string;
-  pasajeros: number;
-  imagen?: string;
-  imagenes?: string[];
-}
-
 export default function FavoritesScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
@@ -41,44 +27,19 @@ export default function FavoritesScreen() {
   const usuario = useAuthStore((s) => s.usuario);
   const usuarioId = usuario ? String(usuario.id ?? usuario.correo ?? "user") : null;
   
-  const { favoritos, toggleFavorito } = useFavoritos(usuarioId);
+  const { vehiculosFavoritos, toggleFavorito, cargando, error } = useFavoritos(usuarioId);
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
 
-  const [favoritedVehicles, setFavoritedVehicles] = useState<VehiculoFav[]>([]);
-  const [cargandoVehiculos, setCargandoVehiculos] = useState(false);
-
-  useEffect(() => {
-    const fetchVehicles = async () => {
-      if (!favoritos.length) {
-        setFavoritedVehicles([]);
-        return;
-      }
-      setCargandoVehiculos(true);
-      try {
-        // En una API real, podríamos pedir los favoritos por ID o un endpoint que devuelve los vehículos favoritos.
-        // Aquí pedimos los favoritos hidratados
-        const response = await apiClient.get<VehiculoFav[]>('/v1/users/me/favorites');
-        setFavoritedVehicles(response.data || []);
-      } catch (e) {
-        console.error("Error fetching favorite vehicles:", e);
-      } finally {
-        setCargandoVehiculos(false);
-      }
-    };
-    fetchVehicles();
-  }, [favoritos.length]);
-
-
-  const handleCardPress = (id: number) => {
+  const handleCardPress = (id: string) => {
     router.push({
       pathname: "/vehicle/[id]",
       params: { id: id.toString() }
     } as any);
   };
 
-  const renderFavoriteItem = ({ item }: { item: VehiculoFav }) => {
-    const mainImage = item.imagenes && item.imagenes.length > 0 ? item.imagenes[0] : item.imagen;
+  const renderFavoriteItem = ({ item }: { item: FavoriteVehicle }) => {
+    const mainImage = item.mainImageUrl;
 
     return (
       <TouchableOpacity
@@ -98,13 +59,13 @@ export default function FavoritesScreen() {
         {/* Right Side - Info & Actions */}
         <View style={styles.infoWrapper}>
           <Text style={[styles.itemTitle, { color: c.textPrimary }]} numberOfLines={2}>
-            {item.marca} {item.modelo}
+            {item.brandName} {item.model}
           </Text>
           <Text style={[styles.itemPrice, { color: c.textPrimary }]}>
-            {formatCurrency(item.precio, monedaActual, tasaUSD)}
+            {formatCurrency(item.dailyRate, monedaActual, tasaUSD)}
           </Text>
           <Text style={[styles.itemDescription, { color: c.textSecondary }]} numberOfLines={1}>
-            {t(`catalogo.categoriaValores.${item.categoria}`, { defaultValue: item.categoria })} · {t(`catalogo.transmisionValores.${item.transmision}`, { defaultValue: item.transmision })} · {item.pasajeros} {t("catalogo.plazas", { defaultValue: "plazas" })}
+            {item.categoryName} · {item.transmissionName} · {item.passengerCapacity} {t("catalogo.plazas", { defaultValue: "plazas" })}
           </Text>
 
           {/* Actions */}
@@ -136,7 +97,7 @@ export default function FavoritesScreen() {
 
       {/* Main Content */}
       <FlatList
-        data={favoritedVehicles}
+        data={vehiculosFavoritos}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderFavoriteItem}
         contentContainerStyle={styles.listContent}
@@ -145,7 +106,7 @@ export default function FavoritesScreen() {
           <View style={styles.emptyContainer}>
             <Ionicons name="heart-dislike-outline" size={60} color={c.textMuted} />
             <Text style={[styles.emptyText, { color: c.textSecondary }]}>
-              {t("tabs.sinFavoritos")}
+              {cargando ? t("comun.cargando", { defaultValue: "Cargando..." }) : error || t("tabs.sinFavoritos")}
             </Text>
           </View>
         }

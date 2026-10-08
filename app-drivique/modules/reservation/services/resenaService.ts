@@ -1,37 +1,70 @@
-// modules/reservation/services/resenaService.ts
-//
-// Servicio para gestionar la calificación y comentario que el
-// usuario deja sobre el vehículo al finalizar su reserva.
-// Persiste en AsyncStorage e incluye fotos, vehículo y autor.
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const STORAGE_KEY = "drivique_resenas";
+import { apiClient } from "@/services/http/apiClient";
 
 export interface ResenaGuardada {
+  id?: string;
   referenciaReserva: string;
   usuarioId: string;
   usuarioNombre?: string;
   vehiculoId?: number | string;
   vehiculoNombre?: string;
-  calificacion: number; // 1 a 5
+  calificacion: number;
   comentario: string;
-  fotos?: string[]; // Máximo 3 URIs de fotos
+  fotos?: string[];
   fecha: string;
   fechaIso?: string;
 }
 
-async function leerTodas(): Promise<Record<string, ResenaGuardada>> {
-  try {
-    const data = await AsyncStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : {};
-  } catch (error) {
-    console.error("[resenaService] Error leyendo reseñas guardadas", error);
-    return {};
-  }
+interface VehicleReviewDto {
+  id: string;
+  customerName: string;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
 }
 
-async function guardarTodas(data: Record<string, ResenaGuardada>) {
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+interface ReviewEligibilityDto {
+  canReviewVehicle: boolean;
+  canReviewBranch: boolean;
+  vehicleReview?: VehicleReviewDto | null;
+}
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+async function resolverReservaId(referenciaOId: string): Promise<string> {
+  const value = String(referenciaOId || "").trim();
+  if (!value) throw new Error("La reserva es obligatoria para publicar una reseña.");
+  if (UUID_PATTERN.test(value)) return value;
+
+  const { data } = await apiClient.get<{ id: string }>(
+    `/v1/reservations/code/${encodeURIComponent(value)}`
+  );
+  if (!data?.id) throw new Error("No fue posible identificar la reserva.");
+  return String(data.id);
+}
+
+function mapReview(
+  review: VehicleReviewDto,
+  referenciaReserva: string,
+  usuarioId: string,
+  extras: Partial<ResenaGuardada> = {}
+): ResenaGuardada {
+  const createdAt = review.createdAt || new Date().toISOString();
+  return {
+    id: review.id,
+    referenciaReserva,
+    usuarioId,
+    usuarioNombre: review.customerName,
+    calificacion: Number(review.rating),
+    comentario: review.comment || "",
+    fotos: [],
+    fecha: new Date(createdAt).toLocaleDateString("es-CO", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }),
+    fechaIso: createdAt,
+    ...extras,
+  };
 }
 
 export const resenaService = {
@@ -40,38 +73,21 @@ export const resenaService = {
     usuarioId: string
   ): Promise<ResenaGuardada | null> => {
     if (!referenciaReserva) return null;
-    const todas = await leerTodas();
-    const claveUsuario = `${usuarioId}:${referenciaReserva}`;
-    if (todas[claveUsuario]) return todas[claveUsuario];
-
-    // Migra una reseña creada con la estructura anterior si existe
-    const anterior = todas[referenciaReserva];
-    if (!anterior) return null;
-    const migrada = { ...anterior, usuarioId };
-    todas[claveUsuario] = migrada;
-    delete todas[referenciaReserva];
-    await guardarTodas(todas);
-    return migrada;
+    try {
+      const reservationId = await resolverReservaId(referenciaReserva);
+      const { data } = await apiClient.get<ReviewEligibilityDto>(
+        `/v1/reservations/${reservationId}/review-eligibility`
+      );
+      return data?.vehicleReview
+        ? mapReview(data.vehicleReview, referenciaReserva, usuarioId)
+        : null;
+    } catch (error) {
+      console.error("[resenaService] Error consultando la reseña", error);
+      return null;
+    }
   },
 
-  obtenerPorVehiculo: async (
-    vehiculoId: number | string | undefined,
-    vehiculoNombre?: string
-  ): Promise<ResenaGuardada[]> => {
-    if (!vehiculoId && !vehiculoNombre) return [];
-    const todas = await leerTodas();
-    const lista = Object.values(todas);
-
-    return lista.filter((r) => {
-      if (vehiculoId && r.vehiculoId !== undefined) {
-        return String(r.vehiculoId) === String(vehiculoId);
-      }
-      if (vehiculoNombre && r.vehiculoNombre) {
-        return r.vehiculoNombre.toLowerCase().trim() === vehiculoNombre.toLowerCase().trim();
-      }
-      return false;
-    });
-  },
+  obtenerPorVehiculo: async (): Promise<ResenaGuardada[]> => [],
 
   guardar: async (
     referenciaReserva: string,
@@ -85,22 +101,37 @@ export const resenaService = {
       usuarioNombre?: string;
     }
   ): Promise<ResenaGuardada> => {
-    const todas = await leerTodas();
-    const ahora = new Date();
-    const resena: ResenaGuardada = {
-      referenciaReserva,
-      usuarioId,
-      usuarioNombre: datos.usuarioNombre || "Cliente",
+    const reservationId = await resolverReservaId(referenciaReserva);
+    const { data: eligibility } = await apiClient.get<ReviewEligibilityDto>(
+      `/v1/reservations/${reservationId}/review-eligibility`
+    );
+
+    if (!eligibility.canReviewVehicle) {
+      if (eligibility.vehicleReview) {
+        return mapReview(eligibility.vehicleReview, referenciaReserva, usuarioId, {
+          vehiculoId: datos.vehiculoId,
+          vehiculoNombre: datos.vehiculoNombre,
+        });
+      }
+      throw new Error("Solo se puede calificar una reserva finalizada.");
+    }
+
+    await apiClient.post("/v1/reviews/vehicles", {
+      reservationId,
+      rating: datos.calificacion,
+      comment: datos.comentario.trim() || null,
+    });
+
+    const { data: updated } = await apiClient.get<ReviewEligibilityDto>(
+      `/v1/reservations/${reservationId}/review-eligibility`
+    );
+    if (!updated.vehicleReview) {
+      throw new Error("La reseña fue enviada, pero no pudo recuperarse.");
+    }
+    return mapReview(updated.vehicleReview, referenciaReserva, usuarioId, {
       vehiculoId: datos.vehiculoId,
       vehiculoNombre: datos.vehiculoNombre,
-      calificacion: datos.calificacion,
-      comentario: datos.comentario,
-      fotos: datos.fotos || [],
-      fecha: ahora.toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" }),
-      fechaIso: ahora.toISOString(),
-    };
-    todas[`${usuarioId}:${referenciaReserva}`] = resena;
-    await guardarTodas(todas);
-    return resena;
+      usuarioNombre: datos.usuarioNombre,
+    });
   },
 };
