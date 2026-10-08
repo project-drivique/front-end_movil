@@ -13,8 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { Comentario } from "../types/catalog.types";
-import { resenaService, ResenaGuardada } from "@/modules/reservation/services/resenaService";
 import { useUsuarioStore } from "@/store/userStore";
+import { apiClient } from "@/services/http/apiClient";
 
 interface Props {
   comentarios: Comentario[];
@@ -53,7 +53,9 @@ export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, 
   const { t } = useTranslation();
   const usuarioStore = useUsuarioStore((s) => s.usuario);
   const [visibles, setVisibles] = useState(4);
-  const [resenasLocales, setResenasLocales] = useState<ResenaGuardada[]>([]);
+  const [resenasApi, setResenasApi] = useState<any[]>([]);
+  const [promedioApi, setPromedioApi] = useState<number | null>(null);
+  const [totalApi, setTotalApi] = useState<number | null>(null);
   const [fotoModalUri, setFotoModalUri] = useState<string | null>(null);
 
   const usuarioNombreActual = `${usuarioStore.nombres || ""} ${usuarioStore.apellidos || ""}`.trim().toLowerCase();
@@ -61,23 +63,27 @@ export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, 
 
   useEffect(() => {
     let activo = true;
-    if (vehiculoId || vehiculoNombre) {
-      resenaService.obtenerPorVehiculo(vehiculoId, vehiculoNombre).then((r) => {
-        if (activo) setResenasLocales(r);
-      });
+    if (vehiculoId) {
+      apiClient.get(`/v1/vehicles/${vehiculoId}/reviews`).then((res) => {
+        if (activo && res.data) {
+          setResenasApi(res.data.reviews || []);
+          setPromedioApi(res.data.averageRating);
+          setTotalApi(res.data.reviewCount);
+        }
+      }).catch(err => console.error("Error fetching reviews", err));
     }
     return () => {
       activo = false;
     };
-  }, [vehiculoId, vehiculoNombre]);
+  }, [vehiculoId]);
 
-  // Convertimos las reseñas guardadas en formato de comentarios
-  const comentariosGuardados: (Comentario & { fotos?: string[] })[] = resenasLocales.map((r) => ({
-    autor: r.usuarioNombre || "Cliente Drivique",
-    calificacion: r.calificacion,
-    texto: r.comentario,
-    fecha: r.fecha,
-    fotos: r.fotos,
+  // Convertimos las reseñas de la API en formato de comentarios
+  const comentariosGuardados: (Comentario & { fotos?: string[] })[] = resenasApi.map((r) => ({
+    autor: r.customerName || "Cliente",
+    calificacion: r.rating,
+    texto: r.comment,
+    fecha: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : undefined,
+    fotos: [],
   }));
 
   // Combinamos reseñas reales primero, luego los comentarios base
@@ -86,14 +92,16 @@ export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, 
     ...(comentarios ?? []),
   ];
 
-  const total = listaComentarios.length;
+  const total = totalApi !== null ? totalApi : listaComentarios.length;
 
   const promedio =
-    total > 0
-      ? listaComentarios.reduce((acc, curr) => acc + curr.calificacion, 0) / total
-      : calificacionPromedio && calificacionPromedio > 0
-      ? calificacionPromedio
-      : 4.5;
+    promedioApi !== null
+      ? promedioApi
+      : (total > 0
+          ? listaComentarios.reduce((acc, curr) => acc + curr.calificacion, 0) / total
+          : calificacionPromedio && calificacionPromedio > 0
+          ? calificacionPromedio
+          : 4.5);
 
   // Conteo de estrellas de 1 a 5
   const counts = [5, 4, 3, 2, 1].map((estrella) => {
