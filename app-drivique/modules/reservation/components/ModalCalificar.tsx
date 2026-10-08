@@ -1,13 +1,12 @@
 // modules/reservation/components/ModalCalificar.tsx
 //
 // Modal interactivo para calificar (1 a 5 estrellas libres), comentar
-// y subir hasta 3 fotos sobre un vehículo tras una reserva finalizada.
+// sobre un vehículo tras una reserva finalizada.
 // Incluye moderación en tiempo real (ofensas, datos personales, links, longitud).
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -21,7 +20,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import * as DocumentPicker from "expo-document-picker";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { GRADIENTES } from "@/constants/gradients";
@@ -29,7 +27,6 @@ import { SelectorEstrellas } from "./SelectorEstrellas";
 import { ResenaGuardada, resenaService } from "../services/resenaService";
 import { validarComentarioResena } from "../utils/reviewModeration";
 
-const MAX_FOTOS = 3;
 const MAX_CARACTERES = 400;
 
 interface Props {
@@ -68,14 +65,12 @@ export function ModalCalificar({
 
   const [calificacion, setCalificacion] = useState(valorInicial?.calificacion ?? 0);
   const [comentario, setComentario] = useState(valorInicial?.comentario ?? "");
-  const [fotos, setFotos] = useState<string[]>(valorInicial?.fotos ?? []);
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setCalificacion(valorInicial?.calificacion ?? 0);
       setComentario(valorInicial?.comentario ?? "");
-      setFotos(valorInicial?.fotos ?? []);
       setGuardando(false);
     }
   }, [visible, valorInicial]);
@@ -105,45 +100,6 @@ export function ModalCalificar({
     }
   };
 
-  const handleSeleccionarFotos = async () => {
-    if (fotos.length >= MAX_FOTOS) {
-      Alert.alert(
-        t("reserva.calificar.limiteFotosTitulo", { defaultValue: "Límite de fotos" }),
-        t("reserva.calificar.limiteFotosMensaje", {
-          max: MAX_FOTOS,
-          defaultValue: `Puedes adjuntar un máximo de ${MAX_FOTOS} fotos.`,
-        })
-      );
-      return;
-    }
-
-    try {
-      const resultado = await DocumentPicker.getDocumentAsync({
-        type: ["image/*"],
-        multiple: true,
-        copyToCacheDirectory: true,
-      });
-
-      if (resultado.canceled || !resultado.assets || resultado.assets.length === 0) {
-        return;
-      }
-
-      const nuevasUris = resultado.assets.map((a) => a.uri).filter(Boolean);
-      const combinadas = [...fotos, ...nuevasUris].slice(0, MAX_FOTOS);
-      setFotos(combinadas);
-    } catch (error) {
-      console.error("[ModalCalificar] Error seleccionando imagen", error);
-      Alert.alert(
-        t("comun.error", { defaultValue: "Error" }),
-        t("reserva.calificar.errorSeleccionImagen", { defaultValue: "No fue posible seleccionar la imagen." })
-      );
-    }
-  };
-
-  const handleEliminarFoto = (indice: number) => {
-    setFotos((prev) => prev.filter((_, i) => i !== indice));
-  };
-
   const handleGuardar = async () => {
     if (calificacion < 1) {
       Alert.alert(
@@ -170,7 +126,6 @@ export function ModalCalificar({
       const resena = await resenaService.guardar(referenciaReserva, usuarioId, {
         calificacion,
         comentario: comentario.trim(),
-        fotos,
         vehiculoId,
         vehiculoNombre,
         usuarioNombre,
@@ -300,48 +255,6 @@ export function ModalCalificar({
                 )}
               </View>
 
-              {/* Selector de Fotos */}
-              <View style={s.bloqueFotos}>
-                <View style={s.labelFila}>
-                  <Text style={[s.label, { color: c.textSecondary }]}>
-                    {t("reserva.calificar.fotosOpcional", { defaultValue: "Fotos del vehículo (opcional)" })}
-                  </Text>
-                  <Text style={[s.contadorTexto, { color: c.textMuted }]}>
-                    {fotos.length}/{MAX_FOTOS}
-                  </Text>
-                </View>
-
-                <View style={s.fotosFila}>
-                  {fotos.map((uri, index) => (
-                    <View key={index} style={s.fotoThumbWrap}>
-                      <Image source={{ uri }} style={s.fotoThumb} />
-                      <TouchableOpacity
-                        style={s.btnEliminarFoto}
-                        onPress={() => handleEliminarFoto(index)}
-                        activeOpacity={0.8}
-                      >
-                        <Ionicons name="close" size={14} color="#FFF" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-
-                  {fotos.length < MAX_FOTOS && (
-                    <TouchableOpacity
-                      style={[
-                        s.btnAnadirFoto,
-                        { backgroundColor: c.bgInput, borderColor: c.border },
-                      ]}
-                      onPress={handleSeleccionarFotos}
-                      activeOpacity={0.75}
-                    >
-                      <Ionicons name="camera-outline" size={22} color={c.primary} />
-                      <Text style={[s.btnAnadirFotoTexto, { color: c.primary }]}>
-                        {t("reserva.calificar.anadirFoto", { defaultValue: "+ Añadir" })}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
             </ScrollView>
 
             {/* Botones de Acción FIJOS en la parte inferior del Modal */}
@@ -375,9 +288,7 @@ export function ModalCalificar({
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                       <Ionicons name="checkmark-circle-outline" size={18} color="#FFF" />
                       <Text style={s.btnGuardarTexto}>
-                        {valorInicial
-                          ? t("reserva.calificar.actualizarResena", { defaultValue: "Actualizar reseña" })
-                          : t("reserva.calificar.publicarResena", { defaultValue: "Publicar reseña" })}
+                        {t("reserva.calificar.publicarResena", { defaultValue: "Publicar reseña" })}
                       </Text>
                     </View>
                   )}
