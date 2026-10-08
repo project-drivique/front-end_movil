@@ -1623,33 +1623,32 @@ export default function PagoRespuestaScreen() {
             )}
           </View>
 
-          {/* Botón de Acción para calificar o editar */}
-          <TouchableOpacity
-            style={styles.btnWrap}
-            onPress={() => setModalCalificarVisible(true)}
-            activeOpacity={0.88}
-          >
-            <LinearGradient
-              colors={GRADIENTES.boton.colors}
-              start={GRADIENTES.boton.start}
-              end={GRADIENTES.boton.end}
-              style={styles.btn}
+          {!resenaGuardada && (
+            <TouchableOpacity
+              style={styles.btnWrap}
+              onPress={() => setModalCalificarVisible(true)}
+              activeOpacity={0.88}
             >
-              <Text style={styles.btnTexto}>
-                {resenaGuardada
-                  ? t("reserva.calificar.editarCalificacion", { defaultValue: "Editar calificación" })
-                  : t("reserva.calificar.calificarVehiculo", { defaultValue: "Calificar reserva" })}
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
+              <LinearGradient
+                colors={GRADIENTES.boton.colors}
+                start={GRADIENTES.boton.start}
+                end={GRADIENTES.boton.end}
+                style={styles.btn}
+              >
+                <Text style={styles.btnTexto}>
+                  {t("reserva.calificar.calificarVehiculo", { defaultValue: "Calificar reserva" })}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
         </View>
       )}
 
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Modal para calificar / editar reseña */}
-      {grupo === "finalizada" && (
+      {/* Una reserva finalizada admite una sola reseña verificada. */}
+      {grupo === "finalizada" && !resenaGuardada && (
         <>
           <ModalCalificar
             visible={modalCalificarVisible}

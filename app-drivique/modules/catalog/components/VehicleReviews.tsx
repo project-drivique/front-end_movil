@@ -48,7 +48,7 @@ function inicialesDe(nombre: string): string {
   return partes.slice(0, 2).map((p) => p.charAt(0).toUpperCase()).join("");
 }
 
-export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, vehiculoNombre }: Props) {
+export function VehicleReviews({ vehiculoId }: Props) {
   const c = useTemaColores();
   const { t } = useTranslation();
   const usuarioStore = useUsuarioStore((s) => s.usuario);
@@ -56,21 +56,29 @@ export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, 
   const [resenasApi, setResenasApi] = useState<any[]>([]);
   const [promedioApi, setPromedioApi] = useState<number | null>(null);
   const [totalApi, setTotalApi] = useState<number | null>(null);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState(false);
   const [fotoModalUri, setFotoModalUri] = useState<string | null>(null);
 
   const usuarioNombreActual = `${usuarioStore.nombres || ""} ${usuarioStore.apellidos || ""}`.trim().toLowerCase();
-  const usuarioIdActual = usuarioStore.id;
 
   useEffect(() => {
     let activo = true;
     if (vehiculoId) {
+      setCargando(true);
+      setError(false);
       apiClient.get(`/v1/vehicles/${vehiculoId}/reviews`).then((res) => {
         if (activo && res.data) {
           setResenasApi(res.data.reviews || []);
           setPromedioApi(res.data.averageRating);
           setTotalApi(res.data.reviewCount);
         }
-      }).catch(err => console.error("Error fetching reviews", err));
+      }).catch(err => {
+        console.error("Error fetching reviews", err);
+        if (activo) setError(true);
+      }).finally(() => {
+        if (activo) setCargando(false);
+      });
     }
     return () => {
       activo = false;
@@ -82,15 +90,12 @@ export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, 
     autor: r.customerName || "Cliente",
     calificacion: r.rating,
     texto: r.comment,
-    fecha: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : undefined,
+    fecha: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "",
     fotos: [],
   }));
 
-  // Combinamos reseñas reales primero, luego los comentarios base
-  const listaComentarios: (Comentario & { fotos?: string[] })[] = [
-    ...comentariosGuardados,
-    ...(comentarios ?? []),
-  ];
+  // El backend es la única fuente de verdad para reseñas productivas.
+  const listaComentarios: (Comentario & { fotos?: string[] })[] = comentariosGuardados;
 
   const total = totalApi !== null ? totalApi : listaComentarios.length;
 
@@ -99,9 +104,7 @@ export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, 
       ? promedioApi
       : (total > 0
           ? listaComentarios.reduce((acc, curr) => acc + curr.calificacion, 0) / total
-          : calificacionPromedio && calificacionPromedio > 0
-          ? calificacionPromedio
-          : 4.5);
+          : 0);
 
   // Conteo de estrellas de 1 a 5
   const counts = [5, 4, 3, 2, 1].map((estrella) => {
@@ -111,6 +114,22 @@ export function VehicleReviews({ comentarios, calificacionPromedio, vehiculoId, 
 
   const colorScore = c.oscuro ? "#93C5FD" : "#1E3A8A";
   const colorBorde = c.oscuro ? c.border : COLOR_BORDE_CARD;
+
+  if (cargando) {
+    return (
+      <View style={[s.cardVacio, { backgroundColor: c.bgCard, borderColor: colorBorde, marginBottom: 14 }]}>
+        <Text style={[s.vacioSubtitulo, { color: c.textMuted }]}>Cargando reseñas...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[s.cardVacio, { backgroundColor: c.bgCard, borderColor: colorBorde, marginBottom: 14 }]}>
+        <Text style={[s.vacioSubtitulo, { color: c.textMuted }]}>No fue posible cargar las reseñas.</Text>
+      </View>
+    );
+  }
 
   if (total === 0) {
     return (
