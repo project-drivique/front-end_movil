@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { LoginForm, RegistroForm, OlvideContrasenaForm, AuthError } from '../types/auth.types';
 import { esCorreoValido as validarCorreo, esContrasenaSegura as validarContrasenaSegura } from '@/utils/validators';
 import { authService } from '../services/authService';
+import { useAuthStore } from '@/store/authStore';
 
 const errorMessage = (error: any, fallback: string) => error?.response?.data?.mensaje || error?.response?.data?.message || fallback;
 export function useLogin() {
@@ -63,7 +64,6 @@ export function useVerificarCorreo(correo: string) {
       
       // Si el backend retorna los tokens directamente (auto-login tras verificar)
       if (data?.accessToken && data?.userProfile) {
-        const { useAuthStore } = require('@/store/authStore');
         const p = data.userProfile;
         useAuthStore.getState().setUsuario({
           id: p.id,
