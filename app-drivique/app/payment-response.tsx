@@ -1,10 +1,7 @@
 // app/payment-response.tsx
 //
-// Pantalla a la que vuelve el usuario después del checkout de Wompi.
-// Equivalente a src/modules/payments/pages/RespuestaPagoPage.jsx en la web:
-// lee la reserva guardada localmente por su referencia y muestra el estado
-// del pago (Wompi confirma la transacción de forma asíncrona vía webhook
-// en el backend real; acá solo reflejamos que quedó "en validación").
+// Pantalla a la que vuelve el usuario después del checkout de Wompi (HU-INT-11).
+// Confirma la transacción de pago y la creación de la reserva en el backend.
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
