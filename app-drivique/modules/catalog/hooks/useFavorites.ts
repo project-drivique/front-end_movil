@@ -1,51 +1,62 @@
 // modules/catalogo/hooks/useFavoritos.ts
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useEffect, useState } from "react";
-
-const CLAVE_BASE = "favoritosVehiculos";
+import { apiClient } from "@/services/http/apiClient";
+import { useAuthStore } from "@/store/authStore";
 
 export function useFavoritos(usuarioId: string | null) {
   const [favoritos, setFavoritos] = useState<number[]>([]);
   const [cargando, setCargando] = useState(false);
+  const isAuthenticated = useAuthStore((s) => !!s.token);
 
-  const clave = usuarioId ? `${CLAVE_BASE}_${usuarioId}` : null;
-
-  useEffect(() => {
-    if (!clave) {
+  const fetchFavoritos = useCallback(async () => {
+    if (!isAuthenticated) {
       setFavoritos([]);
       return;
     }
-    const cargar = async () => {
-      setCargando(true);
-      try {
-        const guardados = await AsyncStorage.getItem(clave);
-        setFavoritos(guardados ? JSON.parse(guardados) : []);
-      } catch (e) {
-        console.error("Error cargando favoritos:", e);
-        setFavoritos([]);
-      } finally {
-        setCargando(false);
-      }
-    };
-    cargar();
-  }, [clave]);
+    setCargando(true);
+    try {
+      // HU-10: Cargar favoritos desde el backend (/v1/users/me/favorites)
+      // La API devuelve una lista de objetos completos. Extraemos solo los IDs para el estado local.
+      const response = await apiClient.get<any[]>("/v1/users/me/favorites");
+      const ids = (response.data || []).map(v => v.id);
+      setFavoritos(ids);
+    } catch (e) {
+      console.error("Error cargando favoritos desde backend:", e);
+      setFavoritos([]);
+    } finally {
+      setCargando(false);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    fetchFavoritos();
+  }, [fetchFavoritos]);
 
   const toggleFavorito = useCallback(
     async (vehiculoId: number) => {
-      if (!clave) return;
-      const nuevos = favoritos.includes(vehiculoId)
+      if (!isAuthenticated) return;
+      
+      const esFav = favoritos.includes(vehiculoId);
+      const nuevos = esFav
         ? favoritos.filter((id) => id !== vehiculoId)
         : [...favoritos, vehiculoId];
-      setFavoritos(nuevos);
+        
+      setFavoritos(nuevos); // Optimistic update
+      
       try {
-        await AsyncStorage.setItem(clave, JSON.stringify(nuevos));
+        if (esFav) {
+          await apiClient.delete(`/v1/users/me/favorites/${vehiculoId}`);
+        } else {
+          await apiClient.post(`/v1/users/me/favorites/${vehiculoId}`);
+        }
       } catch (e) {
-        console.error("Error guardando favoritos:", e);
+        console.error("Error actualizando favoritos en backend:", e);
+        // Rollback
         setFavoritos(favoritos);
       }
     },
-    [clave, favoritos]
+    [favoritos, isAuthenticated]
   );
 
   const esFavorito = useCallback(
@@ -53,5 +64,5 @@ export function useFavoritos(usuarioId: string | null) {
     [favoritos]
   );
 
-  return { favoritos, toggleFavorito, esFavorito, cargando };
+  return { favoritos, toggleFavorito, esFavorito, cargando, refetch: fetchFavoritos };
 }

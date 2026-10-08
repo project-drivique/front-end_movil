@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { router } from 'expo-router';
 import { LoginForm, RegistroForm, OlvideContrasenaForm, AuthError } from '../types/auth.types';
 import { esCorreoValido as validarCorreo, esContrasenaSegura as validarContrasenaSegura } from '@/utils/validators';
 import { authService } from '../services/authService';
@@ -7,7 +8,35 @@ const errorMessage = (error: any, fallback: string) => error?.response?.data?.me
 export function useLogin() {
   const [form, setForm] = useState<LoginForm>({ correo: '', contrasena: '' }); const [errores, setErrores] = useState<AuthError[]>([]); const [cargando, setCargando] = useState(false); const bloqueado = false;
   const actualizarCampo = (campo: keyof LoginForm, valor: string) => { setForm((p) => ({ ...p, [campo]: valor })); setErrores((p) => p.filter((e) => e.campo !== campo)) };
-  const iniciarSesion = async (onExito: (usuario: any, token: string) => void) => { const e: AuthError[] = []; if (!validarCorreo(form.correo)) e.push({ campo: 'correo', mensaje: 'Ingresa un correo válido' }); if (!form.contrasena) e.push({ campo: 'contrasena', mensaje: 'La contraseña es obligatoria' }); if (e.length) { setErrores(e); return }; setCargando(true); try { const session = await authService.login(form.correo, form.contrasena); const p = session.userProfile; onExito({ id: p.id, correo: p.email, nombres: p.firstName, apellidos: p.lastName, rol: 'cliente', activo: p.accountStatus === 'ACTIVE', permisosValidos: p.accountStatus === 'ACTIVE' }, session.accessToken) } catch (error) { setErrores([{ mensaje: errorMessage(error, 'No fue posible iniciar sesión.') }]) } finally { setCargando(false) } };
+  const iniciarSesion = async (onExito: (usuario: any, token: string) => void, onRequireVerification?: (correo: string) => void) => {
+    const e: AuthError[] = [];
+    if (!validarCorreo(form.correo)) e.push({ campo: 'correo', mensaje: 'Ingresa un correo válido' });
+    if (!form.contrasena) e.push({ campo: 'contrasena', mensaje: 'La contraseña es obligatoria' });
+    if (e.length) { setErrores(e); return };
+    setCargando(true);
+    try {
+      const session = await authService.login(form.correo, form.contrasena);
+      const p = session.userProfile;
+      onExito({ id: p.id, correo: p.email, nombres: p.firstName, apellidos: p.lastName, rol: 'cliente', activo: p.accountStatus === 'ACTIVE', permisosValidos: p.accountStatus === 'ACTIVE', sucursalId: (p as any).sucursalId, sucursalNombre: (p as any).sucursalNombre }, session.accessToken);
+    } catch (error: any) {
+      const code = error?.response?.data?.code || error?.response?.data?.errorCode;
+      const msg = errorMessage(error, '');
+      const isNotVerified = code === 'USER_NOT_VERIFIED' || code === 'PENDING_VERIFICATION' || msg.includes('not verified') || msg.includes('PENDING_VERIFICATION');
+      
+      if (isNotVerified) {
+        if (onRequireVerification) {
+          onRequireVerification(form.correo);
+        } else {
+          // Fallback a router push directo
+          router.push({ pathname: "/(auth)/verify-email", params: { correo: form.correo } });
+        }
+      } else {
+        setErrores([{ mensaje: errorMessage(error, 'No fue posible iniciar sesión.') }]);
+      }
+    } finally {
+      setCargando(false);
+    }
+  };
   return { form, errores, cargando, bloqueado, actualizarCampo, iniciarSesion };
 }
 export function useRegistro() {
@@ -27,6 +56,36 @@ export function useOlvideContrasena() {
 export function useVerificarCorreo(correo: string) {
   const [cargando, setCargando] = useState(false); const [codigoEnviado, setCodigoEnviado] = useState(false); const [verificando, setVerificando] = useState(false); const [codigoIncorrecto, setCodigoIncorrecto] = useState(false);
   const enviarCodigo = async () => { setCargando(true); try { await authService.reenviarVerificacion(correo); setCodigoEnviado(true) } finally { setCargando(false) } };
-  const verificarCodigo = async (codigo: string) => { setVerificando(true); try { await authService.verificarCorreo(correo, codigo); setCodigoIncorrecto(false); return true } catch { setCodigoIncorrecto(true); return false } finally { setVerificando(false) } };
+  const verificarCodigo = async (codigo: string) => {
+    setVerificando(true);
+    try {
+      const data = await authService.verificarCorreo(correo, codigo);
+      
+      // Si el backend retorna los tokens directamente (auto-login tras verificar)
+      if (data?.accessToken && data?.userProfile) {
+        const { useAuthStore } = require('@/store/authStore');
+        const p = data.userProfile;
+        useAuthStore.getState().setUsuario({
+          id: p.id,
+          correo: p.email,
+          nombres: p.firstName,
+          apellidos: p.lastName,
+          rol: 'cliente',
+          activo: p.accountStatus === 'ACTIVE',
+          permisosValidos: p.accountStatus === 'ACTIVE',
+          sucursalId: (p as any).sucursalId,
+          sucursalNombre: (p as any).sucursalNombre
+        }, data.accessToken);
+      }
+      
+      setCodigoIncorrecto(false);
+      return true;
+    } catch {
+      setCodigoIncorrecto(true);
+      return false;
+    } finally {
+      setVerificando(false);
+    }
+  };
   return { correo, cargando, codigoEnviado, verificando, codigoIncorrecto, setCodigoIncorrecto, enviarCodigo, verificarCodigo };
 }
