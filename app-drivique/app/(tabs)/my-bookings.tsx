@@ -198,11 +198,12 @@ export default function MisReservasScreen() {
           numeroDocumento: usuarioDocumento,
         });
         if (activo) {
-          setReservas([...data].sort(ordenarPorCreacionDesc));
+          const reservasValidas = data.filter((r) => !(r.metodoPago === "wompi" && r.estado === "PENDIENTE" && !r.paymentId));
+          setReservas([...reservasValidas].sort(ordenarPorCreacionDesc));
           setCargando(false);
 
           // Verificar en segundo plano si Wompi ya aprobó algún pago pendiente
-          const pendientesConPago = data.filter(
+          const pendientesConPago = reservasValidas.filter(
             (r) => (r.estado === "PENDIENTE_EFECTIVO" || r.estado === "PENDIENTE_VALIDACION" || r.estado === "PENDIENTE") && r.paymentId
           );
           if (pendientesConPago.length > 0) {
@@ -226,7 +227,8 @@ export default function MisReservasScreen() {
                 correo: usuarioCorreo,
                 numeroDocumento: usuarioDocumento,
               });
-              setReservas([...dataActualizada].sort(ordenarPorCreacionDesc));
+              const validasAct = dataActualizada.filter((r) => !(r.metodoPago === "wompi" && r.estado === "PENDIENTE" && !r.paymentId));
+              setReservas([...validasAct].sort(ordenarPorCreacionDesc));
             }
           }
         }
