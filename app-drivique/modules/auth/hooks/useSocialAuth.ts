@@ -10,8 +10,8 @@ import { createPkceChallenge } from '@/utils/pkce';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const GOOGLE_CLIENT_ID = '18960724578-h53pr526uva5mtb9doup86f5hjei231c.apps.googleusercontent.com';
-const FACEBOOK_APP_ID = '1072551762252390';
+const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID?.trim();
+const FACEBOOK_APP_ID = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID?.trim();
 
 function cargarGoogleWebSDK(): Promise<any> {
   if (typeof window === 'undefined') return Promise.resolve();
@@ -56,11 +56,21 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
     try {
       const { codeVerifier, nonce, state } = await createPkceChallenge();
-      let email = 'mimisaavedra09@gmail.com';
-      let nombre = 'Sharith';
-      let apellido = 'Saavedra';
+      let email = '';
+      let nombre = '';
+      let apellido = '';
+      let googleAccessToken = '';
+      let googleIdToken = '';
 
-      if (Platform.OS === 'web') {
+      if (!GOOGLE_CLIENT_ID) {
+        if (!__DEV__) throw new Error('El inicio con Google no está configurado en este ambiente.');
+        email = 'google.sandbox@drivique.local';
+        nombre = 'Google';
+        apellido = 'Sandbox';
+        googleIdToken = `sandbox_google_token:${email}`;
+      }
+
+      if (GOOGLE_CLIENT_ID && Platform.OS === 'web') {
         await cargarGoogleWebSDK();
         const googleObj = (window as any).google;
         if (googleObj?.accounts?.oauth2) {
@@ -78,6 +88,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
           });
 
           if (tokenResp?.access_token) {
+            googleAccessToken = tokenResp.access_token;
             const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
               headers: { Authorization: `Bearer ${tokenResp.access_token}` },
             });
@@ -91,7 +102,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
             }
           }
         }
-      } else {
+      } else if (GOOGLE_CLIENT_ID) {
         const redirectUri = getRedirectUri();
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
           GOOGLE_CLIENT_ID
@@ -110,6 +121,8 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
           const params = new URLSearchParams(hash);
           const accessToken = params.get('access_token');
           const idToken = params.get('id_token');
+          googleAccessToken = accessToken || '';
+          googleIdToken = idToken || '';
 
           if (accessToken) {
             try {
@@ -148,7 +161,8 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       const payload: SocialLoginPayload = {
         provider: 'GOOGLE',
-        idToken: `google_token_${nonce}`,
+        idToken: googleIdToken || undefined,
+        accessToken: googleAccessToken || undefined,
         email,
         firstName: primerNombre,
         lastName: primerApellido,
@@ -198,10 +212,18 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
     try {
       const { codeVerifier, nonce, state } = await createPkceChallenge();
-      let email = 'sharithamezquita81@gmail.com';
-      let rawFirst = 'Emily Sharith';
-      let rawLast = 'Amezquita Saavedra';
-      let accessTokenObtenido = `fb_token_${nonce}`;
+      let email = '';
+      let rawFirst = '';
+      let rawLast = '';
+      let accessTokenObtenido = '';
+
+      if (!FACEBOOK_APP_ID) {
+        if (!__DEV__) throw new Error('El inicio con Facebook no está configurado en este ambiente.');
+        email = 'facebook.sandbox@drivique.local';
+        rawFirst = 'Facebook';
+        rawLast = 'Sandbox';
+        accessTokenObtenido = `sandbox_facebook_token:${email}`;
+      }
 
       const redirectUri = getRedirectUri();
       const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${encodeURIComponent(
@@ -210,7 +232,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
         redirectUri
       )}&response_type=token&scope=${encodeURIComponent('public_profile,email')}&state=${encodeURIComponent(state)}`;
 
-      if (Platform.OS === 'web') {
+      if (FACEBOOK_APP_ID && Platform.OS === 'web') {
         const popup = typeof window !== 'undefined' ? window.open(authUrl, 'facebook_oauth', 'width=600,height=700,top=100,left=100') : null;
         if (popup) {
           const tokenFromPopup: any = await new Promise((resolve) => {
@@ -252,7 +274,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
             } catch {}
           }
         }
-      } else {
+      } else if (FACEBOOK_APP_ID) {
         const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
         if (result.type === 'success' && result.url) {
           const hash = result.url.split('#')[1] || result.url.split('?')[1] || '';
@@ -280,11 +302,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const primerNombre = capitalizar(rawFirst) || 'Usuario';
       const primerApellido = rawLast ? capitalizar(rawLast.split(' ')[0]) : '';
 
-      let emailCalculado = email;
-      if (!emailCalculado || emailCalculado.includes('@facebook.com')) {
-        const userSlug = [primerNombre, primerApellido].filter(Boolean).join('.').toLowerCase().replace(/[^a-z0-9.]/g, '');
-        emailCalculado = userSlug ? `${userSlug}@gmail.com` : `usuario.${Date.now().toString().slice(-4)}@gmail.com`;
-      }
+      const emailCalculado = email;
 
       const payload: SocialLoginPayload = {
         provider: 'FACEBOOK',

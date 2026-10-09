@@ -76,46 +76,47 @@ export const authService = {
   },
 
   async socialLogin(payload: SocialLoginPayload) {
+    const requestPayload: SocialLoginPayload = {
+      provider: payload.provider,
+      idToken: payload.idToken,
+      accessToken: payload.accessToken,
+      authCode: payload.authCode,
+      codeVerifier: payload.codeVerifier,
+      redirectUri: payload.redirectUri,
+      nonce: payload.nonce,
+      deviceInfo: payload.deviceInfo || 'Drivique móvil',
+      email: payload.email,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+    };
     try {
-      const endpoint = payload.provider === 'FACEBOOK' ? '/auth/facebook' : '/auth/google';
-      const { data } = await apiClient.post<any>(endpoint, payload);
+      const endpoint = requestPayload.provider === 'FACEBOOK' ? '/auth/facebook' : '/auth/google';
+      const { data } = await apiClient.post<any>(endpoint, requestPayload);
       if (data?.refreshToken) {
         await sessionTokens.saveRefreshToken(data.refreshToken);
       }
       return data;
-    } catch {
+    } catch (primaryError) {
       try {
         const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8080/api';
-        const endpoint = payload.provider === 'FACEBOOK' ? '/v1/auth/facebook' : '/v1/auth/google';
+        const endpoint = requestPayload.provider === 'FACEBOOK' ? '/v1/auth/facebook' : '/v1/auth/google';
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2000);
         const response = await fetch(`${API_URL}${endpoint}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(requestPayload),
           signal: controller.signal,
         });
         clearTimeout(timeoutId);
         if (response.ok) {
           return await response.json();
         }
-      } catch {
-        // Fallback offline
+        throw new Error('El proveedor social rechazó la autenticación.');
+      } catch (fallbackError) {
+        throw fallbackError instanceof Error ? fallbackError : primaryError;
       }
     }
-
-    return {
-      token: `drivique_token_${Date.now()}`,
-      accessToken: `drivique_token_${Date.now()}`,
-      userProfile: {
-        id: `usr_${Date.now()}`,
-        email: payload.email || 'usuario@drivique.com',
-        firstName: payload.firstName || 'Usuario',
-        lastName: payload.lastName || '',
-        accountStatus: 'ACTIVE',
-        roles: ['CUSTOMER'],
-      },
-    };
   },
 
   async loginGoogle(payload: Partial<SocialLoginPayload> | string) {
