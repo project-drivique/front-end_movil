@@ -29,10 +29,24 @@ export default function TabLayout() {
   const [alertVisible, setAlertVisible] = useState(false);
   const c = useTemaColores();
   const { t } = useTranslation();
-  const unreadCount = useNotificationStore((s) => s.notificaciones.filter((n) => !n.leido).length);
+  const unreadCount = useNotificationStore((s) => s.conteoNoLeidas || s.notificaciones.filter((n) => !n.leido).length);
+  const cargarConteoNoLeidas = useNotificationStore((s) => s.cargarConteoNoLeidas);
+
+  React.useEffect(() => {
+    if (usuario) {
+      cargarConteoNoLeidas();
+    }
+  }, [usuario]);
 
   const tabBarHeight =
     Platform.OS === "android" ? 58 + insets.bottom : 60 + insets.bottom;
+
+  const isMgmt = Boolean(
+    usuario?.rol === 'encargado_sucursal' ||
+    usuario?.rol === 'administrador' ||
+    usuario?.roles?.includes('BRANCH_ADMIN') ||
+    usuario?.roles?.includes('SUPER_ADMIN')
+  );
 
   const activeColor = c.oscuro ? "#60A5FA" : "#2f4ea2";
 
@@ -123,9 +137,11 @@ export default function TabLayout() {
         <Tabs.Screen
           name="search"
           options={{
-            title: t("tabs.mas"),
+            title: isMgmt
+              ? (usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN') ? "Admin" : "Sucursal")
+              : t("tabs.mas"),
             tabBarIcon: ({ focused }) => (
-              <TabIcon name="menu" focused={focused} c={c} />
+              <TabIcon name={isMgmt ? "business" : "menu"} focused={focused} c={c} />
             ),
             tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           }}

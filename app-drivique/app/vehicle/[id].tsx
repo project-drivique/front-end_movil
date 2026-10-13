@@ -25,6 +25,7 @@ import { useReservaStore } from "@/store/reservationStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { GRADIENTES } from "@/constants/gradients";
+import { VEHICULO_PROMOS_DUMMY } from "@/modules/notifications/constants/notifications.dummy";
 import {
   VEHICULOS_MOCK,
   HORARIO_ATENCION_SUCURSAL,
@@ -34,13 +35,14 @@ import {
 import { VehicleGallery } from "@/modules/catalog/components/VehicleGallery";
 import { VehicleReviews } from "@/modules/catalog/components/VehicleReviews";
 import BranchDirectionsModal from "@/modules/reservation/components/BranchDirectionsModal";
-import { VEHICULO_PROMOS_DUMMY } from "@/modules/notifications/constants/notifications.dummy";
+import { catalogoService } from "@/modules/catalog/services/catalogService";
+import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 
 const COLOR_AZUL_TITULO = "#1E3A8A";
 const COLOR_BORDE_CARD = "#E2E8F0";
 const ALTURA_BARRA_INFERIOR = 78;
 
-function getSafeImages(vehiculo: (typeof VEHICULOS_MOCK)[number]): string[] {
+function getSafeImages(vehiculo: Vehiculo): string[] {
   const imgs = vehiculo.imagenes ?? [];
   const filtradas = imgs.filter(Boolean);
   if (filtradas.length > 0) return filtradas;
@@ -62,7 +64,17 @@ export default function VehiculoDetallePage() {
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
 
-  const vehiculo = VEHICULOS_MOCK.find((v) => v.id === Number(id));
+  const [vehiculo, setVehiculo] = useState<Vehiculo | null>(() => {
+    return VEHICULOS_MOCK.find((v) => String(v.id) === String(id) || (v as any).uuid === String(id)) || null;
+  });
+
+  useEffect(() => {
+    if (id) {
+      catalogoService.getVehiculoPorId(id).then((v) => {
+        if (v) setVehiculo(v);
+      });
+    }
+  }, [id]);
 
   // 1. Si viene por parámetro de navegación directa
   // 2. O si el vehículo tiene una promoción destacada activa vigente y está disponible

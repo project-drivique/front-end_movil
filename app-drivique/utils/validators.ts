@@ -15,9 +15,12 @@ export function esTelefonoValido(telefono: string): boolean {
 }
 
 export function esContrasenaSegura(contrasena: string): boolean {
-  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-    contrasena,
-  );
+  if (!contrasena || contrasena.length < 12) return false;
+  const tieneMin = /[a-z]/.test(contrasena);
+  const tieneMay = /[A-Z]/.test(contrasena);
+  const tieneNum = /\d/.test(contrasena);
+  const tieneSimbolo = /[^a-zA-Z0-9\s]/.test(contrasena);
+  return tieneMin && tieneMay && tieneNum && tieneSimbolo;
 }
 
 /**

@@ -229,9 +229,8 @@ export default {
       "reenviarEn": "Reenviar em {{seg}}s",
       "reenviar": "Reenviar código",
       "codigoIncorrecto": "O código introduzido está incorreto. Tente novamente.",
-      "volverRegistro": "Voltar ao registo",
-      "codigoEnviadoTitulo": "Código enviado (demo)",
-      "codigoEnviadoMsg": "Como esta app não envia e-mails reais, o seu código de verificação é:"
+      "codigoEnviadoTitulo": "Código enviado",
+      "codigoEnviadoMsg": "Enviámos um código de verificação para o seu e-mail. Por favor, verifique a sua caixa de entrada ou pasta de spam."
     },
     "invitado": {
       "titulo": "Explorar veículos",
@@ -316,11 +315,12 @@ export default {
       "ventaja4Desc": "Acompanhamento em tempo real da sua reserva."
     },
     "pass": {
-      "min8": "Mínimo 8 caracteres",
+      "min8": "Mínimo 12 caracteres",
+      "min12": "Mínimo 12 caracteres",
       "mayuscula": "1 letra maiúscula",
       "minuscula": "1 letra minúscula",
       "numero": "1 número",
-      "simbolo": "1 símbolo (@$!%*?&)"
+      "simbolo": "1 símbolo especial"
     },
     "social": {
       "o": "ou continuar com",

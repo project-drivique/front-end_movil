@@ -259,7 +259,6 @@ export const SIGLA_DOCUMENTO: Record<string, string> = {
   DNI: "DNI",
   PPT: "PPT",
   PEP: "PEP",
-  TI: "TI",
   "Doc. Extranjero": "DOC",
 };
 
@@ -278,7 +277,6 @@ export function getTiposDocumento(
     { id: "DNI", label: t("reserva.datosPersonales.tiposDocumento.DNI") },
     { id: "PPT", label: t("reserva.datosPersonales.tiposDocumento.PPT") },
     { id: "PEP", label: t("reserva.datosPersonales.tiposDocumento.PEP") },
-    { id: "TI", label: t("reserva.datosPersonales.tiposDocumento.TI") },
   ];
 }
 
