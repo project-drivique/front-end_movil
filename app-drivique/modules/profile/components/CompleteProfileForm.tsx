@@ -277,7 +277,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
               placeholderTextColor="#9CA3AF"
               autoCorrect={false}
               keyboardType={
-                form.tipoDocumento === "CC" || form.tipoDocumento === "TI"
+                form.tipoDocumento === "CC"
                   ? "numeric"
                   : "default"
               }

@@ -59,11 +59,8 @@ export function usePerfil() {
           };
           actualizarUsuarioGlobal(mapped);
           useAuthStore.getState().actualizarUsuario({
-            nombre: mapped.nombres,
-            apellido: mapped.apellidos,
-            telefono: mapped.telefono,
-            cedula: mapped.numeroDocumento,
-            fechaNacimiento: mapped.fechaNacimiento,
+            nombres: mapped.nombres,
+            apellidos: mapped.apellidos,
           });
           setForm((prev) => ({
             ...prev,
@@ -211,10 +208,8 @@ export function usePerfil() {
       });
 
       useAuthStore.getState().actualizarUsuario({
-        nombre: form.nombres.trim(),
-        apellido: form.apellidos.trim(),
-        telefono: form.telefono.trim(),
-        fechaNacimiento: form.fechaNacimiento,
+        nombres: form.nombres.trim(),
+        apellidos: form.apellidos.trim(),
       });
 
       setEditando(false);

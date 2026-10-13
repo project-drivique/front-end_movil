@@ -58,6 +58,7 @@ export interface ReservaOcupada {
 
 export interface Vehiculo {
   id: number;
+  uuid?: string;
   nombre: string;
   marca: string;
   modelo: string;
