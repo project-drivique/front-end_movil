@@ -32,7 +32,20 @@ export interface AuthSession {
   };
 }
 
+// Credenciales del registro/login pendiente de verificación. Solo en memoria
+// (nunca se persisten) para iniciar sesión automáticamente tras verificar el correo.
+let credencialesPendientes: { correo: string; contrasena: string } | null = null;
+
 export const authService = {
+  setCredencialesPendientes(correo: string, contrasena: string) {
+    credencialesPendientes = { correo: correo.trim().toLowerCase(), contrasena };
+  },
+  consumirCredencialesPendientes(correo: string) {
+    const c = credencialesPendientes;
+    credencialesPendientes = null;
+    return c && c.correo === correo.trim().toLowerCase() ? c : null;
+  },
+
   async login(correo: string, contrasena: string): Promise<AuthSession> {
     try {
       const { data } = await apiClient.post<AuthSession>('/auth/login', {
@@ -44,34 +57,68 @@ export const authService = {
         await sessionTokens.saveRefreshToken(data.refreshToken);
       }
       return data;
-    } catch (e) {
-      const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8080/api';
-      const response = await fetch(`${API_URL}/v1/auth/login`, {
+    } catch (e: any) {
+      // Si el backend respondió (401/403/409...), se propaga el error real.
+      if (e?.response) throw e;
+      const rawApi = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+      const base = rawApi.replace(/\/$/, '');
+      const url = base.endsWith('/v1') ? `${base}/auth/login` : `${base}/v1/auth/login`;
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: correo, password: contrasena }),
       });
       if (!response.ok) throw new Error('Credenciales incorrectas');
-      return response.json();
+      const data = await response.json();
+      if (data?.refreshToken) {
+        await sessionTokens.saveRefreshToken(data.refreshToken);
+      }
+      return data;
     }
   },
 
   async registro(datos: { correo: string; contrasena: string } | object) {
+    const rawData = datos as any;
+    const correo = (rawData.correo || rawData.email || '').trim().toLowerCase();
+    const contrasena = rawData.contrasena || rawData.password || '';
+
+    // Derivar nombres amigables del prefijo del correo
+    const emailPrefix = correo.split('@')[0].replace(/[0-9]+$/, '').trim();
+    const parts = emailPrefix.split(/[._\-\s]+/).filter(Boolean);
+    const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '');
+    const derivedFirst = parts.length > 0 ? cap(parts[0]) : 'Usuario';
+    const derivedLast = parts.length > 1 ? parts.slice(1).map(cap).join(' ') : 'Drivique';
+
+    const payload = {
+      firstName: rawData.firstName || derivedFirst,
+      lastName: rawData.lastName || derivedLast,
+      email: correo,
+      password: contrasena,
+    };
+
     try {
-      const payload = 'correo' in datos
-        ? { firstName: 'Usuario', lastName: 'Drivique', email: datos.correo, password: datos.contrasena }
-        : datos;
       const { data } = await apiClient.post('/auth/register', payload);
       return data;
-    } catch {
-      const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8080/api';
-      const response = await fetch(`${API_URL}/v1/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos),
-      });
-      if (!response.ok) throw new Error('Error en el registro');
-      return response.json();
+    } catch (primaryError: any) {
+      if (primaryError?.response) throw primaryError;
+      try {
+        const rawApi = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+        const base = rawApi.replace(/\/$/, '');
+        const url = base.endsWith('/v1') ? `${base}/auth/register` : `${base}/v1/auth/register`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const resData = await response.json().catch(() => null);
+        if (response.ok) {
+          return resData;
+        }
+        const errDetail = resData?.detail || resData?.message || resData?.mensaje || primaryError?.response?.data?.detail || primaryError?.response?.data?.message || 'Error en el registro';
+        throw new Error(errDetail);
+      } catch (fallbackError) {
+        throw fallbackError instanceof Error ? fallbackError : primaryError;
+      }
     }
   },
 
@@ -98,19 +145,21 @@ export const authService = {
       return data;
     } catch (primaryError) {
       try {
-        const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8080/api';
-        const endpoint = requestPayload.provider === 'FACEBOOK' ? '/v1/auth/facebook' : '/v1/auth/google';
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
-        const response = await fetch(`${API_URL}${endpoint}`, {
+        const rawApi = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+        const base = rawApi.replace(/\/$/, '');
+        const endpoint = requestPayload.provider === 'FACEBOOK' ? '/auth/facebook' : '/auth/google';
+        const url = base.endsWith('/v1') ? `${base}${endpoint}` : `${base}/v1${endpoint}`;
+        const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestPayload),
-          signal: controller.signal,
         });
-        clearTimeout(timeoutId);
         if (response.ok) {
-          return await response.json();
+          const data = await response.json();
+          if (data?.refreshToken) {
+            await sessionTokens.saveRefreshToken(data.refreshToken);
+          }
+          return data;
         }
         throw new Error('El proveedor social rechazó la autenticación.');
       } catch (fallbackError) {

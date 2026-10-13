@@ -87,6 +87,61 @@ export default function MasMenuScreen() {
       </LinearGradient>
 
       <ScrollView contentContainerStyle={styles.menuList} showsVerticalScrollIndicator={false}>
+        {/* Branch Admin / Management Section */}
+        {Boolean((usuario?.rol === 'encargado_sucursal' || usuario?.roles?.includes('BRANCH_ADMIN')) || (usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN'))) && (
+          <View style={{ marginBottom: 20 }}>
+            <Text style={[styles.sectionTitle, { color: '#2563eb', fontWeight: '800' }]}>
+              {usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN') ? "PANEL DE ADMINISTRADOR" : "GESTIÓN DE SUCURSAL"}
+            </Text>
+            <View style={[styles.menuItem, { backgroundColor: c.oscuro ? '#1e293b' : '#eff6ff', borderColor: '#93c5fd', flexDirection: 'column', alignItems: 'flex-start', paddingVertical: 14 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 6 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Ionicons name="business" size={20} color="#2563eb" />
+                  <Text style={{ fontSize: 14, fontWeight: '800', color: c.textPrimary }}>
+                    {usuario?.branchName || usuario?.sucursalNombre || "Drivique Bogotá Centro"}
+                  </Text>
+                </View>
+                <View style={{ backgroundColor: '#10B98120', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: '#10B981' }}>OPERATIVA</Text>
+                </View>
+              </View>
+              <Text style={{ fontSize: 12, color: c.textSecondary, marginBottom: 12 }}>
+                Rol: {usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN') ? 'Administrador General' : 'Encargado de Sucursal'}
+              </Text>
+
+              {/* Management quick action buttons */}
+              <View style={{ width: '100%', gap: 8 }}>
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: c.oscuro ? '#0f172a' : '#ffffff', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: c.border }}
+                  onPress={() => router.push("/(tabs)/catalog")}
+                >
+                  <Ionicons name="car-sport" size={18} color="#2563eb" style={{ marginRight: 10 }} />
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: c.textPrimary, flex: 1 }}>Revisar Flota y Disponibilidad</Text>
+                  <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: c.oscuro ? '#0f172a' : '#ffffff', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: c.border }}
+                  onPress={() => router.push("/(tabs)/my-bookings")}
+                >
+                  <Ionicons name="document-text" size={18} color="#10B981" style={{ marginRight: 10 }} />
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: c.textPrimary, flex: 1 }}>Validar Reservas y Documentación</Text>
+                  <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: c.oscuro ? '#0f172a' : '#ffffff', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: c.border }}
+                  onPress={() => router.push("/(tabs)/notifications")}
+                >
+                  <Ionicons name="notifications" size={18} color="#F59E0B" style={{ marginRight: 10 }} />
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: c.textPrimary, flex: 1 }}>Notificaciones Operativas</Text>
+                  <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* Main Section */}
         <Text style={[styles.sectionTitle, { color: c.textMuted }]}>
           {t("menuLateral.menuPrincipal", { defaultValue: "MENÚ PRINCIPAL" })}

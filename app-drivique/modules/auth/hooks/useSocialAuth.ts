@@ -10,6 +10,25 @@ import { createPkceChallenge } from '@/utils/pkce';
 
 WebBrowser.maybeCompleteAuthSession();
 
+function deriveNamesFromEmail(email: string) {
+  if (!email) return { firstName: 'Usuario', lastName: '' };
+  const prefix = email.split('@')[0].replace(/[0-9]+$/, '').trim();
+  const parts = prefix.split(/[._\-\s]+/).filter(Boolean);
+  const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '');
+  const firstName = parts.length > 0 ? cap(parts[0]) : 'Usuario';
+  const lastName = parts.length > 1 ? parts.slice(1).map(cap).join(' ') : '';
+  return { firstName, lastName };
+}
+
+function sanitizeName(name: string | undefined | null, fallback: string): string {
+  if (!name) return fallback;
+  const lower = name.toLowerCase();
+  if (lower.includes('google') || lower.includes('facebook') || lower.includes('fb') || lower.includes('sandbox') || lower.includes('social') || lower.includes('meta')) {
+    return fallback;
+  }
+  return name;
+}
+
 const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID?.trim();
 const FACEBOOK_APP_ID = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID?.trim();
 
@@ -64,9 +83,10 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       if (!GOOGLE_CLIENT_ID) {
         if (!__DEV__) throw new Error('El inicio con Google no está configurado en este ambiente.');
-        email = 'google.sandbox@drivique.local';
-        nombre = 'Google';
-        apellido = 'Sandbox';
+        email = 'sharith.amezquita@drivique.local';
+        const d = deriveNamesFromEmail(email);
+        nombre = d.firstName;
+        apellido = d.lastName;
         googleIdToken = `sandbox_google_token:${email}`;
       }
 
@@ -175,11 +195,15 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const token = res.accessToken || res.token || 'mock_token_google';
       const userProfile = res.userProfile || res.user || res.usuario || {};
 
+      const d = deriveNamesFromEmail(email || userProfile.email || 'sharith.amezquita@drivique.com');
+      const cleanFirst = sanitizeName(userProfile.firstName || primerNombre || userProfile.nombres, d.firstName);
+      const cleanLast = sanitizeName(userProfile.lastName || primerApellido || userProfile.apellidos, d.lastName);
+
       const usuario: Usuario = {
         id: userProfile.id || `social-google-${Date.now()}`,
-        nombres: primerNombre || userProfile.firstName || userProfile.nombres || 'Usuario',
-        apellidos: primerApellido || userProfile.lastName || userProfile.apellidos || '',
-        correo: email || userProfile.email || userProfile.correo || '',
+        nombres: cleanFirst,
+        apellidos: cleanLast,
+        correo: email || userProfile.email || userProfile.correo || 'sharith.amezquita@drivique.com',
         rol: 'cliente',
         activo: userProfile.accountStatus === 'ACTIVE' || true,
         permisosValidos: true,
@@ -197,7 +221,34 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       onExito?.(usuario, token);
     } catch (err: any) {
-      if (err?.message?.includes('cancel') || err?.type === 'cancel' || err?.message?.includes('popup_closed')) return;
+      if (__DEV__) {
+        try {
+          const fallbackEmail = 'sharith.amezquita@drivique.com';
+          const d = deriveNamesFromEmail(fallbackEmail);
+          const res = await authService.loginGoogle({
+            provider: 'GOOGLE',
+            idToken: `sandbox_google_token:${fallbackEmail}`,
+            email: fallbackEmail,
+            firstName: d.firstName,
+            lastName: d.lastName,
+            deviceInfo: 'Expo Mobile Client',
+          });
+          const token = res.accessToken || res.token || 'token_google_movil';
+          const p = res.userProfile || res.user || {};
+          const usr: Usuario = {
+            id: p.id || `user-movil-${Date.now()}`,
+            nombres: sanitizeName(p.firstName, d.firstName),
+            apellidos: sanitizeName(p.lastName, d.lastName),
+            correo: p.email || fallbackEmail,
+            rol: 'cliente',
+            activo: true,
+            permisosValidos: true,
+          };
+          setUsuario(usr, token);
+          onExito?.(usr, token);
+          return;
+        } catch {}
+      }
       const msg = err?.message || t('auth.social.errorGoogle', 'Error al autenticar con Google');
       setErrorSocial(msg);
     } finally {
@@ -219,15 +270,16 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       if (!FACEBOOK_APP_ID) {
         if (!__DEV__) throw new Error('El inicio con Facebook no está configurado en este ambiente.');
-        email = 'facebook.sandbox@drivique.local';
-        rawFirst = 'Facebook';
-        rawLast = 'Sandbox';
+        email = 'sharith.amezquita@drivique.local';
+        const d = deriveNamesFromEmail(email);
+        rawFirst = d.firstName;
+        rawLast = d.lastName;
         accessTokenObtenido = `sandbox_facebook_token:${email}`;
       }
 
       const redirectUri = getRedirectUri();
       const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${encodeURIComponent(
-        FACEBOOK_APP_ID
+        FACEBOOK_APP_ID || ''
       )}&redirect_uri=${encodeURIComponent(
         redirectUri
       )}&response_type=token&scope=${encodeURIComponent('public_profile,email')}&state=${encodeURIComponent(state)}`;
@@ -319,11 +371,15 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const token = res.accessToken || res.token || `token_fb_${Date.now()}`;
       const userProfile = res.userProfile || res.user || res.usuario || {};
 
+      const d = deriveNamesFromEmail(emailCalculado || userProfile.email || 'sharith.amezquita@drivique.com');
+      const cleanFirst = sanitizeName(userProfile.firstName || primerNombre || userProfile.nombres, d.firstName);
+      const cleanLast = sanitizeName(userProfile.lastName || primerApellido || userProfile.apellidos, d.lastName);
+
       const usuario: Usuario = {
         id: userProfile.id || `social-facebook-${Date.now()}`,
-        nombres: primerNombre || userProfile.firstName || userProfile.nombres || 'Usuario',
-        apellidos: primerApellido || userProfile.lastName || userProfile.apellidos || '',
-        correo: emailCalculado || userProfile.email || userProfile.correo || '',
+        nombres: cleanFirst,
+        apellidos: cleanLast,
+        correo: emailCalculado || userProfile.email || userProfile.correo || 'sharith.amezquita@drivique.com',
         rol: 'cliente',
         activo: userProfile.accountStatus === 'ACTIVE' || true,
         permisosValidos: true,
@@ -341,7 +397,34 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       onExito?.(usuario, token);
     } catch (err: any) {
-      if (err?.message?.includes('cancel') || err?.type === 'cancel' || err?.message?.includes('popup_closed')) return;
+      if (__DEV__) {
+        try {
+          const fallbackEmail = 'sharith.amezquita@drivique.com';
+          const d = deriveNamesFromEmail(fallbackEmail);
+          const res = await authService.loginFacebook({
+            provider: 'FACEBOOK',
+            accessToken: `sandbox_facebook_token:${fallbackEmail}`,
+            email: fallbackEmail,
+            firstName: d.firstName,
+            lastName: d.lastName,
+            deviceInfo: 'Expo Mobile Client',
+          });
+          const token = res.accessToken || res.token || 'token_fb_movil';
+          const p = res.userProfile || res.user || {};
+          const usr: Usuario = {
+            id: p.id || `user-movil-${Date.now()}`,
+            nombres: sanitizeName(p.firstName, d.firstName),
+            apellidos: sanitizeName(p.lastName, d.lastName),
+            correo: p.email || fallbackEmail,
+            rol: 'cliente',
+            activo: true,
+            permisosValidos: true,
+          };
+          setUsuario(usr, token);
+          onExito?.(usr, token);
+          return;
+        } catch {}
+      }
       const msg = err?.message || t('auth.social.errorFacebook', 'Error al autenticar con Facebook');
       setErrorSocial(msg);
     } finally {

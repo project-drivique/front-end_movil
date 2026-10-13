@@ -37,6 +37,7 @@ export default function RegistroScreen() {
 
   const {
     form,
+    errorGlobal,
     cargando,
     actualizarCampo,
     registrar,
@@ -46,6 +47,7 @@ export default function RegistroScreen() {
   const {
     cargandoGoogle,
     cargandoFacebook,
+    errorSocial,
     iniciarGoogle,
     iniciarFacebook,
   } = useSocialAuth({
@@ -75,8 +77,12 @@ export default function RegistroScreen() {
 
   function handleRegistrar() {
     registrar(
-      () => router.replace(`/(auth)/verify-email?correo=${encodeURIComponent(form.correo)}`),
-      () => {}
+      () => router.replace(`/(auth)/verify-email?correo=${encodeURIComponent(form.correo)}&enviado=true`),
+      (msg) => {
+        if (msg) {
+          Alert.alert(t('auth.registro.errorTitulo', { defaultValue: 'No se pudo crear la cuenta' }), msg);
+        }
+      }
     );
   }
 
@@ -156,6 +162,24 @@ export default function RegistroScreen() {
                   </View>
 
                   <View style={styles.formulario}>
+                    {errorGlobal ? (
+                      <View style={{
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderColor: '#EF4444',
+                        borderWidth: 1,
+                        borderRadius: 10,
+                        padding: 12,
+                        marginBottom: 12,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8,
+                      }}>
+                        <Ionicons name="alert-circle" size={18} color="#EF4444" />
+                        <Text style={{ color: '#EF4444', fontSize: 13, flex: 1, fontWeight: '600' }}>
+                          {errorGlobal}
+                        </Text>
+                      </View>
+                    ) : null}
                     <InputField
                       label={t('auth.registro.correo')}
                       placeholder={t('auth.registro.correoPlaceholder', 'Escribe tu correo')}
@@ -232,6 +256,11 @@ export default function RegistroScreen() {
                           cargandoGoogle={cargandoGoogle}
                           cargandoFacebook={cargandoFacebook}
                         />
+                        {errorSocial ? (
+                          <Text style={[styles.errorTerminos, { marginTop: 8, textAlign: 'center' }]}>
+                            {errorSocial}
+                          </Text>
+                        ) : null}
                       </View>
                     </View>
 
@@ -287,6 +316,27 @@ export default function RegistroScreen() {
               {t('auth.registro.tcFooter') !== 'auth.registro.tcFooter' && (
                 <Text style={[styles.modalFooterTexto, { color: c.textMuted }]}>{t('auth.registro.tcFooter')}</Text>
               )}
+
+              <View style={{
+                marginTop: 16,
+                marginBottom: 16,
+                padding: 12,
+                borderRadius: 10,
+                backgroundColor: terminosLeidos ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)',
+                borderWidth: 1,
+                borderColor: terminosLeidos ? '#22C55E' : '#F59E0B',
+              }}>
+                <Text style={{
+                  color: terminosLeidos ? '#16A34A' : '#D97706',
+                  fontSize: 12,
+                  fontWeight: '600',
+                  textAlign: 'center',
+                }}>
+                  {terminosLeidos
+                    ? '✓ Has leído la totalidad de los términos. Ya puedes aceptar.'
+                    : '↓ Desplázate hasta el final para habilitar el botón de aceptar.'}
+                </Text>
+              </View>
             </ScrollView>
             
             <View style={styles.modalBotonesRow}>

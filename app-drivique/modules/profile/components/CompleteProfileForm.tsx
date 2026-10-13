@@ -20,7 +20,7 @@ import { DateField } from "@/components/ui/DateField";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { getPrefijoPorNacionalidad, getSiglaDocumento } from "@/modules/reservation/constants/reservation.constants";
 
-const TIPOS_DOCUMENTO: TipoDocumento[] = ["CC", "CE", "Pasaporte", "DNI", "PPT", "PEP", "TI"];
+const TIPOS_DOCUMENTO: TipoDocumento[] = ["CC", "CE", "Pasaporte", "DNI", "PPT", "PEP"];
 
 const NACIONALIDADES: { valor: Nacionalidad; bandera: string }[] = [
   { valor: "Colombia",  bandera: "🇨🇴" },

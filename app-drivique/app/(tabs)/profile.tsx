@@ -542,6 +542,20 @@ export default function PerfilScreen() {
               {usuario.nombres} {usuario.apellidos}
             </Text>
             <Text style={[styles.userEmail, { color: c.textSecondary }]}>{usuario.correo}</Text>
+            {(Boolean(usuario.telefono) || Boolean(usuario.numeroDocumento)) && (
+              <View style={{ marginTop: 4 }}>
+                {Boolean(usuario.telefono) && (
+                  <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 2 }}>
+                    📞 {usuario.telefono}
+                  </Text>
+                )}
+                {Boolean(usuario.numeroDocumento) && (
+                  <Text style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>
+                    🪪 {usuario.numeroDocumento}
+                  </Text>
+                )}
+              </View>
+            )}
           </View>
           <TouchableOpacity style={styles.btnEditar} onPress={() => setEditando(true)}>
             <Text style={styles.btnEditarText}>{t("perfil.editar")}</Text>
