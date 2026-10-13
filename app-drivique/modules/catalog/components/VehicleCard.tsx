@@ -23,6 +23,7 @@ import { Vehiculo } from "../types/catalog.types";
 import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { VEHICULO_PROMOS_DUMMY } from "@/modules/notifications/constants/notifications.dummy";
 
 interface Props {
   vehiculo: Vehiculo;

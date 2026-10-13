@@ -25,6 +25,7 @@ import { useReservaStore } from "@/store/reservationStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { GRADIENTES } from "@/constants/gradients";
+import { VEHICULO_PROMOS_DUMMY } from "@/modules/notifications/constants/notifications.dummy";
 import {
   VEHICULOS_MOCK,
   HORARIO_ATENCION_SUCURSAL,
