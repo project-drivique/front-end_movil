@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,6 +9,8 @@ import {
   Platform,
   ScrollView,
   Modal,
+  RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -23,11 +25,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import {
+  CUPONES_DUMMY,
   VEHICULO_PROMOS_DUMMY,
   CouponDummy,
 } from "@/modules/notifications/constants/notifications.dummy";
-import CUPONES_DEMO from "@/mocks/cuponesDemo.json";
-
 
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
@@ -36,17 +37,38 @@ export default function NotificationsScreen() {
   const primaryAccent = c.oscuro ? "#60A5FA" : "#1D4ED8";
   const usuario = useAuthStore((s) => s.usuario);
 
-  const { notificaciones, marcarComoLeida, marcarTodasComoLeidas } = useNotificationStore();
+  const {
+    notificaciones,
+    cargando,
+    marcarComoLeida,
+    marcarTodasComoLeidas,
+    cargarNotificaciones,
+  } = useNotificationStore();
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
 
   const [activeTab, setActiveTab] = useState<"general" | "promocion">("general");
   const [appliedCoupons, setAppliedCoupons] = useState<string[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Modal states
   const [selectedConditionsCoupon, setSelectedConditionsCoupon] = useState<CouponDummy | null>(null);
   const [activeAppliedCoupon, setActiveAppliedCoupon] = useState<CouponDummy | null>(null);
   const [activePendingCoupon, setActivePendingCoupon] = useState<CouponDummy | null>(null);
+  const [selectedNotification, setSelectedNotification] = useState<Notificacion | null>(null);
+
+  // Carga inicial y reactiva de notificaciones reales del backend
+  useEffect(() => {
+    if (usuario) {
+      cargarNotificaciones(true);
+    }
+  }, [usuario]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await cargarNotificaciones(true);
+    setRefreshing(false);
+  };
 
   /** Filtra items cuya fecha de expiracion ya paso */
   const isExpired = (expiracion?: string) => {
@@ -63,11 +85,10 @@ export default function NotificationsScreen() {
     [notificaciones]
   );
 
-
-  // Cupones activos (no expirados), filtrando vehículos que no estén disponibles
+  // Cupones activos reales (eliminados dummies)
   const cupones = useMemo(
     () =>
-      (CUPONES_DEMO as unknown as CouponDummy[]).filter((c) => {
+      (CUPONES_DUMMY as unknown as CouponDummy[]).filter((c) => {
         if (isExpired(c.fechaExpiracion || c.expiracion)) return false;
         if (c.reglas?.vehiculoId) {
           const v = VEHICULOS_MOCK.find((item) => item.id === c.reglas?.vehiculoId);
@@ -78,7 +99,7 @@ export default function NotificationsScreen() {
     []
   );
 
-  // Promos de vehiculos activas (no expiradas), imagen resuelta desde VEHICULOS_MOCK, SOLO vehículos disponibles
+  // Promos de vehiculos activas (no expiradas), imagen resuelta desde VEHICULOS_MOCK
   const vehiculoPromos = useMemo(() => {
     return VEHICULO_PROMOS_DUMMY.filter((vp) => {
       if (isExpired(vp.expiracion)) return false;
@@ -94,8 +115,6 @@ export default function NotificationsScreen() {
     });
   }, []);
 
-
-
   const handleApplyCoupon = (coupon: CouponDummy) => {
     if (appliedCoupons.includes(coupon.codigo)) return;
     setActivePendingCoupon(coupon);
@@ -108,8 +127,11 @@ export default function NotificationsScreen() {
     setActivePendingCoupon(null);
   };
 
-  const handleGeneralPress = (id: string) => {
-    marcarComoLeida(id);
+  const handleGeneralPress = (item: Notificacion) => {
+    if (!item.leido) {
+      marcarComoLeida(item.id);
+    }
+    setSelectedNotification(item);
   };
 
   // Helper: resolve vehicle images from VEHICULOS_MOCK (always returns 3 images)
@@ -212,11 +234,12 @@ export default function NotificationsScreen() {
        item.titulo.toLowerCase().includes("cancel") ? "close-circle-outline" :
        item.titulo.toLowerCase().includes("vencer") ? "time-outline" :
        "notifications-outline");
-    const iconColor = item.icono === "card-outline" ? "#3B82F6" :
-      item.icono === "time-outline" ? "#F59E0B" :
-      item.icono === "document-text-outline" ? "#10B981" :
-      item.icono === "chatbubble-ellipses-outline" ? "#8B5CF6" :
-      "#2563EB";
+    const iconColor = item.iconoColor ||
+      (item.icono === "card-outline" ? "#3B82F6" :
+       item.icono === "time-outline" ? "#F59E0B" :
+       item.icono === "document-text-outline" ? "#10B981" :
+       item.icono === "chatbubble-ellipses-outline" ? "#8B5CF6" :
+       "#2563EB");
     const dias = daysUntilExpiry(item.expiracion);
 
     return (
@@ -229,7 +252,7 @@ export default function NotificationsScreen() {
           },
           isUnread && { borderLeftColor: "#2563EB", borderLeftWidth: 4 },
         ]}
-        onPress={() => handleGeneralPress(item.id)}
+        onPress={() => handleGeneralPress(item)}
         activeOpacity={0.8}
       >
         <View style={styles.cardHeader}>
@@ -237,9 +260,28 @@ export default function NotificationsScreen() {
             <Ionicons name={iconName as any} size={22} color={iconColor} />
           </View>
           <View style={styles.contentWrapper}>
-            <Text style={[styles.title, { color: c.textPrimary }, isUnread && styles.unreadText]}>
-              {t(item.titulo, { defaultValue: item.titulo })}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+              <Text style={[styles.title, { color: c.textPrimary, flex: 1 }, isUnread && styles.unreadText]}>
+                {t(item.titulo, { defaultValue: item.titulo })}
+              </Text>
+              {item.criticidad && item.criticidad !== "NORMAL" && (
+                <View style={[
+                  styles.criticalityBadge,
+                  {
+                    backgroundColor: item.criticidad === "HIGH" ? (c.oscuro ? "#450a0a" : "#FEF2F2") : (c.oscuro ? "#172554" : "#EFF6FF"),
+                    borderColor: item.criticidad === "HIGH" ? "#EF4444" : "#3B82F6",
+                  }
+                ]}>
+                  <Text style={{
+                    fontSize: 10,
+                    fontWeight: "700",
+                    color: item.criticidad === "HIGH" ? "#DC2626" : "#2563EB",
+                  }}>
+                    {item.criticidad}
+                  </Text>
+                </View>
+              )}
+            </View>
             <View style={styles.timeRow}>
               <Ionicons name="time-outline" size={11} color={c.textMuted} style={{ marginRight: 3 }} />
               <Text style={[styles.time, { color: c.textMuted }]}>
@@ -439,15 +481,47 @@ export default function NotificationsScreen() {
           renderItem={renderGeneralItem}
           contentContainerStyle={styles.generalList}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing || cargando}
+              onRefresh={handleRefresh}
+              colors={["#2563EB"]}
+              tintColor="#2563EB"
+            />
+          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="notifications-off-outline" size={60} color={c.textMuted} />
-              <Text style={[styles.emptyText, { color: c.textSecondary }]}>
-                {t("tabs.sinNotificacionesGenerales")}
+              <Text style={[styles.emptyText, { color: c.textSecondary, marginTop: 12 }]}>
+                {t("tabs.sinNotificacionesGenerales", "No tienes notificaciones pendientes.")}
               </Text>
             </View>
           }
         />
+      ) : cupones.length === 0 && vehiculoPromos.length === 0 ? (
+        <ScrollView
+          style={styles.promosScroll}
+          contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 24 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing || cargando}
+              onRefresh={handleRefresh}
+              colors={["#2563EB"]}
+              tintColor="#2563EB"
+            />
+          }
+        >
+          <View style={styles.emptyContainer}>
+            <Ionicons name="pricetags-outline" size={60} color={c.textMuted} />
+            <Text style={[styles.emptyText, { color: c.textSecondary, marginTop: 12 }]}>
+              {t("tabs.sinPromociones", "No tienes promociones ni cupones activos en este momento.")}
+            </Text>
+            <Text style={{ fontSize: 13, color: c.textMuted, textAlign: "center", marginTop: 6, maxWidth: 280, lineHeight: 18 }}>
+              {t("tabs.sinPromocionesDesc", "Cuando haya nuevos cupones o beneficios exclusivos para tus reservas, los verás aquí.")}
+            </Text>
+          </View>
+        </ScrollView>
       ) : (
         <ScrollView style={styles.promosScroll} contentContainerStyle={{ paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
           {/* Section 1: Coupons Panel */}
@@ -793,6 +867,93 @@ export default function NotificationsScreen() {
               onPress={() => setActiveAppliedCoupon(null)}
             >
               <Text style={styles.modalBtnText}>{t("promoCoupons.modalBtn", "¡Excelente!")}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 3. Modal: Notification Detail */}
+      <Modal
+        visible={selectedNotification !== null}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSelectedNotification(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+            <View style={styles.modalHeaderRow}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1, paddingRight: 8 }}>
+                <View style={[styles.iconWrapper, { backgroundColor: c.bgInput, width: 38, height: 38, borderRadius: 19 }]}>
+                  <Ionicons
+                    name={(selectedNotification?.icono as any) || "notifications-outline"}
+                    size={20}
+                    color={selectedNotification?.iconoColor || primaryAccent}
+                  />
+                </View>
+                <Text style={[styles.modalTitle, { color: c.textPrimary, flex: 1 }]} numberOfLines={2}>
+                  {selectedNotification ? t(selectedNotification.titulo, { defaultValue: selectedNotification.titulo }) : ""}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setSelectedNotification(null)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                <Ionicons name="close" size={24} color={c.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            {selectedNotification && (
+              <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginVertical: 6 }}>
+                  <View style={styles.timeRow}>
+                    <Ionicons name="time-outline" size={13} color={c.textMuted} style={{ marginRight: 4 }} />
+                    <Text style={[styles.time, { color: c.textMuted, fontSize: 12 }]}>
+                      {formatDateTime(selectedNotification.fecha)}
+                    </Text>
+                  </View>
+                  {selectedNotification.criticidad && (
+                    <View style={[
+                      styles.criticalityBadge,
+                      {
+                        backgroundColor: selectedNotification.criticidad === "HIGH" ? (c.oscuro ? "#450a0a" : "#FEF2F2") : (c.oscuro ? "#172554" : "#EFF6FF"),
+                        borderColor: selectedNotification.criticidad === "HIGH" ? "#EF4444" : "#3B82F6",
+                      }
+                    ]}>
+                      <Text style={{
+                        fontSize: 10,
+                        fontWeight: "700",
+                        color: selectedNotification.criticidad === "HIGH" ? "#DC2626" : "#2563EB",
+                      }}>
+                        {selectedNotification.criticidad}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={[styles.infoDivider, { backgroundColor: c.border, marginVertical: 10 }]} />
+
+                <Text style={[styles.modalDescription, { color: c.textSecondary, lineHeight: 22, fontSize: 14 }]}>
+                  {t(selectedNotification.mensaje, { defaultValue: selectedNotification.mensaje })}
+                </Text>
+
+                {selectedNotification.metadata && Object.keys(selectedNotification.metadata).length > 0 && (
+                  <View style={[styles.metadataBox, { backgroundColor: c.bgInput, borderColor: c.border }]}>
+                    <Text style={[styles.metadataTitle, { color: c.textPrimary }]}>
+                      {t("notificaciones.detallesEvento", "Detalles del evento")}
+                    </Text>
+                    {Object.entries(selectedNotification.metadata).map(([key, val]) => (
+                      <View key={key} style={styles.metadataRow}>
+                        <Text style={[styles.metadataKey, { color: c.textMuted }]}>{key}:</Text>
+                        <Text style={[styles.metadataVal, { color: c.textPrimary }]}>{String(val)}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </ScrollView>
+            )}
+
+            <TouchableOpacity
+              style={[styles.modalCloseBtn, { backgroundColor: primaryAccent, marginTop: 16 }]}
+              onPress={() => setSelectedNotification(null)}
+            >
+              <Text style={styles.modalCloseBtnText}>{t("perfil.ok", "Entendido")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1302,5 +1463,36 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "900",
     letterSpacing: 2,
+  },
+  criticalityBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  metadataBox: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 10,
+    gap: 6,
+  },
+  metadataTitle: {
+    fontSize: 12.5,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  metadataRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  metadataKey: {
+    fontSize: 12,
+    textTransform: "capitalize",
+  },
+  metadataVal: {
+    fontSize: 12,
+    fontWeight: "600",
   },
 });

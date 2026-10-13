@@ -29,7 +29,14 @@ export default function TabLayout() {
   const [alertVisible, setAlertVisible] = useState(false);
   const c = useTemaColores();
   const { t } = useTranslation();
-  const unreadCount = useNotificationStore((s) => s.notificaciones.filter((n) => !n.leido).length);
+  const unreadCount = useNotificationStore((s) => s.conteoNoLeidas || s.notificaciones.filter((n) => !n.leido).length);
+  const cargarConteoNoLeidas = useNotificationStore((s) => s.cargarConteoNoLeidas);
+
+  React.useEffect(() => {
+    if (usuario) {
+      cargarConteoNoLeidas();
+    }
+  }, [usuario]);
 
   const tabBarHeight =
     Platform.OS === "android" ? 58 + insets.bottom : 60 + insets.bottom;

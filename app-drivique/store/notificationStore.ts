@@ -1,206 +1,154 @@
 import { create } from "zustand";
 import { Cupon } from "@/modules/reservation/types/reservation.types";
+import { notificationService, NotificacionMobile } from "@/modules/notifications/services/notificationService";
+import { useAuthStore } from "./authStore";
 
 export interface Notificacion {
   id: string;
-  tipo: "general" | "promocion";
+  tipo: "general" | "promocion" | string;
   titulo: string;
   mensaje: string;
   /** ISO 8601 */
   fecha: string;
   leido: boolean;
+  leidoEn?: string | null;
   /** ISO 8601 — si existe, la notificacion desaparece automaticamente despues de esta fecha */
   expiracion?: string;
-  /** Icono de Ionicons a mostrar (opcional, por defecto se infiere del tipo/titulo) */
+  /** Icono de Ionicons a mostrar */
   icono?: string;
+  iconoColor?: string;
+  criticidad?: "HIGH" | "MEDIUM" | "LOW" | "NORMAL";
+  canal?: string;
+  metadata?: Record<string, any>;
+  referenceId?: string;
   /** Detalles del cupón (solo para tipo "promocion") */
   cupon?: Cupon;
 }
 
 interface NotificationState {
   notificaciones: Notificacion[];
-  marcarComoLeida: (id: string) => void;
-  marcarTodasComoLeidas: () => void;
+  conteoNoLeidas: number;
+  cargando: boolean;
+  error: string | null;
+
+  cargarNotificaciones: (silent?: boolean) => Promise<void>;
+  cargarConteoNoLeidas: () => Promise<number>;
+  marcarComoLeida: (id: string) => Promise<void>;
+  marcarTodasComoLeidas: () => Promise<void>;
   agregarNotificacion: (notif: Omit<Notificacion, "id" | "leido" | "fecha">) => void;
+  limpiarNotificaciones: () => void;
 }
 
-export const useNotificationStore = create<NotificationState>((set) => ({
-  notificaciones: [
-    // ── GENERALES ──────────────────────────────────────────────────────
-    {
-      id: "g1",
-      tipo: "general",
-      titulo: "Reserva confirmada",
-      mensaje:
-        "Tu reserva del Toyota Prado ha sido confirmada con éxito. Recuerda que el retiro es en sucursal Neiva el día acordado.",
-      fecha: "2026-08-11T14:30:00Z",
-      leido: false,
-      icono: "checkmark-circle-outline",
-    },
-    {
-      id: "g2",
-      tipo: "general",
-      titulo: "Pago validado",
-      mensaje:
-        "El pago digital a través de Wompi fue validado de forma satisfactoria. Guarda tu comprobante.",
-      fecha: "2026-08-11T14:35:00Z",
-      leido: false,
-      icono: "card-outline",
-    },
-    {
-      id: "g3",
-      tipo: "general",
-      titulo: "Documentos verificados",
-      mensaje:
-        "Tu licencia de conducción y documento de identidad fueron aprobados por nuestro equipo. Ya puedes continuar con tu reserva.",
-      fecha: "2026-08-10T09:20:00Z",
-      leido: false,
-      icono: "document-text-outline",
-    },
-    {
-      id: "g4",
-      tipo: "general",
-      titulo: "Reserva próxima a vencer",
-      mensaje:
-        "Tu reserva del Chevrolet Spark vence mañana a las 10:00 AM. Si no la confirmas, se liberará el vehículo.",
-      fecha: "2026-08-09T18:00:00Z",
-      leido: false,
-      icono: "time-outline",
-      expiracion: "2026-08-12T10:00:00Z",
-    },
-    {
-      id: "g5",
-      tipo: "general",
-      titulo: "Soporte respondió tu caso",
-      mensaje:
-        "El equipo de soporte respondió tu solicitud #4821. Ingresa a la sección de soporte para ver la respuesta.",
-      fecha: "2026-08-09T11:45:00Z",
+export const useNotificationStore = create<NotificationState>((set, get) => ({
+  // HU-INT-17: Se eliminan notificaciones dummy estáticas. Se sincroniza con backend.
+  notificaciones: [],
+  conteoNoLeidas: 0,
+  cargando: false,
+  error: null,
+
+  cargarNotificaciones: async (silent = false) => {
+    const token = useAuthStore.getState().token;
+    if (!token) {
+      set({ notificaciones: [], conteoNoLeidas: 0, cargando: false });
+      return;
+    }
+
+    if (!silent) set({ cargando: true, error: null });
+
+    try {
+      const [lista, unreadCount] = await Promise.all([
+        notificationService.listNotifications(),
+        notificationService.getUnreadCount().catch(() => null),
+      ]);
+
+      const adaptadas: Notificacion[] = lista.map((item) => ({
+        id: item.id,
+        tipo: item.tipo.toLowerCase().includes("promo") ? "promocion" : "general",
+        titulo: item.titulo,
+        mensaje: item.mensaje,
+        fecha: item.fecha,
+        leido: item.leido,
+        leidoEn: item.leidoEn,
+        icono: item.icono,
+        iconoColor: item.iconoColor,
+        criticidad: item.criticidad,
+        canal: item.canal,
+        metadata: item.metadata,
+        referenceId: item.referenceId,
+      }));
+
+      const noLeidasCalculadas = adaptadas.filter((n) => !n.leido).length;
+      const conteoFinal = typeof unreadCount === "number" ? unreadCount : noLeidasCalculadas;
+
+      set({
+        notificaciones: adaptadas,
+        conteoNoLeidas: conteoFinal,
+        cargando: false,
+        error: null,
+      });
+    } catch (err: any) {
+      console.warn("Error cargando notificaciones en móvil:", err);
+      set({
+        cargando: false,
+        error: err?.response?.data?.message || err?.message || "Error al sincronizar notificaciones",
+      });
+    }
+  },
+
+  cargarConteoNoLeidas: async () => {
+    const token = useAuthStore.getState().token;
+    if (!token) {
+      set({ conteoNoLeidas: 0 });
+      return 0;
+    }
+
+    try {
+      const count = await notificationService.getUnreadCount();
+      const finalCount = typeof count === "number" ? count : 0;
+      set({ conteoNoLeidas: finalCount });
+      return finalCount;
+    } catch {
+      const fallback = get().notificaciones.filter((n) => !n.leido).length;
+      set({ conteoNoLeidas: fallback });
+      return fallback;
+    }
+  },
+
+  marcarComoLeida: async (id: string) => {
+    const actuales = get().notificaciones;
+    const target = actuales.find((n) => n.id === id);
+    if (!target || target.leido) return;
+
+    // Actualización optimista local
+    const actualizadas = actuales.map((n) =>
+      n.id === id ? { ...n, leido: true, leidoEn: new Date().toISOString() } : n
+    );
+    const nuevoConteo = Math.max(0, get().conteoNoLeidas - 1);
+    set({ notificaciones: actualizadas, conteoNoLeidas: nuevoConteo });
+
+    try {
+      await notificationService.markAsRead(id);
+    } catch (err) {
+      console.warn(`Error al marcar leída notificación ${id} en backend:`, err);
+    }
+  },
+
+  marcarTodasComoLeidas: async () => {
+    const actuales = get().notificaciones;
+    const actualizadas = actuales.map((n) => ({
+      ...n,
       leido: true,
-      icono: "chatbubble-ellipses-outline",
-    },
-    {
-      id: "g6",
-      tipo: "general",
-      titulo: "Alquiler finalizado",
-      mensaje:
-        "Tu alquiler del Ford Explorer finalizó correctamente. ¡Gracias por confiar en Drivique! No olvides dejar tu calificación.",
-      fecha: "2026-08-08T16:00:00Z",
-      leido: true,
-      icono: "car-outline",
-    },
-    {
-      id: "g7",
-      tipo: "general",
-      titulo: "Nueva política de cancelación",
-      mensaje:
-        "Actualizamos nuestra política de cancelación. Ahora tienes hasta 24 horas antes del inicio para cancelar sin costo.",
-      fecha: "2026-08-07T10:00:00Z",
-      leido: true,
-      icono: "information-circle-outline",
-    },
-    // ── PROMOCIONES ───────────────────────────────────────────────────
-    {
-      id: "p1",
-      tipo: "promocion",
-      titulo: "Cupón de Bienvenida Drivique",
-      mensaje: "Usa el cupón BIENVENIDO10 para obtener 10% de descuento en tu alquiler. Válido para cualquier categoría.",
-      fecha: "2026-01-01T08:00:00Z",
-      leido: false,
-      icono: "ticket-outline",
-      expiracion: "2026-12-31T23:59:59Z",
-      cupon: {
-        codigo: "BIENVENIDO10",
-        descuentoPorcentaje: 10,
-        descripcion: "10% de descuento en tu reserva.",
-        reglas: {
-          categoriasValidas: []
-        }
-      }
-    },
-    {
-      id: "p2",
-      tipo: "promocion",
-      titulo: "Especial Aventura SUV",
-      mensaje: "Aprovecha 20% de descuento con el código SUV20 en toda la categoría SUV.",
-      fecha: "2026-01-01T10:00:00Z",
-      leido: false,
-      icono: "calendar-outline",
-      expiracion: "2026-12-31T23:59:59Z",
-      cupon: {
-        codigo: "SUV20",
-        descuentoPorcentaje: 20,
-        descripcion: "20% OFF en vehículos categoría SUV.",
-        reglas: {
-          categoriasValidas: ["SUV"]
-        }
-      }
-    },
-    {
-      id: "p3",
-      tipo: "promocion",
-      titulo: "Toyota Corolla Exclusivo",
-      mensaje: "Descuento del 15% exclusivo para reservas del vehículo Toyota Corolla 2024 con el código COROLLA15.",
-      fecha: "2026-01-01T07:30:00Z",
-      leido: true,
-      icono: "star-outline",
-      expiracion: "2026-12-31T23:59:59Z",
-      cupon: {
-        codigo: "COROLLA15",
-        descuentoPorcentaje: 15,
-        descripcion: "15% de descuento en Toyota Corolla 2024.",
-        reglas: {
-          categoriasValidas: ["Sedan"]
-        }
-      }
-    },
-    {
-      id: "p4",
-      tipo: "promocion",
-      titulo: "Mazda CX-5 Especial VIP",
-      mensaje: "Descuento del 25% exclusivo para reservas de la Mazda CX-5 2024 con el cupón MAZDA25.",
-      fecha: "2026-01-01T09:00:00Z",
-      leido: true,
-      icono: "speedometer-outline",
-      expiracion: "2026-12-31T23:59:59Z",
-      cupon: {
-        codigo: "MAZDA25",
-        descuentoPorcentaje: 25,
-        descripcion: "25% de descuento en Mazda CX-5 2024.",
-        reglas: {
-          vehiculoId: 2,
-          categoriasValidas: ["SUV"]
-        }
-      }
-    },
-    {
-      id: "p5",
-      tipo: "promocion",
-      titulo: "Bono Fijo de Alquiler",
-      mensaje: "Bono directo de $50.000 COP aplicable a reservas con el cupón DRIVIQUE50K.",
-      fecha: "2026-01-01T11:00:00Z",
-      leido: true,
-      icono: "gift-outline",
-      expiracion: "2026-12-31T23:59:59Z",
-      cupon: {
-        codigo: "DRIVIQUE50K",
-        descuentoFijo: 50000,
-        descripcion: "$50.000 COP de bono en tu reserva.",
-        reglas: {
-          categoriasValidas: []
-        }
-      }
-    },
-  ],
-  marcarComoLeida: (id) =>
-    set((state) => ({
-      notificaciones: state.notificaciones.map((n) =>
-        n.id === id ? { ...n, leido: true } : n
-      ),
-    })),
-  marcarTodasComoLeidas: () =>
-    set((state) => ({
-      notificaciones: state.notificaciones.map((n) => ({ ...n, leido: true })),
-    })),
+      leidoEn: n.leidoEn || new Date().toISOString(),
+    }));
+    set({ notificaciones: actualizadas, conteoNoLeidas: 0 });
+
+    try {
+      await notificationService.markAllAsRead();
+    } catch (err) {
+      console.warn("Error al marcar todas las notificaciones como leídas en backend:", err);
+    }
+  },
+
   agregarNotificacion: (notif) =>
     set((state) => ({
       notificaciones: [
@@ -212,6 +160,9 @@ export const useNotificationStore = create<NotificationState>((set) => ({
         },
         ...state.notificaciones,
       ],
+      conteoNoLeidas: state.conteoNoLeidas + 1,
     })),
-}));
 
+  limpiarNotificaciones: () =>
+    set({ notificaciones: [], conteoNoLeidas: 0, cargando: false, error: null }),
+}));

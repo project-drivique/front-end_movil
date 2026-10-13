@@ -7,7 +7,7 @@
  * RF50.5: Guardar cambios validados
  * RF50.6: Cancelar edición
  */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,6 +15,7 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -26,6 +27,11 @@ import { router } from "expo-router";
 import { IdiomaKey, IDIOMAS } from "@/modules/i18n";
 import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { usePerfil } from "@/modules/profile/hooks/useProfile";
+import {
+  obtenerPreferencias,
+  actualizarPreferencias,
+  UserPreferencesDTO,
+} from "@/modules/profile/services/profileService";
 import { ModalCambiarCorreo } from "@/modules/profile/components/ChangeEmailModal";
 import { ChangePasswordModal } from "@/modules/profile/components/ChangePasswordModal";
 import { DeleteAccountModal } from "@/modules/profile/components/DeleteAccountModal";
@@ -80,6 +86,37 @@ export default function PerfilScreen() {
   const cerrarSesionAuth = useAuthStore((s) => s.cerrarSesion);
   const limpiarUsuario = useUsuarioStore((s) => s.limpiarUsuario);
   const agregarNotificacion = useNotificationStore((s) => s.agregarNotificacion);
+
+  // HU-INT-17: Preferencias de entrega de notificaciones
+  const [preferencias, setPreferencias] = useState<UserPreferencesDTO>({
+    emailNotifications: true,
+    smsNotifications: false,
+    pushNotifications: true,
+    inAppNotifications: true,
+    marketingNotifications: false,
+  });
+
+  useEffect(() => {
+    if (authUsuario) {
+      obtenerPreferencias()
+        .then((prefs) => {
+          if (prefs) setPreferencias((prev) => ({ ...prev, ...prefs }));
+        })
+        .catch((err) => console.warn("Error cargando preferencias de usuario:", err));
+    }
+  }, [authUsuario]);
+
+  const handleTogglePref = async (key: keyof UserPreferencesDTO) => {
+    const nuevoValor = !preferencias[key];
+    const nuevasPrefs = { ...preferencias, [key]: nuevoValor };
+    setPreferencias(nuevasPrefs);
+    try {
+      await actualizarPreferencias({ [key]: nuevoValor });
+    } catch (err) {
+      console.warn(`Error guardando preferencia ${key}:`, err);
+      setPreferencias(preferencias);
+    }
+  };
 
   const {
     usuario,
@@ -234,6 +271,122 @@ export default function PerfilScreen() {
             🇺🇸 USD
           </Text>
         </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const seccionPreferencias = (
+    <View style={[configStyles.seccion, { backgroundColor: c.bgCard, borderColor: c.border, marginTop: 14 }]}>
+      <Text style={configStyles.seccionTitulo}>
+        {t("perfil.preferenciasEntrega", "PREFERENCIAS DE NOTIFICACIONES")}
+      </Text>
+      <Text style={{ fontSize: 12.5, color: c.textSecondary, marginBottom: 12, lineHeight: 18 }}>
+        {t("perfil.preferenciasEntregaDesc", "Elige los canales por los cuales deseas recibir actualizaciones de reservas, contratos y alertas de tu cuenta.")}
+      </Text>
+
+      {/* Email */}
+      <View style={[configStyles.prefRow, { borderBottomColor: c.border }]}>
+        <View style={configStyles.prefInfo}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Ionicons name="mail-outline" size={17} color="#2563EB" />
+            <Text style={[configStyles.prefLabel, { color: c.textPrimary }]}>
+              {t("perfil.prefEmail", "Correo electrónico")}
+            </Text>
+          </View>
+          <Text style={[configStyles.prefSub, { color: c.textMuted }]}>
+            {t("perfil.prefEmailSub", "Confirmaciones, facturas y contratos")}
+          </Text>
+        </View>
+        <Switch
+          value={Boolean(preferencias.emailNotifications)}
+          onValueChange={() => handleTogglePref("emailNotifications")}
+          trackColor={{ false: c.border, true: "#93C5FD" }}
+          thumbColor={preferencias.emailNotifications ? "#1D4ED8" : "#F3F4F6"}
+        />
+      </View>
+
+      {/* Push */}
+      <View style={[configStyles.prefRow, { borderBottomColor: c.border }]}>
+        <View style={configStyles.prefInfo}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Ionicons name="phone-portrait-outline" size={17} color="#10B981" />
+            <Text style={[configStyles.prefLabel, { color: c.textPrimary }]}>
+              {t("perfil.prefPush", "Notificaciones Push")}
+            </Text>
+          </View>
+          <Text style={[configStyles.prefSub, { color: c.textMuted }]}>
+            {t("perfil.prefPushSub", "Alertas instantáneas en tu dispositivo móvil")}
+          </Text>
+        </View>
+        <Switch
+          value={Boolean(preferencias.pushNotifications)}
+          onValueChange={() => handleTogglePref("pushNotifications")}
+          trackColor={{ false: c.border, true: "#86EFAC" }}
+          thumbColor={preferencias.pushNotifications ? "#059669" : "#F3F4F6"}
+        />
+      </View>
+
+      {/* In-App */}
+      <View style={[configStyles.prefRow, { borderBottomColor: c.border }]}>
+        <View style={configStyles.prefInfo}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Ionicons name="notifications-outline" size={17} color="#8B5CF6" />
+            <Text style={[configStyles.prefLabel, { color: c.textPrimary }]}>
+              {t("perfil.prefInApp", "Alertas en la aplicación")}
+            </Text>
+          </View>
+          <Text style={[configStyles.prefSub, { color: c.textMuted }]}>
+            {t("perfil.prefInAppSub", "Bandeja y centro de notificaciones Drivique")}
+          </Text>
+        </View>
+        <Switch
+          value={Boolean(preferencias.inAppNotifications)}
+          onValueChange={() => handleTogglePref("inAppNotifications")}
+          trackColor={{ false: c.border, true: "#C4B5FD" }}
+          thumbColor={preferencias.inAppNotifications ? "#7C3AED" : "#F3F4F6"}
+        />
+      </View>
+
+      {/* SMS */}
+      <View style={[configStyles.prefRow, { borderBottomColor: c.border }]}>
+        <View style={configStyles.prefInfo}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Ionicons name="chatbubble-ellipses-outline" size={17} color="#F59E0B" />
+            <Text style={[configStyles.prefLabel, { color: c.textPrimary }]}>
+              {t("perfil.prefSms", "Mensajes de texto (SMS)")}
+            </Text>
+          </View>
+          <Text style={[configStyles.prefSub, { color: c.textMuted }]}>
+            {t("perfil.prefSmsSub", "Códigos OTP y recordatorios de entrega")}
+          </Text>
+        </View>
+        <Switch
+          value={Boolean(preferencias.smsNotifications)}
+          onValueChange={() => handleTogglePref("smsNotifications")}
+          trackColor={{ false: c.border, true: "#FDE68A" }}
+          thumbColor={preferencias.smsNotifications ? "#D97706" : "#F3F4F6"}
+        />
+      </View>
+
+      {/* Marketing */}
+      <View style={[configStyles.prefRow, { borderBottomWidth: 0 }]}>
+        <View style={configStyles.prefInfo}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Ionicons name="pricetag-outline" size={17} color="#EC4899" />
+            <Text style={[configStyles.prefLabel, { color: c.textPrimary }]}>
+              {t("perfil.prefMarketing", "Promociones y novedades")}
+            </Text>
+          </View>
+          <Text style={[configStyles.prefSub, { color: c.textMuted }]}>
+            {t("perfil.prefMarketingSub", "Descuentos exclusivos y noticias de la flota")}
+          </Text>
+        </View>
+        <Switch
+          value={Boolean(preferencias.marketingNotifications)}
+          onValueChange={() => handleTogglePref("marketingNotifications")}
+          trackColor={{ false: c.border, true: "#FBCFE8" }}
+          thumbColor={preferencias.marketingNotifications ? "#DB2777" : "#F3F4F6"}
+        />
       </View>
     </View>
   );
@@ -613,6 +766,8 @@ export default function PerfilScreen() {
 
         {seccionConfig}
 
+        {seccionPreferencias}
+
         {/* Cerrar sesión */}
         <View style={[styles.cerrarSection, { backgroundColor: c.bgCard, borderColor: c.border }]}>
           <TouchableOpacity style={styles.cerrarBtn} onPress={handleCerrarSesion}>
@@ -895,5 +1050,26 @@ const configStyles = StyleSheet.create({
     backgroundColor: "#1D4ED8",
     alignItems: "center",
     justifyContent: "center",
+  },
+  prefRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  prefInfo: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  prefLabel: {
+    fontSize: 13.5,
+    fontWeight: "600",
+  },
+  prefSub: {
+    fontSize: 11.5,
+    marginTop: 2,
+    lineHeight: 16,
   },
 });

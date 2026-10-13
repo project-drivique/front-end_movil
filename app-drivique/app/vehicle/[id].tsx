@@ -34,7 +34,6 @@ import {
 import { VehicleGallery } from "@/modules/catalog/components/VehicleGallery";
 import { VehicleReviews } from "@/modules/catalog/components/VehicleReviews";
 import BranchDirectionsModal from "@/modules/reservation/components/BranchDirectionsModal";
-import { VEHICULO_PROMOS_DUMMY } from "@/modules/notifications/constants/notifications.dummy";
 import { catalogoService } from "@/modules/catalog/services/catalogService";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 
