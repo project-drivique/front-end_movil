@@ -347,27 +347,6 @@ export default function PerfilScreen() {
         />
       </View>
 
-      {/* SMS */}
-      <View style={[configStyles.prefRow, { borderBottomColor: c.border }]}>
-        <View style={configStyles.prefInfo}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Ionicons name="chatbubble-ellipses-outline" size={17} color="#F59E0B" />
-            <Text style={[configStyles.prefLabel, { color: c.textPrimary }]}>
-              {t("perfil.prefSms", "Mensajes de texto (SMS)")}
-            </Text>
-          </View>
-          <Text style={[configStyles.prefSub, { color: c.textMuted }]}>
-            {t("perfil.prefSmsSub", "Códigos OTP y recordatorios de entrega")}
-          </Text>
-        </View>
-        <Switch
-          value={Boolean(preferencias.smsNotifications)}
-          onValueChange={() => handleTogglePref("smsNotifications")}
-          trackColor={{ false: c.border, true: "#FDE68A" }}
-          thumbColor={preferencias.smsNotifications ? "#D97706" : "#F3F4F6"}
-        />
-      </View>
-
       {/* Marketing */}
       <View style={[configStyles.prefRow, { borderBottomWidth: 0 }]}>
         <View style={configStyles.prefInfo}>
