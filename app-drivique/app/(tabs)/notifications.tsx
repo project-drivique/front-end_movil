@@ -949,11 +949,58 @@ export default function NotificationsScreen() {
               </ScrollView>
             )}
 
+            {Boolean(
+              selectedNotification?.referenceId ||
+              selectedNotification?.tipo?.toUpperCase().includes("RESERV") ||
+              selectedNotification?.titulo?.toLowerCase().includes("reserva") ||
+              selectedNotification?.mensaje?.toLowerCase().includes("reserva")
+            ) && (
+              <TouchableOpacity
+                style={[styles.modalActionBtn, { backgroundColor: primaryAccent, marginTop: 14 }]}
+                onPress={() => {
+                  setSelectedNotification(null);
+                  router.push("/(tabs)/my-bookings");
+                }}
+              >
+                <Ionicons name="car-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.modalCloseBtnText}>
+                  {t("notificaciones.verReserva", "Ver Reserva / Continuar")}
+                </Text>
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity
-              style={[styles.modalCloseBtn, { backgroundColor: primaryAccent, marginTop: 16 }]}
+              style={[
+                styles.modalCloseBtn,
+                {
+                  backgroundColor: Boolean(
+                    selectedNotification?.referenceId ||
+                    selectedNotification?.tipo?.toUpperCase().includes("RESERV") ||
+                    selectedNotification?.titulo?.toLowerCase().includes("reserva")
+                  )
+                    ? (c.oscuro ? "#334155" : "#E2E8F0")
+                    : primaryAccent,
+                  marginTop: 10,
+                },
+              ]}
               onPress={() => setSelectedNotification(null)}
             >
-              <Text style={styles.modalCloseBtnText}>{t("perfil.ok", "Entendido")}</Text>
+              <Text
+                style={[
+                  styles.modalCloseBtnText,
+                  {
+                    color: Boolean(
+                      selectedNotification?.referenceId ||
+                      selectedNotification?.tipo?.toUpperCase().includes("RESERV") ||
+                      selectedNotification?.titulo?.toLowerCase().includes("reserva")
+                    )
+                      ? (c.oscuro ? "#F8FAFC" : "#334155")
+                      : "#FFFFFF",
+                  },
+                ]}
+              >
+                {t("perfil.ok", "Entendido")}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1494,5 +1541,26 @@ const styles = StyleSheet.create({
   metadataVal: {
     fontSize: 12,
     fontWeight: "600",
+  },
+  modalActionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    width: "100%",
+  },
+  modalCloseBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    width: "100%",
+  },
+  modalCloseBtnText: {
+    fontSize: 13.5,
+    fontWeight: "700",
   },
 });
