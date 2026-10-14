@@ -1551,16 +1551,4 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: "100%",
   },
-  modalCloseBtn: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    width: "100%",
-  },
-  modalCloseBtnText: {
-    fontSize: 13.5,
-    fontWeight: "700",
-  },
 });
