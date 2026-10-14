@@ -17,6 +17,7 @@ import FormDatosPersonales from "./PersonalDataForm";
 import { AlertModal } from "../../../components/ui/AlertModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
+import { getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
 
 interface Props {
   vehiculo: Vehiculo;
@@ -35,6 +36,8 @@ export default function FlujoReserva({ vehiculo }: Props) {
   const [seccionActiva, setSeccionActiva] = useState<SeccionReserva>("fechas");
   const [modalResumenVisible, setModalResumenVisible] = useState(false);
   const [alertaFaltantesVisible, setAlertaFaltantesVisible] = useState(false);
+  const [alertaHorarioVisible, setAlertaHorarioVisible] = useState(false);
+  const [outsideScheduleAccepted, setOutsideScheduleAccepted] = useState(false);
 
   // "Alcanzada alguna vez" — una vez true, nunca vuelve a false, aunque
   // el usuario regrese a un tab anterior. Esto es lo que usa el modal
@@ -93,13 +96,34 @@ export default function FlujoReserva({ vehiculo }: Props) {
     router.back();
   };
 
-  // Botón del tab "fechas": si falta info, muestra alerta; si no, pasa al tab "planes".
+  // HU-INT-17: Verificación de horario de atención de la sucursal seleccionada
+  const branchName = fechasLugar.lugarRetiro || vehiculo.sucursal || "";
+  const horario = getHorarioSucursal(branchName);
+
+  const checkOutsideSchedule = () => {
+    if (outsideScheduleAccepted) return false;
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    const [hOpen, mOpen] = (horario.horaApertura || "08:00").split(":").map(Number);
+    const [hClose, mClose] = (horario.horaCierre || "18:00").split(":").map(Number);
+    const openMins = (hOpen || 8) * 60 + (mOpen || 0);
+    const closeMins = (hClose || 18) * 60 + (mClose || 0);
+    const is24h = openMins === 0 && closeMins >= 23 * 60 + 59;
+    if (is24h) return false;
+    return currentMins < openMins || currentMins > closeMins;
+  };
+
+  // Botón del tab "fechas": si falta info, muestra alerta; si fuera de horario, alerta interactiva
   const handleVerPlanes = () => {
-    if (puedeContinuarAPlanes) {
-      irASeccion("planes");
+    if (!puedeContinuarAPlanes) {
+      setAlertaFaltantesVisible(true);
       return;
     }
-    setAlertaFaltantesVisible(true);
+    if (checkOutsideSchedule()) {
+      setAlertaHorarioVisible(true);
+      return;
+    }
+    irASeccion("planes");
   };
 
   // Se dispara cuando en "planes" ya se eligió protección + kilometraje.
@@ -191,6 +215,35 @@ export default function FlujoReserva({ vehiculo }: Props) {
         mensaje={t("reserva.flujo.alertaFaltantesMensaje")}
         botones={[]}
         onCerrar={() => setAlertaFaltantesVisible(false)}
+      />
+
+      <AlertModal
+        visible={alertaHorarioVisible}
+        icono="time-outline"
+        titulo={t("reserva.horario.titulo", { defaultValue: "Sucursal fuera de horario de atención" })}
+        mensaje={t("reserva.horario.mensaje", {
+          sucursal: branchName || t("reserva.horario.laSucursal", { defaultValue: "la sucursal" }),
+          apertura: horario.horaApertura,
+          cierre: horario.horaCierre,
+          defaultValue: `La sucursal ${branchName} tiene un horario de atención de ${horario.horaApertura} a ${horario.horaCierre}.\n\nEn este momento se encuentra cerrada, pero puedes registrar tu reserva ahora y quedará en estado PENDIENTE.\n\nMañana a las ${horario.horaApertura} te notificaremos por correo electrónico, notificación web y push para que puedas continuar con tu reserva.`,
+        })}
+        botones={[
+          {
+            texto: t("reserva.horario.modificar", { defaultValue: "Regresar y modificar" }),
+            variante: "secundario",
+            onPress: () => setAlertaHorarioVisible(false),
+          },
+          {
+            texto: t("reserva.horario.aceptar", { defaultValue: "Registrar como pendiente" }),
+            variante: "primario",
+            onPress: () => {
+              setOutsideScheduleAccepted(true);
+              setAlertaHorarioVisible(false);
+              irASeccion("planes");
+            },
+          },
+        ]}
+        onCerrar={() => setAlertaHorarioVisible(false)}
       />
     </View>
   );

@@ -2,11 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/store/authStore'
 import { sessionTokens } from './sessionTokens'
 
-const baseURL = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/$/, '')
-
-if (!baseURL) {
-  throw new Error('EXPO_PUBLIC_API_URL es obligatoria.')
-}
+const baseURL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080/api/v1').trim().replace(/\/$/, '')
 
 export const apiClient = axios.create({
   baseURL,

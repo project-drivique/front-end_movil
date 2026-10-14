@@ -10,6 +10,10 @@ export const loginStyles = StyleSheet.create({
     justifyContent: "space-between",
     paddingBottom: 40,
   },
+  errorTexto: {
+    color: "#EF4444",
+    fontSize: 13,
+  },
 
   // ── Top Bar (Nuevo Panel superior) ────────────────────────────────
   topBar: {

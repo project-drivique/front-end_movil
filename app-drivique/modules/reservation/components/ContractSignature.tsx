@@ -174,11 +174,7 @@ export default function FirmaContrato({
     try {
       const firmaTrazos = firmaRef.current?.obtenerFirmaData() || "[]";
       const contrato = await contratoService.guardarFirma(referencia, {
-        codigo: codigoContrato,
         firmaTrazos: firmaTrazos,
-        archivoOriginalUri: "firma_tactil.json",
-        archivoOriginalNombre: "firma_tactil.json",
-        archivoOriginalBase64: "",
         ciudad: ciudadSucursal,
         fecha: new Date().toISOString(),
       });

@@ -229,9 +229,8 @@ export default {
       "reenviarEn": "Reenviar en {{seg}}s",
       "reenviar": "Reenviar código",
       "codigoIncorrecto": "El código ingresado es incorrecto. Inténtalo de nuevo.",
-      "volverRegistro": "Volver al registro",
-      "codigoEnviadoTitulo": "Código enviado (demo)",
-      "codigoEnviadoMsg": "Como esta app no envía correos reales, tu código de verificación es:"
+      "codigoEnviadoTitulo": "Código enviado",
+      "codigoEnviadoMsg": "Hemos enviado un código de verificación a tu correo electrónico. Por favor revisa tu bandeja de entrada o la carpeta de spam."
     },
     "invitado": {
       "titulo": "Explorar vehículos",
@@ -316,11 +315,12 @@ export default {
       "ventaja4Desc": "Seguimiento en tiempo real de tu reserva."
     },
     "pass": {
-      "min8": "Mínimo 8 caracteres",
+      "min8": "Mínimo 12 caracteres",
+      "min12": "Mínimo 12 caracteres",
       "mayuscula": "1 letra mayúscula",
       "minuscula": "1 letra minúscula",
       "numero": "1 número",
-      "simbolo": "1 símbolo (@$!%*?&)"
+      "simbolo": "1 símbolo especial"
     },
     "social": {
       "o": "o continúa con",
@@ -1122,7 +1122,6 @@ export default {
         "DNI": "Documento Nacional de Identidad (DNI)",
         "PPT": "Permiso por Protección Temporal (PPT)",
         "PEP": "Permiso Especial de Permanencia (PEP)",
-        "TI": "Tarjeta de Identidad (TI)",
         "DocExtranjero": "Documento de Extranjería"
       },
       "avisoGuardadoDinamico": "Al confirmar la reserva, quedará guardada automáticamente en tu cuenta. Tendrás un plazo de {{horas}} para completar el pago antes de su cancelación automática."

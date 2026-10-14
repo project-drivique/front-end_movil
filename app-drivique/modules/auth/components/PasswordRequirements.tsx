@@ -12,11 +12,11 @@ export function PasswordRequirements({ password }: Props) {
   const c = useTemaColores();
 
   const requisitos = [
-    { key: "auth.pass.min8",      ok: password.length >= 8 },
+    { key: "auth.pass.min12",      ok: password.length >= 12 },
     { key: "auth.pass.mayuscula", ok: /[A-Z]/.test(password) },
     { key: "auth.pass.minuscula", ok: /[a-z]/.test(password) },
     { key: "auth.pass.numero",    ok: /[0-9]/.test(password) },
-    { key: "auth.pass.simbolo",   ok: /[@$!%*?&]/.test(password) },
+    { key: "auth.pass.simbolo",   ok: /[^a-zA-Z0-9\s]/.test(password) },
   ];
 
   const cumplidos   = requisitos.filter(r => r.ok).length;

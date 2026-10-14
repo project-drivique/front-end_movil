@@ -103,8 +103,16 @@ export function getSucursalesPorCiudad(ciudad: string): string[] {
 
 // Helper para obtener la ciudad de una sucursal específica
 export function getCiudadPorSucursal(sucursal: string): string | null {
-  const encontrada = SUCURSALES_DATA.find((s) => s.nombre === sucursal);
-  return encontrada ? encontrada.ciudad : null;
+  if (!sucursal) return null;
+  const encontrada = SUCURSALES_DATA.find(
+    (s) => s.nombre.toLowerCase() === sucursal.toLowerCase()
+  );
+  if (encontrada) return encontrada.ciudad;
+  const sLower = sucursal.toLowerCase();
+  for (const c of CIUDADES_DATA) {
+    if (sLower.includes(c.nombre.toLowerCase())) return c.nombre;
+  }
+  return null;
 }
 
 // Helper para obtener la dirección de una sucursal específica
