@@ -5,7 +5,7 @@
 // mismas 6 cláusulas, el mismo código de contrato autogenerado y la misma
 // firma táctil del usuario. La firma de la plataforma se muestra como un
 // sello de texto en vez de una imagen (acá no existe el PNG de la firma).
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Alert,
   Image,

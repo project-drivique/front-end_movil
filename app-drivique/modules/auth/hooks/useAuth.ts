@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { LoginForm, RegistroForm, OlvideContrasenaForm, AuthError } from '../types/auth.types';
 import { esCorreoValido as validarCorreo, esContrasenaSegura as validarContrasenaSegura } from '@/utils/validators';
 import { authService } from '../services/authService';
+import { useAuthStore } from '@/store/authStore';
 
 const errorMessage = (error: any, fallback: string) =>
   error?.response?.data?.detail ||
@@ -127,7 +128,23 @@ export function useVerificarCorreo(correo: string, inicialEnviado = false) {
   const verificarCodigo = async (codigo: string) => {
     setVerificando(true);
     try {
-      await authService.verificarCorreo(correo, codigo);
+      const data = await authService.verificarCorreo(correo, codigo);
+      
+      // Si el backend retorna los tokens directamente (auto-login tras verificar)
+      if (data?.accessToken && data?.userProfile) {
+        const p = data.userProfile;
+        useAuthStore.getState().setUsuario({
+          id: p.id,
+          correo: p.email,
+          nombres: p.firstName,
+          apellidos: p.lastName,
+          rol: 'cliente',
+          activo: p.accountStatus === 'ACTIVE',
+          permisosValidos: p.accountStatus === 'ACTIVE',
+          sucursalId: (p as any).sucursalId,
+          sucursalNombre: (p as any).sucursalNombre
+        }, data.accessToken);
+      }
       setCodigoIncorrecto(false);
 
       // El backend solo confirma la verificación; si tenemos las credenciales
