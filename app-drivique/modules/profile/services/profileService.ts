@@ -8,6 +8,10 @@ export interface UserPreferencesDTO {
   themePreference?: string
   emailNotifications?: boolean
   smsNotifications?: boolean
+  pushNotifications?: boolean
+  inAppNotifications?: boolean
+  marketingNotifications?: boolean
+  updatedAt?: string
 }
 
 export interface UserDocumentDTO {

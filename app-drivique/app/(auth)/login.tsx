@@ -63,6 +63,7 @@ export default function LoginScreen() {
   const {
     cargandoGoogle,
     cargandoFacebook,
+    errorSocial,
     iniciarGoogle,
     iniciarFacebook,
   } = useSocialAuth({
@@ -70,15 +71,21 @@ export default function LoginScreen() {
       setUsuario(usr, token);
       actualizarUsuarioGlobal(usr);
       setLoginExitoso(true);
-      setTimeout(() => {
-        router.replace("/(tabs)/catalog");
-      }, 800);
+      router.replace("/(tabs)/catalog");
     },
   });
 
   useEffect(() => {
     if (authHydrated && authUsuario && !loginExitoso) {
-      router.replace("/(tabs)/catalog");
+      const isMgmt = authUsuario.rol === 'encargado_sucursal' ||
+        authUsuario.rol === 'administrador' ||
+        authUsuario.roles?.includes('BRANCH_ADMIN') ||
+        authUsuario.roles?.includes('SUPER_ADMIN');
+      if (isMgmt) {
+        router.replace("/(tabs)/search");
+      } else {
+        router.replace("/(tabs)/catalog");
+      }
     }
   }, [authHydrated, authUsuario, loginExitoso]);
 
@@ -132,10 +139,14 @@ export default function LoginScreen() {
           nombres: usuarioEncontrado.nombres,
           apellidos: usuarioEncontrado.apellidos,
           rol: usuarioEncontrado.rol,
+          roles: usuarioEncontrado.roles,
+          permisos: usuarioEncontrado.permisos,
           activo: usuarioEncontrado.activo,
           permisosValidos: usuarioEncontrado.permisosValidos,
           sucursalId: usuarioEncontrado.sucursalId,
           sucursalNombre: usuarioEncontrado.sucursalNombre,
+          branchId: usuarioEncontrado.branchId,
+          branchName: usuarioEncontrado.branchName,
         },
         accessToken,
       );
@@ -150,7 +161,15 @@ export default function LoginScreen() {
 
       setTimeout(() => {
         setAlertaExitoVisible(false);
-        router.replace("/(tabs)/catalog");
+        const isMgmt = usuarioEncontrado.rol === 'encargado_sucursal' ||
+          usuarioEncontrado.rol === 'administrador' ||
+          usuarioEncontrado.roles?.includes('BRANCH_ADMIN') ||
+          usuarioEncontrado.roles?.includes('SUPER_ADMIN');
+        if (isMgmt) {
+          router.replace("/(tabs)/search");
+        } else {
+          router.replace("/(tabs)/catalog");
+        }
       }, 1000);
     }, (correo) => {
       // Redirigir a verificar-correo e iniciar reenvío de OTP automáticamente (HU de mejora)
@@ -348,6 +367,11 @@ export default function LoginScreen() {
                         cargandoGoogle={cargandoGoogle}
                         cargandoFacebook={cargandoFacebook}
                       />
+                      {errorSocial ? (
+                        <Text style={[styles.errorTexto, { marginTop: 8, textAlign: "center" }]}>
+                          {errorSocial}
+                        </Text>
+                      ) : null}
                     </View>
 
                     <View style={styles.registroRow}>

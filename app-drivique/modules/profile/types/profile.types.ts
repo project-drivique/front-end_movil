@@ -5,7 +5,6 @@ export type TipoDocumento =
   | "DNI"
   | "PPT"
   | "PEP"
-  | "TI"
   | "Doc. Extranjero";
 
 // Nacionalidad es de tipo abierto (string) porque la lista real vive en

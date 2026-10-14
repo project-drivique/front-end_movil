@@ -544,7 +544,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                   }
                   placeholderTextColor={c.textMuted}
                   keyboardType={
-                    datosPersonales.tipoDocumento === "CC" || datosPersonales.tipoDocumento === "TI"
+                    datosPersonales.tipoDocumento === "CC"
                       ? "numeric"
                       : "default"
                   }

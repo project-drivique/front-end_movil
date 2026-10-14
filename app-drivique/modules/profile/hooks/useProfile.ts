@@ -10,6 +10,8 @@
  */
 
 import { useUsuarioStore } from "@/store/userStore";
+import { useAuthStore } from "@/store/authStore";
+import { apiClient } from "@/services/http/apiClient";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { calcularEdad, esCorreoValido, esTelefonoValido } from "@/utils/validators";
@@ -39,6 +41,38 @@ export function usePerfil() {
     fechaNacimiento: usuario.fechaNacimiento,
     nacionalidad: usuario.nacionalidad,
   });
+
+  // Sincronizar perfil en tiempo real desde la API del backend
+  useEffect(() => {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      apiClient.get('/users/me').then(({ data }) => {
+        if (data) {
+          const mapped = {
+            nombres: data.firstName || '',
+            apellidos: data.lastName || '',
+            telefono: data.phone || '',
+            correo: data.email || '',
+            fechaNacimiento: data.birthDate ? String(data.birthDate).slice(0, 10) : '',
+            numeroDocumento: data.documentNumber || '',
+            perfilCompleto: data.profileComplete ?? false,
+          };
+          actualizarUsuarioGlobal(mapped);
+          useAuthStore.getState().actualizarUsuario({
+            nombres: mapped.nombres,
+            apellidos: mapped.apellidos,
+          });
+          setForm((prev) => ({
+            ...prev,
+            nombres: mapped.nombres || prev.nombres,
+            apellidos: mapped.apellidos || prev.apellidos,
+            telefono: mapped.telefono || prev.telefono,
+            fechaNacimiento: mapped.fechaNacimiento || prev.fechaNacimiento,
+          }));
+        }
+      }).catch(console.error);
+    }
+  }, []);
 
   // Si el usuario global cambia (p. ej. porque lo llenó desde el
   // formulario de reserva) y no estamos editando, refrescamos el form
@@ -150,15 +184,21 @@ export function usePerfil() {
   };
 
   // ── Guardar cambios perfil ─────────────────────────────────────────────────
-  const guardarCambios = (onExito: () => void, onError: () => void) => {
+  const guardarCambios = async (onExito: () => void, onError: (msg?: string) => void) => {
     if (!validarPerfil()) {
       onError();
       return;
     }
 
     setCargando(true);
-    // Simula llamada API — se reemplaza por servicio real
-    setTimeout(() => {
+    try {
+      await apiClient.put('/users/me', {
+        firstName: form.nombres.trim(),
+        lastName: form.apellidos.trim(),
+        phone: form.telefono.trim(),
+        birthDate: form.fechaNacimiento || null,
+      });
+
       actualizarUsuarioGlobal({
         nombres: form.nombres.trim(),
         apellidos: form.apellidos.trim(),
@@ -166,10 +206,20 @@ export function usePerfil() {
         fechaNacimiento: form.fechaNacimiento,
         nacionalidad: form.nacionalidad,
       });
+
+      useAuthStore.getState().actualizarUsuario({
+        nombres: form.nombres.trim(),
+        apellidos: form.apellidos.trim(),
+      });
+
       setEditando(false);
-      setCargando(false);
       onExito();
-    }, 1000);
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Error al guardar cambios en el perfil';
+      onError(msg);
+    } finally {
+      setCargando(false);
+    }
   };
 
   // ── Cancelar edición ───────────────────────────────────────────────────────

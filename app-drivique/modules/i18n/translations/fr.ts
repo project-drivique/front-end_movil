@@ -229,9 +229,8 @@ export default {
       "reenviarEn": "Renvoyer dans {{seg}}s",
       "reenviar": "Renvoyer le code",
       "codigoIncorrecto": "Le code saisi est incorrect. Réessayez.",
-      "volverRegistro": "Retour à l'inscription",
-      "codigoEnviadoTitulo": "Code envoyé (démo)",
-      "codigoEnviadoMsg": "Comme cette app n'envoie pas de vrais e-mails, votre code de vérification est :"
+      "codigoEnviadoTitulo": "Code envoyé",
+      "codigoEnviadoMsg": "Nous avons envoyé un code de vérification à votre adresse e-mail. Veuillez vérifier votre boîte de réception ou votre dossier spam."
     },
     "invitado": {
       "titulo": "Explorer les véhicules",
@@ -316,11 +315,12 @@ export default {
       "ventaja4Desc": "Suivi en temps réel de votre réservation."
     },
     "pass": {
-      "min8": "Minimum 8 caractères",
+      "min8": "Minimum 12 caractères",
+      "min12": "Minimum 12 caracteres",
       "mayuscula": "1 lettre majuscule",
       "minuscula": "1 lettre minuscule",
       "numero": "1 chiffre",
-      "simbolo": "1 symbole (@$!%*?&)"
+      "simbolo": "1 symbole spécial"
     },
     "social": {
       "o": "ou continuer avec",

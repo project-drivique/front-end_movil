@@ -36,8 +36,9 @@ function formatoTiempo(segundos: number): string {
 export default function VerificarCorreoScreen() {
   const { t } = useTranslation();
   const c = useTemaColores();
-  const { correo: correoParam, autoSend } = useLocalSearchParams<{ correo?: string; autoSend?: string }>();
+  const { correo: correoParam, autoSend, enviado } = useLocalSearchParams<{ correo?: string; autoSend?: string; enviado?: string }>();
   const correo = correoParam ?? "";
+  const yaEnviado = enviado === "true";
 
   const {
     cargando,
@@ -47,7 +48,7 @@ export default function VerificarCorreoScreen() {
     setCodigoIncorrecto,
     enviarCodigo,
     verificarCodigo,
-  } = useVerificarCorreo(correo);
+  } = useVerificarCorreo(correo, yaEnviado);
   const { registrarEvento } = useAuditoria();
 
   const [codigo, setCodigo] = useState("");
@@ -62,6 +63,12 @@ export default function VerificarCorreoScreen() {
   useEffect(() => {
     if (!correo) router.replace("/(auth)/register");
   }, [correo]);
+
+  useEffect(() => {
+    if (yaEnviado) {
+      iniciarTemporizadores();
+    }
+  }, [yaEnviado]);
 
   useEffect(() => {
     if (autoSend === 'true' && !codigoEnviado && !cargando && correo) {
@@ -86,7 +93,15 @@ export default function VerificarCorreoScreen() {
   }
 
   async function enviarOReenviarCodigo(tipoAuditoria: "codigo_enviado" | "codigo_reenviado") {
-    await enviarCodigo();
+    try {
+      await enviarCodigo();
+    } catch {
+      Alert.alert(
+        t("auth.verificarCorreo.errorTitulo", { defaultValue: "Error" }),
+        t("auth.verificarCorreo.errorEnvio", { defaultValue: "No se pudo enviar el código. Intenta de nuevo en unos segundos." })
+      );
+      return;
+    }
     iniciarTemporizadores();
     setCodigo("");
     registrarEvento("verificacion_correo", tipoAuditoria);
@@ -95,10 +110,17 @@ export default function VerificarCorreoScreen() {
 
   async function handleVerificar() {
     if (codigo.length !== 6 || expirado) return;
-    const ok = await verificarCodigo(codigo);
-    if (ok) {
+    const resultado = await verificarCodigo(codigo);
+    if (resultado === "logueado") {
       registrarEvento("verificacion_correo", "codigo_correcto");
       router.replace('/(tabs)/catalog');
+    } else if (resultado === "verificado") {
+      registrarEvento("verificacion_correo", "codigo_correcto");
+      Alert.alert(
+        t("auth.verificarCorreo.verificadoTitulo", { defaultValue: "Correo verificado" }),
+        t("auth.verificarCorreo.verificadoMsg", { defaultValue: "Tu cuenta fue verificada. Inicia sesión con tu correo y contraseña." })
+      );
+      router.replace('/(auth)/login');
     } else {
       registrarEvento("verificacion_correo", "codigo_incorrecto");
       setCodigo("");
@@ -186,7 +208,7 @@ export default function VerificarCorreoScreen() {
                 <View style={styles.filaInferior}>
                   <TouchableOpacity onPress={() => router.replace("/(auth)/register")}>
                     <Text style={[styles.filaInferiorTexto, { color: c.textSecondary }]}>
-                      {t("auth.verificarCorreo.volverRegistro")}
+                      {t("auth.verificarCorreo.volverRegistro", { defaultValue: "Volver al registro" })}
                     </Text>
                   </TouchableOpacity>
                   {puedeReenviar ? (
@@ -216,7 +238,7 @@ export default function VerificarCorreoScreen() {
                   onPress={() => router.replace("/(auth)/register")}
                 >
                   <Text style={[styles.volverRegistroTexto, { color: c.textSecondary }]}>
-                    {t("auth.verificarCorreo.volverRegistro")}
+                    {t("auth.verificarCorreo.volverRegistro", { defaultValue: "Volver al registro" })}
                   </Text>
                 </TouchableOpacity>
               </>

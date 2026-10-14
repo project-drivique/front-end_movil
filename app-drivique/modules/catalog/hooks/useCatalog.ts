@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
@@ -12,6 +12,7 @@ import {
   FiltrosCatalogoState,
   Vehiculo,
 } from "../types/catalog.types";
+import { catalogoService } from "../services/catalogService";
 import { useMonedaStore } from "@/store/currencyStore";
 
 function estaDisponibleEnRango(
@@ -82,9 +83,31 @@ export function useCatalogo(opciones: OpcionesCatalogo = {}) {
   const { t } = useTranslation();
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
-  const [vehiculos] = useState<Vehiculo[]>(VEHICULOS_MOCK);
-  const [cargando] = useState(false);
-  const [error] = useState<string | null>(null);
+  const [vehiculos, setVehiculos] = useState<Vehiculo[]>(VEHICULOS_MOCK);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let activo = true;
+    setCargando(true);
+    catalogoService
+      .getVehiculos()
+      .then((data) => {
+        if (activo && data && data.length > 0) {
+          setVehiculos(data);
+        }
+      })
+      .catch((err) => {
+        if (activo) setError(err?.message || "Error al cargar catálogo");
+      })
+      .finally(() => {
+        if (activo) setCargando(false);
+      });
+
+    return () => {
+      activo = false;
+    };
+  }, []);
 
   // Dominio exclusivo del modal "Filtros"
   const [filtros, setFiltros] = useState<FiltrosCatalogoState>(FILTROS_BASE);
