@@ -37,6 +37,7 @@ import TarjetaTerminosCondiciones from "./TermsConditionsCard";
 import TarjetaVerificacionDocumental from "./DocumentVerificationCard";
 import CouponSection from "./CouponSection";
 import { useServerQuote } from "../hooks/useServerQuote";
+import { COLOR_ACENTO, COLOR_ENLACE_OSCURO, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 
 function combinarNombreCompleto(nombres: string, apellidos: string): string {
   return [nombres, apellidos].filter(Boolean).join(" ").trim();
@@ -115,8 +116,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const [errorServidor, setErrorServidor] = useState("");
   const [modalInstruccionesEfectivoVisible, setModalInstruccionesEfectivoVisible] = useState(false);
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
-  const brandBg = c.oscuro ? "#3B82F6" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
+  const brandBg = c.oscuro ? COLOR_MARCA_OSCURO : COLOR_MARCA;
 
   useEffect(() => {
     const precarga: Partial<typeof datosPersonales> = {};
@@ -578,7 +579,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
               <Ionicons
                 name="information-circle-outline"
                 size={18}
-                color={c.oscuro ? "#60A5FA" : "#1E40AF"}
+                color={c.oscuro ? COLOR_ACENTO : COLOR_ENLACE_OSCURO}
                 style={{ marginTop: 1 }}
               />
               <Text

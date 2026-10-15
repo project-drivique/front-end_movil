@@ -18,10 +18,12 @@ import {
   View,
 } from "react-native";
 import { olvideStyles as styles } from "@/modules/auth/styles/forgot-password.styles";
+import { useLogoMarca } from "@/store/brandStore";
 
 const SEGUNDOS_ESPERA = 300;
 
 export default function OlvideContrasenaScreen() {
+  const logoMarca = useLogoMarca();
   const { t } = useTranslation();
   const c = useTemaColores();
   const { form, errores, cargando, fase, actualizarCampo, enviarEnlace, validarCodigo, cambiarContrasena } =
@@ -107,7 +109,7 @@ export default function OlvideContrasenaScreen() {
         <View style={[styles.tarjeta, { backgroundColor: c.bgCard }]}>
           <View style={styles.logoWrapper}>
             <Image
-              source={require("@/assets/images/logo.png")}
+              source={logoMarca}
               style={styles.logo}
             />
           </View>

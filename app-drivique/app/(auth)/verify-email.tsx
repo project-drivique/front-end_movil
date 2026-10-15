@@ -23,6 +23,7 @@ import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { OtpInput } from "@/components/ui/OtpInput";
 import { useAuditoria } from "@/store/auditStore";
 import { verificarCorreoStyles as styles } from "@/modules/auth/styles/verify-email.styles";
+import { useLogoMarca } from "@/store/brandStore";
 
 const DURACION_CODIGO_SEGUNDOS = 5 * 60;
 const ESPERA_REENVIO_SEGUNDOS = 60;
@@ -34,6 +35,7 @@ function formatoTiempo(segundos: number): string {
 }
 
 export default function VerificarCorreoScreen() {
+  const logoMarca = useLogoMarca();
   const { t } = useTranslation();
   const c = useTemaColores();
   const { correo: correoParam, autoSend, enviado } = useLocalSearchParams<{ correo?: string; autoSend?: string; enviado?: string }>();
@@ -156,7 +158,7 @@ export default function VerificarCorreoScreen() {
         <View style={styles.cardWrap}>
           <View style={[styles.card, { backgroundColor: c.bgCard }]}>
             <View style={styles.iconoWrap}>
-              <Image source={require("@/assets/images/logo.png")} style={styles.logo} />
+              <Image source={logoMarca} style={styles.logo} />
             </View>
 
             <Text style={[styles.titulo, { color: c.textPrimary }]}>

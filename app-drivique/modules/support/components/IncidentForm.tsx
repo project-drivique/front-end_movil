@@ -23,6 +23,7 @@ import {
 import { incidentService } from "../services/incidentService";
 import { Incident, IncidentCategory } from "../types/incident.types";
 import { SelectorAdjuntos, useAdjuntos } from "./incidentUi";
+import { COLOR_ACENTO, COLOR_MARCA } from "@/constants/brandPalette";
 
 const CATEGORIAS: IncidentCategory[] = ["RESERVATION", "VEHICLE", "PAYMENT", "OTHER"];
 
@@ -35,7 +36,7 @@ interface Props {
 export default function IncidentForm({ reservaInicialId, onCreada, onCancelar }: Props) {
   const c = useTemaColores();
   const { t } = useTranslation();
-  const acento = c.oscuro ? "#60A5FA" : "#2f4ea2";
+  const acento = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const sucursales = useReferenceStore((st) => st.sucursales);
   const adjuntos = useAdjuntos();
 
@@ -243,10 +244,10 @@ function Opcion({ texto, activo, onPress }: { texto: string; activo: boolean; on
   const c = useTemaColores();
   return (
     <TouchableOpacity onPress={onPress} style={[s.opcion, { borderBottomColor: c.border }]}>
-      <Text style={{ color: activo ? (c.oscuro ? "#60A5FA" : "#2f4ea2") : c.textPrimary, flex: 1, fontWeight: activo ? "800" : "500" }}>
+      <Text style={{ color: activo ? (c.oscuro ? COLOR_ACENTO : COLOR_MARCA) : c.textPrimary, flex: 1, fontWeight: activo ? "800" : "500" }}>
         {texto}
       </Text>
-      {activo ? <Ionicons name="checkmark" size={18} color={c.oscuro ? "#60A5FA" : "#2f4ea2"} /> : null}
+      {activo ? <Ionicons name="checkmark" size={18} color={c.oscuro ? COLOR_ACENTO : COLOR_MARCA} /> : null}
     </TouchableOpacity>
   );
 }

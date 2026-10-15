@@ -29,6 +29,7 @@ import FirmaCanvas, { FirmaCanvasHandle } from "@/modules/reservation/components
 import { ContratoDTO, contratoService } from "@/modules/reservation/services/contractService";
 import { mensajeDeError } from "@/modules/reservation/services/reservationPersistService";
 import { fmt } from "@/modules/reservation/components/BookingSummaryModal.pieces";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 function formatearFecha(iso?: string | null): string {
   if (!iso) return "";
@@ -42,7 +43,7 @@ export default function ContratoScreen() {
   const c = useTemaColores();
   const { t } = useTranslation();
   const { ref } = useLocalSearchParams<{ ref?: string }>();
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const firmaRef = useRef<FirmaCanvasHandle>(null);
 
   const [cargando, setCargando] = useState(true);

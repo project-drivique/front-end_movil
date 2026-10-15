@@ -20,7 +20,7 @@ export default function VehicleDescriptionCard({ vehiculo }: Props) {
     <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
       <View style={styles.headerConIcono}>
         <Ionicons name="reorder-three" size={18} color={COLOR_MARCA} />
-        <Text style={styles.tituloHeaderConIcono}>
+        <Text style={[styles.tituloHeaderConIcono, { color: COLOR_MARCA }]}>
           {t("reserva.flujo.descripcion", { defaultValue: "Descripción" })}
         </Text>
       </View>

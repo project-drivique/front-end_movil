@@ -22,6 +22,7 @@ import {
 import { GRADIENTES } from "@/constants/gradients";
 import { useReservaStore } from "@/store/reservationStore";
 import { useMonedaStore } from "@/store/currencyStore";
+import { COLOR_ACENTO, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 
 const { height } = Dimensions.get("window");
 
@@ -35,8 +36,8 @@ export default function TarjetaTerminosCondiciones() {
   const c = useTemaColores();
   const { t } = useTranslation();
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
-  const brandBg = c.oscuro ? "#3B82F6" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
+  const brandBg = c.oscuro ? COLOR_MARCA_OSCURO : COLOR_MARCA;
 
   const handleScrollTerminos = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;

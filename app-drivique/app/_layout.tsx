@@ -7,6 +7,8 @@ import i18n from "@/modules/i18n";
 import { useIdioma } from "@/modules/i18n/hooks/useLanguage";
 import { FloatingSupportChat } from "@/components/ui/FloatingSupportChat";
 import { useEffect } from "react";
+import { AppState } from "react-native";
+import { useBrandStore } from "@/store/brandStore";
 import { useReferenceStore } from "@/store/referenceStore";
 import { useAuthStore } from "@/store/authStore";
 
@@ -15,6 +17,20 @@ WebBrowser.maybeCompleteAuthSession();
 export default function RootLayout() {
   const { temaActual } = useIdioma();
   const token = useAuthStore((s) => s.token);
+  useBrandStore((s) => s.version); // repinta la app cuando cambia la marca
+
+  // Marca (colores y logo) sincronizada con la web: al abrir, al volver a la app y cada minuto
+  useEffect(() => {
+    useBrandStore.getState().hidratar().catch(() => {});
+    const sub = AppState.addEventListener("change", (estado) => {
+      if (estado === "active") useBrandStore.getState().cargar().catch(() => {});
+    });
+    const timer = setInterval(() => useBrandStore.getState().cargar().catch(() => {}), 60000);
+    return () => {
+      sub.remove();
+      clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     useReferenceStore.getState().cargarPublicas().catch(() => {});

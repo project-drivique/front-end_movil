@@ -25,6 +25,7 @@ import {
   formatearFechaHora,
   PrioridadInsignia,
 } from "@/modules/support/components/incidentUi";
+import { COLOR_ACENTO, COLOR_MARCA } from "@/constants/brandPalette";
 
 type Vista = "lista" | "nueva" | "detalle";
 
@@ -66,7 +67,7 @@ export default function SupportScreen() {
     }
   }, [params.incidencia, params.tab, params.reservaId]);
 
-  const acento = c.oscuro ? "#60A5FA" : "#2f4ea2";
+  const acento = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   const volver = () => {
     if (vista === "lista") {

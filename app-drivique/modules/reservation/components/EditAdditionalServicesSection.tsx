@@ -21,6 +21,7 @@ import { formatCurrency } from "@/utils/currencyUtils";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { diasEntre } from "./BookingSummaryModal.pieces";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 interface Props {
   vehiculo: Vehiculo;
@@ -49,7 +50,7 @@ export default function EditAdditionalServicesSection({
   // Borrador local de servicios seleccionados
   const [draftServicios, setDraftServicios] = useState<string[]>([...storeServicios]);
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const todosLosServicios = useMemo(
     () =>
       (vehiculo.servicios ?? []).filter(

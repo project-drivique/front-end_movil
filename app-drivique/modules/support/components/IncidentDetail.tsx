@@ -28,6 +28,7 @@ import {
   SelectorAdjuntos,
   useAdjuntos,
 } from "./incidentUi";
+import { COLOR_ACENTO, COLOR_MARCA } from "@/constants/brandPalette";
 
 interface Props {
   incidentId: string;
@@ -37,7 +38,7 @@ interface Props {
 export default function IncidentDetail({ incidentId, onActualizada }: Props) {
   const c = useTemaColores();
   const { t } = useTranslation();
-  const acento = c.oscuro ? "#60A5FA" : "#2f4ea2";
+  const acento = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const adjuntos = useAdjuntos();
 
   const [incidencia, setIncidencia] = useState<Incident | null>(null);

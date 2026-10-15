@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { GRADIENTES, SOMBRA_BOTON_GRADIENTE } from "@/constants/gradients";
 import { useTranslation } from "react-i18next";
+import { useLogoMarca } from "@/store/brandStore";
 
 interface Props {
   visible: boolean;
@@ -22,6 +23,7 @@ export default function ModalReservaRegistrada({
   onPagarWompi,
   onCerrar,
 }: Props) {
+  const logoMarca = useLogoMarca();
   const c = useTemaColores();
   const { t } = useTranslation();
 
@@ -40,7 +42,7 @@ export default function ModalReservaRegistrada({
             ]}
           >
             <Image
-              source={require("@/assets/images/logo.png")}
+              source={logoMarca}
               style={styles.logoImg}
               resizeMode="contain"
             />

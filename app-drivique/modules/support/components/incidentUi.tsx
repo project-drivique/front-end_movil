@@ -10,6 +10,7 @@ import {
   IncidentStatus,
 } from "../types/incident.types";
 import { MAX_ADJUNTOS, MAX_BYTES_ADJUNTO, TIPOS_ADJUNTO } from "../services/incidentService";
+import { COLOR_ACENTO, COLOR_MARCA } from "@/constants/brandPalette";
 
 export const COLOR_ESTADO: Record<IncidentStatus, string> = {
   OPEN: "#f59e0b",
@@ -126,7 +127,7 @@ export function SelectorAdjuntos({
 }) {
   const c = useTemaColores();
   const { t } = useTranslation();
-  const acento = c.oscuro ? "#60A5FA" : "#2f4ea2";
+  const acento = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   return (
     <View>
       {archivos.map((a, i) => (
