@@ -17,7 +17,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar, DateData } from "react-native-calendars";
 import { GRADIENTES } from "@/constants/gradients";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
-import { CIUDADES, SUCURSALES_DATA } from "../constants/catalog.constants";
+import { getCiudadesNombres, getSucursalesData } from "../constants/catalog.constants";
+import { useReferenceStore } from "@/store/referenceStore";
 import { BusquedaForm } from "../types/catalog.types";
 
 type PickerField = "ciudad" | "sucursal" | null;
@@ -94,6 +95,9 @@ export default function BuscadorCatalogo({
   onPressRestringida,
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState<PickerField>(null);
+  useReferenceStore((st) => st.sucursales);
+  const CIUDADES = getCiudadesNombres();
+  const SUCURSALES_DATA = getSucursalesData();
   const c = useTemaColores();
   const { t } = useTranslation();
 

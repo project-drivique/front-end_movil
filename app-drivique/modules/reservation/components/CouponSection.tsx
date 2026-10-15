@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform, Image, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,8 +12,7 @@ import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { diasEntre } from "./BookingSummaryModal.pieces";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { useMonedaStore } from "@/store/currencyStore";
-import { VEHICULOS_MOCK } from "@/modules/catalog/constants/catalog.constants";
-import cuponesDemo from "@/mocks/cuponesDemo.json";
+import { pricingService } from "../services/pricingService";
 
 const { height } = Dimensions.get("window");
 
@@ -39,86 +38,36 @@ export default function CouponSection({ vehiculo }: Props) {
   const removerCupon = useReservaStore((s) => s.removerCupon);
   const fechasLugar = useReservaStore((s) => s.fechasLugar);
   
-  const normalizeStr = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const [cuponesDisponibles, setCuponesDisponibles] = useState<any[]>([]);
 
-  const cuponesDisponibles = useMemo(() => {
-    const dias = diasEntre(fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion);
-    return cuponesDemo
-      .filter((c: any) => c.estado !== "expirado")
-      .map((c: any) => ({
-        ...c,
-        expiracion: c.fechaExpiracion,
-        agotandose: c.estado === "a_punto_de_agotar",
-      }))
-      .filter((cpx: any) => {
-        // 1. Filtrar por vehículo específico si aplica
-        if (cpx.reglas?.vehiculoId && vehiculo.id !== cpx.reglas.vehiculoId) {
-          return false;
-        }
-        // 2. Filtrar para que solo aparezcan cupones compatibles con la categoría del vehículo actual
-        if (cpx.reglas?.categoriasValidas && cpx.reglas.categoriasValidas.length > 0 && vehiculo.categoria) {
-          const vehCatNorm = normalizeStr(vehiculo.categoria);
-          const esValida = cpx.reglas.categoriasValidas.some((cat: string) => normalizeStr(cat) === vehCatNorm);
-          if (!esValida) return false;
-        }
-        // 3. Filtrar por mínimo de días si ya están seleccionados
-        if (cpx.reglas?.minimoDias && dias > 0 && dias < cpx.reglas.minimoDias) {
-          return false;
-        }
-        // 4. Filtrar por método de pago si ya está seleccionado
-        if (cpx.reglas?.metodosPagoValidos && fechasLugar.metodoPago) {
-          if (!cpx.reglas.metodosPagoValidos.includes(fechasLugar.metodoPago)) {
-            return false;
-          }
-        }
-        return true;
-      });
-  }, [vehiculo.id, vehiculo.categoria, fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, fechasLugar.metodoPago]);
-  
+  useEffect(() => {
+    let activo = true;
+    pricingService
+      .getFeaturedPromotions()
+      .then((lista) => {
+        if (!activo) return;
+        setCuponesDisponibles(
+          lista.map((p: any) => ({
+            id: p.id,
+            codigo: p.code,
+            tituloPremio: p.code,
+            descuentoPorcentaje: String(p.discountType).toUpperCase().includes("PERCENT") ? Number(p.discountValue) : undefined,
+            descuentoFijo: String(p.discountType).toUpperCase().includes("PERCENT") ? undefined : Number(p.discountValue),
+            expiracion: p.endsAt,
+          })),
+        );
+      })
+      .catch(() => activo && setCuponesDisponibles([]));
+    return () => {
+      activo = false;
+    };
+  }, []);
+
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
 
-  const getCouponVehicleImages = (cpx: any): string[] => {
-    const vehId = cpx.reglas?.vehiculoId;
-    if (vehId) {
-      const specificCar = VEHICULOS_MOCK.find((v) => v.id === vehId);
-      if (specificCar) {
-        const carImgs = (specificCar.imagenes || []).filter(Boolean);
-        if (carImgs.length >= 3) return carImgs.slice(0, 3);
-        if (specificCar.imagen && !carImgs.includes(specificCar.imagen)) {
-          carImgs.unshift(specificCar.imagen);
-        }
-        if (carImgs.length >= 3) return carImgs.slice(0, 3);
-        // Completar con vehículos de la misma categoría
-        const catCars = VEHICULOS_MOCK.filter((v) => v.categoria === specificCar.categoria && v.id !== specificCar.id);
-        for (const v of catCars) {
-          const img = (v.imagenes && v.imagenes[0]) || v.imagen;
-          if (img && !carImgs.includes(img)) carImgs.push(img);
-          if (carImgs.length >= 3) break;
-        }
-        return carImgs.slice(0, 3);
-      }
-    }
-
-    const cat = cpx.reglas?.categoriasValidas?.[0];
-    const imgs: string[] = [];
-
-    if (cat && cat.toLowerCase() !== "todos") {
-      const matchingCars = VEHICULOS_MOCK.filter((v) => v.categoria.toLowerCase() === cat.toLowerCase());
-      for (const v of matchingCars) {
-        const img = (v.imagenes && v.imagenes[0]) || v.imagen;
-        if (img && !imgs.includes(img)) imgs.push(img);
-        if (imgs.length >= 3) break;
-      }
-    }
-
-    // Completar hasta 3 con vehículos de la flota
-    for (const v of VEHICULOS_MOCK) {
-      const img = (v.imagenes && v.imagenes[0]) || v.imagen;
-      if (img && !imgs.includes(img)) imgs.push(img);
-      if (imgs.length >= 3) break;
-    }
-
-    return imgs.slice(0, 3);
+  const getCouponVehicleImages = (_cpx: any): string[] => {
+    const img = (vehiculo.imagenes && vehiculo.imagenes[0]) || vehiculo.imagen;
+    return img ? [img] : [];
   };
 
   const formatDateShort = (isoString?: string) => {
@@ -140,70 +89,49 @@ export default function CouponSection({ vehiculo }: Props) {
     }
   };
   
-  const handleSeleccionarCupon = (cupon: any, fromModal: boolean = false) => {
+  const [validando, setValidando] = useState(false);
+
+  const validarYAplicar = async (codigo: string, fromModal: boolean) => {
     setErrorMsg("");
     setErrorMsgModal("");
-    
-    if (cupon.reglas) {
-      if (cupon.reglas.vehiculoId && vehiculo.id !== cupon.reglas.vehiculoId) {
-        const msg = "Este cupón solo es válido para otro modelo de vehículo.";
-        fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
-        return;
-      }
-      const dias = diasEntre(fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion);
-      if (cupon.reglas.minimoDias && dias < cupon.reglas.minimoDias) {
-        const msg = t("coupon.errorMinDays", { days: cupon.reglas.minimoDias });
-        fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
-        return;
-      }
-      if (cupon.reglas.categoriasValidas && cupon.reglas.categoriasValidas.length > 0 && vehiculo.categoria) {
-        const vehCatNorm = normalizeStr(vehiculo.categoria);
-        const isValidCategory = cupon.reglas.categoriasValidas.some((cat: string) => normalizeStr(cat) === vehCatNorm);
-        if (!isValidCategory) {
-          const msg = t("coupon.errorCategory", { categories: cupon.reglas.categoriasValidas.join(", ") });
-          fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
-          return;
-        }
-      }
-      if (cupon.reglas.metodosPagoValidos && fechasLugar.metodoPago) {
-        if (!cupon.reglas.metodosPagoValidos.includes(fechasLugar.metodoPago)) {
-          const msg = "Este cupón solo es válido para pagos digitales (Wompi).";
-          fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg);
-          return;
-        }
-      }
+    const setError = (msg: string) => (fromModal ? setErrorMsgModal(msg) : setErrorMsg(msg));
+    if (!vehiculo.uuid || !vehiculo.categoriaId || !fechasLugar.fechaRetiro || !fechasLugar.fechaDevolucion) {
+      setError(t("coupon.errorNeedDates", { defaultValue: "Selecciona las fechas de la reserva antes de aplicar un cupón." }));
+      return;
     }
+    setValidando(true);
+    try {
+      const res = await pricingService.validatePromotion({
+        code: codigo,
+        vehicleId: vehiculo.uuid,
+        categoryId: vehiculo.categoriaId,
+        pickupDate: fechasLugar.fechaRetiro,
+        returnDate: fechasLugar.fechaDevolucion,
+      });
+      const esPorcentaje = String(res.discountType).toUpperCase().includes("PERCENT");
+      aplicarCupon({
+        codigo: res.code,
+        descuentoPorcentaje: esPorcentaje ? Number(res.discountValue) : undefined,
+        descuentoFijo: esPorcentaje ? undefined : Number(res.discountValue),
+      });
+      setModalVisible(false);
+      setCodigoManual("");
+    } catch (e: any) {
+      const detail = e?.response?.data?.detail || e?.response?.data?.title;
+      setError(detail || t("coupon.errorInvalid"));
+    } finally {
+      setValidando(false);
+    }
+  };
 
-    aplicarCupon(cupon);
-    setModalVisible(false);
-    setCodigoManual("");
+  const handleSeleccionarCupon = (cupon: any, fromModal: boolean = false) => {
+    validarYAplicar(cupon.codigo, fromModal);
   };
 
   const handleAplicarManual = () => {
     const code = codigoManual.trim().toUpperCase();
     if (!code) return;
-    setErrorMsg("");
-
-    // Primero buscamos si está en la lista de notificaciones del usuario
-    let cuponLista = cuponesDisponibles.find(c => c.codigo.toUpperCase() === code);
-    
-    // Si no está, lo buscamos en la base de datos mock (cuponesDemo)
-    if (!cuponLista) {
-      const cuponDB = cuponesDemo.find(c => c.codigo.toUpperCase() === code);
-      if (cuponDB) {
-        if (cuponDB.estado === "expirado") {
-          setErrorMsg(t("coupon.errorExpired"));
-          return;
-        }
-        cuponLista = cuponDB as any;
-      }
-    }
-
-    if (cuponLista) {
-      handleSeleccionarCupon(cuponLista, false);
-    } else {
-      setErrorMsg(t("coupon.errorInvalid"));
-    }
+    validarYAplicar(code, false);
   };
 
   const handleCerrarModal = () => {
@@ -273,7 +201,7 @@ export default function CouponSection({ vehiculo }: Props) {
             />
             <TouchableOpacity
               style={[styles.aplicarBtn, { backgroundColor: primaryAccent }, codigoManual.length === 0 && { opacity: 0.5 }]}
-              disabled={codigoManual.length === 0}
+              disabled={codigoManual.length === 0 || validando}
               onPress={handleAplicarManual}
             >
               <Text style={styles.aplicarBtnText}>{t("coupon.applyBtn", "APLICAR")}</Text>
@@ -430,7 +358,7 @@ export default function CouponSection({ vehiculo }: Props) {
                         <View style={styles.bulletRow}>
                           <Text style={[styles.bulletDot, { color: primaryAccent }]}>•</Text>
                           <Text style={[styles.conditionTextCenter, { color: c.textSecondary }]}>
-                            {t("coupon.expires", { defaultValue: "Vence:" })} {selectedConditionsCoupon.expiracion ? formatDateShort(selectedConditionsCoupon.expiracion) : "31 de dic de 2026"}
+                            {t("coupon.expires", { defaultValue: "Vence:" })} {formatDateShort(selectedConditionsCoupon.expiracion)}
                           </Text>
                         </View>
                         {selectedConditionsCoupon.condicionesDetalladas ? (

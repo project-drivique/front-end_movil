@@ -20,6 +20,7 @@ function usuarioVacio(): UsuarioPerfil {
     numeroDocumento: "",
     fechaNacimiento: "",
     nacionalidad: "",
+    direccion: "",
     perfilCompleto: false,
   };
 }

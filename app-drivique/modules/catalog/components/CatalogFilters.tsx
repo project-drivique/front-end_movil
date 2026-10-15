@@ -13,13 +13,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
-import {
-  CATEGORIAS,
-  CIUDADES_FILTRO,
-  COMBUSTIBLES,
-  SUCURSALES,
-  TRANSMISIONES,
-} from "../constants/catalog.constants";
+import { getCiudadesFiltro, getSucursalesFiltro } from "../constants/catalog.constants";
+import { useReferenceStore } from "@/store/referenceStore";
 import { FiltrosCatalogoState } from "../types/catalog.types";
 import { useMonedaStore } from "@/store/currencyStore";
 
@@ -104,6 +99,13 @@ export default function FiltrosCatalogo({
 }: Props) {
   const insets = useSafeAreaInsets();
   const [dropdownAbierto, setDropdownAbierto] = useState<DropdownAbierto>(null);
+  useReferenceStore((st) => st.sucursales);
+  const opciones = useReferenceStore((st) => st.opcionesVehiculo);
+  const CATEGORIAS = ["Todos", ...opciones.categorias];
+  const TRANSMISIONES = ["Todas", ...opciones.transmisiones];
+  const COMBUSTIBLES = ["Todos", ...opciones.combustibles];
+  const CIUDADES_FILTRO = getCiudadesFiltro();
+  const SUCURSALES = getSucursalesFiltro();
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const c = useTemaColores();
   const { t } = useTranslation();

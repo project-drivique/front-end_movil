@@ -170,10 +170,10 @@ export default function PlanesAdicionales({ vehiculo, onContinuar }: Props) {
           </View>
 
           {/* Opciones de protección */}
-          {seguros.map((seguro) => {
+          {seguros.map((seguro, idxSeguro) => {
             const activo = planes.proteccion === seguro.nombre;
-            const beneficios = BENEFICIOS_PROTECCION[seguro.nombre] ?? [];
-            const esTotal = seguro.nombre === "Protección Total";
+            const beneficios = BENEFICIOS_PROTECCION[idxSeguro] ?? [];
+            const esTotal = idxSeguro === seguros.length - 1 && seguros.length > 1;
 
             return (
               <TouchableOpacity

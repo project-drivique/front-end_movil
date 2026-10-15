@@ -15,6 +15,7 @@ interface Props {
   nombreSucursal: string;
   total: number;
   horasLimitePago?: number;
+  codigoPago?: string | null;
   onIrAMisReservas?: () => void;
   onVolverAlInicio?: () => void;
   onCerrar?: () => void;
@@ -27,6 +28,7 @@ export function BranchCashPaymentModal({
   nombreSucursal,
   total,
   horasLimitePago,
+  codigoPago,
   onIrAMisReservas,
   onVolverAlInicio,
   onCerrar,
@@ -87,6 +89,15 @@ export function BranchCashPaymentModal({
               </Text>
               <Text style={[styles.valorRef, { color: primaryAccent }]}>{referencia}</Text>
             </View>
+
+            {!!codigoPago && (
+              <View style={styles.filaInfo}>
+                <Text style={[styles.etiqueta, { color: c.textSecondary }]}>
+                  {t("reserva.confirmacion.codigoPagoEfectivo", { defaultValue: "Código de pago en efectivo" })}:
+                </Text>
+                <Text style={[styles.valorRef, { color: primaryAccent }]}>{codigoPago}</Text>
+              </View>
+            )}
 
             {!!nombreSucursal && (
               <View style={styles.filaInfo}>
