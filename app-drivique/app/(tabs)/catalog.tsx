@@ -469,7 +469,7 @@ export default function Catalogo() {
               invitado={!usuario}
               esFavorito={esFavorito(item.id)}
               onAccionRestringida={!usuario ? abrirSweetAlert : undefined}
-              onToggleFavorito={usuario ? toggleFavorito : undefined}
+              onToggleFavorito={usuario ? () => toggleFavorito((item as any).uuid ?? item.id) : undefined}
               datosPrecarga={datosPrecargaReserva}
             />
           )}

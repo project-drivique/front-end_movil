@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/services/http/apiClient";
 import { useAuthStore } from "@/store/authStore";
+import { hashCode } from "@/modules/catalog/services/catalogService";
 
 export interface FavoriteVehicle {
   id: string;
@@ -82,8 +83,10 @@ export function useFavoritos(usuarioId: string | null) {
     [favoritos, isAuthenticated, fetchFavoritos]
   );
 
+  // Los favoritos se guardan con el UUID del servidor; el catálogo identifica cada carro con un número derivado de ese UUID
   const esFavorito = useCallback(
-    (vehiculoId: string | number): boolean => favoritos.includes(String(vehiculoId)),
+    (vehiculoId: string | number): boolean =>
+      favoritos.includes(String(vehiculoId)) || favoritos.some((uuid) => hashCode(uuid) === Number(vehiculoId)),
     [favoritos]
   );
 
