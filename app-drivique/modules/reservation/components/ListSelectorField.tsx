@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { COLOR_MARCA } from "../constants/reservation.constants";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 interface Opcion {
   id: string;
@@ -32,7 +33,7 @@ export default function CampoSelectorLista({
   const c = useTemaColores();
   const { t } = useTranslation();
   const opcionActual = opciones.find((o) => o.id === valorSeleccionado);
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const placeholderTexto = placeholder ?? t("reserva.fechasLugar.seleccionar");
 
   return (

@@ -11,6 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { COLOR_MARCA } from "../constants/reservation.constants";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 if (
   Platform.OS === "android" &&
@@ -45,7 +46,7 @@ export default function SeccionAcordeon({
     onToggle();
   };
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   return (
     <View

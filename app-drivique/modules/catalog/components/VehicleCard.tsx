@@ -23,6 +23,7 @@ import { Vehiculo } from "../types/catalog.types";
 import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { COLOR_ACCENT, COLOR_ACENTO, COLOR_MARCA } from "@/constants/brandPalette";
 
 interface Props {
   vehiculo: Vehiculo;
@@ -204,7 +205,7 @@ function VehiculoCard({
           <Ionicons
             name={esFavorito ? "heart" : "heart-outline"}
             size={18}
-            color={esFavorito ? (c.oscuro ? "#60A5FA" : "#2563EB") : (c.oscuro ? "#93C5FD" : "#1E3A8A")}
+            color={esFavorito ? (c.oscuro ? COLOR_ACENTO : COLOR_ACCENT) : (c.oscuro ? "#93C5FD" : "#1E3A8A")}
           />
         </TouchableOpacity>
 
@@ -260,7 +261,7 @@ function VehiculoCard({
 
         <View style={styles.infoRow}>
           <View style={styles.infoItem}>
-            <Ionicons name="settings-outline" size={14} color="#2f4ea2" />
+            <Ionicons name="settings-outline" size={14} color={COLOR_MARCA} />
             <Text style={[styles.infoText, { color: c.textSecondary }]}>
               {t(`catalogo.transmisionValores.${vehiculo.transmision}`, {
                 defaultValue: vehiculo.transmision,
@@ -272,7 +273,7 @@ function VehiculoCard({
             <MaterialCommunityIcons
               name="gas-station-outline"
               size={14}
-              color="#2f4ea2"
+              color={COLOR_MARCA}
             />
             <Text style={[styles.infoText, { color: c.textSecondary }]}>
               {t(`catalogo.combustibleValores.${vehiculo.combustible}`, {

@@ -20,6 +20,7 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { getCiudadesNombres, getSucursalesData } from "../constants/catalog.constants";
 import { useReferenceStore } from "@/store/referenceStore";
 import { BusquedaForm } from "../types/catalog.types";
+import { COLOR_ACENTO, COLOR_MARCA, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 
 type PickerField = "ciudad" | "sucursal" | null;
 
@@ -30,7 +31,7 @@ function formatFechaDisplay(dateStr: string): string {
 }
 
 function getMarkedDates(inicio: string, fin: string, oscuro: boolean) {
-  const mainColor = oscuro ? "#3B82F6" : "#2f4ea2";
+  const mainColor = oscuro ? COLOR_MARCA_OSCURO : COLOR_MARCA;
   const midColor = oscuro ? "#1E3A8A" : "#BFDBFE";
   const midTextColor = oscuro ? "#DBEAFE" : "#1e3a8a";
 
@@ -180,7 +181,7 @@ export default function BuscadorCatalogo({
 
   const hoyISO = new Date().toISOString().split("T")[0];
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : "#2f4ea2";
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   return (
     <View style={[styles.containerGeneral, { backgroundColor: c.bgHeader, borderBottomColor: c.border }]}>

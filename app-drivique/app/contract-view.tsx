@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StatusBar,
@@ -22,11 +23,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { COLOR_MARCA } from "@/modules/catalog/constants/catalog.constants";
 import { GRADIENTES } from "@/constants/gradients";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import FirmaCanvas, { FirmaCanvasHandle } from "@/modules/reservation/components/SignatureCanvas";
 import { ContratoDTO, contratoService } from "@/modules/reservation/services/contractService";
 import { mensajeDeError } from "@/modules/reservation/services/reservationPersistService";
 import { fmt } from "@/modules/reservation/components/BookingSummaryModal.pieces";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 function formatearFecha(iso?: string | null): string {
   if (!iso) return "";
@@ -40,7 +43,7 @@ export default function ContratoScreen() {
   const c = useTemaColores();
   const { t } = useTranslation();
   const { ref } = useLocalSearchParams<{ ref?: string }>();
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const firmaRef = useRef<FirmaCanvasHandle>(null);
 
   const [cargando, setCargando] = useState(true);
@@ -51,6 +54,9 @@ export default function ContratoScreen() {
   const [errorFirma, setErrorFirma] = useState("");
   const [firmando, setFirmando] = useState(false);
   const [ocupado, setOcupado] = useState(false);
+  const [claveDesbloqueada, setClaveDesbloqueada] = useState(false);
+  const [claveIngresada, setClaveIngresada] = useState("");
+  const [errorClave, setErrorClave] = useState("");
 
   const cargarFirma = useCallback(async (dto: ContratoDTO) => {
     if (!dto.signedAt) {
@@ -87,6 +93,22 @@ export default function ContratoScreen() {
       activo = false;
     };
   }, [ref, t, cargarFirma]);
+
+  // El contrato solo se abre con el número de documento con el que se hizo la reserva
+  const handleValidarClave = () => {
+    const docReserva = String(contrato?.customerDocumentNumber || "").trim();
+    const soloDigitos = docReserva.replace(/\D/g, "");
+    const claveDigitos = claveIngresada.replace(/\D/g, "");
+    const coincide =
+      !!docReserva &&
+      ((soloDigitos.length > 0 && claveDigitos === soloDigitos) || claveIngresada.trim().toUpperCase() === docReserva.toUpperCase());
+    if (coincide) {
+      setErrorClave("");
+      setClaveDesbloqueada(true);
+    } else {
+      setErrorClave(t("misReservas.claveIncorrecta"));
+    }
+  };
 
   const firmado = !!contrato?.signedAt;
   const puedeFirmar = !!contrato && !firmado && contrato.statusCode === "PENDING_SIGNATURE";
@@ -199,6 +221,41 @@ export default function ContratoScreen() {
           <Ionicons name="alert-circle-outline" size={44} color={c.textMuted} />
           <Text style={[s.error, { color: c.textSecondary }]}>{error || t("contratoFirma.loadError")}</Text>
         </View>
+      ) : !claveDesbloqueada ? (
+        <KeyboardAvoidingView style={s.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <ScrollView contentContainerStyle={s.bloqueoContenedor} keyboardShouldPersistTaps="handled">
+            <View style={[s.bloqueoCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+              <View style={[s.bloqueoIcono, { backgroundColor: c.primaryBg }]}>
+                <Ionicons name="lock-closed-outline" size={32} color={primaryAccent} />
+              </View>
+              <Text style={[s.bloqueoTitulo, { color: c.textPrimary }]}>{t("misReservas.contratoBloqueadoTitulo")}</Text>
+              <Text style={[s.bloqueoSubtitulo, { color: c.textSecondary }]}>
+                {t("misReservas.contratoBloqueadoTexto")}
+              </Text>
+              <View style={{ width: "100%", marginTop: 14 }}>
+                <PasswordInput
+                  placeholder={t("misReservas.claveContratoPlaceholder")}
+                  value={claveIngresada}
+                  onChangeText={(v) => {
+                    setClaveIngresada(v);
+                    if (errorClave) setErrorClave("");
+                  }}
+                  error={errorClave}
+                />
+              </View>
+              <TouchableOpacity style={{ width: "100%", marginTop: 8 }} onPress={handleValidarClave} activeOpacity={0.85}>
+                <LinearGradient
+                  colors={GRADIENTES.boton.colors}
+                  start={GRADIENTES.boton.start}
+                  end={GRADIENTES.boton.end}
+                  style={s.bloqueoBtn}
+                >
+                  <Text style={s.bloqueoBtnTexto}>{t("misReservas.verContrato")}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       ) : (
         <ScrollView contentContainerStyle={[s.scroll, { paddingBottom: insets.bottom + 32 }]}>
           <Card>
@@ -238,9 +295,6 @@ export default function ContratoScreen() {
 
           <Card>
             <Titulo texto={t("contratoFirma.reservationTitle")} />
-            {contrato.vehicleImageUrl ? (
-              <Image source={{ uri: contrato.vehicleImageUrl }} style={s.imagen} resizeMode="cover" />
-            ) : null}
             <Campo label={t("contratoFirma.vehicle")} value={`${contrato.vehicleBrandName} ${contrato.vehicleModel}`.trim()} />
             <Campo label={t("contratoFirma.plate")} value={contrato.vehiclePlate} />
             <Campo label={t("contratoFirma.color")} value={contrato.vehicleColor} />
@@ -263,7 +317,6 @@ export default function ContratoScreen() {
               value={contrato.additionalServiceNames?.length ? contrato.additionalServiceNames.join(", ") : t("contratoFirma.noneAdded")}
             />
             <Campo label={t("contratoFirma.protectionPlan")} value={contrato.insuranceCoverageName} />
-            <Campo label="Plan de kilometraje" value={contrato.mileagePlanName} />
           </Card>
 
           <Card>
@@ -383,6 +436,13 @@ export default function ContratoScreen() {
 }
 
 const s = StyleSheet.create({
+  bloqueoContenedor: { flexGrow: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 20, paddingVertical: 32 },
+  bloqueoCard: { width: "100%", maxWidth: 380, borderRadius: 20, borderWidth: 1, padding: 24, alignItems: "center" },
+  bloqueoIcono: { width: 60, height: 60, borderRadius: 30, alignItems: "center", justifyContent: "center", marginBottom: 14 },
+  bloqueoTitulo: { fontSize: 17, fontWeight: "800", textAlign: "center", marginBottom: 6 },
+  bloqueoSubtitulo: { fontSize: 13.5, textAlign: "center", lineHeight: 19, marginBottom: 6 },
+  bloqueoBtn: { paddingVertical: 13, paddingHorizontal: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  bloqueoBtnTexto: { color: "#FFFFFF", fontSize: 14, fontWeight: "800" },
   flex: { flex: 1 },
   header: {
     flexDirection: "row",
@@ -406,7 +466,6 @@ const s = StyleSheet.create({
   campoLabel: { fontSize: 11, fontWeight: "700" },
   campoValor: { fontSize: 14, fontWeight: "600", marginTop: 1 },
   parrafo: { fontSize: 13, lineHeight: 19 },
-  imagen: { width: "100%", height: 150, borderRadius: 10, marginBottom: 10 },
   clausula: { fontSize: 13, lineHeight: 19, marginBottom: 8 },
   item: { fontSize: 13, lineHeight: 19, marginLeft: 8, marginBottom: 4 },
   subTitulo: { fontSize: 14, fontWeight: "800", marginTop: 14, marginBottom: 6 },

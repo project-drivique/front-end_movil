@@ -19,6 +19,7 @@ import { useMonedaStore } from "@/store/currencyStore";
 import EditDatesLocationSection from "./EditDatesLocationSection";
 import EditProtectionMileageSection from "./EditProtectionMileageSection";
 import EditAdditionalServicesSection from "./EditAdditionalServicesSection";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 interface Props {
   visible: boolean;
@@ -47,7 +48,7 @@ export default function ResumenReservaModal({
   const planes = useReservaStore((s) => s.planes);
   const cuponAplicado = useReservaStore((s) => s.cuponAplicado);
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   const infoDuracion = useMemo(() => {
     return getDetalleDuracionAlquiler(

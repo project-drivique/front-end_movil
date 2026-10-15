@@ -28,6 +28,7 @@ import { SocialAuthButtons } from '@/modules/auth/components/SocialAuthButtons';
 import { PasswordRequirements } from '@/modules/auth/components/PasswordRequirements';
 import { registroStyles as styles } from '@/modules/auth/styles/register.styles';
 import { GRADIENTES } from '@/constants/gradients';
+import { COLOR_ACENTO, COLOR_ENLACE } from "@/constants/brandPalette";
 
 export default function RegistroScreen() {
   const { t } = useTranslation();
@@ -305,7 +306,7 @@ export default function RegistroScreen() {
             >
               {[1,2,3,4,5,6,7,8,9,10,11,12,13].map((num) => (
                 <View key={num}>
-                  <Text style={[styles.modalSeccionTitulo, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>
+                  <Text style={[styles.modalSeccionTitulo, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE }]}>
                     {t(`auth.registro.tc${num}Titulo`)}
                   </Text>
                   <Text style={[styles.modalTexto, { color: c.textSecondary }]}>
