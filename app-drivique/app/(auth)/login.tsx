@@ -27,6 +27,7 @@ import {
   Animated,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { COLOR_ACCENT, COLOR_ACENTO, COLOR_ENLACE, COLOR_ENLACE_OSCURO, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 
 type Tab = "login" | "bienvenida";
 
@@ -205,19 +206,19 @@ export default function LoginScreen() {
       {/* ── TOP BAR (Como en catálogo) ── */}
       <View style={[styles.topBar, { backgroundColor: c.bgHeader, borderBottomColor: c.border }]}>
         <View style={styles.headerTitleContainer}>
-          <Text style={[styles.headerTitle, { color: c.oscuro ? "#60A5FA" : "#1E40AF" }]}>Drivique</Text>
+          <Text style={[styles.headerTitle, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE_OSCURO }]}>Drivique</Text>
         </View>
         <TouchableOpacity
           style={[
             styles.guestBtn,
             {
-              borderColor: c.oscuro ? "#3B82F6" : "#1E40AF",
+              borderColor: c.oscuro ? COLOR_MARCA_OSCURO : COLOR_ENLACE_OSCURO,
               backgroundColor: c.oscuro ? c.bgCard : "transparent",
             },
           ]}
           onPress={handleInvitado}
         >
-          <Text style={[styles.guestBtnTexto, { color: c.oscuro ? "#60A5FA" : "#1E40AF" }]}>{t("auth.login.modoInvitado")}</Text>
+          <Text style={[styles.guestBtnTexto, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE_OSCURO }]}>{t("auth.login.modoInvitado")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -337,7 +338,7 @@ export default function LoginScreen() {
                         onPress={() => router.push("/(auth)/forgot-password")}
                         style={styles.enlaceOlvide}
                       >
-                        <Text style={[styles.textoEnlace, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>
+                        <Text style={[styles.textoEnlace, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE }]}>
                           {t("auth.login.olvidaste")}
                         </Text>
                       </TouchableOpacity>
@@ -381,7 +382,7 @@ export default function LoginScreen() {
                       <TouchableOpacity
                         onPress={() => router.push("/(auth)/register")}
                       >
-                        <Text style={[styles.registroLink, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>
+                        <Text style={[styles.registroLink, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE }]}>
                           {t("auth.login.registrateAqui")}
                         </Text>
                       </TouchableOpacity>
@@ -424,7 +425,7 @@ export default function LoginScreen() {
                     <View style={styles.beneficiosColBienvenida}>
                       {BENEFICIOS.map((b) => (
                         <View key={b} style={styles.beneficioRow}>
-                          <Ionicons name="checkmark-sharp" size={18} color={c.oscuro ? "#60A5FA" : "#2563EB"} />
+                          <Ionicons name="checkmark-sharp" size={18} color={c.oscuro ? COLOR_ACENTO : COLOR_ACCENT} />
                           <Text style={[styles.beneficioTextoBienvenida, { color: c.textPrimary }]}>
                             {b}
                           </Text>

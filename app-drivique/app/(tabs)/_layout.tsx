@@ -8,6 +8,7 @@ import { AlertModal } from "@/components/ui/AlertModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { useNotificationStore } from "@/store/notificationStore";
+import { COLOR_ACENTO, COLOR_MARCA } from "@/constants/brandPalette";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -17,7 +18,7 @@ function TabIcon({ name, focused, c }: { name: IoniconName; focused: boolean; c:
       <Ionicons
         name={focused ? name : (`${name}-outline` as IoniconName)}
         size={22}
-        color={focused ? (c.oscuro ? "#60A5FA" : "#2f4ea2") : c.textMuted}
+        color={focused ? (c.oscuro ? COLOR_ACENTO : COLOR_MARCA) : c.textMuted}
       />
     </View>
   );
@@ -48,7 +49,7 @@ export default function TabLayout() {
     usuario?.roles?.includes('SUPER_ADMIN')
   );
 
-  const activeColor = c.oscuro ? "#60A5FA" : "#2f4ea2";
+  const activeColor = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   return (
     <>

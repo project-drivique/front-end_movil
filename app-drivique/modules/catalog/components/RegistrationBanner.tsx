@@ -5,6 +5,7 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { COLOR_ACCENT, COLOR_ACENTO } from "@/constants/brandPalette";
 
 interface BannerRegistroProps {
   visible: boolean;
@@ -55,7 +56,7 @@ export function BannerRegistro({
               router.push("/(auth)/login");
             }}
           >
-            <Text style={[styles.botonLoginTexto, { color: c.oscuro ? "#60A5FA" : "#2563EB" }]}>{t("catalogo.bannerRegistro.iniciarSesion")}</Text>
+            <Text style={[styles.botonLoginTexto, { color: c.oscuro ? COLOR_ACENTO : COLOR_ACCENT }]}>{t("catalogo.bannerRegistro.iniciarSesion")}</Text>
           </TouchableOpacity>
         </View>
 

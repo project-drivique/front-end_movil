@@ -6,7 +6,9 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "@/modules/i18n";
 import { useIdioma } from "@/modules/i18n/hooks/useLanguage";
 import { FloatingSupportChat } from "@/components/ui/FloatingSupportChat";
-import { useEffect } from "react";
+import { Fragment, useEffect } from "react";
+import { AppState } from "react-native";
+import { useBrandStore } from "@/store/brandStore";
 import { useReferenceStore } from "@/store/referenceStore";
 import { useAuthStore } from "@/store/authStore";
 
@@ -15,6 +17,21 @@ WebBrowser.maybeCompleteAuthSession();
 export default function RootLayout() {
   const { temaActual } = useIdioma();
   const token = useAuthStore((s) => s.token);
+  // Al cambiar la paleta se vuelve a montar la interfaz para que todos los colores se apliquen
+  const versionMarca = useBrandStore((s) => s.version);
+
+  // Marca (colores y logo) sincronizada con la web: al abrir, al volver a la app y cada minuto
+  useEffect(() => {
+    useBrandStore.getState().hidratar().catch(() => {});
+    const sub = AppState.addEventListener("change", (estado) => {
+      if (estado === "active") useBrandStore.getState().cargar().catch(() => {});
+    });
+    const timer = setInterval(() => useBrandStore.getState().cargar().catch(() => {}), 60000);
+    return () => {
+      sub.remove();
+      clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     useReferenceStore.getState().cargarPublicas().catch(() => {});
@@ -27,19 +44,21 @@ export default function RootLayout() {
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider value={temaActual === "oscuro" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="vehicle/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="payment-response" options={{ headerShown: false }} />
-          <Stack.Screen name="contract-view" options={{ headerShown: false }} />
-          <Stack.Screen name="wompi-checkout" options={{ headerShown: false }} />
-        </Stack>
+        <Fragment key={versionMarca}>
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="vehicle/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="payment-response" options={{ headerShown: false }} />
+            <Stack.Screen name="contract-view" options={{ headerShown: false }} />
+            <Stack.Screen name="wompi-checkout" options={{ headerShown: false }} />
+          </Stack>
 
-        <StatusBar style={temaActual === "oscuro" ? "light" : "dark"} /> 
-        <FloatingSupportChat />
+          <StatusBar style={temaActual === "oscuro" ? "light" : "dark"} /> 
+          <FloatingSupportChat />
+        </Fragment>
       </ThemeProvider>
     </I18nextProvider>
   );

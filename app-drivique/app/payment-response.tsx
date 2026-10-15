@@ -38,6 +38,7 @@ import {
 import { ModalCalificar } from "@/modules/reservation/components/ModalCalificar";
 import { ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
 import { useUsuarioStore } from "@/store/userStore";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 const COLOR_GRUPO: Record<string, string> = {
   pendiente: "#f59e0b",
@@ -52,7 +53,7 @@ export default function PagoRespuestaScreen() {
   const c = useTemaColores();
   const { t } = useTranslation();
   const { ref, id } = useLocalSearchParams<{ ref?: string; id?: string }>();
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const usuario = useUsuarioStore((s) => s.usuario);
 
   const [cargando, setCargando] = useState(true);
@@ -386,9 +387,9 @@ function Boton({ texto, onPress, secundario }: { texto: string; onPress: () => v
       <TouchableOpacity
         onPress={onPress}
         activeOpacity={0.85}
-        style={[s.botonSec, { borderColor: c.oscuro ? "#60A5FA" : COLOR_MARCA }]}
+        style={[s.botonSec, { borderColor: c.oscuro ? COLOR_ACENTO : COLOR_MARCA }]}
       >
-        <Text style={[s.botonSecTexto, { color: c.oscuro ? "#60A5FA" : COLOR_MARCA }]}>{texto}</Text>
+        <Text style={[s.botonSecTexto, { color: c.oscuro ? COLOR_ACENTO : COLOR_MARCA }]}>{texto}</Text>
       </TouchableOpacity>
     );
   }

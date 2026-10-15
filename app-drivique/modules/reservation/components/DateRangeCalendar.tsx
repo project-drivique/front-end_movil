@@ -65,7 +65,6 @@ interface Props {
 const COLOR_DISPONIBLE = "#10B981";
 const COLOR_RESERVADO = "#EF4444";
 const COLOR_MANTENIMIENTO = "#64748B";
-const COLOR_SELECCIONADO = COLOR_MARCA;
 
 function getFechaHoyLocal(): string {
   const ahora = new Date();
@@ -147,7 +146,7 @@ function DiaCalendario({
 
   let estiloCirculo: any = diaStyles.circulo;
   if (enExtremoRango) {
-    estiloCirculo = diaStyles.circuloExtremo;
+    estiloCirculo = [diaStyles.circuloExtremo, { backgroundColor: COLOR_MARCA }];
   } else if (hoy && !seleccionado) {
     estiloCirculo = [
       diaStyles.circuloHoy,
@@ -461,7 +460,7 @@ export default function CalendarioRango({
           </Text>
         </View>
         <View style={styles.leyendaItem}>
-          <View style={[styles.dot, { backgroundColor: COLOR_SELECCIONADO }]} />
+          <View style={[styles.dot, { backgroundColor: COLOR_MARCA }]} />
           <Text style={[styles.leyendaText, { color: c.textSecondary }]}>
             {t("reserva.fechasLugar.leyendaSeleccionado", { defaultValue: "Seleccionado" })}
           </Text>

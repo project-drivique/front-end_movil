@@ -20,6 +20,7 @@ import { formatCurrency } from "@/utils/currencyUtils";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { diasEntre } from "./BookingSummaryModal.pieces";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 type Tema = ReturnType<typeof useTemaColores>;
 
@@ -86,7 +87,7 @@ export default function EditProtectionMileageSection({
   const [draftProteccion, setDraftProteccion] = useState(storePlanes.proteccion);
   const [draftKm, setDraftKm] = useState(storePlanes.tipoKilometraje);
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   const kmLimitado = vehiculo.tarifas?.kmLimitado;
   const kmIlimitado = vehiculo.tarifas?.kmIlimitado;
