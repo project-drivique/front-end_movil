@@ -1,228 +1,1527 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  Image,
+  Modal,
+  Linking,
+  Alert,
+  FlatList,
+  ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { GRADIENTES } from "@/constants/gradients";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
-import { mensajeDeError } from "@/modules/reservation/services/reservationPersistService";
-import { incidentService } from "@/modules/support/services/incidentService";
-import { Incident } from "@/modules/support/types/incident.types";
-import IncidentForm from "@/modules/support/components/IncidentForm";
-import IncidentDetail from "@/modules/support/components/IncidentDetail";
+import { useUsuarioStore } from "@/store/userStore";
 import {
-  EstadoInsignia,
-  formatearFechaHora,
-  PrioridadInsignia,
-} from "@/modules/support/components/incidentUi";
-import { COLOR_ACENTO, COLOR_MARCA } from "@/constants/brandPalette";
+  reservaPersistService,
+  ReservaGuardada,
+  calcularGrupoReserva,
+} from "@/modules/reservation/services/reservationPersistService";
+import { fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+  useSupportStore,
+  ReporteIncidencia,
+  EstadoReporte,
+} from "@/store/supportStore";
+import {
+  CANALES_CONTACTO_DUMMY,
+  TIPOS_INCIDENCIA_DUMMY,
+  FAQS_DUMMY,
+  CanalContacto,
+} from "@/modules/support/constants/support.dummy";
 
-type Vista = "lista" | "nueva" | "detalle";
+import * as DocumentPicker from "expo-document-picker";
 
 export default function SupportScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{ incidencia?: string; reservaId?: string; tab?: string }>();
+  const usuarioProfile = useUsuarioStore((s) => s.usuario);
 
-  const [vista, setVista] = useState<Vista>("lista");
-  const [seleccionada, setSeleccionada] = useState<string | null>(null);
-  const [incidencias, setIncidencias] = useState<Incident[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [refrescando, setRefrescando] = useState(false);
-  const [error, setError] = useState("");
-
-  const cargar = useCallback(async () => {
-    setError("");
-    try {
-      setIncidencias(await incidentService.listarMias());
-    } catch (e) {
-      setError(mensajeDeError(e, t("incidencias.errorCarga")));
-    } finally {
-      setCargando(false);
-      setRefrescando(false);
+  const getEstadoTexto = (estado: string) => {
+    switch (estado) {
+      case "Recibido":
+        return t("soporte.estado.recibido", { defaultValue: "Recibido" });
+      case "En revisión":
+        return t("soporte.estado.enRevision", { defaultValue: "En revisión" });
+      case "En atención":
+        return t("soporte.estado.enAtencion", { defaultValue: "En atención" });
+      case "Resuelto":
+        return t("soporte.estado.resuelto", { defaultValue: "Resuelto" });
+      default:
+        return estado;
     }
-  }, [t]);
-
-  useEffect(() => {
-    cargar();
-  }, [cargar]);
-
-  useEffect(() => {
-    if (params.incidencia) {
-      setSeleccionada(String(params.incidencia));
-      setVista("detalle");
-    } else if (params.tab === "nueva" || params.reservaId) {
-      setVista("nueva");
-    }
-  }, [params.incidencia, params.tab, params.reservaId]);
-
-  const acento = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
-
-  const volver = () => {
-    if (vista === "lista") {
-      router.canGoBack() ? router.back() : router.replace("/(tabs)" as any);
-      return;
-    }
-    setVista("lista");
-    setSeleccionada(null);
-    router.setParams({ incidencia: undefined, reservaId: undefined, tab: undefined } as any);
-    cargar();
   };
 
-  const alActualizar = useCallback((actualizada: Incident) => {
-    setIncidencias((prev) => prev.map((i) => (i.id === actualizada.id ? { ...i, ...actualizada, timeline: undefined } : i)));
-  }, []);
+  const getTipoIncidenciaTexto = (idOrNombre: string) => {
+    switch (idOrNombre) {
+      case "mecanica":
+      case "Avería mecánica":
+        return t("soporte.tipo.mecanica", { defaultValue: "Avería mecánica" });
+      case "electrica":
+      case "Falla eléctrica / Batería":
+        return t("soporte.tipo.electrica", { defaultValue: "Falla eléctrica / Batería" });
+      case "neumatico":
+      case "Pinchazo / Neumático":
+        return t("soporte.tipo.neumatico", { defaultValue: "Pinchazo / Neumático" });
+      case "limpieza":
+      case "Limpieza / Estética":
+        return t("soporte.tipo.limpieza", { defaultValue: "Limpieza / Estética" });
+      case "documentacion":
+      case "Documentación / Licencia":
+        return t("soporte.tipo.documentacion", { defaultValue: "Documentación / Licencia" });
+      case "otro":
+      case "Otro problema":
+        return t("soporte.tipo.otro", { defaultValue: "Otro problema" });
+      default:
+        return idOrNombre;
+    }
+  };
+
+  const getTiempoEstimadoTexto = (tiempo: string) => {
+    switch (tiempo) {
+      case "2 a 4 horas":
+        return t("soporte.tiempo.2a4horas", { defaultValue: "2 a 4 horas" });
+      case "1 a 3 horas":
+        return t("soporte.tiempo.1a3horas", { defaultValue: "1 a 3 horas" });
+      case "1 a 2 horas":
+        return t("soporte.tiempo.1a2horas", { defaultValue: "1 a 2 horas" });
+      case "12 horas":
+        return t("soporte.tiempo.12horas", { defaultValue: "12 horas" });
+      case "24 horas":
+        return t("soporte.tiempo.24horas", { defaultValue: "24 horas" });
+      case "12 a 24 horas":
+        return t("soporte.tiempo.12a24horas", { defaultValue: "12 a 24 horas" });
+      default:
+        return tiempo;
+    }
+  };
+
+  const params = useLocalSearchParams<{
+    reservaId?: string;
+    vehiculoNombre?: string;
+    placa?: string;
+    tab?: string;
+    reporteId?: string;
+  }>();
+
+  const { reportes, crearReporte, cargar, abrirDetalle } = useSupportStore();
+  const [enviando, setEnviando] = useState(false);
+
+  // Reportes del usuario: vienen del servidor
+  useEffect(() => {
+    cargar().catch(() => {});
+  }, [cargar]);
+
+  // Abre el detalle con el seguimiento y las fotos que guarda el servidor
+  const abrirReporte = async (reporte: ReporteIncidencia) => {
+    setReporteSeleccionado(reporte);
+    try {
+      setReporteSeleccionado(await abrirDetalle(reporte));
+    } catch {
+      /* se queda con lo que ya hay en la lista */
+    }
+  };
+
+  // Pestaña activa: 'canales' | 'reportar' | 'mis_reportes'
+  const [activeTab, setActiveTab] = useState<"canales" | "reportar" | "mis_reportes">("canales");
+
+  // Acordeón de FAQs
+  const [faqsAbiertas, setFaqsAbiertas] = useState<string[]>(["faq-1"]);
+
+  // Reservas activas/confirmadas del usuario
+  const [reservasValidas, setReservasValidas] = useState<ReservaGuardada[]>([]);
+  const [cargandoReservas, setCargandoReservas] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Campos del formulario de reporte
+  const [reservaId, setReservaId] = useState(params.reservaId || "");
+  const [vehiculoNombre, setVehiculoNombre] = useState(params.vehiculoNombre || "");
+  const [placa, setPlaca] = useState(params.placa || "");
+  const [tipoSeleccionado, setTipoSeleccionado] = useState(TIPOS_INCIDENCIA_DUMMY[0].id);
+  const [descripcion, setDescripcion] = useState("");
+  const [evidenciasAdjuntas, setEvidenciasAdjuntas] = useState<string[]>([]);
+
+  // Datos de contacto auto-rellenados desde el Perfil del usuario autenticado
+  const [contactoNombre, setContactoNombre] = useState("");
+  const [contactoTelefono, setContactoTelefono] = useState("");
+  const [contactoEmail, setContactoEmail] = useState("");
+
+  // Cargar datos automáticos del perfil al montar
+  useEffect(() => {
+    const nombreCompleto =
+      `${usuarioProfile.nombres || ""} ${usuarioProfile.apellidos || ""}`.trim();
+    setContactoNombre(nombreCompleto);
+    setContactoTelefono(usuarioProfile.telefono || "");
+    setContactoEmail(usuarioProfile.correo || "");
+  }, [usuarioProfile]);
+
+  // Cargar reservas válidas (confirmadas o en_curso)
+  useEffect(() => {
+    let activo = true;
+    (async () => {
+      try {
+        const data = await reservaPersistService.getReservasUsuario();
+        if (activo) {
+          const filtradas = data.filter((r) => {
+            const grupo = calcularGrupoReserva(r);
+            return grupo === "en_curso" || grupo === "finalizada";
+          });
+          setReservasValidas(filtradas);
+        }
+      } catch (err) {
+        console.error("Error cargando reservas para soporte:", err);
+      } finally {
+        if (activo) setCargandoReservas(false);
+      }
+    })();
+    return () => {
+      activo = false;
+    };
+  }, [usuarioProfile]);
+
+  // Manejar parámetros de navegación si viene desde "Mis Reservas"
+  useEffect(() => {
+    if (params.reservaId || params.vehiculoNombre) {
+      setReservaId(params.reservaId || "");
+      setVehiculoNombre(params.vehiculoNombre || "");
+      setPlaca(params.placa || "");
+      setActiveTab("reportar");
+    } else if (params.tab === "reportar") {
+      setActiveTab("reportar");
+    } else if (params.tab === "mis_reportes") {
+      setActiveTab("mis_reportes");
+      if (params.reporteId) {
+        const found = reportes.find(r => r.id === params.reporteId);
+        if (found) {
+          abrirReporte(found);
+        }
+      }
+    }
+  }, [params.reservaId, params.vehiculoNombre, params.placa, params.tab, params.reporteId, reportes]);
+
+  // Objeto de tipo de incidencia seleccionado
+  const tipoObj = useMemo(
+    () => TIPOS_INCIDENCIA_DUMMY.find((item) => item.id === tipoSeleccionado) || TIPOS_INCIDENCIA_DUMMY[0],
+    [tipoSeleccionado]
+  );
+
+  // Errores de validación
+  const [errores, setErrores] = useState<Record<string, string>>({});
+
+  // Modales
+  const [reporteExitoso, setReporteExitoso] = useState<ReporteIncidencia | null>(null);
+  const [reporteSeleccionado, setReporteSeleccionado] = useState<ReporteIncidencia | null>(null);
+
+  const toggleFaq = (id: string) => {
+    if (faqsAbiertas.includes(id)) {
+      setFaqsAbiertas(faqsAbiertas.filter((f) => f !== id));
+    } else {
+      setFaqsAbiertas([...faqsAbiertas, id]);
+    }
+  };
+
+  const handleContactAction = (canal: CanalContacto) => {
+    Linking.openURL(canal.urlAction);
+  };
+
+  const agregarEvidencia = async () => {
+    if (evidenciasAdjuntas.length >= 3) {
+      Alert.alert(
+        t("tabs.reportarIncidencia", { defaultValue: "Reportar incidencia" }),
+        t("soporte.incidencia.maxFotosAlerta", { defaultValue: "Puedes adjuntar un máximo de 3 fotos de evidencia." })
+      );
+      return;
+    }
+
+    try {
+      const resultado = await DocumentPicker.getDocumentAsync({
+        type: ["image/*"],
+        multiple: true,
+        copyToCacheDirectory: true,
+      });
+
+      if (resultado.canceled || !resultado.assets || resultado.assets.length === 0) {
+        return;
+      }
+
+      const nuevasUris = resultado.assets.map((a) => a.uri).filter(Boolean);
+      const combinadas = [...evidenciasAdjuntas, ...nuevasUris].slice(0, 3);
+      setEvidenciasAdjuntas(combinadas);
+    } catch (error) {
+      console.error("[SupportScreen] Error seleccionando imagen", error);
+      Alert.alert(
+        t("comun.error", { defaultValue: "Error" }),
+        t("soporte.errorSeleccionImagen", { defaultValue: "No fue posible seleccionar la imagen." })
+      );
+    }
+  };
+
+  const eliminarEvidencia = (index: number) => {
+    setEvidenciasAdjuntas(evidenciasAdjuntas.filter((_, i) => i !== index));
+  };
+
+  const validarYEnviarReporte = async () => {
+    const nuevosErrores: Record<string, string> = {};
+
+    if (!reservaId || !vehiculoNombre) {
+      nuevosErrores.vehiculoNombre = t("soporte.incidencia.errorReservaRequerida", { defaultValue: "Debes asociar una reserva válida para enviar la incidencia." });
+    }
+    if (!descripcion.trim() || descripcion.trim().length < 10) {
+      nuevosErrores.descripcion = t("soporte.incidencia.errorDescripcionMin", { defaultValue: "Escribe una descripción detallada (mínimo 10 caracteres)." });
+    }
+    if (!contactoNombre.trim()) {
+      nuevosErrores.contactoNombre = t("soporte.incidencia.errorNombre", { defaultValue: "Ingresa el nombre de contacto." });
+    }
+    if (!contactoTelefono.trim()) {
+      nuevosErrores.contactoTelefono = t("soporte.incidencia.errorTelefono", { defaultValue: "Ingresa el número de teléfono." });
+    }
+    if (!contactoEmail.trim() || !contactoEmail.includes("@")) {
+      nuevosErrores.contactoEmail = t("soporte.incidencia.errorEmail", { defaultValue: "Ingresa un correo electrónico válido." });
+    }
+
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrores(nuevosErrores);
+      Alert.alert(
+        t("tabs.reportarIncidencia", { defaultValue: "Reportar incidencia" }),
+        t("soporte.incidencia.alertaCamposRequeridos", { defaultValue: "Por favor completa todos los campos requeridos." })
+      );
+      return;
+    }
+
+    setErrores({});
+
+    const reserva = reservasValidas.find((r) => r.referencia === reservaId || r.id === reservaId);
+    const categoria = ["mecanica", "electrica", "neumatico", "limpieza"].includes(tipoObj.id)
+      ? "VEHICLE"
+      : tipoObj.id === "documentacion"
+      ? "RESERVATION"
+      : "OTHER";
+
+    setEnviando(true);
+    let nuevo: ReporteIncidencia;
+    try {
+      nuevo = await crearReporte({
+        reservaUuid: reserva?.id,
+        vehiculoUuid: reserva?.vehiculoId,
+        tipoIncidencia: tipoObj.nombre,
+        categoria,
+        descripcion: descripcion.trim(),
+        evidencias: evidenciasAdjuntas,
+        contactoNombre: contactoNombre.trim(),
+        contactoTelefono: contactoTelefono.trim(),
+        contactoEmail: contactoEmail.trim(),
+      });
+    } catch (error: any) {
+      Alert.alert(
+        t("comun.error", { defaultValue: "Error" }),
+        error?.response?.data?.detail ||
+          t("soporte.incidencia.errorEnviar", { defaultValue: "No fue posible registrar el reporte. Inténtalo de nuevo." })
+      );
+      return;
+    } finally {
+      setEnviando(false);
+    }
+
+    setReporteExitoso(nuevo);
+    setDescripcion("");
+    setEvidenciasAdjuntas([]);
+  };
+
+  const getEstadoColor = (estado: EstadoReporte) => {
+    switch (estado) {
+      case "Recibido":
+        return "#3B82F6";
+      case "En revisión":
+        return "#F59E0B";
+      case "En atención":
+        return "#8B5CF6";
+      case "Resuelto":
+        return "#10B981";
+      default:
+        return "#6B7280";
+    }
+  };
 
   return (
-    <View style={[s.flex, { backgroundColor: c.bg, paddingTop: insets.top }]}>
-      <View style={[s.header, { backgroundColor: c.bgCard, borderBottomColor: c.border }]}>
-        <TouchableOpacity onPress={volver} hitSlop={10}>
-          <Ionicons name="chevron-back" size={24} color={acento} />
+    <View style={[styles.container, { backgroundColor: c.bg }]}>
+      {/* Header Gradiente */}
+      <LinearGradient
+        colors={["#1e3a8a", "#2563eb"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={[styles.header, { paddingTop: insets.top + 12 }]}
+      >
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.replace("/(tabs)/my-bookings")}>
+          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={[s.headerTitulo, { color: c.textPrimary }]}>
-          {vista === "nueva"
-            ? t("incidencias.nueva")
-            : vista === "detalle"
-              ? t("incidencias.detalle")
-              : t("incidencias.titulo")}
-        </Text>
-        <View style={{ width: 24 }} />
+        <Text style={styles.headerTitle}>{t("tabs.soporte")}</Text>
+        <TouchableOpacity
+          style={styles.headerHelpBtn}
+          onPress={() => Linking.openURL(CANALES_CONTACTO_DUMMY[0].urlAction)}
+        >
+          <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
+        </TouchableOpacity>
+      </LinearGradient>
+
+      {/* Selector de Pestañas */}
+      <View style={[styles.tabBar, { backgroundColor: c.bgCard, borderBottomColor: c.border }]}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === "canales" && styles.activeTabButton]}
+          onPress={() => setActiveTab("canales")}
+        >
+          <Text style={[styles.tabText, activeTab === "canales" ? styles.activeTabText : { color: c.textSecondary }]}>
+            {t("tabs.canalesAtencion")}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === "reportar" && styles.activeTabButton]}
+          onPress={() => setActiveTab("reportar")}
+        >
+          <Text style={[styles.tabText, activeTab === "reportar" ? styles.activeTabText : { color: c.textSecondary }]}>
+            {t("tabs.reportarIncidencia")}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === "mis_reportes" && styles.activeTabButton]}
+          onPress={() => setActiveTab("mis_reportes")}
+        >
+          <View style={styles.tabBadgeRow}>
+            <Text style={[styles.tabText, activeTab === "mis_reportes" ? styles.activeTabText : { color: c.textSecondary }]}>
+              {t("tabs.misReportes")}
+            </Text>
+            {reportes.length > 0 && (
+              <View style={styles.badgeCount}>
+                <Text style={styles.badgeCountText}>{reportes.length}</Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
 
-      {vista === "nueva" ? (
-        <IncidentForm
-          reservaInicialId={params.reservaId ? String(params.reservaId) : undefined}
-          onCancelar={volver}
-          onCreada={(creada) => {
-            setSeleccionada(creada.id);
-            setVista("detalle");
-            cargar();
-          }}
-        />
-      ) : vista === "detalle" && seleccionada ? (
-        <IncidentDetail incidentId={seleccionada} onActualizada={alActualizar} />
-      ) : (
-        <View style={s.flex}>
-          <Text style={[s.subtitulo, { color: c.textSecondary }]}>{t("incidencias.subtitulo")}</Text>
-          {cargando ? (
-            <View style={s.centro}>
-              <ActivityIndicator size="large" color={acento} />
+      {/* PESTAÑA 1: CANALES DE ATENCIÓN Y FAQS */}
+      {activeTab === "canales" && (
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Card Intro */}
+          <View style={[styles.introCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+            <View style={[styles.iconContainer, { backgroundColor: c.oscuro ? "#1E293B" : "#EFF6FF" }]}>
+              <Ionicons name="headset-outline" size={32} color="#2563EB" />
             </View>
-          ) : (
-            <FlatList
-              data={incidencias}
-              keyExtractor={(i) => i.id}
-              contentContainerStyle={s.lista}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refrescando}
-                  onRefresh={() => {
-                    setRefrescando(true);
-                    cargar();
-                  }}
-                />
-              }
-              ListEmptyComponent={
-                <View style={s.centro}>
-                  <Ionicons name="chatbubbles-outline" size={44} color={c.textMuted} />
-                  <Text style={{ color: c.textSecondary, marginTop: 10, textAlign: "center" }}>
-                    {error || t("incidencias.vacio")}
-                  </Text>
-                  {error ? (
-                    <TouchableOpacity onPress={cargar} style={{ marginTop: 10 }}>
-                      <Text style={{ color: acento, fontWeight: "800" }}>{t("incidencias.reintentar")}</Text>
-                    </TouchableOpacity>
-                  ) : null}
-                </View>
-              }
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => {
-                    setSeleccionada(item.id);
-                    setVista("detalle");
-                  }}
-                  style={[s.card, { backgroundColor: c.bgCard, borderColor: c.border }]}
-                >
-                  <View style={s.cardTop}>
-                    <Text style={[s.codigo, { color: c.textMuted }]}>{item.code}</Text>
-                    <Text style={[s.fecha, { color: c.textMuted }]}>{formatearFechaHora(item.createdAt)}</Text>
-                  </View>
-                  <Text style={[s.asunto, { color: c.textPrimary }]} numberOfLines={2}>
-                    {item.subject}
-                  </Text>
-                  <View style={s.insignias}>
-                    <EstadoInsignia estado={item.status} />
-                    <PrioridadInsignia prioridad={item.priority} />
-                  </View>
-                  {item.slaDueAt && item.status !== "CLOSED" && item.status !== "RESOLVED" ? (
-                    <Text style={{ color: item.slaBreached ? "#dc2626" : c.textMuted, fontSize: 11, marginTop: 6 }}>
-                      {t("incidencias.sla")}: {formatearFechaHora(item.slaDueAt)}
-                      {item.slaBreached ? ` - ${t("incidencias.slaVencido")}` : ""}
-                    </Text>
-                  ) : null}
-                </TouchableOpacity>
-              )}
-            />
-          )}
-          <View style={[s.pie, { paddingBottom: insets.bottom + 12 }]}>
-            <TouchableOpacity activeOpacity={0.85} onPress={() => setVista("nueva")}>
+            <Text style={[styles.introTitle, { color: c.textPrimary }]}>
+              {t("soporte.centroAtencionTitulo", { defaultValue: "Centro de Atención al Usuario" })}
+            </Text>
+            <Text style={[styles.introSubtitle, { color: c.textSecondary }]}>
+              {t("soporte.centroAtencionSub", { defaultValue: "Asistencia personalizada para tus alquileres de vehículos en Drivique." })}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.quickReportBtn}
+              onPress={() => setActiveTab("reportar")}
+              activeOpacity={0.88}
+            >
               <LinearGradient
-                colors={GRADIENTES.boton.colors}
-                start={GRADIENTES.boton.start}
-                end={GRADIENTES.boton.end}
-                style={s.boton}
+                colors={["#2563eb", "#1d4ed8"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.quickReportGradient}
               >
-                <Ionicons name="add" size={18} color="#fff" />
-                <Text style={s.botonTexto}>{t("incidencias.nueva")}</Text>
+                <Ionicons name="warning-outline" size={18} color="#FFFFFF" />
+                <Text style={styles.quickReportBtnText}>{t("tabs.reportarIncidencia")}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
+
+          {/* Canales de Contacto desde JSON */}
+          <Text style={[styles.sectionTitle, { color: c.textPrimary }]}>{t("tabs.canalesAtencion")}</Text>
+
+          {CANALES_CONTACTO_DUMMY.map((canal) => (
+            <TouchableOpacity
+              key={canal.id}
+              style={[styles.contactCard, { backgroundColor: c.bgCard, borderColor: c.border }]}
+              onPress={() => handleContactAction(canal)}
+              activeOpacity={0.85}
+            >
+              <View style={[styles.contactIconWrap, { backgroundColor: canal.colorBg }]}>
+                <Ionicons name={canal.icono as any} size={24} color={canal.colorIcono} />
+              </View>
+              <View style={styles.contactTextWrap}>
+                <Text style={[styles.contactName, { color: c.textPrimary }]}>
+                  {t(canal.nombreKey, { defaultValue: canal.nombreDefault })}
+                </Text>
+                <Text style={[styles.contactDesc, { color: c.textSecondary }]}>
+                  {t(canal.descripcionKey, { defaultValue: canal.descripcionDefault })}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={c.textMuted} />
+            </TouchableOpacity>
+          ))}
+
+          {/* FAQs desde JSON */}
+          <Text style={[styles.sectionTitle, { color: c.textPrimary, marginTop: 24 }]}>
+            {t("tabs.preguntasFrecuentes")}
+          </Text>
+
+          {FAQS_DUMMY.map((faq) => {
+            const estaAbierto = faqsAbiertas.includes(faq.id);
+            return (
+              <View
+                key={faq.id}
+                style={[styles.faqCard, { backgroundColor: c.bgCard, borderColor: c.border }]}
+              >
+                <TouchableOpacity
+                  style={styles.faqHeader}
+                  onPress={() => toggleFaq(faq.id)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.faqQuestion, { color: c.textPrimary }]}>
+                    {t(`soporte.faq.${faq.id}.q`, { defaultValue: faq.pregunta })}
+                  </Text>
+                  <Ionicons
+                    name={estaAbierto ? "chevron-up" : "chevron-down"}
+                    size={20}
+                    color={c.textMuted}
+                  />
+                </TouchableOpacity>
+                {estaAbierto && (
+                  <Text style={[styles.faqAnswer, { color: c.textSecondary }]}>
+                    {t(`soporte.faq.${faq.id}.a`, { defaultValue: faq.respuesta })}
+                  </Text>
+                )}
+              </View>
+            );
+          })}
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      )}
+
+      {/* PESTAÑA 2: FORMULARIO DE REPORTE (DENTRO DE UN CONTENEDOR ELEGANTE Y SIN EMOJIS) */}
+      {activeTab === "reportar" && (
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Banner de datos precargados desde Mis Reservas */}
+          {params.reservaId ? (
+            <View style={[styles.precargadoBanner, { backgroundColor: c.oscuro ? "#1e3a8a33" : "#EFF6FF", borderColor: c.oscuro ? "#1e3a8a" : "#BFDBFE" }]}>
+              <Ionicons name="link-outline" size={20} color="#2563EB" />
+              <View style={{ flex: 1, marginLeft: 8 }}>
+                <Text style={[styles.precargadoTitulo, { color: c.oscuro ? "#93C5FD" : "#1E40AF" }]}>
+                  {t("soporte.incidencia.reservaVinculadaTitulo", { defaultValue: "Reserva vinculada desde Mis Reservas" })}
+                </Text>
+                <Text style={[styles.precargadoSub, { color: c.oscuro ? "#BFDBFE" : "#1D4ED8" }]}>
+                  {params.vehiculoNombre} · Ref: {params.reservaId} {params.placa ? `(${t("soporte.incidencia.placa", { defaultValue: "Placa" })}: ${params.placa})` : ""}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <View style={[styles.infoFormBanner, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+              <Ionicons name="information-circle-outline" size={20} color="#2563EB" />
+              <Text style={[styles.infoFormText, { color: c.textSecondary }]}>
+                {t("soporte.infoBanner", { defaultValue: "Completa el formulario para reportar cualquier problema técnico o mecánico durante tu reserva." })}
+              </Text>
+            </View>
+          )}
+
+          {/* CONTENEDOR CARD DEL FORMULARIO */}
+          <View style={[styles.formContainerCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+            <View style={styles.formCardHeader}>
+              <Ionicons name="build-outline" size={22} color="#2563EB" />
+              <Text style={[styles.formCardTitle, { color: c.textPrimary }]}>
+                {t("soporte.incidencia.formularioTitulo", { defaultValue: "Formulario de Incidencia" })}
+              </Text>
+            </View>
+
+            {/* Vehículo y Placa */}
+            <Text style={[styles.inputLabel, { color: c.textPrimary }]}>
+              {t("soporte.incidencia.vehiculoAsociado", { defaultValue: "Vehículo / Reserva asociada" })}
+            </Text>
+            {!params.reservaId && !cargandoReservas && reservasValidas.length === 0 ? (
+              <View style={[styles.infoBoxModal, { backgroundColor: c.bgInput, marginVertical: 4, padding: 12 }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Ionicons name="warning-outline" size={20} color="#EF4444" />
+                  <Text style={{ color: c.textPrimary, fontSize: 13, fontWeight: "700", flex: 1 }}>
+                    {t("soporte.incidencia.sinReservasActivasTitulo", { defaultValue: "No tienes reservas activas o confirmadas" })}
+                  </Text>
+                </View>
+                <Text style={{ color: c.textSecondary, fontSize: 12, marginTop: 6, lineHeight: 16 }}>
+                  {t("soporte.incidencia.sinReservasActivasMensaje", { defaultValue: "Solo puedes reportar incidencias técnicas si tienes reservas activas o confirmadas en este momento." })}
+                </Text>
+              </View>
+            ) : params.reservaId ? (
+              // Case A: Preloaded from bookings screen (Read-only view)
+              <View style={styles.rowTwoInputs}>
+                <View style={[styles.input, { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", borderColor: c.border, flex: 1.5, justifyContent: "center" }]}>
+                  <Text style={{ color: c.textSecondary, fontSize: 13.5 }}>{vehiculoNombre}</Text>
+                </View>
+                <View style={[styles.input, { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", borderColor: c.border, flex: 1, justifyContent: "center" }]}>
+                  <Text style={{ color: c.textSecondary, fontSize: 13.5 }}>{placa || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin Placa" })}</Text>
+                </View>
+              </View>
+            ) : (
+              // Case B: Direct navigation (Dropdown selector + read-only Plate)
+              <View style={{ gap: 10 }}>
+                <View style={styles.rowTwoInputs}>
+                  {/* Vehículo Selector Dropdown */}
+                  <TouchableOpacity
+                    style={[
+                      styles.input,
+                      {
+                        backgroundColor: c.bgInput,
+                        borderColor: errores.vehiculoNombre ? "#EF4444" : c.border,
+                        flex: 1.5,
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      },
+                    ]}
+                    onPress={() => setIsDropdownOpen(true)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={{ color: vehiculoNombre ? c.textPrimary : c.textMuted, fontSize: 13.5 }} numberOfLines={1}>
+                      {vehiculoNombre || t("perfil.seleccionar", { defaultValue: "Seleccionar" })}
+                    </Text>
+                    <Ionicons name="chevron-down" size={16} color={c.textSecondary} />
+                  </TouchableOpacity>
+
+                  {/* Plate Read-only Input */}
+                  <View style={[styles.input, { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", borderColor: c.border, flex: 1, justifyContent: "center" }]}>
+                    <Text style={{ color: placa ? c.textPrimary : c.textMuted, fontSize: 13.5 }}>
+                      {placa || t("soporte.incidencia.placa", { defaultValue: "Placa" })}
+                    </Text>
+                  </View>
+                </View>
+                {errores.vehiculoNombre && <Text style={styles.errorText}>{errores.vehiculoNombre}</Text>}
+              </View>
+            )}
+
+            {/* Selector de Tipo de Incidencia desde JSON */}
+            <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 14 }]}>
+              {t("soporte.incidencia.tipoIncidencia", { defaultValue: "Tipo de Incidencia *" })}
+            </Text>
+            <View style={styles.tiposGrid}>
+              {TIPOS_INCIDENCIA_DUMMY.map((tipo) => {
+                const seleccionado = tipoSeleccionado === tipo.id;
+                return (
+                  <TouchableOpacity
+                    key={tipo.id}
+                    style={[
+                      styles.tipoChip,
+                      { backgroundColor: c.bgInput, borderColor: c.border },
+                      seleccionado && styles.tipoChipSeleccionado,
+                    ]}
+                    onPress={() => setTipoSeleccionado(tipo.id)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons
+                      name={tipo.icono as any}
+                      size={18}
+                      color={seleccionado ? "#FFFFFF" : "#2563EB"}
+                    />
+                    <Text style={[styles.tipoChipTexto, { color: seleccionado ? "#FFFFFF" : c.textPrimary }]}>
+                      {getTipoIncidenciaTexto(tipo.id)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* Banner Dinámico de Tiempo Estimado */}
+            <View style={[styles.tiempoEstimadoBox, { backgroundColor: c.oscuro ? "#312E8133" : "#FEF3C7", borderColor: c.oscuro ? "#3730A3" : "#FDE68A" }]}>
+              <Ionicons name="time-outline" size={20} color={c.oscuro ? "#FBBF24" : "#D97706"} />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={[styles.tiempoEstimadoLabel, { color: c.oscuro ? "#FDE68A" : "#B45309" }]}>
+                  {t("soporte.incidencia.tiempoEstimadoLabel", { defaultValue: "Tiempo estimado de atención técnica:" })}
+                </Text>
+                <Text style={[styles.tiempoEstimadoValor, { color: c.oscuro ? "#FBBF24" : "#92400E" }]}>
+                  {getTiempoEstimadoTexto(tipoObj.tiempoEstimado)}
+                </Text>
+              </View>
+            </View>
+
+            {/* Descripción Obligatoria */}
+            <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 14 }]}>
+              {t("soporte.incidencia.descripcionLabel", { defaultValue: "Descripción del problema *" })}
+            </Text>
+            <TextInput
+              style={[
+                styles.inputMultiline,
+                { backgroundColor: c.bgInput, borderColor: errores.descripcion ? "#EF4444" : c.border, color: c.textPrimary },
+              ]}
+              placeholder={t("soporte.incidencia.descripcionPlaceholder", { defaultValue: "Describe lo sucedido, ruidos, testigos en tablero o ubicación actual..." })}
+              placeholderTextColor={c.textMuted}
+              multiline={true}
+              numberOfLines={4}
+              textAlignVertical="top"
+              value={descripcion}
+              onChangeText={(txt) => {
+                setDescripcion(txt);
+                if (errores.descripcion) setErrores({ ...errores, descripcion: "" });
+              }}
+            />
+            {errores.descripcion && <Text style={styles.errorText}>{errores.descripcion}</Text>}
+
+            {/* Evidencias Opcionales */}
+            <View style={styles.evidenciaHeaderRow}>
+              <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 14 }]}>
+                {t("soporte.incidencia.evidenciasLabel", { defaultValue: "Evidencias (Imágenes / Video opcionales)" })}
+              </Text>
+              <Text style={[styles.opcionalBadge, { color: c.textMuted }]}>
+                {t("soporte.incidencia.maxFotos", { defaultValue: "Máx 3 fotos" })}
+              </Text>
+            </View>
+
+            <View style={styles.evidenciasFila}>
+              {evidenciasAdjuntas.map((uri, idx) => (
+                <View key={idx} style={styles.evidenciaPreviewWrap}>
+                  <Image source={{ uri }} style={styles.evidenciaPreviewImg} />
+                  <TouchableOpacity
+                    style={styles.evidenciaEliminarBtn}
+                    onPress={() => eliminarEvidencia(idx)}
+                  >
+                    <Ionicons name="close-circle" size={20} color="#EF4444" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              {evidenciasAdjuntas.length < 3 && (
+                <TouchableOpacity
+                  style={[styles.agregarEvidenciaBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
+                  onPress={agregarEvidencia}
+                >
+                  <Ionicons name="camera-outline" size={22} color="#2563EB" />
+                  <Text style={styles.agregarEvidenciaTexto}>
+                    {t("soporte.incidencia.adjuntar", { defaultValue: "+ Adjuntar" })}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Datos de Contacto Auto-rellenados desde Perfil */}
+            <View style={[styles.dividerSection, { backgroundColor: c.border }]} />
+
+            <View style={styles.contactoHeaderRow}>
+              <Ionicons name="person-circle-outline" size={20} color="#2563EB" />
+              <Text style={[styles.sectionSubtitle, { color: c.textPrimary, marginLeft: 6 }]}>
+                {t("soporte.incidencia.datosSeguimiento", { defaultValue: "Datos de contacto para seguimiento" })}
+              </Text>
+            </View>
+            <Text style={[styles.contactoInfoHint, { color: c.textMuted }]}>
+              {t("soporte.incidencia.datosSeguimientoHint", { defaultValue: "Precargados automáticamente desde tu perfil registrado (puedes editarlos si lo requieres)." })}
+            </Text>
+
+            <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 8 }]}>
+              {t("soporte.incidencia.nombreLabel", { defaultValue: "Nombre completo *" })}
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                { backgroundColor: c.bgInput, borderColor: errores.contactoNombre ? "#EF4444" : c.border, color: c.textPrimary },
+              ]}
+              value={contactoNombre}
+              onChangeText={(txt) => {
+                setContactoNombre(txt);
+                if (errores.contactoNombre) setErrores({ ...errores, contactoNombre: "" });
+              }}
+            />
+            {errores.contactoNombre && <Text style={styles.errorText}>{errores.contactoNombre}</Text>}
+
+            <View style={styles.rowTwoInputs}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 10 }]}>
+                  {t("soporte.incidencia.telefonoLabel", { defaultValue: "Teléfono *" })}
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { backgroundColor: c.bgInput, borderColor: errores.contactoTelefono ? "#EF4444" : c.border, color: c.textPrimary },
+                  ]}
+                  keyboardType="phone-pad"
+                  value={contactoTelefono}
+                  onChangeText={(txt) => {
+                    setContactoTelefono(txt);
+                    if (errores.contactoTelefono) setErrores({ ...errores, contactoTelefono: "" });
+                  }}
+                />
+                {errores.contactoTelefono && <Text style={styles.errorText}>{errores.contactoTelefono}</Text>}
+              </View>
+
+              <View style={{ flex: 1.2 }}>
+                <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 10 }]}>
+                  {t("soporte.incidencia.emailLabel", { defaultValue: "Correo electrónico *" })}
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { backgroundColor: c.bgInput, borderColor: errores.contactoEmail ? "#EF4444" : c.border, color: c.textPrimary },
+                  ]}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={contactoEmail}
+                  onChangeText={(txt) => {
+                    setContactoEmail(txt);
+                    if (errores.contactoEmail) setErrores({ ...errores, contactoEmail: "" });
+                  }}
+                />
+                {errores.contactoEmail && <Text style={styles.errorText}>{errores.contactoEmail}</Text>}
+              </View>
+            </View>
+
+            {/* Botón de Enviar */}
+            <TouchableOpacity
+              style={[styles.submitBtn, (!params.reservaId && reservasValidas.length === 0) && { opacity: 0.5 }]}
+              onPress={(!params.reservaId && reservasValidas.length === 0) ? undefined : validarYEnviarReporte}
+              activeOpacity={0.88}
+              disabled={enviando || (!params.reservaId && reservasValidas.length === 0)}
+            >
+              <LinearGradient
+                colors={["#16a34a", "#15803d"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.submitBtnGradient}
+              >
+                <Ionicons name="send-outline" size={18} color="#FFFFFF" />
+                <Text style={styles.submitBtnText}>
+                  {t("soporte.incidencia.btnEnviar", { defaultValue: "Enviar Reporte de Incidencia" })}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      )}
+
+      {/* PESTAÑA 3: MIS REPORTES */}
+      {activeTab === "mis_reportes" && (
+        <View style={{ flex: 1 }}>
+          {reportes.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="clipboard-outline" size={54} color={c.textMuted} />
+              <Text style={[styles.emptyTitle, { color: c.textPrimary }]}>
+                {t("soporte.incidencia.sinReportesTitulo", { defaultValue: "No tienes reportes registrados" })}
+              </Text>
+              <Text style={[styles.emptySub, { color: c.textSecondary }]}>
+                {t("soporte.incidencia.sinReportesSub", { defaultValue: "Si tienes un problema durante tu alquiler, regístralo desde la pestaña \"Reportar Incidencia\"." })}
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyReportBtn}
+                onPress={() => setActiveTab("reportar")}
+              >
+                <Text style={styles.emptyReportBtnText}>
+                  {t("soporte.incidencia.crearPrimerReporte", { defaultValue: "Crear primer reporte" })}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={reportes}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+              renderItem={({ item }) => {
+                const colorEstado = getEstadoColor(item.estado);
+                return (
+                  <TouchableOpacity
+                    style={[styles.reporteCard, { backgroundColor: c.bgCard, borderColor: c.border }]}
+                    onPress={() => abrirReporte(item)}
+                    activeOpacity={0.88}
+                  >
+                    <View style={styles.reporteHeaderRow}>
+                      <Text style={[styles.reporteId, { color: c.textPrimary }]}>{item.id}</Text>
+                      <View style={[styles.estadoBadge, { backgroundColor: `${colorEstado}18`, borderColor: `${colorEstado}40` }]}>
+                        <View style={[styles.estadoDot, { backgroundColor: colorEstado }]} />
+                        <Text style={[styles.estadoTexto, { color: colorEstado }]}>{getEstadoTexto(item.estado)}</Text>
+                      </View>
+                    </View>
+
+                    <Text style={[styles.reporteTipo, { color: "#2563EB" }]}>{getTipoIncidenciaTexto(item.tipoIncidencia)}</Text>
+                    <Text style={[styles.reporteVehiculo, { color: c.textSecondary }]}>
+                      {item.vehiculoNombre} {item.placa ? `(${t("soporte.incidencia.placa", { defaultValue: "Placa" })}: ${item.placa})` : ""}
+                    </Text>
+
+                    <Text style={[styles.reporteDesc, { color: c.textPrimary }]} numberOfLines={2}>
+                      {t(item.descripcion, { defaultValue: item.descripcion })}
+                    </Text>
+
+                    <View style={styles.reporteFooterRow}>
+                      <Text style={[styles.reporteTiempo, { color: c.textMuted }]}>
+                        {t("soporte.incidencia.tiempoEstimadoSolucion", { defaultValue: "Tiempo est." })}: {getTiempoEstimadoTexto(item.tiempoEstimadoSolucion)}
+                      </Text>
+                      <Text style={[styles.reporteVerDetalle, { color: "#2563EB" }]}>
+                        {t("soporte.incidencia.verDetalle", { defaultValue: "Ver detalle →" })}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          )}
         </View>
       )}
+
+      {/* MODAL 3: SELECTOR DE VEHÍCULO / RESERVA ACTIVA */}
+      <Modal
+        visible={isDropdownOpen}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsDropdownOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCardLarge, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+            <View style={[styles.modalHeaderRow, { marginBottom: 16 }]}>
+              <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
+                {t("soporte.incidencia.seleccionaVehiculo", { defaultValue: "Selecciona tu Vehículo en Alquiler" })}
+              </Text>
+              <TouchableOpacity onPress={() => setIsDropdownOpen(false)}>
+                <Ionicons name="close" size={24} color={c.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            {cargandoReservas ? (
+              <View style={{ paddingVertical: 40, alignItems: "center" }}>
+                <ActivityIndicator size="large" color="#2563EB" />
+                <Text style={{ marginTop: 10, color: c.textSecondary }}>
+                  {t("soporte.incidencia.cargandoReservas", { defaultValue: "Cargando reservas..." })}
+                </Text>
+              </View>
+            ) : reservasValidas.length === 0 ? (
+              <View style={{ paddingVertical: 40, alignItems: "center", paddingHorizontal: 16 }}>
+                <Ionicons name="warning-outline" size={48} color={c.textMuted} />
+                <Text style={{ fontSize: 15, fontWeight: "800", color: c.textPrimary, marginTop: 12, textAlign: "center" }}>
+                  {t("soporte.incidencia.noReservasActivasTitulo", { defaultValue: "No tienes reservas activas o confirmadas" })}
+                </Text>
+                <Text style={{ fontSize: 12.5, color: c.textSecondary, marginTop: 6, textAlign: "center", lineHeight: 18 }}>
+                  {t("soporte.incidencia.noReservasActivasSub", { defaultValue: "Solo puedes reportar incidencias técnicas en vehículos con alquileres confirmados o en curso en este momento." })}
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={reservasValidas}
+                keyExtractor={(item) => item.referencia}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                renderItem={({ item }) => {
+                  const vehSnap = item.vehiculoSnapshot as any;
+                  const esSeleccionada = item.referencia === reservaId;
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        styles.reservaSeleccionCard,
+                        {
+                          backgroundColor: esSeleccionada ? (c.oscuro ? "#1E3A8A44" : "#EFF6FF") : c.bgInput,
+                          borderColor: esSeleccionada ? "#2563EB" : c.border,
+                        },
+                      ]}
+                      onPress={() => {
+                        setReservaId(item.referencia);
+                        setVehiculoNombre(item.vehiculoNombre);
+                        setPlaca(vehSnap?.placa || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" }));
+                        if (errores.vehiculoNombre) {
+                          setErrores((prev) => ({ ...prev, vehiculoNombre: "" }));
+                        }
+                        setIsDropdownOpen(false);
+                      }}
+                      activeOpacity={0.85}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.reservaSeleccionNombre, { color: c.textPrimary }]}>
+                          {item.vehiculoNombre}
+                        </Text>
+                        <Text style={[styles.reservaSeleccionDetalle, { color: c.textSecondary }]}>
+                          {t("soporte.incidencia.placa", { defaultValue: "Placa" })}: <Text style={{ fontWeight: "700" }}>{vehSnap?.placa || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" })}</Text> · Ref: {item.referencia}
+                        </Text>
+                        <Text style={[styles.reservaSeleccionFechas, { color: c.textMuted }]}>
+                          {item.fechaRetiro ? fechaCorta(String(item.fechaRetiro)) : ""} - {item.fechaDevolucion ? fechaCorta(String(item.fechaDevolucion)) : ""}
+                        </Text>
+                      </View>
+                      {esSeleccionada && (
+                        <Ionicons name="checkmark-circle" size={22} color="#2563EB" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            )}
+
+            <TouchableOpacity
+              style={[styles.modalCloseBtn, { marginTop: 10 }]}
+              onPress={() => setIsDropdownOpen(false)}
+            >
+              <Text style={styles.modalCloseBtnText}>{t("comun.cancelar", { defaultValue: "Cancelar" })}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL 1: CONFIRMACIÓN DE ENVÍO EXITOSO */}
+      <Modal
+        visible={reporteExitoso !== null}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setReporteExitoso(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+            <Ionicons name="checkmark-circle" size={56} color="#16A34A" style={{ alignSelf: "center", marginBottom: 10 }} />
+            <Text style={[styles.modalTitle, { color: c.textPrimary, textAlign: "center" }]}>
+              {t("soporte.incidencia.reporteRegistradoExito", { defaultValue: "Reporte Registrado con Éxito" })}
+            </Text>
+            <Text style={[styles.modalId, { color: "#2563EB", textAlign: "center" }]}>
+              {t("soporte.incidencia.codigoCaso", { defaultValue: "Código de caso:" })} {reporteExitoso?.id}
+            </Text>
+
+            <View style={[styles.infoBoxModal, { backgroundColor: c.bgInput }]}>
+              <View style={styles.infoRowModal}>
+                <Ionicons name="time-outline" size={18} color="#D97706" />
+                <Text style={[styles.infoTxtModal, { color: c.textPrimary }]}>
+                  {t("soporte.incidencia.tiempoEstimadoAtencion", { defaultValue: "Tiempo estimado de atención:" })} <Text style={{ fontWeight: "800" }}>{reporteExitoso?.tiempoEstimadoSolucion ? getTiempoEstimadoTexto(reporteExitoso.tiempoEstimadoSolucion) : ""}</Text>
+                </Text>
+              </View>
+              <View style={[styles.infoRowModal, { marginTop: 8 }]}>
+                <Ionicons name="mail-outline" size={18} color="#2563EB" />
+                <Text style={[styles.infoTxtModal, { color: c.textPrimary }]}>
+                  {t("soporte.incidencia.confirmacionEnviadaA", { defaultValue: "Confirmación enviada a:" })} <Text style={{ fontWeight: "700" }}>{reporteExitoso?.contactoEmail}</Text>
+                </Text>
+              </View>
+            </View>
+
+            <Text style={[styles.modalNotifAviso, { color: c.textSecondary }]}>
+              {t("soporte.incidencia.notifAvisoModal", { defaultValue: "El equipo administrador revisará el reporte y actualizará el estado del caso. Recibirás notificaciones por correo y en la app." })}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.modalPrimaryBtn}
+              onPress={() => {
+                setReporteExitoso(null);
+                setActiveTab("mis_reportes");
+              }}
+            >
+              <Text style={styles.modalPrimaryBtnText}>
+                {t("soporte.incidencia.verEnMisReportes", { defaultValue: "Ver en Mis Reportes" })}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL 2: DETALLE DEL REPORTE Y VALIDACIÓN DEL ADMINISTRADOR (SIN EMOJIS, SOLO LECTURA DEL CLIENTE) */}
+      <Modal
+        visible={reporteSeleccionado !== null}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setReporteSeleccionado(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCardLarge, { backgroundColor: c.bgCard, borderColor: c.border, height: '82%' }]}>
+            <View style={styles.modalHeaderRow}>
+              <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
+                {t("soporte.incidencia.detalleReporte", { defaultValue: "Detalle de Reporte" })} {reporteSeleccionado?.id}
+              </Text>
+              <TouchableOpacity onPress={() => setReporteSeleccionado(null)}>
+                <Ionicons name="close" size={24} color={c.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            {reporteSeleccionado && (
+              <ScrollView style={{ flex: 1, marginVertical: 10 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <Text style={{ fontSize: 15, fontWeight: "800", color: "#2563EB" }}>
+                    {getTipoIncidenciaTexto(reporteSeleccionado.tipoIncidencia)}
+                  </Text>
+                  <View style={[styles.estadoBadge, { backgroundColor: `${getEstadoColor(reporteSeleccionado.estado)}18`, borderColor: `${getEstadoColor(reporteSeleccionado.estado)}40` }]}>
+                    <Text style={[styles.estadoTexto, { color: getEstadoColor(reporteSeleccionado.estado) }]}>
+                      {getEstadoTexto(reporteSeleccionado.estado)}
+                    </Text>
+                  </View>
+                </View>
+
+                <Text style={[styles.modalSubHeader, { color: c.textMuted }]}>
+                  {t("soporte.incidencia.vehiculoReserva", { defaultValue: "Vehículo / Reserva:" })}
+                </Text>
+                <Text style={[styles.modalVal, { color: c.textPrimary }]}>
+                  {reporteSeleccionado.vehiculoNombre} {reporteSeleccionado.placa ? `(${t("soporte.incidencia.placa", { defaultValue: "Placa" })}: ${reporteSeleccionado.placa})` : ""}
+                </Text>
+
+                <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>
+                  {t("soporte.incidencia.descripcion", { defaultValue: "Descripción:" })}
+                </Text>
+                <Text style={[styles.modalVal, { color: c.textSecondary, lineHeight: 18 }]}>
+                  {t(reporteSeleccionado.descripcion, { defaultValue: reporteSeleccionado.descripcion })}
+                </Text>
+
+                <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>
+                  {t("soporte.incidencia.contactoRegistrado", { defaultValue: "Contacto registrado:" })}
+                </Text>
+                <Text style={[styles.modalVal, { color: c.textPrimary }]}>
+                  {reporteSeleccionado.contactoNombre} · {reporteSeleccionado.contactoTelefono}
+                </Text>
+
+                <Text style={[styles.modalSubHeader, { color: c.textMuted, marginTop: 10 }]}>
+                  {t("soporte.incidencia.tiempoEstimadoAtencion", { defaultValue: "Tiempo estimado de atención:" })}
+                </Text>
+                <Text style={[styles.modalVal, { color: "#D97706", fontWeight: "700" }]}>
+                  {getTiempoEstimadoTexto(reporteSeleccionado.tiempoEstimadoSolucion)}
+                </Text>
+
+                {/* Historial de atención del Administrador */}
+                {reporteSeleccionado.estado === "Recibido" ? (
+                  <View style={[styles.adminNoteBox, { backgroundColor: c.bgInput, borderColor: c.border, marginTop: 16 }]}>
+                    <Ionicons name="time-outline" size={18} color="#2563EB" />
+                    <Text style={[styles.adminNoteText, { color: c.textSecondary }]}>
+                      {t("soporte.incidencia.reporteRecibidoAviso", { defaultValue: "Tu reporte ha sido recibido y está a la espera de ser asignado a un técnico. Recibirás una notificación cuando cambie de estado." })}
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    <Text style={[styles.modalSubHeader, { color: c.textPrimary, marginTop: 16, fontWeight: "800", fontSize: 13.5 }]}>
+                      {t("soporte.incidencia.historialAdmin", { defaultValue: "Historial de atención del Administrador:" })}
+                    </Text>
+
+                    <View style={styles.timelineContainer}>
+                      {reporteSeleccionado.historialEstados.map((h, i) => (
+                        <View key={i} style={styles.timelineItem}>
+                          <View style={[styles.timelineDot, { backgroundColor: getEstadoColor(h.estado) }]} />
+                          <View style={styles.timelineContent}>
+                            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                              <Text style={[styles.timelineEstado, { color: c.textPrimary }]}>{getEstadoTexto(h.estado)}</Text>
+                              <Text style={[styles.timelineFecha, { color: c.textMuted }]}>
+                                {new Date(h.fecha).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              </Text>
+                            </View>
+                            {h.comentario && (
+                              <Text style={[styles.timelineComentario, { color: c.textSecondary }]}>
+                                {t(h.comentario, { defaultValue: h.comentario })}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  </>
+                )}
+
+                {/* Nota informativa de gestión por el Administrador */}
+                <View style={[styles.adminNoteBox, { backgroundColor: c.bgInput, borderColor: c.border, marginTop: 12 }]}>
+                  <Ionicons name="shield-checkmark-outline" size={18} color="#2563EB" />
+                  <Text style={[styles.adminNoteText, { color: c.textSecondary }]}>
+                    {t("soporte.incidencia.estadoValidadoAviso", { defaultValue: "El estado de este reporte es validado y actualizado directamente por el equipo administrador en la central de soporte." })}
+                  </Text>
+                </View>
+              </ScrollView>
+            )}
+
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setReporteSeleccionado(null)}
+            >
+              <Text style={styles.modalCloseBtnText}>{t("comun.cerrar", { defaultValue: "Cerrar" })}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
-const s = StyleSheet.create({
-  flex: { flex: 1 },
+const styles = StyleSheet.create({
+  container: { flex: 1 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingBottom: 16,
   },
-  headerTitulo: { fontSize: 16, fontWeight: "800" },
-  subtitulo: { fontSize: 13, paddingHorizontal: 16, paddingTop: 12 },
-  centro: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32, minHeight: 240 },
-  lista: { padding: 16, gap: 10, flexGrow: 1 },
-  card: { borderWidth: 1, borderRadius: 14, padding: 14, gap: 6 },
-  cardTop: { flexDirection: "row", justifyContent: "space-between" },
-  codigo: { fontSize: 11, fontWeight: "700" },
-  fecha: { fontSize: 11 },
-  asunto: { fontSize: 15, fontWeight: "800" },
-  insignias: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
-  pie: { paddingHorizontal: 16, paddingTop: 8 },
-  boton: {
+  backBtn: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
+  },
+  headerTitle: { fontSize: 18, fontWeight: "800", color: "#FFFFFF" },
+  headerHelpBtn: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tabBar: { flexDirection: "row", borderBottomWidth: 1 },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: "center",
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+  activeTabButton: { borderBottomColor: "#1D4ED8" },
+  tabText: { fontSize: 12.5, fontWeight: "700" },
+  activeTabText: { color: "#1D4ED8" },
+  tabBadgeRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+  badgeCount: {
+    backgroundColor: "#EF4444",
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+  },
+  badgeCountText: { color: "#FFF", fontSize: 10, fontWeight: "800" },
+
+  scrollContent: { padding: 16 },
+
+  introCard: {
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  introTitle: { fontSize: 18, fontWeight: "800", marginBottom: 4, textAlign: "center" },
+  introSubtitle: { fontSize: 13, textAlign: "center", lineHeight: 18, marginBottom: 14 },
+  quickReportBtn: { width: "100%", borderRadius: 10, overflow: "hidden" },
+  quickReportGradient: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    paddingVertical: 14,
-    borderRadius: 12,
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
-  botonTexto: { color: "#fff", fontWeight: "800", fontSize: 14 },
+  quickReportBtnText: { color: "#FFFFFF", fontSize: 13.5, fontWeight: "800" },
+
+  sectionTitle: { fontSize: 15.5, fontWeight: "800", marginBottom: 12 },
+
+  contactCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  contactIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 14,
+  },
+  contactTextWrap: { flex: 1 },
+  contactName: { fontSize: 14, fontWeight: "700", marginBottom: 2 },
+  contactDesc: { fontSize: 12 },
+
+  faqCard: {
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  faqHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  faqQuestion: { fontSize: 13.5, fontWeight: "700", flex: 1, paddingRight: 8 },
+  faqAnswer: { fontSize: 13, lineHeight: 18, marginTop: 8 },
+
+  // Banners
+  precargadoBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 14,
+  },
+  precargadoTitulo: { fontSize: 13, fontWeight: "800" },
+  precargadoSub: { fontSize: 12, marginTop: 1 },
+
+  infoFormBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 14,
+  },
+  infoFormText: { fontSize: 12.5, flex: 1, lineHeight: 17 },
+
+  // CONTENEDOR ELEGANTE TIPO CARD PARA EL FORMULARIO
+  formContainerCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 10,
+  },
+  formCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB22",
+  },
+  formCardTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+  },
+
+  inputLabel: { fontSize: 12.5, fontWeight: "700", marginBottom: 6 },
+  rowTwoInputs: { flexDirection: "row", gap: 10 },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13.5,
+  },
+  inputMultiline: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13.5,
+    minHeight: 85,
+  },
+  errorText: { color: "#EF4444", fontSize: 11, marginTop: 4, fontWeight: "700" },
+
+  tiposGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  tipoChip: {
+    width: "48%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  tipoChipSeleccionado: {
+    backgroundColor: "#2563EB",
+    borderColor: "#1D4ED8",
+  },
+  tipoChipTexto: { fontSize: 12, fontWeight: "700", flex: 1 },
+
+  tiempoEstimadoBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 14,
+  },
+  tiempoEstimadoLabel: { fontSize: 11, fontWeight: "700" },
+  tiempoEstimadoValor: { fontSize: 14, fontWeight: "900", marginTop: 1 },
+
+  evidenciaHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  opcionalBadge: { fontSize: 11, marginTop: 14 },
+  evidenciasFila: { flexDirection: "row", gap: 10, marginTop: 8 },
+  evidenciaPreviewWrap: { position: "relative", width: 68, height: 68 },
+  evidenciaPreviewImg: { width: "100%", height: "100%", borderRadius: 8 },
+  evidenciaEliminarBtn: { position: "absolute", top: -6, right: -6, zIndex: 10 },
+  agregarEvidenciaBtn: {
+    width: 68,
+    height: 68,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  agregarEvidenciaTexto: { fontSize: 10.5, color: "#2563EB", fontWeight: "700", marginTop: 2 },
+
+  dividerSection: {
+    height: 1,
+    marginVertical: 16,
+  },
+  contactoHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 2,
+  },
+  sectionSubtitle: { fontSize: 13.5, fontWeight: "800" },
+  contactoInfoHint: { fontSize: 11, marginBottom: 8, lineHeight: 15 },
+
+  submitBtn: { borderRadius: 10, overflow: "hidden", marginTop: 20 },
+  submitBtnGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+  },
+  submitBtnText: { color: "#FFFFFF", fontSize: 14.5, fontWeight: "800" },
+
+  // Mis Reportes
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 30,
+  },
+  emptyTitle: { fontSize: 16, fontWeight: "800", marginTop: 12 },
+  emptySub: { fontSize: 13, textAlign: "center", marginTop: 6, lineHeight: 18 },
+  emptyReportBtn: {
+    backgroundColor: "#2563EB",
+    paddingHorizontal: 20,
+    paddingVertical: 11,
+    borderRadius: 8,
+    marginTop: 18,
+  },
+  emptyReportBtnText: { color: "#FFF", fontSize: 13.5, fontWeight: "800" },
+
+  reporteCard: {
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  reporteHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  reporteId: { fontSize: 14, fontWeight: "800" },
+  estadoBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  estadoDot: { width: 6, height: 6, borderRadius: 3 },
+  estadoTexto: { fontSize: 11, fontWeight: "800" },
+  reporteTipo: { fontSize: 13, fontWeight: "800", marginTop: 4 },
+  reporteVehiculo: { fontSize: 12, marginTop: 2 },
+  reporteDesc: { fontSize: 12.5, marginTop: 6, lineHeight: 17 },
+  reporteFooterRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 0.5,
+    borderTopColor: "#E5E7EB22",
+  },
+  reporteTiempo: { fontSize: 11 },
+  reporteVerDetalle: { fontSize: 11.5, fontWeight: "700" },
+
+  // Modales
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  modalCard: {
+    width: "90%",
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 20,
+  },
+  modalCardLarge: {
+    width: "92%",
+    maxHeight: "85%",
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 18,
+  },
+  modalTitle: { fontSize: 17, fontWeight: "800" },
+  modalId: { fontSize: 14, fontWeight: "800", marginTop: 4 },
+  infoBoxModal: {
+    padding: 12,
+    borderRadius: 10,
+    marginVertical: 14,
+  },
+  infoRowModal: { flexDirection: "row", alignItems: "center", gap: 8 },
+  infoTxtModal: { fontSize: 12.5, flex: 1 },
+  modalNotifAviso: { fontSize: 12, textAlign: "center", lineHeight: 17, marginBottom: 16 },
+  modalPrimaryBtn: {
+    backgroundColor: "#2563EB",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalPrimaryBtnText: { color: "#FFFFFF", fontSize: 14, fontWeight: "800" },
+
+  modalHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  modalSubHeader: { fontSize: 12 },
+  modalVal: { fontSize: 13, marginTop: 2 },
+
+  timelineContainer: { marginTop: 10, paddingLeft: 6 },
+  timelineItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  timelineDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: 4,
+    marginRight: 10,
+  },
+  timelineContent: { flex: 1 },
+  timelineEstado: { fontSize: 13, fontWeight: "800" },
+  timelineFecha: { fontSize: 11 },
+  timelineComentario: { fontSize: 12, marginTop: 2, lineHeight: 16 },
+
+  adminNoteBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 12,
+    marginTop: 16,
+  },
+  adminNoteText: { fontSize: 12, flex: 1, lineHeight: 16 },
+
+  modalCloseBtn: {
+    backgroundColor: "#2563EB",
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  modalCloseBtnText: { color: "#FFF", fontSize: 13.5, fontWeight: "800" },
+  reservaSeleccionCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  reservaSeleccionNombre: { fontSize: 14, fontWeight: "700" },
+  reservaSeleccionDetalle: { fontSize: 12, marginTop: 2 },
+  reservaSeleccionFechas: { fontSize: 11, marginTop: 4 },
 });
