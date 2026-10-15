@@ -6,11 +6,23 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "@/modules/i18n";
 import { useIdioma } from "@/modules/i18n/hooks/useLanguage";
 import { FloatingSupportChat } from "@/components/ui/FloatingSupportChat";
+import { useEffect } from "react";
+import { useReferenceStore } from "@/store/referenceStore";
+import { useAuthStore } from "@/store/authStore";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function RootLayout() {
   const { temaActual } = useIdioma();
+  const token = useAuthStore((s) => s.token);
+
+  useEffect(() => {
+    useReferenceStore.getState().cargarPublicas().catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (token) useReferenceStore.getState().cargarNacionalidades().catch(() => {});
+  }, [token]);
 
   return (
     <I18nextProvider i18n={i18n}>

@@ -18,17 +18,9 @@ import { InputField } from "@/components/ui/InputField";
 import { inputFieldStyles } from "@/components/ui/InputField.styles";
 import { DateField } from "@/components/ui/DateField";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { getPrefijoPorNacionalidad, getSiglaDocumento } from "@/modules/reservation/constants/reservation.constants";
+import { esNacionalidadColombiana, getNacionalidades, getNombreNacionalidad, getPrefijoPorNacionalidad, getSiglaDocumento } from "@/modules/reservation/constants/reservation.constants";
 
 const TIPOS_DOCUMENTO: TipoDocumento[] = ["CC", "CE", "Pasaporte", "DNI", "PPT", "PEP"];
-
-const NACIONALIDADES: { valor: Nacionalidad; bandera: string }[] = [
-  { valor: "Colombia",  bandera: "🇨🇴" },
-  { valor: "USA",       bandera: "🇺🇸" },
-  { valor: "Francia",   bandera: "🇫🇷" },
-  { valor: "Portugal",  bandera: "🇵🇹" },
-  { valor: "Brasil",    bandera: "🇧🇷" },
-];
 
 interface Props {
   onGuardado: () => void;
@@ -41,11 +33,12 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
   const [showTipoDoc, setShowTipoDoc] = useState(false);
   const [showNacionalidad, setShowNacionalidad] = useState(false);
   const prefijoTelefono = getPrefijoPorNacionalidad(form.nacionalidad || null);
-  const hayPrefijo = prefijoTelefono !== "";
+  const hayPrefijo = !!form.nacionalidad;
+  const NACIONALIDADES = getNacionalidades();
 
   const tiposDocumentoFiltrados = TIPOS_DOCUMENTO.filter((tipo) => {
     if (!form.nacionalidad) return true;
-    if (form.nacionalidad === "Colombia") {
+    if (esNacionalidadColombiana(form.nacionalidad)) {
       return tipo === "CC" || tipo === "CE" || tipo === "Pasaporte" || tipo === "PPT" || tipo === "PEP";
     }
     return tipo === "Pasaporte" || tipo === "DNI" || tipo === "CE" || tipo === "PPT" || tipo === "PEP";
@@ -116,20 +109,20 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
       >
         <Text style={[s.selectorText, { color: form.nacionalidad ? c.textPrimary : "#9CA3AF" }]}>
           {form.nacionalidad
-            ? `${NACIONALIDADES.find(n => n.valor === form.nacionalidad)?.bandera} ${form.nacionalidad}`
+            ? getNombreNacionalidad(form.nacionalidad)
             : t("perfil.seleccionar")}
         </Text>
         <Ionicons name={showNacionalidad ? "chevron-up" : "chevron-down"} size={16} color={c.textSecondary} />
       </TouchableOpacity>
       {showNacionalidad && (
         <View style={[s.dropdown, { borderColor: c.border, backgroundColor: c.bgCard }]}>
-          {NACIONALIDADES.map(({ valor, bandera }) => (
+          {NACIONALIDADES.map(({ id: valor, nombre }) => (
             <TouchableOpacity
               key={valor}
               style={[s.dropdownItem, form.nacionalidad === valor && { backgroundColor: c.primaryBg }]}
               onPress={() => {
                 actualizarCampo("nacionalidad", valor);
-                if (valor === "Colombia") {
+                if (esNacionalidadColombiana(valor)) {
                   if (form.tipoDocumento && !["CC", "CE", "Pasaporte", "PPT", "PEP"].includes(form.tipoDocumento)) {
                     actualizarCampo("tipoDocumento", "");
                   }
@@ -143,7 +136,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
               activeOpacity={0.7}
             >
               <Text style={[s.dropdownText, { color: form.nacionalidad === valor ? "#1D4ED8" : c.textPrimary }]}>
-                {bandera} {valor}
+                {nombre}
               </Text>
               {form.nacionalidad === valor && (
                 <Ionicons name="checkmark-circle" size={18} color="#1D4ED8" />
