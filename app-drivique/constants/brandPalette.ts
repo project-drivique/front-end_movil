@@ -13,7 +13,7 @@ const HEX = /^#[0-9a-f]{6}$/i;
 
 export const esHex = (v?: string | null): v is string => !!v && HEX.test(v);
 
-function mezclar(a: string, b: string, peso: number): string {
+export function mezclar(a: string, b: string, peso: number): string {
   const canal = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
   const mix = (i: number) => Math.round(canal(a, i) + (canal(b, i) - canal(a, i)) * peso).toString(16).padStart(2, "0");
   return `#${mix(0)}${mix(1)}${mix(2)}`;
@@ -43,12 +43,16 @@ export let GRADIENTE_CLARO = "#93c5fd";
 export let HERO_1 = "#060e2e";
 export let HERO_2 = "#0c1f5c";
 
+/** Verdadero cuando el servidor tiene una paleta distinta a la original: activa la sustitución de azules fijos. */
+export let PALETA_PERSONALIZADA = false;
+
 /** Aplica la paleta del servidor; con la paleta original conserva el diseño aprobado de la app. */
 export function aplicarPaleta(paleta: PaletaMarca) {
   const p = paleta.primary.toUpperCase();
   const s = paleta.secondary.toUpperCase();
   const a = paleta.accent.toUpperCase();
-  if (mismaPaleta(paleta, ORIGINAL_SERVIDOR)) {
+  PALETA_PERSONALIZADA = !mismaPaleta(paleta, ORIGINAL_SERVIDOR);
+  if (!PALETA_PERSONALIZADA) {
     COLOR_MARCA = "#2f4ea2";
     COLOR_ACCENT = "#2563eb";
     COLOR_ACENTO = "#60A5FA";
