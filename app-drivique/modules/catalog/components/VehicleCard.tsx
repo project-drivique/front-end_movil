@@ -23,7 +23,6 @@ import { Vehiculo } from "../types/catalog.types";
 import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
-import { VEHICULO_PROMOS_DUMMY } from "@/modules/notifications/constants/notifications.dummy";
 
 interface Props {
   vehiculo: Vehiculo;
@@ -83,18 +82,7 @@ function VehiculoCard({
     (_, i) => i < Math.round(rating)
   );
 
-  // Detección de promoción activa para el vehículo
-  const promoVehiculo = estadoDisponible
-    ? VEHICULO_PROMOS_DUMMY.find(
-        (vp) => vp.vehiculoId === vehiculo.id && (!vp.expiracion || new Date(vp.expiracion) >= new Date())
-      )
-    : undefined;
-
-  let descuentoPorcentaje = 0;
-  if (promoVehiculo) {
-    const pctMatch = promoVehiculo.descuentoBadge ? promoVehiculo.descuentoBadge.match(/\d+/) : null;
-    descuentoPorcentaje = pctMatch ? Number(pctMatch[0]) : 0;
-  }
+  const descuentoPorcentaje = 0;
 
   const tieneDescuento = descuentoPorcentaje > 0 && estadoDisponible;
   const precioOriginal = vehiculo.precio ?? 0;
@@ -255,14 +243,14 @@ function VehiculoCard({
           <View style={styles.tagSucursal}>
             <Ionicons name="location-outline" size={10} color="#059669" />
             <Text style={styles.tagSucursalText}>
-              {vehiculo.sucursal ?? "Centro"}
+              {vehiculo.sucursal ?? ""}
             </Text>
           </View>
           {tieneDescuento && (
             <View style={[styles.tagPromo, { backgroundColor: c.oscuro ? "#064e3b" : "#ecfdf5", borderColor: c.oscuro ? "#059669" : "#a7f3d0" }]}>
               <Ionicons name="pricetag" size={10} color={c.oscuro ? "#34d399" : "#047857"} />
               <Text style={[styles.tagPromoText, { color: c.oscuro ? "#34d399" : "#047857" }]}>
-                {promoVehiculo?.descuentoBadge || `-${descuentoPorcentaje}%`}
+                {`-${descuentoPorcentaje}%`}
               </Text>
             </View>
           )}
