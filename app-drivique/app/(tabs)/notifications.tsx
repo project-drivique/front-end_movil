@@ -26,12 +26,13 @@ import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { CuponPromocion as CouponDummy } from "@/modules/notifications/types/promotion.types";
 import { rutaDesdeActionPath } from "@/modules/notifications/services/deepLink";
+import { COLOR_ACENTO, COLOR_ENLACE } from "@/constants/brandPalette";
 
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t, i18n } = useTranslation();
-  const primaryAccent = c.oscuro ? "#60A5FA" : "#1D4ED8";
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_ENLACE;
   const usuario = useAuthStore((s) => s.usuario);
 
   const {

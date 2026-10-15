@@ -138,11 +138,11 @@ export default function FlujoReserva({ vehiculo }: Props) {
       <View style={[styles.topRow, { backgroundColor: c.bgCard }]}>
         <TouchableOpacity onPress={handleVolver} style={styles.volverBtn}>
           <Ionicons name="chevron-back" size={16} color={c.primary} />
-          <Text style={[styles.volverText, { color: c.primary }]}>{t("reserva.flujo.volver")}</Text>
+          <Text style={[[styles.volverText, { color: COLOR_MARCA }], { color: c.primary }]}>{t("reserva.flujo.volver")}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.resumenBtn, { borderColor: c.primary, backgroundColor: c.bgCard }]} onPress={() => setModalResumenVisible(true)}>
-          <Text style={[styles.resumenBtnText, { color: c.primary }]}>{t("reserva.flujo.resumenReserva")}</Text>
+        <TouchableOpacity style={[[styles.resumenBtn, { borderColor: COLOR_MARCA }], { borderColor: c.primary, backgroundColor: c.bgCard }]} onPress={() => setModalResumenVisible(true)}>
+          <Text style={[[styles.resumenBtnText, { color: COLOR_MARCA }], { color: c.primary }]}>{t("reserva.flujo.resumenReserva")}</Text>
         </TouchableOpacity>
       </View>
 

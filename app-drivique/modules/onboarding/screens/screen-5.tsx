@@ -6,8 +6,10 @@ import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { screen5Styles as styles } from "@/modules/onboarding/styles/screen5.styles";
+import { useLogoMarca } from "@/store/brandStore";
 
 export default function OnboardingScreen5() {
+  const logoMarca = useLogoMarca();
   const { t } = useTranslation();
   const c = useTemaColores();
   const insets = useSafeAreaInsets();
@@ -44,7 +46,7 @@ export default function OnboardingScreen5() {
     <View style={[styles.container, { paddingTop: insets.top + 16, backgroundColor: c.bg }]}>
       {/* Logo */}
       <Animated.View style={[styles.logoWrap, { opacity: fadeAnim }]}>
-        <Image source={require("@/assets/images/logo.png")} style={styles.logo} resizeMode="contain" />
+        <Image source={logoMarca} style={styles.logo} resizeMode="contain" />
       </Animated.View>
 
       {/* Check animado */}

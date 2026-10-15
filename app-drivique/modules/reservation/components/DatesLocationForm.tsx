@@ -12,6 +12,7 @@ import { AlertaPagoEfectivo } from "./CashPaymentAlert";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 interface Props {
   vehiculo: Vehiculo;
@@ -246,13 +247,13 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     );
   }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, fechasLugar.horaRetiro, fechasLugar.horaDevolucion, t]);
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   return (
     <View style={[styles.card, { backgroundColor: c.bgCard }]}>
       <View style={styles.headerConIcono}>
         <Ionicons name="card-outline" size={14} color={primaryAccent} />
-        <Text style={[styles.tituloHeaderConIcono, { color: primaryAccent }]}>
+        <Text style={[[styles.tituloHeaderConIcono, { color: COLOR_MARCA }], { color: primaryAccent }]}>
           {t("reserva.fechasLugar.metodoPagoPreferido")}
         </Text>
       </View>
@@ -318,7 +319,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         <View style={styles.puntoAutorizadoContainer}>
           <View style={styles.headerConIcono}>
             <Ionicons name="location" size={14} color={COLOR_MARCA} />
-            <Text style={styles.tituloHeaderConIcono}>
+            <Text style={[styles.tituloHeaderConIcono, { color: COLOR_MARCA }]}>
               {t("reserva.fechasLugar.puntoAutorizadoEfectivo", { defaultValue: "Punto autorizado para pago en efectivo" })}
             </Text>
           </View>
@@ -334,7 +335,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         <View style={styles.columnaMedia}>
           <View style={styles.headerConIcono}>
             <Ionicons name="location" size={14} color={COLOR_MARCA} />
-            <Text style={styles.tituloHeaderConIcono} numberOfLines={1}>
+            <Text style={[styles.tituloHeaderConIcono, { color: COLOR_MARCA }]} numberOfLines={1}>
               {t("reserva.fechasLugar.lugarDeRetiro")}
             </Text>
           </View>
@@ -361,7 +362,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         <View style={styles.columnaMedia}>
           <View style={styles.headerConIcono}>
             <Ionicons name="location" size={14} color={COLOR_MARCA} />
-            <Text style={styles.tituloHeaderConIcono} numberOfLines={1}>
+            <Text style={[styles.tituloHeaderConIcono, { color: COLOR_MARCA }]} numberOfLines={1}>
               {t("reserva.fechasLugar.lugarDeDevolucion")}
             </Text>
           </View>
@@ -389,7 +390,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
       {/* --- INFO DE ENTREGA A DOMICILIO (solo si lugarRetiro === "domicilio") --- */}
       {mostrarDomicilioRetiro && (
         <View style={[styles.domicilioCard, { borderColor: c.border }]}>
-          <Text style={styles.domicilioTitulo}>{t("reserva.fechasLugar.infoEntregaDomicilio")}</Text>
+          <Text style={[styles.domicilioTitulo, { color: COLOR_MARCA }]}>{t("reserva.fechasLugar.infoEntregaDomicilio")}</Text>
 
           <View style={[styles.ciudadBox, { backgroundColor: c.primaryBg }]}>
             <View style={styles.selectLabelRow}>
@@ -398,7 +399,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
             </View>
             <View style={styles.ciudadValorRow}>
               <Text style={[styles.ciudadValor, { color: c.textPrimary }]}>{ciudadEntregaNombre}</Text>
-              <Text style={styles.autoDetectado}>{t("reserva.fechasLugar.autoDetectado")}</Text>
+              <Text style={[styles.autoDetectado, { color: COLOR_MARCA }]}>{t("reserva.fechasLugar.autoDetectado")}</Text>
             </View>
           </View>
 
@@ -434,7 +435,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
       {/* --- INFO DE DEVOLUCIÓN A DOMICILIO (solo si lugarDevolucion === "domicilio") --- */}
       {mostrarDomicilioDevolucion && (
         <View style={[styles.domicilioCard, { borderColor: c.border }]}>
-          <Text style={styles.domicilioTitulo}>{t("reserva.fechasLugar.infoDevolucionDomicilio")}</Text>
+          <Text style={[styles.domicilioTitulo, { color: COLOR_MARCA }]}>{t("reserva.fechasLugar.infoDevolucionDomicilio")}</Text>
 
           <View style={[styles.ciudadBox, { backgroundColor: c.primaryBg }]}>
             <View style={styles.selectLabelRow}>
@@ -443,7 +444,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
             </View>
             <View style={styles.ciudadValorRow}>
               <Text style={[styles.ciudadValor, { color: c.textPrimary }]}>{ciudadEntregaNombre}</Text>
-              <Text style={styles.autoDetectado}>{t("reserva.fechasLugar.autoDetectado")}</Text>
+              <Text style={[styles.autoDetectado, { color: COLOR_MARCA }]}>{t("reserva.fechasLugar.autoDetectado")}</Text>
             </View>
           </View>
 
@@ -479,7 +480,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
       {/* --- CALENDARIO DE DISPONIBILIDAD --- */}
       <View style={styles.headerCalendarioContainer}>
         <Ionicons name="calendar" size={14} color={COLOR_MARCA} style={styles.iconoCalendario} />
-        <Text style={styles.tituloCalendario}>
+        <Text style={[styles.tituloCalendario, { color: COLOR_MARCA }]}>
           {t("reserva.fechasLugar.calendarioDisponibilidad", {
             defaultValue: "Selecciona un rango de fechas en el calendario de disponibilidad",
           })}
@@ -499,7 +500,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         <View style={styles.columnaMedia}>
           <View style={styles.headerConIcono}>
             <Ionicons name="calendar" size={14} color={COLOR_MARCA} />
-            <Text style={styles.tituloHeaderConIcono} numberOfLines={1}>
+            <Text style={[styles.tituloHeaderConIcono, { color: COLOR_MARCA }]} numberOfLines={1}>
               {t("reserva.fechasLugar.fechaDeRetiro", { defaultValue: "Fecha de retiro" })}
             </Text>
           </View>
@@ -519,7 +520,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         <View style={styles.columnaMedia}>
           <View style={styles.headerConIcono}>
             <Ionicons name="calendar" size={14} color={COLOR_MARCA} />
-            <Text style={styles.tituloHeaderConIcono} numberOfLines={1}>
+            <Text style={[styles.tituloHeaderConIcono, { color: COLOR_MARCA }]} numberOfLines={1}>
               {t("reserva.fechasLugar.fechaDeDevolucion", { defaultValue: "Fecha de devolución" })}
             </Text>
           </View>
@@ -542,7 +543,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         <View style={styles.columnaMedia}>
           <View style={styles.headerConIcono}>
             <Ionicons name="time" size={14} color={COLOR_MARCA} />
-            <Text style={styles.tituloHeaderConIcono} numberOfLines={1}>
+            <Text style={[styles.tituloHeaderConIcono, { color: COLOR_MARCA }]} numberOfLines={1}>
               {t("reserva.fechasLugar.horaDeRetiro")}
             </Text>
           </View>
@@ -571,7 +572,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         <View style={styles.columnaMedia}>
           <View style={styles.headerConIcono}>
             <Ionicons name="time" size={14} color={COLOR_MARCA} />
-            <Text style={styles.tituloHeaderConIcono} numberOfLines={1}>
+            <Text style={[styles.tituloHeaderConIcono, { color: COLOR_MARCA }]} numberOfLines={1}>
               {t("reserva.fechasLugar.horaDeDevolucion")}
             </Text>
           </View>
@@ -616,7 +617,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
                   {t("reserva.fechasLugar.duracionAlquiler", { defaultValue: "Duración del alquiler" })}
                 </Text>
               </View>
-              <Text style={[styles.duracionValor, { color: primaryAccent }]}>
+              <Text style={[[styles.duracionValor, { color: COLOR_MARCA }], { color: primaryAccent }]}>
                 {infoDuracion.titulo}
               </Text>
             </View>
@@ -634,7 +635,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
                     {t("reserva.fechasLugar.devolucionAnticipada", { defaultValue: "Devolución anticipada" })}
                   </Text>
                 </View>
-                <Text style={[styles.duracionValor, { color: primaryAccent }]} numberOfLines={1}>
+                <Text style={[[styles.duracionValor, { color: COLOR_MARCA }], { color: primaryAccent }]} numberOfLines={1}>
                   {infoDuracion.tiempoUso}
                 </Text>
               </View>

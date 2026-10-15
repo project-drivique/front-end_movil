@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { COLOR_ACENTO, COLOR_ENLACE_OSCURO } from "@/constants/brandPalette";
 
 interface BotonAlerta {
   texto: string;
@@ -42,7 +43,7 @@ export function AlertModal({
   contenido,
 }: Props) {
   const c = useTemaColores();
-  const alertAccent = c.oscuro ? "#60A5FA" : "#1E40AF";
+  const alertAccent = c.oscuro ? COLOR_ACENTO : COLOR_ENLACE_OSCURO;
   const btnBgColor = c.oscuro ? "#2563EB" : "#1E40AF";
 
   const listaBotones: BotonAlerta[] =

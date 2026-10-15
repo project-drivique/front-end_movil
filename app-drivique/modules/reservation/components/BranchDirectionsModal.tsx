@@ -154,7 +154,7 @@ export function BranchDirectionsModal({
                 onPress={handleOpenExternalMap}
                 activeOpacity={0.8}
               >
-                <Text style={styles.floatingBtnMapsText}>
+                <Text style={[styles.floatingBtnMapsText, { color: COLOR_MARCA }]}>
                   {t("reserva.flujo.abrirEnMaps", { defaultValue: "Abrir en Maps" })}
                 </Text>
                 <MaterialIcons name="open-in-new" size={15} color={COLOR_MARCA} />
