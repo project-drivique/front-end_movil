@@ -1,5 +1,4 @@
 // modules/reserva/constants/reserva.constants.ts
-import nacionalidadesData from "@/mocks/nationalities.json";
 import {
   COLORES,
   COLOR_MARCA,
@@ -7,12 +6,12 @@ import {
 import { TipoDocumento } from "@/modules/profile/types/profile.types";
 import { formatCurrency, Moneda } from "@/utils/currencyUtils";
 import { useMonedaStore } from "@/store/currencyStore";
+import { useReferenceStore } from "@/store/referenceStore";
 
 // Reutilizamos la paleta del catálogo, sin duplicar valores
 export { COLORES, COLOR_MARCA };
 
 // Placeholders de negocio — sincronizados con las reglas de negocio oficiales
-export const PROTECCION_OBLIGATORIA_DIA = 29000;
 export const PORCENTAJE_CARGOS_ADMINISTRATIVOS = 0.1;
 export const RECARGO_LOGISTICO = 50000; // Valor base unitario para domicilio
 export const RECARGOS_LOGISTICOS: Record<string, number> = {
@@ -196,7 +195,7 @@ export interface BeneficioProteccion {
 // la lista de beneficios (pero sí el precio y el botón de selección).
 export function getBeneficiosProteccion(
   t: (key: string, opts?: any) => any
-): Record<string, BeneficioProteccion[]> {
+): BeneficioProteccion[][] {
   const tiposObligatoria: BeneficioProteccion["tipo"][] = ["check", "check", "check", "warning", "cross"];
   const tiposTotal: BeneficioProteccion["tipo"][] = ["check", "check", "check", "check", "check", "cross"];
   const obligatoria = (t("reserva.planes.beneficiosProteccionObligatoria", {
@@ -206,10 +205,8 @@ export function getBeneficiosProteccion(
     returnObjects: true,
   }) as string[]).map((texto, i) => ({ tipo: tiposTotal[i] ?? "check", texto }));
 
-  return {
-    "Protección Obligatoria": obligatoria,
-    "Protección Total": total,
-  };
+  // Posicion 0 = plan mas barato (obligatoria), posicion 1 = plan total.
+  return [obligatoria, total];
 }
 
 // Beneficios/condiciones mostrados en cada tarjeta de tipo de
@@ -280,25 +277,33 @@ export function getTiposDocumento(
   ];
 }
 
-// Estructura de cada nacionalidad: nombre visible + código de
-// marcación telefónica. Sale de mocks/nacionalidades.json — simula lo
-// que después va a devolver el backend, así que cuando exista ese
-// endpoint solo se reemplaza esta línea de import.
+// Nacionalidades: siempre desde GET /nationalities ({id, name, isoCode}).
+// El id (UUID) es el valor que se guarda y se envia al backend.
 export interface NacionalidadOpcion {
+  id: string;
   nombre: string;
-  prefijo: string; // ej: "+57". Vacío ("") para "Otro" — no hay país fijo.
+  isoCode?: string;
 }
 
-export const NACIONALIDADES: NacionalidadOpcion[] = nacionalidadesData;
+export function getNacionalidades(): NacionalidadOpcion[] {
+  return useReferenceStore
+    .getState()
+    .nacionalidades.map((n) => ({ id: n.id, nombre: n.name, isoCode: n.isoCode }));
+}
 
-// Busca el prefijo telefónico según el nombre de nacionalidad elegido
-// en el formulario. Devuelve "" (vacío) si todavía no se ha elegido
-// nacionalidad, o si es "Otro" — en ese caso no se asume ningún país,
-// el prefijo se muestra vacío/placeholder hasta que el usuario elija.
-export function getPrefijoPorNacionalidad(nacionalidad: string | null): string {
-  if (!nacionalidad) return "";
-  const encontrada = NACIONALIDADES.find((n) => n.nombre === nacionalidad);
-  return encontrada?.prefijo ?? "";
+export function getNombreNacionalidad(id: string | null | undefined): string {
+  if (!id) return "";
+  return useReferenceStore.getState().nacionalidades.find((n) => n.id === id)?.name ?? "";
+}
+
+export function esNacionalidadColombiana(id: string | null | undefined): boolean {
+  if (!id) return false;
+  return useReferenceStore.getState().nacionalidades.find((n) => n.id === id)?.isoCode === "CO";
+}
+
+// La API de nacionalidades no expone indicativo telefonico.
+export function getPrefijoPorNacionalidad(_nacionalidad: string | null): string {
+  return "";
 }
 
 // Tipos de archivo aceptados por el selector de documentos

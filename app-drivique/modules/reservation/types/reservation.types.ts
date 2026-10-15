@@ -20,6 +20,7 @@ export interface DatosFechasLugar {
   direccionDevolucion: string;
   referenciasDevolucion: string;
   descuentoPromocion?: number;
+  fueraDeHorarioAceptado?: boolean;
 }
 
 export interface DesgloseTarifa {
