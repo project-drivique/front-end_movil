@@ -33,7 +33,7 @@ export function useFavoritos(usuarioId: string | null) {
       // HU-10: Cargar favoritos desde el backend (/v1/users/me/favorites)
       // La API devuelve una lista de objetos completos. Extraemos solo los IDs para el estado local.
       setError(null);
-      const response = await apiClient.get<FavoriteVehicle[]>("/v1/users/me/favorites");
+      const response = await apiClient.get<FavoriteVehicle[]>("/users/me/favorites");
       const vehicles = Array.isArray(response.data) ? response.data : [];
       const ids = vehicles.map((vehicle) => String(vehicle.id));
       setFavoritos(ids);
@@ -69,9 +69,9 @@ export function useFavoritos(usuarioId: string | null) {
       
       try {
         if (esFav) {
-          await apiClient.delete(`/v1/users/me/favorites/${normalizedId}`);
+          await apiClient.delete(`/users/me/favorites/${normalizedId}`);
         } else {
-          await apiClient.post(`/v1/users/me/favorites/${normalizedId}`);
+          await apiClient.post(`/users/me/favorites/${normalizedId}`);
           await fetchFavoritos();
         }
       } catch (e) {

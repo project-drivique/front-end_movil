@@ -67,7 +67,7 @@ export function VehicleReviews({ vehiculoId }: Props) {
     if (vehiculoId) {
       setCargando(true);
       setError(false);
-      apiClient.get(`/v1/vehicles/${vehiculoId}/reviews`).then((res) => {
+      apiClient.get(`/vehicles/${vehiculoId}/reviews`).then((res) => {
         if (activo && res.data) {
           setResenasApi(res.data.reviews || []);
           setPromedioApi(res.data.averageRating);
