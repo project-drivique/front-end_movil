@@ -25,13 +25,13 @@ import { useReservaStore } from "@/store/reservationStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { GRADIENTES } from "@/constants/gradients";
-import { VEHICULO_PROMOS_DUMMY } from "@/modules/notifications/constants/notifications.dummy";
 import {
-  VEHICULOS_MOCK,
-  HORARIO_ATENCION_SUCURSAL,
   getDireccionSucursal,
   getCiudadPorSucursal,
+  getHorarioSucursal,
 } from "@/modules/catalog/constants/catalog.constants";
+import { useReferenceStore } from "@/store/referenceStore";
+import { apiClient } from "@/services/http/apiClient";
 import { VehicleGallery } from "@/modules/catalog/components/VehicleGallery";
 import { VehicleReviews } from "@/modules/catalog/components/VehicleReviews";
 import BranchDirectionsModal from "@/modules/reservation/components/BranchDirectionsModal";
@@ -64,30 +64,27 @@ export default function VehiculoDetallePage() {
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
 
-  const [vehiculo, setVehiculo] = useState<Vehiculo | null>(() => {
-    return VEHICULOS_MOCK.find((v) => String(v.id) === String(id) || (v as any).uuid === String(id)) || null;
-  });
+  useReferenceStore((st) => st.sucursales);
+  const [vehiculo, setVehiculo] = useState<Vehiculo | null>(null);
+  const [caracteristicas, setCaracteristicas] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     if (id) {
       catalogoService.getVehiculoPorId(id).then((v) => {
         if (v) setVehiculo(v);
-      });
+      }).catch(() => {});
     }
   }, [id]);
 
-  // 1. Si viene por parámetro de navegación directa
-  // 2. O si el vehículo tiene una promoción destacada activa vigente y está disponible
-  let descuentoCalculado = descuentoPorcentaje ? Math.max(0, Number(descuentoPorcentaje)) : 0;
-  if (descuentoCalculado <= 0 && vehiculo && vehiculo.disponible !== false) {
-    const promoActiva = VEHICULO_PROMOS_DUMMY.find(
-      (vp) => vp.vehiculoId === vehiculo.id && (!vp.expiracion || new Date(vp.expiracion) >= new Date())
-    );
-    if (promoActiva) {
-      const pctMatch = promoActiva.descuentoBadge ? promoActiva.descuentoBadge.match(/\d+/) : null;
-      descuentoCalculado = pctMatch ? Number(pctMatch[0]) : 15;
-    }
-  }
+  useEffect(() => {
+    if (!vehiculo?.uuid) return;
+    apiClient
+      .get(`/vehicles/${vehiculo.uuid}/features`)
+      .then(({ data }) => setCaracteristicas(Array.isArray(data) ? data.filter((f: any) => f.isActive !== false) : []))
+      .catch(() => setCaracteristicas([]));
+  }, [vehiculo?.uuid]);
+
+  const descuentoCalculado = descuentoPorcentaje ? Math.max(0, Number(descuentoPorcentaje)) : 0;
 
   const descuentoNum = descuentoCalculado;
   const tieneDescuento = descuentoNum > 0 && vehiculo?.disponible !== false;
@@ -118,108 +115,16 @@ export default function VehiculoDetallePage() {
   const disponible = vehiculo.disponible !== false;
   const tarifas = vehiculo.tarifas ?? {};
   const seguros = vehiculo.seguros ?? [];
-  const nombreSucursal = vehiculo.sucursal || "Alquiler Neiva - Centro";
+  const nombreSucursal = vehiculo.sucursal || "";
   const ciudadSucursal = getCiudadPorSucursal(nombreSucursal);
-  const direccionBase = getDireccionSucursal(nombreSucursal) || "Cra 5 # 12-34";
+  const direccionBase = getDireccionSucursal(nombreSucursal) || "";
   const direccionCompleta = ciudadSucursal ? `${direccionBase}, ${ciudadSucursal}` : direccionBase;
-  const horarioAtencion = t("vehiculo.sucursal.horarioTodosLosDias", {
-    defaultValue: HORARIO_ATENCION_SUCURSAL || "Todos los días · 7:00 a.m. – 7:00 p.m.",
-  });
+  const horarioAtencion = getHorarioSucursal(nombreSucursal).textoHorario;
 
   // Comentarios reales del vehículo (sin mock forzado)
   const comentariosMostrar = vehiculo.comentarios ?? [];
 
-  // Equipamiento unificado (Confort + Tecnología)
-  const equipamiento: {
-    icono: keyof typeof Ionicons.glyphMap | keyof typeof MaterialCommunityIcons.glyphMap | keyof typeof MaterialIcons.glyphMap;
-    tipo: "ion" | "mci" | "mat";
-    label: string;
-  }[] = [];
-
-  if (vehiculo.aireAcondicionado !== false) {
-    equipamiento.push({
-      icono: "snowflake",
-      tipo: "mci",
-      label: t("catalogo.detalles.aireAcondicionado", { defaultValue: "Aire acondicionado" }),
-    });
-  }
-  if (vehiculo.vidriosElectricos !== false) {
-    equipamiento.push({
-      icono: "dock-window",
-      tipo: "mci",
-      label: t("catalogo.detalles.vidriosElectricos", { defaultValue: "Vidrios eléctricos" }),
-    });
-  }
-  if (vehiculo.cierreCentralizado !== false) {
-    equipamiento.push({
-      icono: "lock-closed",
-      tipo: "ion",
-      label: t("catalogo.detalles.cierreCentralizado", { defaultValue: "Cierre centralizado" }),
-    });
-  }
-  if (vehiculo.bluetooth) {
-    equipamiento.push({
-      icono: "bluetooth",
-      tipo: "ion",
-      label: t("vehiculo.equipo.bluetooth", { defaultValue: "Bluetooth" }),
-    });
-  }
-  if (vehiculo.usb) {
-    equipamiento.push({
-      icono: "usb",
-      tipo: "mat",
-      label: t("vehiculo.equipo.usb", { defaultValue: "Puerto USB" }),
-    });
-  }
-  if (vehiculo.pantallaTactil) {
-    equipamiento.push({
-      icono: "tablet-landscape",
-      tipo: "ion",
-      label: t("vehiculo.equipo.pantallaTactil", { defaultValue: "Pantalla táctil" }),
-    });
-  }
-  if (vehiculo.camaraReversa) {
-    equipamiento.push({
-      icono: "camera",
-      tipo: "ion",
-      label: t("vehiculo.equipo.camaraReversa", { defaultValue: "Cámara de reversa" }),
-    });
-  }
-  if (vehiculo.sensoresParqueo) {
-    equipamiento.push({
-      icono: "sensors",
-      tipo: "mat",
-      label: t("vehiculo.equipo.sensoresParqueo", { defaultValue: "Sensores de parqueo" }),
-    });
-  }
-  if ((vehiculo as any).gps) {
-    equipamiento.push({
-      icono: "navigate",
-      tipo: "ion",
-      label: t("catalogo.detalles.gps", { defaultValue: "GPS" }),
-    });
-  }
-
-  // Si por alguna razón la lista quedara vacía, aseguramos el equipamiento base
-  if (equipamiento.length === 0) {
-    equipamiento.push({
-      icono: "snowflake",
-      tipo: "mci",
-      label: t("catalogo.detalles.aireAcondicionado", { defaultValue: "Aire acondicionado" }),
-    });
-    equipamiento.push({
-      icono: "dock-window",
-      tipo: "mci",
-      label: t("catalogo.detalles.vidriosElectricos", { defaultValue: "Vidrios eléctricos" }),
-    });
-    equipamiento.push({
-      icono: "lock-closed",
-      tipo: "ion",
-      label: t("catalogo.detalles.cierreCentralizado", { defaultValue: "Cierre centralizado" }),
-    });
-  }
-
-  const precioOriginal = vehiculo.precio ?? 55000;
+  const precioOriginal = vehiculo.precio;
   const precioConDescuento = tieneDescuento
     ? Math.round(precioOriginal * (1 - descuentoNum / 100))
     : precioOriginal;
@@ -384,9 +289,9 @@ export default function VehiculoDetallePage() {
             </View>
 
             <View style={s.chipsGrid}>
-              {equipamiento.map((item, idx) => (
+              {caracteristicas.map((item) => (
                 <View
-                  key={idx}
+                  key={item.id}
                   style={[
                     s.chipItem,
                     {
@@ -395,15 +300,9 @@ export default function VehiculoDetallePage() {
                     },
                   ]}
                 >
-                  {item.tipo === "ion" ? (
-                    <Ionicons name={item.icono as any} size={15} color={colorTextoSecundario} />
-                  ) : item.tipo === "mat" ? (
-                    <MaterialIcons name={item.icono as any} size={15} color={colorTextoSecundario} />
-                  ) : (
-                    <MaterialCommunityIcons name={item.icono as any} size={15} color={colorTextoSecundario} />
-                  )}
+                  <Ionicons name="checkmark-circle-outline" size={15} color={colorTextoSecundario} />
                   <Text style={[s.chipTexto, { color: colorTextoPrimario }]} numberOfLines={1}>
-                    {item.label}
+                    {item.name}
                   </Text>
                 </View>
               ))}
@@ -420,29 +319,20 @@ export default function VehiculoDetallePage() {
             </View>
 
             <View style={[s.subCardInner, { borderColor: colorBorde, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}>
-              <View style={s.filaTarifa}>
-                <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>
-                  {t("catalogo.detalles.proteccionObligatoria", { defaultValue: "Protección Obligatoria" })}
-                </Text>
-                <Text style={[s.filaTarifaPrecio, { color: colorTextoPrimario }]}>
-                  {formatCurrency(29000, monedaActual, tasaUSD)}
-                  {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
-                    ? t("vehiculo.porDia", { defaultValue: "/día" })
-                    : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
-                </Text>
-              </View>
-              <View style={[s.divisorFila, { backgroundColor: colorBorde }]} />
-              <View style={s.filaTarifa}>
-                <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>
-                  {t("catalogo.detalles.proteccionTotal", { defaultValue: "Protección Total" })}
-                </Text>
-                <Text style={[s.filaTarifaPrecio, { color: colorTextoPrimario }]}>
-                  {formatCurrency(67000, monedaActual, tasaUSD)}
-                  {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
-                    ? t("vehiculo.porDia", { defaultValue: "/día" })
-                    : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
-                </Text>
-              </View>
+              {seguros.map((seguro, idx) => (
+                <React.Fragment key={seguro.id ?? seguro.nombre}>
+                  {idx > 0 && <View style={[s.divisorFila, { backgroundColor: colorBorde }]} />}
+                  <View style={s.filaTarifa}>
+                    <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>{seguro.nombre}</Text>
+                    <Text style={[s.filaTarifaPrecio, { color: colorTextoPrimario }]}>
+                      {formatCurrency(seguro.precio, monedaActual, tasaUSD)}
+                      {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
+                        ? t("vehiculo.porDia", { defaultValue: "/día" })
+                        : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
+                    </Text>
+                  </View>
+                </React.Fragment>
+              ))}
             </View>
           </View>
 

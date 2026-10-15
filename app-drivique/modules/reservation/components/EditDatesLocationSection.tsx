@@ -13,7 +13,8 @@ import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { useReservaStore } from "@/store/reservationStore";
 import { COLOR_MARCA, formatHoraAmPm, getDetalleDuracionAlquiler, getMetodosPago } from "../constants/reservation.constants";
 import {
-  CIUDADES_DATA,
+  getCiudadesData,
+  getSucursalPorNombre,
   getCiudadPorSucursal,
   getDireccionSucursal,
   getDisponibilidadVehiculo,
@@ -66,7 +67,7 @@ export default function EditDatesLocationSection({
 
   const nombreSucursal = vehiculo.sucursal ?? "";
   const ciudadNombre = vehiculo.sucursal ? getCiudadPorSucursal(vehiculo.sucursal) : null;
-  const ciudadInfo = ciudadNombre ? CIUDADES_DATA.find((item) => item.nombre === ciudadNombre) : null;
+  const ciudadInfo = ciudadNombre ? getCiudadesData().find((item) => item.nombre === ciudadNombre) : null;
 
   const horarioRetiro = useMemo(
     () => getHorarioSucursal(draft.lugarRetiro || nombreSucursal),
@@ -78,6 +79,7 @@ export default function EditDatesLocationSection({
   );
 
   const esWompi = draft.metodoPago === "wompi";
+  const efectivoPermitido = getSucursalPorNombre(nombreSucursal)?.permiteEfectivo === true;
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
 
   const opcionesEntrega: OpcionLugar[] = useMemo(() => {
@@ -336,6 +338,18 @@ export default function EditDatesLocationSection({
                     activo && [styles.metodoCardActivo, { borderColor: primaryAccent, backgroundColor: c.primaryBg }],
                   ]}
                   onPress={() => {
+                    if (metodo.id === "efectivo" && !efectivoPermitido) {
+                      setAlertaModal({
+                        visible: true,
+                        icono: "alert-circle-outline",
+                        titulo: t("reserva.fechasLugar.efectivoNoDisponibleTitulo", { defaultValue: "Pago en efectivo no disponible" }),
+                        mensaje: t("reserva.fechasLugar.efectivoNoDisponibleMensaje", {
+                          sucursal: nombreSucursal,
+                          defaultValue: "La sucursal {{sucursal}} no recibe pagos en efectivo. Elige pago en línea o un vehículo de otra sucursal.",
+                        }),
+                      });
+                      return;
+                    }
                     setDraft((prev) => ({
                       ...prev,
                       metodoPago: metodo.id,

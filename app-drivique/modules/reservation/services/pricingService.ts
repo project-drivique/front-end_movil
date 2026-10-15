@@ -21,6 +21,10 @@ export interface PriceQuoteResponseDTO {
   refundableSecurityDeposit: number;
   estimatedTotal: number;
   couponCode?: string | null;
+  adminFee: number;
+  vat: number;
+  adminFeeRate: number;
+  vatRate: number;
 }
 
 export interface InsuranceCoverageDTO {
@@ -115,6 +119,12 @@ export const pricingService = {
 
   async getFeaturedPromotions(): Promise<any[]> {
     const { data } = await apiClient.get<any[]>('/promotions/featured');
+    return Array.isArray(data) ? data : [];
+  },
+
+  /** Promociones y cupones vigentes (el servidor filtra por vigencia, estado y audiencia del usuario). */
+  async getPublishedPromotions(): Promise<any[]> {
+    const { data } = await apiClient.get<any[]>('/promotions/published');
     return Array.isArray(data) ? data : [];
   },
 

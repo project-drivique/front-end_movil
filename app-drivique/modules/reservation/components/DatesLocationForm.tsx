@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { useReservaStore } from "@/store/reservationStore";
 import { COLOR_MARCA, formatHoraAmPm, getDetalleDuracionAlquiler, getMetodosPago } from "../constants/reservation.constants";
-import { CIUDADES_DATA, getCiudadPorSucursal, getDireccionSucursal, getDisponibilidadVehiculo, getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
+import { getSucursalPorNombre, getCiudadesData, getCiudadPorSucursal, getDireccionSucursal, getDisponibilidadVehiculo, getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
 import CalendarioRango from "./DateRangeCalendar";
 import SelectorSucursalModal, { OpcionLugar } from "./BranchSelectorModal";
 import SelectorHoraModal from "./TimeSelectorModal";
@@ -58,7 +58,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
 
   const nombreSucursal = vehiculo.sucursal ?? "";
   const ciudadNombre = vehiculo.sucursal ? getCiudadPorSucursal(vehiculo.sucursal) : null;
-  const ciudadInfo = ciudadNombre ? CIUDADES_DATA.find((c) => c.nombre === ciudadNombre) : null;
+  const ciudadInfo = ciudadNombre ? getCiudadesData().find((c) => c.nombre === ciudadNombre) : null;
 
   const horarioRetiro = useMemo(
     () => getHorarioSucursal(fechasLugar.lugarRetiro || nombreSucursal),
@@ -70,6 +70,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
   );
 
   const esWompi = fechasLugar.metodoPago === "wompi";
+  const efectivoPermitido = getSucursalPorNombre(nombreSucursal)?.permiteEfectivo === true;
 
   const opcionesEntrega: OpcionLugar[] = useMemo(() => {
     const base: OpcionLugar[] = [
@@ -258,11 +259,13 @@ export default function FormFechasLugar({ vehiculo }: Props) {
       <View style={styles.metodosColumna}>
         {METODOS_PAGO.map((metodo) => {
           const activo = fechasLugar.metodoPago === metodo.id;
+          const bloqueado = metodo.id === "efectivo" && !efectivoPermitido;
           return (
             <TouchableOpacity
               key={metodo.id}
               style={[
                 styles.metodoCard,
+                bloqueado && { opacity: 0.5 },
                 {
                   borderColor: c.border,
                   backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF",
@@ -270,6 +273,18 @@ export default function FormFechasLugar({ vehiculo }: Props) {
                 activo && [styles.metodoCardActivo, { borderColor: primaryAccent, backgroundColor: c.primaryBg }],
               ]}
               onPress={() => {
+                if (bloqueado) {
+                  setAlertaModal({
+                    visible: true,
+                    icono: "alert-circle-outline",
+                    titulo: t("reserva.fechasLugar.efectivoNoDisponibleTitulo", { defaultValue: "Pago en efectivo no disponible" }),
+                    mensaje: t("reserva.fechasLugar.efectivoNoDisponibleMensaje", {
+                      sucursal: nombreSucursal,
+                      defaultValue: "La sucursal {{sucursal}} no recibe pagos en efectivo. Elige pago en línea o un vehículo de otra sucursal.",
+                    }),
+                  });
+                  return;
+                }
                 actualizarFechasLugar({
                   metodoPago: metodo.id,
                   ...(metodo.id === "efectivo"

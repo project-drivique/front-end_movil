@@ -57,7 +57,7 @@ export default function TarjetaVerificacionDocumental({ tipoDocumento, docsVerif
   ) => {
     setError("");
     const resultado = await DocumentPicker.getDocumentAsync({
-      type: "application/pdf",
+      type: ["application/pdf", "image/jpeg", "image/png"],
       copyToCacheDirectory: true,
     });
     if (resultado.canceled) return;
