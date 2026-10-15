@@ -1,8 +1,5 @@
-import ciudadesData from "../../../mocks/cities.json";
-import sucursalesData from "../../../mocks/branches.json";
-import vehiculosData from "../../../mocks/vehicles.json";
-import reservasData from "../../../mocks/bookings.json";
-import { DisponibilidadVehiculo, ReservaOcupada, Vehiculo } from "../types/catalog.types";
+import { DisponibilidadVehiculo } from "../types/catalog.types";
+import { useReferenceStore } from "@/store/referenceStore";
 
 export const COLOR_MARCA = "#2f4ea2";
 export const COLOR_ACCENT = "#2563eb";
@@ -54,7 +51,7 @@ export const COMBUSTIBLES = [
 ];
 
 // =========================================================
-// CIUDADES (desde mocks/ciudades.json — igual que la web)
+// CIUDADES Y SUCURSALES (siempre desde la API: /cities y /branches)
 // =========================================================
 export interface CiudadInfo {
   id: string;
@@ -64,125 +61,99 @@ export interface CiudadInfo {
   tieneTerminal: boolean;
 }
 
-export const CIUDADES_DATA: CiudadInfo[] = ciudadesData;
-
-// Lista plana para filtros con opción "Todas las ciudades"
-export const CIUDADES_FILTRO = [
-  "Todas las ciudades",
-  ...CIUDADES_DATA.map((c) => c.nombre),
-];
-
-// Lista plana original (se mantiene por compatibilidad con BuscadorCatalogo,
-// que no necesita la opción "Todas las ciudades")
-export const CIUDADES: string[] = CIUDADES_DATA.map((c) => c.nombre);
-
-// =========================================================
-// SUCURSALES (desde mocks/sucursales.json — igual que la web)
-// =========================================================
 export interface SucursalInfo {
+  id: string;
   nombre: string;
   ciudad: string;
+  ciudadId: string;
   direccion: string;
+  telefono: string;
+  horaApertura: string;
+  horaCierre: string;
+  permiteEfectivo: boolean;
 }
 
-export const SUCURSALES_DATA: SucursalInfo[] = sucursalesData;
+export function getCiudadesData(): CiudadInfo[] {
+  return useReferenceStore.getState().ciudades.map((c) => ({
+    id: c.id,
+    nombre: c.name,
+    departamento: c.departmentName ?? "",
+    tieneAeropuerto: !!c.hasAirport,
+    tieneTerminal: !!c.hasTerminal,
+  }));
+}
 
-// Lista plana (se mantiene por compatibilidad con FiltrosCatalogo y otros
-// componentes que ya consumen SUCURSALES como array de strings)
-export const SUCURSALES = [
-  "Todas las sucursales",
-  ...SUCURSALES_DATA.map((s) => s.nombre),
-];
+export function getSucursalesData(): SucursalInfo[] {
+  return useReferenceStore.getState().sucursales.map((b) => ({
+    id: b.id,
+    nombre: b.name,
+    ciudad: b.cityName,
+    ciudadId: b.cityId,
+    direccion: b.address,
+    telefono: b.phone ?? "",
+    horaApertura: (b.openingTime ?? "").slice(0, 5),
+    horaCierre: (b.closingTime ?? "").slice(0, 5),
+    permiteEfectivo: b.allowsCashPayment,
+  }));
+}
 
-// Helper para obtener las sucursales de una ciudad específica
+export function getCiudadesFiltro(): string[] {
+  return ["Todas las ciudades", ...getCiudadesData().map((c) => c.nombre)];
+}
+
+export function getCiudadesNombres(): string[] {
+  return getCiudadesData().map((c) => c.nombre);
+}
+
+export function getSucursalesFiltro(): string[] {
+  return ["Todas las sucursales", ...getSucursalesData().map((s) => s.nombre)];
+}
+
 export function getSucursalesPorCiudad(ciudad: string): string[] {
-  return SUCURSALES_DATA.filter((s) => s.ciudad === ciudad).map(
-    (s) => s.nombre,
-  );
+  return getSucursalesData()
+    .filter((s) => s.ciudad === ciudad)
+    .map((s) => s.nombre);
 }
 
-// Helper para obtener la ciudad de una sucursal específica
+export function getSucursalPorNombre(nombre?: string | null): SucursalInfo | null {
+  if (!nombre) return null;
+  const n = nombre.toLowerCase();
+  return getSucursalesData().find((s) => s.nombre.toLowerCase() === n) ?? null;
+}
+
 export function getCiudadPorSucursal(sucursal: string): string | null {
-  if (!sucursal) return null;
-  const encontrada = SUCURSALES_DATA.find(
-    (s) => s.nombre.toLowerCase() === sucursal.toLowerCase()
-  );
-  if (encontrada) return encontrada.ciudad;
-  const sLower = sucursal.toLowerCase();
-  for (const c of CIUDADES_DATA) {
-    if (sLower.includes(c.nombre.toLowerCase())) return c.nombre;
-  }
-  return null;
+  return getSucursalPorNombre(sucursal)?.ciudad ?? null;
 }
 
-// Helper para obtener la dirección de una sucursal específica
 export function getDireccionSucursal(sucursal: string): string | null {
-  const encontrada = SUCURSALES_DATA.find((s) => s.nombre === sucursal);
-  return encontrada ? encontrada.direccion : null;
+  return getSucursalPorNombre(sucursal)?.direccion ?? null;
 }
 
-// Estructura de horarios por sucursal
 export interface HorarioSucursal {
   horaApertura: string;
   horaCierre: string;
   textoHorario: string;
 }
 
-// Horarios reales según tipología y ubicación de cada sucursal/punto de entrega
-export function getHorarioSucursal(sucursalNombre?: string | null): HorarioSucursal {
-  if (!sucursalNombre) {
-    return {
-      horaApertura: "08:00",
-      horaCierre: "18:00",
-      textoHorario: "Lunes a Sábado · 8:00 a.m. – 6:00 p.m.",
-    };
-  }
-
-  const nombre = sucursalNombre.toLowerCase();
-
-  // 1. Aeropuertos: Operación 24/7 (vuelos nacionales e internacionales)
-  if (
-    nombre.includes("aeropuerto") ||
-    nombre.includes("airport") ||
-    nombre.includes("eldorado") ||
-    nombre.includes("el dorado") ||
-    nombre.includes("jose maria cordova") ||
-    nombre.includes("josé maría córdova")
-  ) {
-    return {
-      horaApertura: "00:00",
-      horaCierre: "23:30",
-      textoHorario: "Atención 24/7 · Todos los días",
-    };
-  }
-
-  // 2. Terminales de transporte: Operación 24/7 (transporte intermunicipal en Colombia)
-  if (nombre.includes("terminal")) {
-    return {
-      horaApertura: "00:00",
-      horaCierre: "23:30",
-      textoHorario: "Atención 24/7 · Todos los días",
-    };
-  }
-
-  // 3. Entrega a domicilio (Hoteles / Airbnbs / Residencias): Rango diurno seguro (no noche tardía ni madrugada)
-  if (nombre.includes("domicilio") || nombre.includes("hotel") || nombre.includes("airbnb")) {
-    return {
-      horaApertura: "07:00",
-      horaCierre: "19:00",
-      textoHorario: "Todos los días · 7:00 a.m. – 7:00 p.m.",
-    };
-  }
-
-  // 4. Sucursales físicas comerciales (Horario estándar de rentadoras de vehículos en Colombia)
-  return {
-    horaApertura: "08:00",
-    horaCierre: "18:00",
-    textoHorario: "Lunes a Sábado · 8:00 a.m. – 6:00 p.m.",
-  };
+function formatoHora12(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  const sufijo = h >= 12 ? "p. m." : "a. m.";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${sufijo}`;
 }
 
-export const HORARIO_ATENCION_SUCURSAL = "Todos los días · 7:00 a.m. – 7:00 p.m.";
+// Horario real de la sucursal segun la API (openingTime/closingTime).
+export function getHorarioSucursal(sucursalNombre?: string | null): HorarioSucursal {
+  const sucursal = getSucursalPorNombre(sucursalNombre);
+  if (!sucursal || !sucursal.horaApertura || !sucursal.horaCierre) {
+    return { horaApertura: "00:00", horaCierre: "23:59", textoHorario: "" };
+  }
+  return {
+    horaApertura: sucursal.horaApertura,
+    horaCierre: sucursal.horaCierre,
+    textoHorario: `${formatoHora12(sucursal.horaApertura)} – ${formatoHora12(sucursal.horaCierre)}`,
+  };
+}
 
 // URL de Google Maps para "Cómo llegar" a partir de la dirección de la
 // sucursal (no requiere API key, funciona con Linking.openURL).
@@ -202,37 +173,8 @@ export const FILTROS_BASE = {
   busqueda: "",
 };
 
-// =========================================================
-// VEHÍCULOS (desde mocks/vehiculos.json — mismo catálogo para
-// invitados y usuarios registrados; solo cambia qué tanto de
-// cada objeto se muestra en la tarjeta vs. en el detalle)
-// =========================================================
-export const VEHICULOS_MOCK: Vehiculo[] = vehiculosData as Vehiculo[];
-
-// =========================================================
-// RESERVAS / DISPONIBILIDAD (desde mocks/reservas.json — separado
-// del catálogo porque son datos transaccionales que cambian con
-// cada reserva, no información fija del vehículo)
-// =========================================================
-export const RESERVAS_MOCK: ReservaOcupada[] = reservasData as ReservaOcupada[];
-
-// Arma la disponibilidad de un vehículo a partir de RESERVAS_MOCK,
-// separando bloqueos de día completo (ocupados) de bloqueos de hora
-// específica (horasOcupadas), agrupados por fecha.
-export function getDisponibilidadVehiculo(vehiculoId: number): DisponibilidadVehiculo {
-  const reservasVehiculo = RESERVAS_MOCK.filter((r) => r.vehiculoId === vehiculoId);
-
-  const ocupados: DisponibilidadVehiculo["ocupados"] = [];
-  const horasOcupadas: NonNullable<DisponibilidadVehiculo["horasOcupadas"]> = {};
-
-  reservasVehiculo.forEach((r) => {
-    if (r.hora) {
-      if (!horasOcupadas[r.fecha]) horasOcupadas[r.fecha] = [];
-      horasOcupadas[r.fecha].push({ hora: r.hora, motivo: r.motivo });
-    } else {
-      ocupados.push({ fecha: r.fecha, motivo: r.motivo });
-    }
-  });
-
-  return { ocupados, horasOcupadas };
+// El backend valida solapamientos al crear la reserva; no hay endpoint publico
+// de disponibilidad por vehiculo, por eso no se simula nada en el cliente.
+export function getDisponibilidadVehiculo(_vehiculoId: number): DisponibilidadVehiculo {
+  return { ocupados: [], horasOcupadas: {} };
 }
