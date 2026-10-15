@@ -20,15 +20,12 @@ import { useAuthStore } from "@/store/authStore";
 import { GRADIENTES, SOMBRA_BOTON_GRADIENTE } from "@/constants/gradients";
 import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
-import { VEHICULOS_MOCK } from "@/modules/catalog/constants/catalog.constants";
+import { pricingService } from "@/modules/reservation/services/pricingService";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import {
-  CUPONES_DUMMY,
-  VEHICULO_PROMOS_DUMMY,
-  CouponDummy,
-} from "@/modules/notifications/constants/notifications.dummy";
+import { CuponPromocion as CouponDummy } from "@/modules/notifications/types/promotion.types";
+import { rutaDesdeActionPath } from "@/modules/notifications/services/deepLink";
 
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
@@ -85,35 +82,54 @@ export default function NotificationsScreen() {
     [notificaciones]
   );
 
-  // Cupones activos reales (eliminados dummies)
+  const [promociones, setPromociones] = useState<CouponDummy[]>([]);
+
+  useEffect(() => {
+    if (!usuario) return;
+    pricingService
+      .getPublishedPromotions()
+      .then((lista) =>
+        setPromociones(
+          lista.map((p: any) => {
+            const esPorcentaje = String(p.discountType).toUpperCase().includes("PERCENT");
+            const valor = Number(p.discountValue);
+            return {
+              id: String(p.id),
+              codigo: p.code,
+              descuentoTexto: esPorcentaje ? `${valor}%` : formatCurrency(valor, monedaActual, tasaUSD),
+              descuentoPorcentaje: esPorcentaje ? valor : undefined,
+              descuentoFijo: esPorcentaje ? undefined : valor,
+              tituloPremio: p.name || p.code,
+              recompensaDetalle: p.conditions || "",
+              condicionesDetalladas: p.conditions || "",
+              minimoValor: Number(p.minimumAmount) || undefined,
+              categoria: p.vehicleCategoryName || undefined,
+              fechaOtorgado: p.createdAt,
+              expiracion: `${p.endDate}T23:59:59`,
+              fechaExpiracion: `${p.endDate}T23:59:59`,
+            } as CouponDummy;
+          }),
+        ),
+      )
+      .catch(() => setPromociones([]));
+  }, [usuario, monedaActual, tasaUSD]);
+
   const cupones = useMemo(
-    () =>
-      (CUPONES_DUMMY as unknown as CouponDummy[]).filter((c) => {
-        if (isExpired(c.fechaExpiracion || c.expiracion)) return false;
-        if (c.reglas?.vehiculoId) {
-          const v = VEHICULOS_MOCK.find((item) => item.id === c.reglas?.vehiculoId);
-          if (v && v.disponible === false) return false;
-        }
-        return true;
-      }),
-    []
+    () => promociones.filter((c) => !isExpired(c.fechaExpiracion || c.expiracion)),
+    [promociones]
   );
 
-  // Promos de vehiculos activas (no expiradas), imagen resuelta desde VEHICULOS_MOCK
-  const vehiculoPromos = useMemo(() => {
-    return VEHICULO_PROMOS_DUMMY.filter((vp) => {
-      if (isExpired(vp.expiracion)) return false;
-      const vehiculo = VEHICULOS_MOCK.find((v) => v.id === vp.vehiculoId);
-      return Boolean(vehiculo && vehiculo.disponible !== false);
-    }).map((vp) => {
-      const vehiculo = VEHICULOS_MOCK.find((v) => v.id === vp.vehiculoId)!;
-      return {
-        ...vp,
-        imagen: vehiculo.imagen || (vehiculo.imagenes && vehiculo.imagenes[0]) || "",
-        marcaModelo: `${vehiculo.marca} ${vehiculo.modelo}`,
-      };
-    });
-  }, []);
+  const vehiculoPromos: {
+    id: string;
+    vehiculoId: number;
+    titulo: string;
+    descripcion: string;
+    descuentoBadge?: string;
+    fechaPublicacion: string;
+    expiracion?: string;
+    imagen: string;
+    marcaModelo: string;
+  }[] = [];
 
   const handleApplyCoupon = (coupon: CouponDummy) => {
     if (appliedCoupons.includes(coupon.codigo)) return;
@@ -134,48 +150,7 @@ export default function NotificationsScreen() {
     setSelectedNotification(item);
   };
 
-  // Helper: resolve vehicle images from VEHICULOS_MOCK (always returns 3 images)
-  const getCouponVehicleImages = (cpx: any): string[] => {
-    const vehId = cpx.reglas?.vehiculoId;
-    if (vehId) {
-      const specificCar = VEHICULOS_MOCK.find((v) => v.id === vehId);
-      if (specificCar) {
-        const carImgs = (specificCar.imagenes || []).filter(Boolean);
-        if (carImgs.length >= 3) return carImgs.slice(0, 3);
-        if (specificCar.imagen && !carImgs.includes(specificCar.imagen)) {
-          carImgs.unshift(specificCar.imagen);
-        }
-        if (carImgs.length >= 3) return carImgs.slice(0, 3);
-        const catCars = VEHICULOS_MOCK.filter((v) => v.categoria === specificCar.categoria && v.id !== specificCar.id);
-        for (const v of catCars) {
-          const img = (v.imagenes && v.imagenes[0]) || v.imagen;
-          if (img && !carImgs.includes(img)) carImgs.push(img);
-          if (carImgs.length >= 3) break;
-        }
-        return carImgs.slice(0, 3);
-      }
-    }
-
-    const cat = cpx.reglas?.categoriasValidas?.[0];
-    const imgs: string[] = [];
-
-    if (cat && cat.toLowerCase() !== "todos") {
-      const matchingCars = VEHICULOS_MOCK.filter((v) => v.categoria.toLowerCase() === cat.toLowerCase());
-      for (const v of matchingCars) {
-        const img = (v.imagenes && v.imagenes[0]) || v.imagen;
-        if (img && !imgs.includes(img)) imgs.push(img);
-        if (imgs.length >= 3) break;
-      }
-    }
-
-    for (const v of VEHICULOS_MOCK) {
-      const img = (v.imagenes && v.imagenes[0]) || v.imagen;
-      if (img && !imgs.includes(img)) imgs.push(img);
-      if (imgs.length >= 3) break;
-    }
-
-    return imgs.slice(0, 3);
-  };
+  const getCouponVehicleImages = (_cpx: any): string[] => [];
 
   const getLocale = () => {
     const lang = (i18n.language || "es").toLowerCase();
@@ -949,7 +924,21 @@ export default function NotificationsScreen() {
               </ScrollView>
             )}
 
-            {Boolean(
+            {Boolean(selectedNotification?.metadata?.actionPath) && (
+              <TouchableOpacity
+                style={[styles.modalActionBtn, { backgroundColor: primaryAccent, marginTop: 14 }]}
+                onPress={() => {
+                  const destino = rutaDesdeActionPath(String(selectedNotification?.metadata?.actionPath));
+                  setSelectedNotification(null);
+                  if (destino) router.push(destino as any);
+                }}
+              >
+                <Ionicons name="open-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.modalCloseBtnText}>{t("notificaciones.verDetalle", "Ver detalle")}</Text>
+              </TouchableOpacity>
+            )}
+
+            {!selectedNotification?.metadata?.actionPath && Boolean(
               selectedNotification?.referenceId ||
               selectedNotification?.tipo?.toUpperCase().includes("RESERV") ||
               selectedNotification?.titulo?.toLowerCase().includes("reserva") ||
