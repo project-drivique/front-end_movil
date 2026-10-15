@@ -42,7 +42,7 @@ export function BranchDirectionsModal({
   const { t, i18n } = useTranslation();
 
   const textoHorario = horario || t("reserva.flujo.horarioAtencion", { defaultValue: "Lun a sáb, 7:00 am - 7:00 pm" });
-  const direccionCompleta = direccion || "Cra 5 # 12-34, Neiva, Huila";
+  const direccionCompleta = direccion || "";
   const query = `${nombreSucursal}, ${direccionCompleta}`;
   const langParam = i18n.language ? i18n.language.slice(0, 2) : "es";
   const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&hl=${langParam}&z=15&output=embed`;

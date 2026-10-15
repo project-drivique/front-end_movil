@@ -1,5 +1,6 @@
 // modules/reserva/components/FormDatosPersonales.tsx
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
+import { useReferenceStore } from "@/store/referenceStore";
 import { useReservaStore } from "@/store/reservationStore";
 import { useUsuarioStore } from "@/store/userStore";
 import React, { useEffect, useMemo, useState } from "react";
@@ -13,41 +14,29 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import {
   COLOR_MARCA,
-  calcularRecargoLogistico,
   getPrefijoPorNacionalidad,
   getSiglaDocumento,
-  NACIONALIDADES,
-  PORCENTAJE_CARGOS_ADMINISTRATIVOS,
-  PORCENTAJE_IVA,
+  getNacionalidades,
+  esNacionalidadColombiana,
   getTiposDocumento,
 } from "../constants/reservation.constants";
 import { TipoDocumento } from "../types/reservation.types";
+import { aCentavos, construirUrlCheckout } from "../services/wompiService";
 import {
-  aCentavos,
-  construirUrlCheckout,
-  consultarTransaccionWompi,
-  generarReferenciaUnica,
-} from "../services/wompiService";
-import {
-  HORAS_LIMITE_PAGO_EFECTIVO,
-  calcularLimitePago,
+  ReservaGuardada,
+  mensajeDeError,
   reservaPersistService,
 } from "../services/reservationPersistService";
 import { documentosService } from "../services/documentsService";
 import BarraTotalConfirmar from "./TotalConfirmBar";
 import CampoSelectorLista from "./ListSelectorField";
-import FirmaContrato from "./ContractSignature";
 import ModalReservaRegistrada from "./BookingRegisteredModal";
 import { BranchCashPaymentModal } from "./BranchCashPaymentModal";
 import { diasEntre } from "./BookingSummaryModal.pieces";
 import TarjetaTerminosCondiciones from "./TermsConditionsCard";
 import TarjetaVerificacionDocumental from "./DocumentVerificationCard";
 import CouponSection from "./CouponSection";
-
-const OPCIONES_NACIONALIDAD = NACIONALIDADES.map((n) => ({
-  id: n.nombre,
-  label: n.nombre,
-}));
+import { useServerQuote } from "../hooks/useServerQuote";
 
 function combinarNombreCompleto(nombres: string, apellidos: string): string {
   return [nombres, apellidos].filter(Boolean).join(" ").trim();
@@ -76,10 +65,15 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const { t } = useTranslation();
   const OPCIONES_TIPO_DOCUMENTO = useMemo(() => getTiposDocumento(t), [t]);
   const datosPersonales = useReservaStore((s) => s.datosPersonales);
+  const nacionalidadesApi = useReferenceStore((st) => st.nacionalidades);
+  const OPCIONES_NACIONALIDAD = useMemo(
+    () => getNacionalidades().map((n) => ({ id: n.id, label: n.nombre })),
+    [nacionalidadesApi],
+  );
 
   const opcionesTipoDocumentoFiltradas = useMemo(() => {
     if (!datosPersonales.nacionalidad) return OPCIONES_TIPO_DOCUMENTO;
-    if (datosPersonales.nacionalidad === "Colombia") {
+    if (esNacionalidadColombiana(datosPersonales.nacionalidad)) {
       return OPCIONES_TIPO_DOCUMENTO.filter(
         (o) => o.id === "CC" || o.id === "CE" || o.id === "Pasaporte" || o.id === "PPT" || o.id === "PEP"
       );
@@ -105,7 +99,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
   useEffect(() => {
     let activo = true;
-    documentosService.tieneDocumentos(usuarioGlobal.id).then((valor) => {
+    documentosService.tieneDocumentos().then((valor) => {
       if (activo) setDocsVerificados(valor);
     });
     return () => {
@@ -117,8 +111,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const [alertaErrorPagoVisible, setAlertaErrorPagoVisible] = useState(false);
   const [alertaCancelarProcesoVisible, setAlertaCancelarProcesoVisible] = useState(false);
   const [procesandoPago, setProcesandoPago] = useState(false);
-  const [referenciaActual, setReferenciaActual] = useState<string | null>(null);
-  const [mostrarContrato, setMostrarContrato] = useState(false);
+  const [reservaCreada, setReservaCreada] = useState<ReservaGuardada | null>(null);
+  const [errorServidor, setErrorServidor] = useState("");
   const [modalInstruccionesEfectivoVisible, setModalInstruccionesEfectivoVisible] = useState(false);
 
   const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
@@ -158,7 +152,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const prefijoTelefono = getPrefijoPorNacionalidad(
     datosPersonales.nacionalidad || null,
   );
-  const hayPrefijo = prefijoTelefono !== "";
+  const hayPrefijo = !!datosPersonales.nacionalidad;
 
   const datosCompletos =
     !!datosPersonales.nombreCompleto.trim() &&
@@ -171,7 +165,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     (docsVerificados || !!documentos.licenciaConduccion) &&
     !!datosPersonales.terminosAceptados;
 
-  const total = useMemo(() => {
+  const totalLocal = useMemo(() => {
     const seguros = vehiculo.seguros ?? [];
     const kmLimitado = vehiculo.tarifas?.kmLimitado;
     const kmIlimitado = vehiculo.tarifas?.kmIlimitado;
@@ -191,6 +185,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     const dias = diasEntre(
       fechasLugar.fechaRetiro,
       fechasLugar.fechaDevolucion,
+      fechasLugar.horaRetiro,
+      fechasLugar.horaDevolucion,
     );
     const diarias = vehiculo.precio * dias;
     const proteccion = seguroElegido ? seguroElegido.precio * dias : 0;
@@ -198,10 +194,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     const servAdic = servicios
       .filter((s) => planes.serviciosSeleccionados.includes(s.nombre))
       .reduce((a, s) => a + s.precio * dias, 0);
-    const recargoLogistico = calcularRecargoLogistico(fechasLugar.lugarRetiro, fechasLugar.lugarDevolucion);
     const subtotalBase = diarias + proteccion + kilometraje + servAdic;
-    const cargos = Math.round(subtotalBase * PORCENTAJE_CARGOS_ADMINISTRATIVOS);
-    const subtotalBruto = subtotalBase + cargos + recargoLogistico;
+    const subtotalBruto = subtotalBase;
       
     let descuentoCupon = 0;
     if (cuponAplicado) {
@@ -213,8 +207,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     }
     
     const subtotal = Math.max(subtotalBruto - descuentoCupon, 0);
-    const iva = Math.round(subtotal * PORCENTAJE_IVA);
-    return subtotal + iva;
+    return subtotal;
   }, [
     vehiculo,
     fechasLugar.fechaRetiro,
@@ -225,64 +218,48 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     cuponAplicado,
   ]);
 
+  // El total (cargo administrativo, IVA y descuento incluidos) lo calcula el servidor
+  const cotizacion = useServerQuote({ vehiculo, fechasLugar, planes, cuponCodigo: cuponAplicado?.codigo });
+  const total = cotizacion ? Number(cotizacion.estimatedTotal) : totalLocal;
+
   const handleConfirmarReserva = async () => {
     if (!datosCompletos) {
       setAlertaFaltantesVisible(true);
       return;
     }
 
-    const referencia = generarReferenciaUnica();
-    const metodoPago = fechasLugar.metodoPago;
+    setProcesandoPago(true);
+    try {
+      if (documentos.cedulaFrente || documentos.licenciaConduccion) {
+        await documentosService.subir({
+          tipoDocumento: datosPersonales.tipoDocumento,
+          numeroDocumento: datosPersonales.numeroDocumento,
+          sucursalId: vehiculo.sucursalId ?? "",
+          identificacion: documentos.cedulaFrente,
+          licencia: documentos.licenciaConduccion,
+        });
+      }
 
-    if (documentos.cedulaFrente || documentos.licenciaConduccion || !docsVerificados) {
-      await documentosService.guardarDocumentos(usuarioGlobal.id, {
-        identificacion: documentos.cedulaFrente,
-        licencia: documentos.licenciaConduccion,
+      const creada = await reservaPersistService.crear({
+        vehiculo,
+        fechasLugar,
+        planes,
+        cupon: cuponAplicado,
       });
-    }
+      setReservaCreada(creada);
 
-    const docsGuardados = await documentosService.obtenerDocumentos(usuarioGlobal.id);
-    const nombreLicencia =
-      documentos.licenciaConduccion?.nombre ||
-      docsGuardados?.licencia?.nombre ||
-      "Licencia verificada en perfil";
-    const nombreCedula =
-      documentos.cedulaFrente?.nombre ||
-      docsGuardados?.identificacion?.nombre ||
-      null;
-
-    await reservaPersistService.guardarReserva({
-      referencia,
-      usuarioId: usuarioGlobal.id,
-      vehiculoId: vehiculo.id,
-      vehiculoNombre: vehiculo.nombre,
-      metodoPago,
-      total,
-      fechaReserva: new Date().toISOString(),
-      fechaRetiro: fechasLugar.fechaRetiro,
-      fechaDevolucion: fechasLugar.fechaDevolucion,
-      horaRetiro: fechasLugar.horaRetiro,
-      horaDevolucion: fechasLugar.horaDevolucion,
-      lugarRetiro: fechasLugar.lugarRetiro,
-      lugarDevolucion: fechasLugar.lugarDevolucion,
-      proteccion: planes.proteccion,
-      tipoKilometraje: planes.tipoKilometraje,
-      vehiculoSnapshot: vehiculo,
-      datosPersonalesSnapshot: datosPersonales,
-      datosDocumentosSnapshot: {
-        cedulaFrente: nombreCedula ? { nombre: nombreCedula } : null,
-        licenciaConduccion: nombreLicencia ? { nombre: nombreLicencia } : null,
-      },
-      fechasLugarSnapshot: fechasLugar,
-      planesSnapshot: planes,
-    });
-
-    setReferenciaActual(referencia);
-
-    if (metodoPago === "efectivo") {
-      setModalInstruccionesEfectivoVisible(true);
-    } else {
-      setModalReservaVisible(true);
+      if (creada.metodoPago === "efectivo") {
+        setModalInstruccionesEfectivoVisible(true);
+      } else if (creada.estado === "PENDIENTE") {
+        setModalReservaVisible(true);
+      } else {
+        limpiarReserva();
+        router.replace(`/payment-response?ref=${encodeURIComponent(creada.id)}` as any);
+      }
+    } catch (error) {
+      setErrorServidor(mensajeDeError(error, t("reserva.confirmacion.errorPagoMensaje")));
+    } finally {
+      setProcesandoPago(false);
     }
   };
 
@@ -311,14 +288,14 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   };
 
   const handlePagarWompi = async () => {
-    if (!referenciaActual) return;
+    if (!reservaCreada) return;
     setProcesandoPago(true);
 
     try {
-      const amountInCents = aCentavos(total);
+      const amountInCents = aCentavos(reservaCreada.total);
 
       const url = await construirUrlCheckout({
-        reference: referenciaActual,
+        reference: reservaCreada.id,
         amountInCents,
       });
 
@@ -334,7 +311,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         pathname: "/wompi-checkout" as any,
         params: {
           url: encodeURIComponent(url),
-          ref: encodeURIComponent(referenciaActual),
+          ref: encodeURIComponent(reservaCreada.id),
         },
       });
 
@@ -342,7 +319,6 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         limpiarReserva();
       }, 500);
     } catch (error) {
-      console.error("[FormDatosPersonales] Error iniciando checkout de Wompi", error);
       Alert.alert(
         t("comun.error", { defaultValue: "Error" }),
         t("reserva.confirmacion.errorWompi", { defaultValue: "No se pudo abrir la pasarela de pago de Wompi." })
@@ -403,7 +379,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
               onSeleccionar={(id) => {
                 actualizarDatosPersonales({ nacionalidad: id });
                 actualizarUsuarioGlobal({ nacionalidad: id });
-                if (id === "Colombia") {
+                if (esNacionalidadColombiana(id)) {
                   if (
                     datosPersonales.tipoDocumento &&
                     !["CC", "CE", "Pasaporte", "PPT", "PEP"].includes(datosPersonales.tipoDocumento)
@@ -451,6 +427,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
             </Text>
             {hayPrefijo ? (
               <View style={styles.filaCelular}>
+                {prefijoTelefono ? (
                 <View
                   style={[
                     styles.prefijoBox,
@@ -461,6 +438,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                     {prefijoTelefono}
                   </Text>
                 </View>
+                ) : null}
                 <TextInput
                   style={[
                     styles.input,
@@ -582,9 +560,9 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
       {/* Aviso informativo previo a la confirmación */}
       {(() => {
-        const limiteInfo = calcularLimitePago(fechasLugar.fechaRetiro, fechasLugar.horaRetiro);
-        const horas = limiteInfo.horasLimitePago || 72;
-        const textoHoras = `${horas} ${horas === 1 ? t("comun.hora", { defaultValue: "hora" }) : t("comun.horas", { defaultValue: "horas" })}`;
+        const horasLimite = reservaCreada?.fechaLimitePago
+          ? Math.max(1, Math.ceil((new Date(reservaCreada.fechaLimitePago).getTime() - Date.now()) / 3600000))
+          : undefined;
 
         return (
           <>
@@ -611,9 +589,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                   },
                 ]}
               >
-                {t("reserva.datosPersonales.avisoGuardadoDinamico", {
-                  horas: textoHoras,
-                  defaultValue: `Al confirmar la reserva, quedará guardada automáticamente en tu cuenta. Tendrás un plazo de ${textoHoras} para completar el pago antes de su cancelación automática.`,
+                {t("reserva.datosPersonales.avisoGuardado", {
+                  defaultValue: "Al confirmar la reserva, quedará guardada en tu cuenta y tendrás un plazo limitado para completar el pago antes de su cancelación automática.",
                 })}
               </Text>
             </View>
@@ -627,7 +604,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
             <ModalReservaRegistrada
               visible={modalReservaVisible}
-              horasLimitePago={limiteInfo.horasLimitePago}
+              horasLimitePago={horasLimite}
               cargando={procesandoPago}
               onPagarWompi={handlePagarWompi}
               onCerrar={handlePagarMasTarde}
@@ -635,10 +612,11 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
             <BranchCashPaymentModal
               visible={modalInstruccionesEfectivoVisible}
-              referencia={referenciaActual || ""}
+              referencia={reservaCreada?.referencia || ""}
+              codigoPago={reservaCreada?.codigoPagoEfectivo}
               nombreSucursal={vehiculo.sucursal || ""}
-              total={total}
-              horasLimitePago={limiteInfo.horasLimitePago}
+              total={reservaCreada?.total ?? total}
+              horasLimitePago={horasLimite}
               onIrAMisReservas={handleIrAMisReservas}
               onVolverAlInicio={handleVolverAlInicio}
             />
@@ -682,7 +660,9 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         icono="checkmark-circle-outline"
         titulo={t("reserva.confirmacion.efectivoConfirmadaTitulo")}
         mensaje={t("reserva.confirmacion.efectivoConfirmadaMensaje", {
-          horas: HORAS_LIMITE_PAGO_EFECTIVO,
+          horas: reservaCreada?.fechaLimitePago
+            ? Math.max(1, Math.ceil((new Date(reservaCreada.fechaLimitePago).getTime() - Date.now()) / 3600000))
+            : "",
         })}
         botones={[
           {
@@ -696,6 +676,15 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
           },
         ]}
         onCerrar={() => setAlertaEfectivoVisible(false)}
+      />
+
+      <AlertModal
+        visible={!!errorServidor}
+        icono="close-circle-outline"
+        titulo={t("reserva.confirmacion.errorPagoTitulo")}
+        mensaje={errorServidor}
+        botones={[]}
+        onCerrar={() => setErrorServidor("")}
       />
 
       <AlertModal

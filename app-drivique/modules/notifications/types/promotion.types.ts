@@ -1,10 +1,4 @@
-/**
- * notifications.dummy.ts
- * HU-INT-17: Se eliminan notificaciones, promociones y cupones dummy de Web y App.
- * Los datos ahora se sincronizan en vivo desde los endpoints del Backend.
- */
-
-export interface CouponDummy {
+export interface CuponPromocion {
   id: string;
   codigo: string;
   descuentoTexto: string;
@@ -34,7 +28,7 @@ export interface CouponDummy {
   expiracion?: string;
 }
 
-export interface VehiculoPromoDummy {
+export interface PromocionVehiculo {
   id: string;
   vehiculoId: number;
   titulo: string;
@@ -44,7 +38,3 @@ export interface VehiculoPromoDummy {
   expiracion?: string;
 }
 
-// ─── HU-INT-17: Eliminación de cupones y promociones dummy estáticas ───
-export const CUPONES_DUMMY: CouponDummy[] = [];
-
-export const VEHICULO_PROMOS_DUMMY: VehiculoPromoDummy[] = [];

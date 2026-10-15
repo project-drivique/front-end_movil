@@ -23,18 +23,7 @@ interface AuditStore {
   limpiarLogs: () => void;
 }
 
-// Logs iniciales de demostración
-const LOGS_INICIALES: EventoAuditoria[] = [
-  {
-    id: "AUD-8910",
-    fechaHora: "2026-08-11T19:30:00Z",
-    correo: "cliente@drivique.com",
-    rol: "cliente",
-    ip: "192.168.1.10",
-    resultado: "Exitoso",
-    sucursal: "Central",
-  },
-];
+const LOGS_INICIALES: EventoAuditoria[] = [];
 
 export const useAuditStore = create<AuditStore>()((set) => ({
   logs: LOGS_INICIALES,

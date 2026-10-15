@@ -37,7 +37,9 @@ export default function FlujoReserva({ vehiculo }: Props) {
   const [modalResumenVisible, setModalResumenVisible] = useState(false);
   const [alertaFaltantesVisible, setAlertaFaltantesVisible] = useState(false);
   const [alertaHorarioVisible, setAlertaHorarioVisible] = useState(false);
-  const [outsideScheduleAccepted, setOutsideScheduleAccepted] = useState(false);
+  const outsideScheduleAccepted = !!fechasLugar.fueraDeHorarioAceptado;
+  const actualizarFechasLugar = useReservaStore((s) => s.actualizarFechasLugar);
+  const setOutsideScheduleAccepted = (v: boolean) => actualizarFechasLugar({ fueraDeHorarioAceptado: v });
 
   // "Alcanzada alguna vez" — una vez true, nunca vuelve a false, aunque
   // el usuario regrese a un tab anterior. Esto es lo que usa el modal

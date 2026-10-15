@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { decodeJwtPayload } from '@/utils/jwt';
 import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import * as WebBrowser from 'expo-web-browser';
@@ -160,9 +161,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
             } catch {}
           } else if (idToken) {
             try {
-              const base64Url = idToken.split('.')[1];
-              const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-              const parsed = JSON.parse(decodeURIComponent(escape(atob(base64))));
+              const parsed = decodeJwtPayload(idToken) || {};
               if (parsed.email) email = parsed.email;
               if (parsed.given_name) nombre = parsed.given_name;
               else if (parsed.name) nombre = parsed.name.split(' ')[0];
