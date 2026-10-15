@@ -17,6 +17,7 @@ import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 type Tema = ReturnType<typeof useTemaColores>;
 
@@ -105,7 +106,7 @@ export default function PlanesAdicionales({ vehiculo, onContinuar }: Props) {
 
   const [alertaFaltantesVisible, setAlertaFaltantesVisible] = useState(false);
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   const todosLosServicios = useMemo(
     () =>
@@ -164,7 +165,7 @@ export default function PlanesAdicionales({ vehiculo, onContinuar }: Props) {
           {/* Header de la tarjeta padre */}
           <View style={styles.cardHeaderFila}>
             <Ionicons name="shield-outline" size={14} color={primaryAccent} />
-            <Text style={[styles.cardHeaderTitulo, { color: primaryAccent }]}>
+            <Text style={[[styles.cardHeaderTitulo, { color: COLOR_MARCA }], { color: primaryAccent }]}>
               {t("reserva.planes.eligeTuNivelDeProteccion", { defaultValue: "Elige tu Nivel de Protección" })}
             </Text>
           </View>
@@ -296,7 +297,7 @@ export default function PlanesAdicionales({ vehiculo, onContinuar }: Props) {
           {/* Header de la tarjeta padre */}
           <View style={styles.cardHeaderFila}>
             <Ionicons name="speedometer-outline" size={14} color={primaryAccent} />
-            <Text style={[styles.cardHeaderTitulo, { color: primaryAccent }]}>
+            <Text style={[[styles.cardHeaderTitulo, { color: COLOR_MARCA }], { color: primaryAccent }]}>
               {t("reserva.planes.tipoKilometraje", { defaultValue: "Tipo de Kilometraje" })}
             </Text>
           </View>
@@ -469,7 +470,7 @@ export default function PlanesAdicionales({ vehiculo, onContinuar }: Props) {
           {/* Header de la tarjeta padre */}
           <View style={styles.cardHeaderFila}>
             <Ionicons name="sparkles-outline" size={14} color={primaryAccent} />
-            <Text style={[styles.cardHeaderTitulo, { color: primaryAccent }]}>
+            <Text style={[[styles.cardHeaderTitulo, { color: COLOR_MARCA }], { color: primaryAccent }]}>
               {t("reserva.planes.serviciosAdicionales", { defaultValue: "Servicios adicionales" })}
             </Text>
           </View>

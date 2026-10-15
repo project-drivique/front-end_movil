@@ -7,6 +7,8 @@
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
+import { useBrandStore } from "@/store/brandStore";
+import { COLOR_ACCENT } from "@/constants/brandPalette";
 import { createJSONStorage, persist } from "zustand/middleware";
 import i18n, { IdiomaKey } from "../index";
 
@@ -65,6 +67,7 @@ export const useIdioma = create<IdiomaStore>()(
 export function useTemaColores() {
   const { temaActual } = useIdioma();
   const oscuro = temaActual === "oscuro";
+  useBrandStore((s) => s.version); // al cambiar la marca los componentes se repintan con la nueva paleta
 
   return {
     // Fondos
@@ -80,8 +83,8 @@ export function useTemaColores() {
     border: oscuro ? "#2D3748" : "#E5E7EB",
     borderLight: oscuro ? "#1C2330" : "#F3F4F6",
     // Primario
-    primary: "#1D4ED8",
-    primaryBg: oscuro ? "#1D4ED820" : "#EEF2FF",
+    primary: COLOR_ACCENT === "#2563eb" ? "#1D4ED8" : COLOR_ACCENT,
+    primaryBg: oscuro ? `${COLOR_ACCENT === "#2563eb" ? "#1D4ED8" : COLOR_ACCENT}20` : "#EEF2FF",
     // Estado
     success: "#16A34A",
     error: "#DC2626",

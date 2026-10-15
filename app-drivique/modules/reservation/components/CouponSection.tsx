@@ -13,6 +13,7 @@ import { diasEntre } from "./BookingSummaryModal.pieces";
 import { formatCurrency } from "@/utils/currencyUtils";
 import { useMonedaStore } from "@/store/currencyStore";
 import { pricingService } from "../services/pricingService";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 const { height } = Dimensions.get("window");
 
@@ -63,7 +64,7 @@ export default function CouponSection({ vehiculo }: Props) {
     };
   }, []);
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   const getCouponVehicleImages = (_cpx: any): string[] => {
     const img = (vehiculo.imagenes && vehiculo.imagenes[0]) || vehiculo.imagen;

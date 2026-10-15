@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { UsuarioPerfil } from "../types/profile.types";
 import { useReferenceStore } from "@/store/referenceStore";
+import { COLOR_ACENTO, COLOR_ENLACE, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 
 interface Props {
   usuario: UsuarioPerfil;
@@ -42,7 +43,7 @@ export function InfoPersonal({ usuario, onEditar, onCambiarCorreo }: Props) {
 
       {/* Datos personales */}
       <View style={[styles.seccion, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-        <Text style={[styles.seccionLabel, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>{t('perfil.datosPersonales')}</Text>
+        <Text style={[styles.seccionLabel, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE }]}>{t('perfil.datosPersonales')}</Text>
 
         <View style={styles.campo}>
           <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.nombres')}</Text>
@@ -88,17 +89,17 @@ export function InfoPersonal({ usuario, onEditar, onCambiarCorreo }: Props) {
 
       {/* Correo con botón cambiar */}
       <View style={[styles.seccion, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-        <Text style={[styles.seccionLabel, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>{t('perfil.correoElectronico')}</Text>
+        <Text style={[styles.seccionLabel, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE }]}>{t('perfil.correoElectronico')}</Text>
         <View style={styles.correoRow}>
           <View style={styles.correoInfo}>
             <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.correoActual')}</Text>
             <Text style={[styles.campoValor, { color: c.textPrimary }]}>{usuario.correo}</Text>
           </View>
           <TouchableOpacity
-            style={[styles.btnCambiarCorreo, { backgroundColor: c.primaryBg, borderColor: c.oscuro ? "#3B82F6" : "#1D4ED8" }]}
+            style={[styles.btnCambiarCorreo, { backgroundColor: c.primaryBg, borderColor: c.oscuro ? COLOR_MARCA_OSCURO : COLOR_ENLACE }]}
             onPress={onCambiarCorreo}
           >
-            <Text style={[styles.btnCambiarCorreoText, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>{t('perfil.cambiar')}</Text>
+            <Text style={[styles.btnCambiarCorreoText, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE }]}>{t('perfil.cambiar')}</Text>
           </TouchableOpacity>
         </View>
       </View>

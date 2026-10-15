@@ -24,6 +24,7 @@ import {
   FormCambiarCorreo,
 } from "../types/profile.types";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { COLOR_ACENTO, COLOR_ENLACE } from "@/constants/brandPalette";
 
 interface Props {
   visible: boolean;
@@ -155,7 +156,7 @@ export function ModalCambiarCorreo({
 
             {/* Nota seguridad */}
             <View style={[styles.notaWrap, { backgroundColor: c.primaryBg, borderColor: c.oscuro ? "#1E3A8A" : "#DBEAFE" }]}>
-              <Ionicons name="lock-closed-outline" size={16} color={c.oscuro ? "#60A5FA" : "#1D4ED8"} />
+              <Ionicons name="lock-closed-outline" size={16} color={c.oscuro ? COLOR_ACENTO : COLOR_ENLACE} />
               <Text style={[styles.notaText, { color: c.oscuro ? "#93C5FD" : "#1D4ED8" }]}>
                 {t("perfil.cambiarCorreo.notaSeguridad")}
               </Text>

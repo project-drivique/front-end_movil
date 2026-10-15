@@ -28,6 +28,7 @@ import { AlertModal } from "@/components/ui/AlertModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { GRADIENTES } from "@/constants/gradients";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 interface Props {
   vehiculo: Vehiculo;
@@ -80,7 +81,7 @@ export default function EditDatesLocationSection({
 
   const esWompi = draft.metodoPago === "wompi";
   const efectivoPermitido = getSucursalPorNombre(nombreSucursal)?.permiteEfectivo === true;
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   const opcionesEntrega: OpcionLugar[] = useMemo(() => {
     const base: OpcionLugar[] = [
@@ -707,7 +708,7 @@ export default function EditDatesLocationSection({
                       {t("reserva.fechasLugar.duracionAlquiler", { defaultValue: "Duración del alquiler" })}
                     </Text>
                   </View>
-                  <Text style={[styles.duracionValor, { color: primaryAccent }]}>{infoDuracion.titulo}</Text>
+                  <Text style={[[styles.duracionValor, { color: COLOR_MARCA }], { color: primaryAccent }]}>{infoDuracion.titulo}</Text>
                 </View>
 
                 {!!infoDuracion.tiempoUso && (
@@ -723,7 +724,7 @@ export default function EditDatesLocationSection({
                         {t("reserva.fechasLugar.devolucionAnticipada", { defaultValue: "Devolución anticipada" })}
                       </Text>
                     </View>
-                    <Text style={[styles.duracionValor, { color: primaryAccent }]} numberOfLines={1}>
+                    <Text style={[[styles.duracionValor, { color: COLOR_MARCA }], { color: primaryAccent }]} numberOfLines={1}>
                       {infoDuracion.tiempoUso}
                     </Text>
                   </View>

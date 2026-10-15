@@ -1,8 +1,9 @@
 import { DisponibilidadVehiculo } from "../types/catalog.types";
 import { useReferenceStore } from "@/store/referenceStore";
 
-export const COLOR_MARCA = "#2f4ea2";
-export const COLOR_ACCENT = "#2563eb";
+// Colores de marca vivos: vienen de la API (ver constants/brandPalette.ts)
+export { COLOR_MARCA, COLOR_ACCENT, COLOR_ACENTO, COLOR_MARCA_OSCURO, COLOR_ENLACE, COLOR_ENLACE_OSCURO } from "@/constants/brandPalette";
+import { COLOR_MARCA } from "@/constants/brandPalette";
 
 export const COLORES = {
   pageBg: "#f8fafc",
@@ -14,8 +15,12 @@ export const COLORES = {
   textSecondary: "#64748b",
   textMuted: "#94a3b8",
   textSoft: "#94a3b8",
-  accentText: COLOR_MARCA,
-  accentGradient: `${COLOR_MARCA}`,
+  get accentText() {
+    return COLOR_MARCA;
+  },
+  get accentGradient() {
+    return `${COLOR_MARCA}`;
+  },
   accentBgSoft: "rgba(30,58,138,0.08)",
   accentBorder: "#bfdbfe",
   inputBg: "#fff",
@@ -26,7 +31,9 @@ export const COLORES = {
   dangerText: "#dc2626",
   chipBg: "#f1f5f9",
   chipText: "#475569",
-  chipActiveBg: COLOR_MARCA,
+  get chipActiveBg() {
+    return COLOR_MARCA;
+  },
   chipActiveText: "#fff",
   cardBorder: "#f1f5f9",
   cardBorderHover: "#bfdbfe",

@@ -19,4 +19,17 @@ config.resolver.unstable_conditionNames = [
   "react-native",
 ];
 
+// Paleta de marca dinámica: todo color pasa por utils/normalizeColorBrand antes de llegar a lo nativo
+const path = require("path");
+const resolverOriginal = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (
+    moduleName === "@react-native/normalize-colors" &&
+    !context.originModulePath.includes("normalizeColorBrand")
+  ) {
+    return { type: "sourceFile", filePath: path.resolve(__dirname, "utils/normalizeColorBrand.ts") };
+  }
+  return resolverOriginal ? resolverOriginal(context, moduleName, platform) : context.resolveRequest(context, moduleName, platform);
+};
+
 module.exports = config;
