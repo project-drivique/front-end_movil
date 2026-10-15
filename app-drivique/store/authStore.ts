@@ -50,7 +50,7 @@ const getInitialAuth = (): { usuario: Usuario | null; token: string | null; _has
         if (parsed?.state?.usuario) {
           return {
             usuario: parsed.state.usuario,
-            token: parsed.state.token || "token-demo",
+            token: parsed.state.token || null,
             _hasHydrated: true,
           };
         }

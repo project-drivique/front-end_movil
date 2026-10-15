@@ -26,13 +26,14 @@ import {
   GrupoReserva,
   ReservaGuardada,
   calcularGrupoReserva,
+  mensajeDeError,
   reservaPersistService,
 } from "@/modules/reservation/services/reservationPersistService";
 import { fmt, fechaCorta } from "@/modules/reservation/components/BookingSummaryModal.pieces";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { useUsuarioStore } from "@/store/userStore";
 import { useAuthStore } from "@/store/authStore";
-import { aCentavos, construirUrlCheckout, consultarTransaccionWompi } from "@/modules/reservation/services/wompiService";
+import { aCentavos, construirUrlCheckout } from "@/modules/reservation/services/wompiService";
 import { Platform } from "react-native";
 
 const COLOR_GRUPO: Record<GrupoReserva, string> = {
@@ -176,12 +177,10 @@ export default function MisReservasScreen() {
   const { idiomaActual, temaActual, toggleTema } = useIdioma();
   const usuario = useUsuarioStore((state) => state.usuario);
   const usuarioAuth = useAuthStore((state) => state.usuario);
-  const usuarioId = usuario.id || usuarioAuth?.id;
-  const usuarioCorreo = usuario.correo || usuarioAuth?.correo;
-  const usuarioDocumento = usuario.numeroDocumento;
-  const usuarioKey = usuarioId || usuarioCorreo || usuarioDocumento;
+  const usuarioKey = usuario.id || usuarioAuth?.id || "";
   const [reservas, setReservas] = useState<ReservaGuardada[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState("");
 
   const [filtroGrupo, setFiltroGrupo] = useState<GrupoReserva | "todas">("todas");
   const [modalEstadoVisible, setModalEstadoVisible] = useState(false);
@@ -192,51 +191,19 @@ export default function MisReservasScreen() {
     useCallback(() => {
       let activo = true;
       (async () => {
-        const data = await reservaPersistService.getReservasUsuario({
-          id: usuarioId,
-          correo: usuarioCorreo,
-          numeroDocumento: usuarioDocumento,
-        });
-        if (activo) {
-          const reservasValidas = data.filter((r) => !(r.metodoPago === "wompi" && r.estado === "PENDIENTE" && !r.paymentId));
-          setReservas([...reservasValidas].sort(ordenarPorCreacionDesc));
-          setCargando(false);
-
-          // Verificar en segundo plano si Wompi ya aprobó algún pago pendiente
-          const pendientesConPago = reservasValidas.filter(
-            (r) => (r.estado === "PENDIENTE_EFECTIVO" || r.estado === "PENDIENTE_VALIDACION" || r.estado === "PENDIENTE") && r.paymentId
-          );
-          if (pendientesConPago.length > 0) {
-            let huboCambios = false;
-            for (const p of pendientesConPago) {
-              try {
-                const tx = await consultarTransaccionWompi(p.paymentId!);
-                if (tx && tx.status === "APPROVED") {
-                  await reservaPersistService.actualizarReserva(p.referencia, {
-                    estado: "CONFIRMADA",
-                  });
-                  huboCambios = true;
-                }
-              } catch (e) {
-                // Silencioso
-              }
-            }
-            if (huboCambios && activo) {
-              const dataActualizada = await reservaPersistService.getReservasUsuario({
-                id: usuarioId,
-                correo: usuarioCorreo,
-                numeroDocumento: usuarioDocumento,
-              });
-              const validasAct = dataActualizada.filter((r) => !(r.metodoPago === "wompi" && r.estado === "PENDIENTE" && !r.paymentId));
-              setReservas([...validasAct].sort(ordenarPorCreacionDesc));
-            }
-          }
+        try {
+          const data = await reservaPersistService.getReservasUsuario();
+          if (activo) setReservas([...data].sort(ordenarPorCreacionDesc));
+        } catch (e) {
+          if (activo) setErrorCarga(mensajeDeError(e, t("misReservas.errorCarga", { defaultValue: "No se pudieron cargar tus reservas." })));
+        } finally {
+          if (activo) setCargando(false);
         }
       })();
       return () => {
         activo = false;
       };
-    }, [usuarioId, usuarioCorreo, usuarioDocumento])
+    }, [t])
   );
 
   const hayFiltrosActivos = filtroGrupo !== "todas" || !!filtroMes;
@@ -303,9 +270,8 @@ export default function MisReservasScreen() {
   const handlePagarWompi = async (reserva: ReservaGuardada) => {
     try {
       const amountInCents = aCentavos(reserva.total);
-      const attemptRef = `${reserva.referencia}_${Date.now()}`;
       const url = await construirUrlCheckout({
-        reference: attemptRef,
+        reference: reserva.id,
         amountInCents,
       });
 
@@ -318,11 +284,10 @@ export default function MisReservasScreen() {
         pathname: "/wompi-checkout" as any,
         params: {
           url: encodeURIComponent(url),
-          ref: encodeURIComponent(reserva.referencia),
+          ref: encodeURIComponent(reserva.id),
         },
       });
-    } catch (err) {
-      console.error("[my-bookings] Error abriendo Wompi", err);
+    } catch {
       Alert.alert(
         t("comun.error", { defaultValue: "Error" }),
         t("reserva.confirmacion.errorWompi", { defaultValue: "No se pudo abrir la pasarela de pago de Wompi." })
@@ -509,7 +474,7 @@ export default function MisReservasScreen() {
           </View>
           <Text style={[styles.vacioTitulo, { color: c.textPrimary }]}>{t("misReservas.vacioTitulo")}</Text>
           <Text style={[styles.vacioTexto, { color: c.textMuted }]}>
-            {t("misReservas.vacioTexto")}
+            {errorCarga || t("misReservas.vacioTexto")}
           </Text>
           <TouchableOpacity
             style={styles.vacioBtnWrap}
@@ -619,7 +584,9 @@ function TarjetaReserva({
             >
               <View style={[styles.badgeDot, { backgroundColor: COLOR_GRUPO[grupo] }]} />
               <Text style={[styles.badgeTexto, { color: COLOR_GRUPO[grupo] }]} numberOfLines={1}>
-                {t(`misReservas.grupos.${grupo}`)}
+                {reserva.estado === "PENDIENTE_VALIDACION"
+                  ? t("misReservas.detalle.enRevisionDocumentos", { defaultValue: "En revisión de documentos" })
+                  : t(`misReservas.grupos.${grupo}`)}
               </Text>
             </View>
           </View>
@@ -638,7 +605,7 @@ function TarjetaReserva({
             <Text style={[styles.tarjetaTotal, { color: c.textPrimary }]}>{fmt(reserva.total)}</Text>
           </View>
 
-          {(grupo === "en_curso" || grupo === "finalizada") && (
+          {(grupo === "en_curso" || grupo === "finalizada" || grupo === "confirmada") && (
             <TouchableOpacity
               style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
               onPress={(e) => {
@@ -646,10 +613,8 @@ function TarjetaReserva({
                 router.push({
                   pathname: "/(tabs)/support",
                   params: {
-                    reservaId: reserva.referencia,
-                    vehiculoNombre: reserva.vehiculoNombre,
-                    ...(vehiculoSnap?.placa ? { placa: vehiculoSnap.placa } : {}),
-                    tab: "reportar",
+                    reservaId: reserva.id,
+                    tab: "nueva",
                   },
                 } as any);
               }}

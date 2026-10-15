@@ -7,12 +7,7 @@ export type TipoDocumento =
   | "PEP"
   | "Doc. Extranjero";
 
-// Nacionalidad es de tipo abierto (string) porque la lista real vive en
-// datos, no en código: sale de mocks/nacionalidades.json y en producción
-// vendrá de un endpoint (GET /nacionalidades o similar). Un union literal
-// fijo se desincroniza cada vez que se agrega o quita un país del JSON,
-// obligando a tocar este archivo a mano. Se mantiene el alias con nombre
-// solo por legibilidad semántica en el resto del código.
+// Nacionalidad es el UUID de GET /nationalities (nationalityId en el backend).
 export type Nacionalidad = string;
 
 export interface UsuarioPerfil {
@@ -25,6 +20,7 @@ export interface UsuarioPerfil {
   numeroDocumento: string;
   fechaNacimiento: string;
   nacionalidad: Nacionalidad | "";
+  direccion: string;
   perfilCompleto: boolean;
 }
 
@@ -34,6 +30,7 @@ export interface FormEditarPerfil {
   telefono: string;
   fechaNacimiento: string;
   nacionalidad: Nacionalidad | "";
+  direccion: string;
 }
 
 export interface FormCompletarPerfil {
@@ -53,6 +50,7 @@ export interface FormCambiarCorreo {
 }
 
 export interface ErroresPerfil {
+  direccion?: string;
   nombres?: string;
   apellidos?: string;
   telefono?: string;

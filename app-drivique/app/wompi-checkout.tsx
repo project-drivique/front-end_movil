@@ -66,7 +66,7 @@ export default function WompiCheckoutScreen() {
         const reserva = await reservaPersistService.obtenerPorReferencia(refDestino);
         if (reserva) {
           const urlGen = await construirUrlCheckout({
-            reference: reserva.referencia,
+            reference: reserva.id,
             amountInCents: aCentavos(reserva.total),
           });
           if (activo) setCheckoutUrl(urlGen);
@@ -105,68 +105,6 @@ export default function WompiCheckoutScreen() {
     procesadoRef.current = true;
 
     if (refDestino) {
-      if (transactionId) {
-        try {
-          const txData = await consultarTransaccionWompi(transactionId);
-          if (txData) {
-            let nuevoEstado: "PENDIENTE_VALIDACION" | "PENDIENTE_EFECTIVO" | "CONFIRMADA" = "PENDIENTE_VALIDACION";
-            const pmType = (txData.payment_method_type || "").toUpperCase();
-
-            let detalleMetodo = "Wompi";
-            if (pmType === "BANCOLOMBIA_COLLECT" || pmType.includes("COLLECT")) {
-              nuevoEstado = "PENDIENTE_EFECTIVO";
-              detalleMetodo = "Efectivo en Bancolombia";
-            } else if (pmType === "NEQUI" || pmType.includes("NEQUI")) {
-              detalleMetodo = "Nequi";
-            } else if (pmType === "BANCOLOMBIA_TRANSFER" || pmType.includes("TRANSFER") || pmType.includes("BOTON_BANCOLOMBIA")) {
-              detalleMetodo = "Bancolombia";
-            } else if (pmType === "DAVIPLATA" || pmType.includes("DAVIPLATA")) {
-              detalleMetodo = "Daviplata";
-            } else if (pmType === "PSE" || pmType.includes("PSE")) {
-              detalleMetodo = "PSE";
-            } else if (pmType === "CARD" || pmType.includes("CARD")) {
-              const brand = txData.payment_method?.extra?.brand || "";
-              const last4 = txData.payment_method?.extra?.last_four || "";
-              detalleMetodo = brand ? `Tarjeta ${brand} ${last4 ? `(••• ${last4})` : ""}`.trim() : "Tarjeta";
-            }
-
-            if (txData.status === "APPROVED") {
-              nuevoEstado = "CONFIRMADA";
-            }
-
-            const esCollect = pmType === "BANCOLOMBIA_COLLECT" || pmType.includes("COLLECT");
-
-            const convenioFinal = esCollect
-              ? txData.payment_method?.extra?.business_agreement_code ||
-                (txData as any).extra?.business_agreement_code ||
-                ultimoConvenioRef.current ||
-                "00000"
-              : null;
-
-            const refWompiFinal = esCollect
-              ? txData.payment_method?.extra?.payment_reference ||
-                txData.payment_method?.extra?.reference ||
-                txData.payment_method?.extra?.external_identifier ||
-                (txData as any).extra?.payment_reference ||
-                ultimoReferenciaWompiRef.current ||
-                ""
-              : null;
-
-            await reservaPersistService.actualizarReserva(refDestino, {
-              estado: nuevoEstado,
-              paymentId: transactionId,
-              paymentMethodType: pmType,
-              metodoPagoDetalle: detalleMetodo,
-              convenioWompi: convenioFinal,
-              referenciaWompi: refWompiFinal,
-              wompiExtra: txData.payment_method?.extra,
-            });
-          }
-        } catch (e) {
-          console.error("[WompiCheckout] Error consultando transaccion Wompi:", e);
-        }
-      }
-
       router.replace(
         `/payment-response?ref=${encodeURIComponent(refDestino)}${transactionId ? `&id=${encodeURIComponent(transactionId)}` : ""}`
       );
@@ -233,16 +171,6 @@ export default function WompiCheckoutScreen() {
           const refPago = data.referenciaPago || "";
           if (convenio) ultimoConvenioRef.current = convenio;
           if (refPago) ultimoReferenciaWompiRef.current = refPago;
-
-          if (refDestino && refPago) {
-            reservaPersistService.actualizarReserva(refDestino, {
-              estado: "PENDIENTE_EFECTIVO",
-              paymentMethodType: "BANCOLOMBIA_COLLECT",
-              metodoPagoDetalle: "Efectivo en Bancolombia",
-              convenioWompi: convenio,
-              referenciaWompi: refPago,
-            });
-          }
           if (data.type === "WOMPI_FINALIZAR_CLICK") {
             const idFinal = data.id || ultimoTransactionIdRef.current;
             handleFinalizarPago(idFinal);

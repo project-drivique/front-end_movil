@@ -146,10 +146,10 @@ export default function EditProtectionMileageSection({
               </Text>
             </View>
 
-            {seguros.map((seguro) => {
+            {seguros.map((seguro, idxSeguro) => {
               const activo = draftProteccion === seguro.nombre;
-              const beneficios = BENEFICIOS_PROTECCION[seguro.nombre] ?? [];
-              const esTotal = seguro.nombre === "Protección Total";
+              const beneficios = BENEFICIOS_PROTECCION[idxSeguro] ?? [];
+              const esTotal = idxSeguro === seguros.length - 1 && seguros.length > 1;
 
               return (
                 <TouchableOpacity

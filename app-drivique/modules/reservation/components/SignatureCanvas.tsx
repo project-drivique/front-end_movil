@@ -14,6 +14,7 @@ import React, {
 } from "react";
 import { PanResponder, StyleSheet, View } from "react-native";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { firmaAPngBase64 } from "@/utils/signaturePng";
 
 interface Punto {
   x: number;
@@ -25,6 +26,8 @@ export interface FirmaCanvasHandle {
   limpiar: () => void;
   /** Serializa los trazos dibujados a un string (JSON) para guardarlos. */
   obtenerFirmaData: () => string;
+  /** PNG de la firma en base64 (sin prefijo data:). */
+  obtenerPngBase64: () => string;
 }
 
 interface Props {
@@ -78,6 +81,7 @@ const FirmaCanvas = forwardRef<FirmaCanvasHandle, Props>(({ onCambiar }, ref) =>
   const [trazos, setTrazos] = useState<Punto[][]>([]);
   const trazoActualRef = useRef<Punto[]>([]);
   const [, forceRender] = useState(0);
+  const tamanoRef = useRef({ ancho: 300, alto: 160 });
 
   useImperativeHandle(ref, () => ({
     estaVacio: () => trazos.length === 0,
@@ -87,6 +91,7 @@ const FirmaCanvas = forwardRef<FirmaCanvasHandle, Props>(({ onCambiar }, ref) =>
       onCambiar?.(true);
     },
     obtenerFirmaData: () => JSON.stringify(trazos),
+    obtenerPngBase64: () => firmaAPngBase64(trazos, tamanoRef.current.ancho, tamanoRef.current.alto),
   }));
 
   const panResponder = useRef(
@@ -122,6 +127,9 @@ const FirmaCanvas = forwardRef<FirmaCanvasHandle, Props>(({ onCambiar }, ref) =>
   return (
     <View
       style={[styles.lienzo, { backgroundColor: c.bgInput, borderColor: "#93c5fd" }]}
+      onLayout={(e) => {
+        tamanoRef.current = { ancho: e.nativeEvent.layout.width, alto: e.nativeEvent.layout.height };
+      }}
       {...panResponder.panHandlers}
     >
       <View pointerEvents="none" style={StyleSheet.absoluteFill}>

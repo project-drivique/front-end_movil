@@ -1,83 +1,81 @@
-// modules/reserva/services/documentosService.ts
-//
-// Servicio temporal para simular la persistencia de documentos (cédula/
-// tarjeta de identidad/documento de extranjería/pasaporte, y licencia) ya
-// verificados de un usuario, para no volver a pedirlos en reservas
-// futuras — mismo patrón que documentosService.js en la web, con
-// AsyncStorage en vez de localStorage.
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiClient } from "@/services/http/apiClient";
+import { ArchivoDocumento } from "../types/reservation.types";
 
-const STORAGE_KEY = "drivique_documentos_usuario";
-
-export interface MetaArchivo {
-  nombre: string;
-  tamanoKb: number;
+export interface DocumentoKyc {
+  id: string;
+  documentType: { id: string; code: string; name: string };
+  statusCode: string;
+  statusName?: string;
+  reviewNotes?: string | null;
+  reservationCode?: string | null;
 }
 
-export interface RegistroDocumentos {
-  identificacion: MetaArchivo | null;
-  licencia: MetaArchivo | null;
-  actualizadoEn: string;
+interface TipoDocumentoKyc {
+  id: string;
+  code: string;
+  name: string;
 }
 
-function metaDeArchivo(archivo: { nombre: string; tamanoBytes?: number } | null): MetaArchivo | null {
-  if (!archivo) return null;
+const CODIGO_POR_TIPO: Record<string, string> = {
+  CC: "CC",
+  CE: "CE",
+  Pasaporte: "PASSPORT",
+  PASSPORT: "PASSPORT",
+};
+
+function aParteArchivo(archivo: ArchivoDocumento): any {
   return {
-    nombre: archivo.nombre,
-    tamanoKb: Math.round((archivo.tamanoBytes || 0) / 1024),
+    uri: archivo.uri,
+    name: archivo.nombre,
+    type: archivo.tipoMime || "application/pdf",
   };
 }
 
-async function leerTodos(): Promise<Record<string, RegistroDocumentos>> {
-  try {
-    const data = await AsyncStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : {};
-  } catch (error) {
-    console.error("[documentosService] Error leyendo documentos guardados", error);
-    return {};
-  }
+async function tipos(): Promise<TipoDocumentoKyc[]> {
+  const { data } = await apiClient.get("/kyc/document-types");
+  return Array.isArray(data) ? data : [];
 }
 
 export const documentosService = {
-  /** true si el usuario ya tiene documento de identidad y licencia registrados. */
-  tieneDocumentos: async (idUsuario: string | null | undefined): Promise<boolean> => {
-    if (!idUsuario) return false;
-    const todos = await leerTodos();
-    const registro = todos[idUsuario];
-    return !!(registro?.identificacion && registro?.licencia);
+  listar: async (): Promise<DocumentoKyc[]> => {
+    const { data } = await apiClient.get("/users/me/documents");
+    return Array.isArray(data) ? data : [];
   },
 
-  obtenerDocumentos: async (idUsuario: string | null | undefined): Promise<RegistroDocumentos | null> => {
-    if (!idUsuario) return null;
-    const todos = await leerTodos();
-    return todos[idUsuario] || null;
-  },
-
-  /**
-   * Guarda/actualiza la metadata de los documentos del usuario. Solo
-   * sobreescribe los campos que vengan con archivo nuevo; si no subió un
-   * archivo nuevo (porque ya tenía documentos verificados), se conserva
-   * el registro existente para ese documento.
-   */
-  guardarDocumentos: async (
-    idUsuario: string | null | undefined,
-    datos: {
-      identificacion?: { nombre: string; tamanoBytes?: number } | null;
-      licencia?: { nombre: string; tamanoBytes?: number } | null;
+  tieneDocumentos: async (): Promise<boolean> => {
+    try {
+      const docs = await documentosService.listar();
+      const aprobados = docs.filter((d) => d.statusCode === "APPROVED");
+      const licencia = aprobados.some((d) => d.documentType?.code === "DRIVER_LICENSE");
+      const identidad = aprobados.some((d) => d.documentType?.code !== "DRIVER_LICENSE");
+      return licencia && identidad;
+    } catch {
+      return false;
     }
-  ): Promise<RegistroDocumentos | null> => {
-    if (!idUsuario) return null;
-    const todos = await leerTodos();
-    const actual = todos[idUsuario] || { identificacion: null, licencia: null, actualizadoEn: "" };
+  },
 
-    const registro: RegistroDocumentos = {
-      identificacion: datos.identificacion ? metaDeArchivo(datos.identificacion) : actual.identificacion,
-      licencia: datos.licencia ? metaDeArchivo(datos.licencia) : actual.licencia,
-      actualizadoEn: new Date().toISOString(),
+  subir: async (params: {
+    tipoDocumento: string | null;
+    numeroDocumento: string;
+    sucursalId: string;
+    identificacion?: ArchivoDocumento | null;
+    licencia?: ArchivoDocumento | null;
+  }): Promise<void> => {
+    const lista = await tipos();
+    const codigoIdentidad = CODIGO_POR_TIPO[params.tipoDocumento ?? ""] ?? String(params.tipoDocumento ?? "");
+    const subirUno = async (codigo: string, archivo: ArchivoDocumento) => {
+      const tipo = lista.find((t) => t.code.toUpperCase() === codigo.toUpperCase());
+      if (!tipo) return;
+      const form = new FormData();
+      form.append("documentTypeId", tipo.id);
+      if (params.numeroDocumento) form.append("documentNumber", params.numeroDocumento);
+      form.append("branchId", params.sucursalId);
+      form.append("frontFile", aParteArchivo(archivo));
+      await apiClient.post("/users/me/documents", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
     };
-
-    todos[idUsuario] = registro;
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-    return registro;
+    if (params.identificacion) await subirUno(codigoIdentidad, params.identificacion);
+    if (params.licencia) await subirUno("DRIVER_LICENSE", params.licencia);
   },
 };

@@ -1,58 +1,6 @@
 import { apiClient } from "@/services/http/apiClient";
-import { VEHICULOS_MOCK } from "../constants/catalog.constants";
+import { useReferenceStore } from "@/store/referenceStore";
 import { Vehiculo } from "../types/catalog.types";
-
-function mapVehicle(v: any): Vehiculo {
-  const mainImage = v.mainImageUrl || v.imagen || v.foto || "";
-  const images = Array.isArray(v.imagenes) && v.imagenes.length > 0
-    ? v.imagenes
-    : (mainImage ? [
-        mainImage,
-        "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80",
-      ] : []);
-  const numId = typeof v.id === "number" ? v.id : (v.legacyId || Math.abs(hashCode(String(v.id))));
-
-  return {
-    id: numId,
-    uuid: String(v.id),
-    nombre: v.nombre || [v.brandName, v.model].filter(Boolean).join(" ") || "Vehículo Drivique",
-    marca: v.marca || v.brandName || "",
-    modelo: v.modelo || v.model || "",
-    categoria: v.categoria || v.categoryName || "General",
-    transmision: v.transmision || v.transmissionName || v.transmissionCode || "Automática",
-    combustible: v.combustible || v.fuelTypeName || v.fuelTypeCode || "Gasolina",
-    precio: Number(v.precio ?? v.dailyRate ?? 0),
-    calificacion: Number(v.calificacion ?? v.rating ?? 4.8),
-    disponible: v.disponible ?? v.allowsReservation ?? true,
-    destacado: v.destacado ?? v.isFeatured ?? false,
-    puertas: v.puertas || v.doorsCount || 4,
-    pasajeros: v.pasajeros || v.passengerCapacity || 5,
-    maletero: v.maletero || v.trunkCapacityLiters || 2,
-    año: v.año || v.year || 2024,
-    placa: v.placa || v.plate || "",
-    sucursal: v.sucursal || v.branchName || "",
-    descripcion: v.descripcion || v.description || "",
-    imagen: mainImage,
-    imagenes: images,
-    tarifas: v.tarifas || {
-      kmLimitado: { km: 200, precio: Number(v.precio ?? v.dailyRate ?? 0), excedente: 800 },
-      kmIlimitado: { precio: Math.round(Number(v.precio ?? v.dailyRate ?? 0) * 1.25) },
-    },
-    seguros: v.seguros || [
-      { nombre: "Protección Obligatoria", precio: 29000 },
-      { nombre: "Protección Total", precio: 67000 },
-    ],
-    servicios: v.servicios || [
-      { nombre: "GPS", precio: 15000 },
-      { nombre: "Silla bebé", precio: 20000 },
-    ],
-    comentarios: v.comentarios || [
-      { autor: "Carlos M.", calificacion: 5, texto: "Excelente vehículo, muy cómodo y puntual en la entrega.", fecha: "2026-08-10" },
-      { autor: "Laura P.", calificacion: 4, texto: "Buen servicio, el carro en perfectas condiciones.", fecha: "2026-07-22" },
-    ],
-  };
-}
 
 function hashCode(str: string): number {
   let hash = 0;
@@ -63,48 +11,126 @@ function hashCode(str: string): number {
   return Math.abs(hash);
 }
 
+function planesDesdeApi() {
+  const { coberturas, planesKm, servicios } = useReferenceStore.getState();
+  const limitados = planesKm
+    .filter((p) => p.includedKm !== null && p.includedKm !== undefined)
+    .sort((a, b) => Number(a.dailyRate) - Number(b.dailyRate));
+  const ilimitado = planesKm.find((p) => p.includedKm === null || p.includedKm === undefined);
+  const limitado = limitados[0];
+
+  return {
+    tarifas: {
+      kmLimitado: limitado
+        ? {
+            id: limitado.id,
+            nombre: limitado.name,
+            km: Number(limitado.includedKm),
+            precio: Number(limitado.dailyRate),
+            excedente: Number(limitado.extraKmRate),
+          }
+        : undefined,
+      kmIlimitado: ilimitado
+        ? {
+            id: ilimitado.id,
+            nombre: ilimitado.name,
+            precio: Number(ilimitado.dailyRate),
+          }
+        : undefined,
+    },
+    seguros: coberturas.map((c) => ({
+      id: c.id,
+      nombre: c.name,
+      precio: Number(c.dailyRate),
+      descripcion: c.description,
+    })),
+    servicios: servicios.map((s) => ({
+      id: s.id,
+      nombre: s.name,
+      precio: Number(s.dailyRate),
+    })),
+  };
+}
+
+function mapVehicle(v: any): Vehiculo {
+  const mainImage: string = v.mainImageUrl || "";
+  const planes = planesDesdeApi();
+
+  return {
+    id: hashCode(String(v.id)),
+    uuid: String(v.id),
+    sucursalId: v.branchId,
+    categoriaId: v.categoryId,
+    ciudad: v.cityName,
+    nombre: [v.brandName, v.model].filter(Boolean).join(" "),
+    marca: v.brandName || "",
+    modelo: v.model || "",
+    categoria: v.categoryName || "",
+    transmision: v.transmissionName || v.transmissionCode || "",
+    combustible: v.fuelTypeName || v.fuelTypeCode || "",
+    precio: Number(v.dailyRate ?? 0),
+    calificacion: 0,
+    disponible: Boolean(v.allowsReservation),
+    destacado: Boolean(v.isFeatured),
+    puertas: v.doorsCount ?? undefined,
+    pasajeros: v.passengerCapacity ?? undefined,
+    maletero: v.trunkCapacityLiters ?? undefined,
+    color: v.color || undefined,
+    año: v.year,
+    placa: v.plate || "",
+    sucursal: v.branchName || "",
+    descripcion: "",
+    imagen: mainImage,
+    imagenes: mainImage ? [mainImage] : [],
+    tarifas: planes.tarifas,
+    seguros: planes.seguros,
+    servicios: planes.servicios,
+    comentarios: [],
+  };
+}
+
+function publicarOpciones(lista: Vehiculo[]) {
+  const unicos = (campo: "categoria" | "transmision" | "combustible") =>
+    Array.from(new Set(lista.map((v) => v[campo]).filter(Boolean))).sort();
+  useReferenceStore.getState().setOpcionesVehiculo({
+    categorias: unicos("categoria"),
+    transmisiones: unicos("transmision"),
+    combustibles: unicos("combustible"),
+  });
+}
+
+async function asegurarReferencias() {
+  await useReferenceStore.getState().cargarPublicas();
+}
+
 export const catalogoService = {
   getVehiculos: async (filtros?: Record<string, any>): Promise<Vehiculo[]> => {
-    try {
-      const { data } = await apiClient.get("/vehicles/search", { params: filtros });
-      const list = data.content ?? data.vehiculos ?? data;
-      if (Array.isArray(list) && list.length > 0) {
-        return list.map(mapVehicle);
-      }
-    } catch {
-      // Fallback a mock si el backend no responde
-    }
-    return VEHICULOS_MOCK;
+    await asegurarReferencias();
+    const { data } = await apiClient.get("/vehicles/search", {
+      params: { size: 100, ...filtros },
+    });
+    const list = data?.content ?? data;
+    const mapped = Array.isArray(list) ? list.filter((v: any) => v.isActive !== false).map(mapVehicle) : [];
+    publicarOpciones(mapped);
+    return mapped;
   },
 
   getVehiculoPorId: async (id: number | string): Promise<Vehiculo | null> => {
-    try {
+    await asegurarReferencias();
+    const isUuid = /^[0-9a-f-]{36}$/i.test(String(id));
+    if (isUuid) {
       const { data } = await apiClient.get(`/vehicles/${id}`);
-      if (data) return mapVehicle(data);
-    } catch {
-      // Fallback
+      return data ? mapVehicle(data) : null;
     }
-    try {
-      const lista = await catalogoService.getVehiculos();
-      const encontrado = lista.find((v) => String(v.id) === String(id) || (v as any).uuid === String(id));
-      if (encontrado) return encontrado;
-    } catch {
-      // Ignorar error
-    }
-    return VEHICULOS_MOCK.find((v) => String(v.id) === String(id)) ?? null;
+    const lista = await catalogoService.getVehiculos();
+    return lista.find((v) => String(v.id) === String(id)) ?? null;
   },
 
   getVehiculosDestacados: async (): Promise<Vehiculo[]> => {
-    try {
-      const { data } = await apiClient.get("/vehicles/featured");
-      const list = data.content ?? data.vehiculos ?? data;
-      if (Array.isArray(list) && list.length > 0) {
-        return list.map(mapVehicle);
-      }
-    } catch {
-      // Fallback a mock
-    }
-    return VEHICULOS_MOCK.filter((v) => v.destacado);
+    await asegurarReferencias();
+    const { data } = await apiClient.get("/vehicles/featured");
+    const list = data?.content ?? data;
+    return Array.isArray(list) ? list.map(mapVehicle) : [];
   },
 
   getCiudades: async (): Promise<any[]> => {
@@ -123,4 +149,3 @@ export const catalogoService = {
     return Array.isArray(data) ? data : [];
   },
 };
-

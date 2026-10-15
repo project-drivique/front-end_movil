@@ -43,12 +43,13 @@ export const fechaHora = (
   locale = "es-CO"
 ) => [fechaCorta(f, locale), h ? formatHoraAmPm(h) : ""].filter(Boolean).join(" · ") || fallback;
 
-export const diasEntre = (a: string | null, b: string | null) => {
+// Mismo criterio que el servidor: horas de alquiler redondeadas hacia arriba a días completos, mínimo 1.
+export const diasEntre = (a: string | null, b: string | null, horaA = "00:00", horaB = "00:00") => {
   if (!a || !b) return 0;
-  const d1 = new Date(a + "T00:00:00").getTime();
-  const d2 = new Date(b + "T00:00:00").getTime();
-  const diff = Math.round((d2 - d1) / 86400000);
-  return Math.max(diff, 1);
+  const d1 = new Date(`${a}T${horaA}:00`).getTime();
+  const d2 = new Date(`${b}T${horaB}:00`).getTime();
+  const diff = Math.ceil((d2 - d1) / 86400000);
+  return Number.isFinite(diff) ? Math.max(diff, 1) : 0;
 };
 
 // ---------- Piezas visuales ----------

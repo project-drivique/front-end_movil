@@ -417,25 +417,25 @@ export function procesarMensajeChatbot(
     if (lang === "en") {
       return {
         sender: "bot",
-        text: "📍 **Vehicle Pick-up and Delivery Options:**\n\n• **Branch Pick-up:** No additional cost (e.g., Neiva Downtown Branch).\n• **Home Delivery:** When selecting online payment with Wompi, you can receive the vehicle at your specified address.\n• **Airport or Terminal:** We coordinate the delivery directly at the airport or transport terminal of your city.",
+        text: "📍 **Vehicle Pick-up and Delivery Options:**\n\n• **Branch Pick-up:** No additional cost.\n• **Home Delivery:** When selecting online payment with Wompi, you can receive the vehicle at your specified address.\n• **Airport or Terminal:** We coordinate the delivery directly at the airport or transport terminal of your city.",
         options: [opts[0], opts[7]],
       };
     } else if (lang === "fr") {
       return {
         sender: "bot",
-        text: "📍 **Options de retrait et de livraison de véhicules :**\n\n• **Retrait en succursale :** Sans frais supplémentaires (ex: Succursale Neiva Centre).\n• **Livraison à domicile :** En choisissant le paiement en ligne avec Wompi, vous pouvez recevoir le véhicule à votre adresse.\n• **Aéroport ou Terminal :** Nous coordonnons la livraison directement à l'aéroport ou au terminal de transport de votre ville.",
+        text: "📍 **Options de retrait et de livraison de véhicules :**\n\n• **Retrait en succursale :** Sans frais supplémentaires.\n• **Livraison à domicile :** En choisissant le paiement en ligne avec Wompi, vous pouvez recevoir le véhicule à votre adresse.\n• **Aéroport ou Terminal :** Nous coordonnons la livraison directement à l'aéroport ou au terminal de transport de votre ville.",
         options: [opts[0], opts[7]],
       };
     } else if (lang === "pt" || lang === "br") {
       return {
         sender: "bot",
-        text: "📍 **Opções de Retirada e Entrega de Veículos:**\n\n• **Retirada na Agência:** Sem custo adicional (ex: Agência Neiva Centro).\n• **Entrega em Domicílio:** Ao selecionar pagamento online com Wompi, você pode receber o veículo no seu endereço especificado.\n• **Aeroporto ou Terminal:** Coordenamos a entrega diretamente no aeroporto ou terminal de transporte de sua cidade.",
+        text: "📍 **Opções de Retirada e Entrega de Veículos:**\n\n• **Retirada na Agência:** Sem custo adicional.\n• **Entrega em Domicílio:** Ao selecionar pagamento online com Wompi, você pode receber o veículo no seu endereço especificado.\n• **Aeroporto ou Terminal:** Coordenamos a entrega diretamente no aeroporto ou terminal de transporte de sua cidade.",
         options: [opts[0], opts[7]],
       };
     }
     return {
       sender: "bot",
-      text: "📍 **Opciones de Retiro y Entrega de Vehículos:**\n\n• **Retiro en Sucursal:** Sin costo adicional. (Ej. Sucursal Neiva Centro).\n• **Entrega a Domicilio:** Al seleccionar pago virtual con Wompi, puedes recibir el vehículo en tu dirección, barrio o referencias indicadas.\n• **Aeropuerto o Terminal:** Coordinamos la entrega directamente en la terminal de transportes o aeropuerto de tu ciudad.",
+      text: "📍 **Opciones de Retiro y Entrega de Vehículos:**\n\n• **Retiro en Sucursal:** Sin costo adicional..\n• **Entrega a Domicilio:** Al seleccionar pago virtual con Wompi, puedes recibir el vehículo en tu dirección, barrio o referencias indicadas.\n• **Aeropuerto o Terminal:** Coordinamos la entrega directamente en la terminal de transportes o aeropuerto de tu ciudad.",
       options: [
         { label: "🚗 Ver proceso de reserva", actionValue: "como_alquilar" },
         { label: "💬 Preguntar a un asesor", actionValue: "contacto_humano" },
@@ -759,25 +759,25 @@ export function procesarMensajeChatbot(
     if (lang === "en") {
       return {
         sender: "bot",
-        text: "🏢 **Branches and Working Hours:**\n\n• **Main Branch:** Neiva Downtown. Open Monday to Saturday (7:00 AM - 7:00 PM), Sundays & Holidays (8:00 AM - 5:00 PM).\n• **Roadside Support:** Available 24 hours a day, 7 days a week for emergencies.",
+        text: "🏢 **Branches and Working Hours:**\n\nCheck the address and opening hours of each branch on the vehicle detail screen. Roadside support is available through the support section.",
         options: [opts[5], opts[7]],
       };
     } else if (lang === "fr") {
       return {
         sender: "bot",
-        text: "🏢 **Succursales et heures d'ouverture :**\n\n• **Succursale principale :** Neiva Centre. Ouverte du lundi au samedi (7h00 - 19h00), les dimanches et jours fériés (8h00 - 17h00).\n• **Support routier :** Disponible 24h/24 et 7j/7 pour les urgences.",
+        text: "🏢 **Succursales et heures d'ouverture :**\n\nConsultez l'adresse et les horaires de chaque succursale dans le détail du véhicule.",
         options: [opts[5], opts[7]],
       };
     } else if (lang === "pt" || lang === "br") {
       return {
         sender: "bot",
-        text: "🏢 **Agências e Horários de Atendimento:**\n\n• **Agência Principal:** Neiva Centro. Aberta de Segunda a Sábado (7h00 - 19h00), Domingos e Feriados (8h00 - 17h00).\n• **Suporte de Emergência:** Disponível 24 horas por dia, 7 dias por semana para emergências.",
+        text: "🏢 **Agências e Horários de Atendimento:**\n\nConsulte o endereço e o horário de cada agência nos detalhes do veículo.",
         options: [opts[5], opts[7]],
       };
     }
     return {
       sender: "bot",
-      text: "🏢 **Sucursales y Horarios de Atención:**\n\n• **Sucursal Principal:** Neiva Centro. Abierta de Lunes a Sábado (7:00 AM - 7:00 PM), Domingos y Festivos (8:00 AM - 5:00 PM).\n• **Soporte en Carretera:** Disponible 24 horas al día, 7 días a la semana para emergencias.",
+      text: "🏢 **Sucursales y Horarios de Atención:**\n\nConsulta la dirección y el horario de cada sucursal en el detalle del vehículo.",
       options: [
         { label: "📍 Ver ubicaciones de entrega", actionValue: "entregas" },
         { label: "💬 Hablar con asesor", actionValue: "contacto_humano" },

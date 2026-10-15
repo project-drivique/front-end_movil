@@ -10,13 +10,11 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import {
   COLOR_MARCA,
-  PORCENTAJE_CARGOS_ADMINISTRATIVOS,
-  PORCENTAJE_IVA,
-  calcularRecargoLogistico,
   formatHoraAmPm,
   getDetalleDuracionAlquiler,
 } from "../constants/reservation.constants";
 import { fmt, fmtPct, diasEntre } from "./BookingSummaryModal.pieces";
+import { useServerQuote } from "../hooks/useServerQuote";
 import { useMonedaStore } from "@/store/currencyStore";
 import EditDatesLocationSection from "./EditDatesLocationSection";
 import EditProtectionMileageSection from "./EditProtectionMileageSection";
@@ -177,8 +175,10 @@ export default function ResumenReservaModal({
     });
   }, [planes.serviciosSeleccionados, servicios, diasContrato, t]);
 
+  const cotizacion = useServerQuote({ vehiculo, fechasLugar, planes, cuponCodigo: cuponAplicado?.codigo });
+
   const desglose = useMemo(() => {
-    const diasCalc = diasEntre(fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion);
+    const diasCalc = diasEntre(fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, fechasLugar.horaRetiro, fechasLugar.horaDevolucion);
     const dias = diasCalc > 0 ? diasCalc : 1;
     const diarias = vehiculo.precio * dias;
     const proteccion = seguroElegido ? seguroElegido.precio * dias : 0;
@@ -187,22 +187,14 @@ export default function ResumenReservaModal({
       .filter((s) => planes.serviciosSeleccionados.includes(s.nombre))
       .reduce((a, s) => a + s.precio * dias, 0);
 
-    const recargoLogistico = calcularRecargoLogistico(fechasLugar.lugarRetiro, fechasLugar.lugarDevolucion);
+    const recargoLogistico = 0;
     const subtotalBase = diarias + proteccion + kilometraje + servAdic;
-    const cargos = Math.round(subtotalBase * PORCENTAJE_CARGOS_ADMINISTRATIVOS);
-    const subtotalBruto = subtotalBase + cargos + recargoLogistico;
+    const cargos = Number(cotizacion?.adminFee ?? 0);
+    const subtotalBruto = subtotalBase;
 
-    let descuentoCupon = 0;
-    if (cuponAplicado) {
-      if (cuponAplicado.descuentoPorcentaje) {
-        descuentoCupon = Math.round(subtotalBruto * (cuponAplicado.descuentoPorcentaje / 100));
-      } else if (cuponAplicado.descuentoFijo) {
-        descuentoCupon = cuponAplicado.descuentoFijo;
-      }
-    }
-
+    const descuentoCupon = Number(cotizacion?.discountAmount ?? 0);
     const subtotal = Math.max(subtotalBruto - descuentoCupon, 0);
-    const iva = Math.round(subtotal * PORCENTAJE_IVA);
+    const iva = Number(cotizacion?.vat ?? 0);
     return {
       dias,
       diasCalc,
@@ -216,7 +208,7 @@ export default function ResumenReservaModal({
       descuentoCupon,
       subtotal,
       iva,
-      total: subtotal + iva,
+      total: cotizacion ? Number(cotizacion.estimatedTotal) : subtotal,
     };
   }, [
     vehiculo.precio,
@@ -229,6 +221,7 @@ export default function ResumenReservaModal({
     servicios,
     planes.serviciosSeleccionados,
     cuponAplicado,
+    cotizacion,
   ]);
 
   return (
@@ -526,46 +519,35 @@ export default function ResumenReservaModal({
                 </Text>
               </View>
 
-              {/* Fila 5: Cargos administrativos */}
-              <View style={styles.filaDesglose}>
-                <Text style={[styles.filaDesgloseLabel, { color: c.textSecondary }]}>
-                  {t("reserva.resumen.cargosAdministrativos", {
-                    pct: fmtPct(PORCENTAJE_CARGOS_ADMINISTRATIVOS),
-                    defaultValue: `Cargos administrativos (${fmtPct(PORCENTAJE_CARGOS_ADMINISTRATIVOS)})`,
-                  })}
-                </Text>
-                <Text style={[styles.filaDesgloseValor, { color: c.textPrimary }]}>
-                  {fmt(desglose.cargos)}
-                </Text>
-              </View>
+              {cotizacion && (
+                <>
+                  <View style={styles.filaDesglose}>
+                    <Text style={[styles.filaDesgloseLabel, { color: c.textSecondary }]}>
+                      {t("reserva.resumen.cargosAdministrativos", {
+                        pct: fmtPct(Number(cotizacion.adminFeeRate)),
+                        defaultValue: `Cargos administrativos (${fmtPct(Number(cotizacion.adminFeeRate))})`,
+                      })}
+                    </Text>
+                    <Text style={[styles.filaDesgloseValor, { color: c.textPrimary }]}>
+                      {fmt(desglose.cargos)}
+                    </Text>
+                  </View>
 
-              {/* Fila Recargo Logístico / Domicilio si aplica */}
-              {desglose.recargoLogistico > 0 && (
-                <View style={styles.filaDesglose}>
-                  <Text style={[styles.filaDesgloseLabel, { color: c.textSecondary }]}>
-                    {t("reserva.resumen.recargoLogistico", { defaultValue: "Recargo logístico / Entrega" })}
-                  </Text>
-                  <Text style={[styles.filaDesgloseValor, { color: c.textPrimary }]}>
-                    {fmt(desglose.recargoLogistico)}
-                  </Text>
-                </View>
+                  <View style={[styles.divisorFino, { backgroundColor: c.border }]} />
+
+                  <View style={styles.filaDesglose}>
+                    <Text style={[styles.filaDesgloseLabel, { color: c.textSecondary }]}>
+                      {t("reserva.resumen.iva", {
+                        pct: fmtPct(Number(cotizacion.vatRate)),
+                        defaultValue: `IVA (${fmtPct(Number(cotizacion.vatRate))})`,
+                      })}
+                    </Text>
+                    <Text style={[styles.filaDesgloseValor, { color: c.textPrimary }]}>
+                      {fmt(desglose.iva)}
+                    </Text>
+                  </View>
+                </>
               )}
-
-              {/* Divisor fino */}
-              <View style={[styles.divisorFino, { backgroundColor: c.border }]} />
-
-              {/* Fila 6: IVA */}
-              <View style={styles.filaDesglose}>
-                <Text style={[styles.filaDesgloseLabel, { color: c.textSecondary }]}>
-                  {t("reserva.resumen.iva", {
-                    pct: fmtPct(PORCENTAJE_IVA),
-                    defaultValue: `IVA (${fmtPct(PORCENTAJE_IVA)})`,
-                  })}
-                </Text>
-                <Text style={[styles.filaDesgloseValor, { color: c.textPrimary }]}>
-                  {fmt(desglose.iva)}
-                </Text>
-              </View>
 
               {/* Descuento Cupón si aplica */}
               {desglose.descuentoCupon > 0 && cuponAplicado && (

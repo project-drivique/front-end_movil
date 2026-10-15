@@ -7,7 +7,7 @@
  * RF50.5: Guardar cambios validados
  * RF50.6: Cancelar edición
  */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -38,24 +38,20 @@ import { DeleteAccountModal } from "@/modules/profile/components/DeleteAccountMo
 import { FormCompletarPerfil } from "@/modules/profile/components/CompleteProfileForm";
 import { perfilStyles as styles } from "@/modules/profile/styles/profile.styles";
 import { useAuthStore } from "@/store/authStore";
+import { useReferenceStore } from "@/store/referenceStore";
 import { useUsuarioStore } from "@/store/userStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { GRADIENTES, SOMBRA_BOTON_GRADIENTE } from "@/constants/gradients";
 import { DateField } from "@/components/ui/DateField";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Ionicons } from "@expo/vector-icons";
-import { getPrefijoPorNacionalidad, NACIONALIDADES } from "@/modules/reservation/constants/reservation.constants";
+import { getPrefijoPorNacionalidad, getNacionalidades } from "@/modules/reservation/constants/reservation.constants";
 import CampoSelectorLista from "@/modules/reservation/components/ListSelectorField";
 import { useMoneda } from "@/hooks/useCurrency";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { Moneda } from "@/utils/currencyUtils";
 import { useNotificationStore } from "@/store/notificationStore";
 import { sessionTokens } from "@/services/http/sessionTokens";
-
-const OPCIONES_NACIONALIDAD = NACIONALIDADES.map((n) => ({
-  id: n.nombre,
-  label: n.nombre,
-}));
 
 export default function PerfilScreen() {
   const { t } = useTranslation();
@@ -136,6 +132,11 @@ export default function PerfilScreen() {
   } = usePerfil();
 
   const prefijoTelefono = getPrefijoPorNacionalidad(form.nacionalidad || null);
+  const nacionalidadesApi = useReferenceStore((st) => st.nacionalidades);
+  const OPCIONES_NACIONALIDAD = useMemo(
+    () => getNacionalidades().map((n) => ({ id: n.id, label: n.nombre })),
+    [nacionalidadesApi],
+  );
 
   const handleGuardar = () => {
     guardarCambios(
@@ -502,6 +503,7 @@ export default function PerfilScreen() {
             <View style={styles.editCampoWrap}>
               <Text style={[styles.editCampoLabel, { color: c.textSecondary }]}>{t("perfil.telefono")}</Text>
               <View style={styles.editFilaCelular}>
+                {prefijoTelefono ? (
                 <View
                   style={[
                     styles.editPrefijoBox,
@@ -513,6 +515,7 @@ export default function PerfilScreen() {
                     {prefijoTelefono}
                   </Text>
                 </View>
+                ) : null}
                 <TextInput
                   style={[
                     styles.editInput,
@@ -529,6 +532,18 @@ export default function PerfilScreen() {
                 />
               </View>
               {errores.telefono && <Text style={styles.editErrorText}>{errores.telefono}</Text>}
+            </View>
+
+            <View style={styles.editCampoWrap}>
+              <Text style={[styles.editCampoLabel, { color: c.textSecondary }]}>{t("perfil.direccion", { defaultValue: "Dirección" })}</Text>
+              <TextInput
+                style={[styles.editInput, { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary }]}
+                value={form.direccion}
+                onChangeText={(val) => actualizarCampo("direccion", val)}
+                placeholder={t("perfil.placeholderDireccion", { defaultValue: "Calle 10 # 20-30, Medellín" })}
+                placeholderTextColor={c.textMuted}
+                maxLength={255}
+              />
             </View>
           </View>
 
