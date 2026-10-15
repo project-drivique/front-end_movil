@@ -10,6 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { UsuarioPerfil } from "../types/profile.types";
+import { useReferenceStore } from "@/store/referenceStore";
 
 interface Props {
   usuario: UsuarioPerfil;
@@ -20,6 +21,9 @@ interface Props {
 export function InfoPersonal({ usuario, onEditar, onCambiarCorreo }: Props) {
   const { t } = useTranslation();
   const c = useTemaColores();
+  const nacionalidades = useReferenceStore((st) => st.nacionalidades);
+  const nombreNacionalidad = nacionalidades.find((n) => n.id === usuario.nacionalidad)?.name ?? "";
+  const claveDocumento = usuario.tipoDocumento === "Doc. Extranjero" ? "DocExtranjero" : usuario.tipoDocumento;
 
   return (
     <View style={styles.container}>
@@ -54,7 +58,7 @@ export function InfoPersonal({ usuario, onEditar, onCambiarCorreo }: Props) {
 
         <View style={styles.campo}>
           <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.documento')}</Text>
-          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{t(`reserva.datosPersonales.tiposDocumento.${usuario.tipoDocumento === "Doc. Extranjero" ? "DocExtranjero" : usuario.tipoDocumento}`, { defaultValue: usuario.tipoDocumento })} {usuario.numeroDocumento}</Text>
+          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{claveDocumento ? t(`reserva.datosPersonales.tiposDocumento.${claveDocumento}`, { defaultValue: usuario.tipoDocumento }) : ""} {usuario.numeroDocumento}</Text>
         </View>
         <View style={[styles.divider, { backgroundColor: c.border }]} />
 
@@ -72,7 +76,13 @@ export function InfoPersonal({ usuario, onEditar, onCambiarCorreo }: Props) {
 
         <View style={styles.campo}>
           <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.nacionalidad')}</Text>
-          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{usuario.nacionalidad}</Text>
+          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{nombreNacionalidad}</Text>
+        </View>
+        <View style={[styles.divider, { backgroundColor: c.border }]} />
+
+        <View style={styles.campo}>
+          <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.direccion', { defaultValue: 'Dirección' })}</Text>
+          <Text style={[styles.campoValor, { color: c.textPrimary }]}>{usuario.direccion}</Text>
         </View>
       </View>
 

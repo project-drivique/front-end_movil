@@ -26,43 +26,41 @@ export interface UserDocumentDTO {
   createdAt?: string
 }
 
-export async function obtenerPerfil(_token?: string): Promise<UsuarioPerfil> {
-  const { data } = await apiClient.get('/users/me')
+const CODIGO_DOCUMENTO: Record<string, string> = { PASSPORT: 'Pasaporte' }
+
+export function mapPerfil(data: any): UsuarioPerfil {
+  const codigo = String(data.documentTypeCode || '')
   return {
     id: data.id,
     nombres: data.firstName || '',
     apellidos: data.lastName || '',
     correo: data.email || '',
     telefono: data.phone || '',
-    tipoDocumento: (data.documentTypeId as any) || '',
+    tipoDocumento: (CODIGO_DOCUMENTO[codigo] || codigo) as any,
     numeroDocumento: data.documentNumber || '',
-    fechaNacimiento: data.birthDate || '',
-    nacionalidad: (data.nationalityId as any) || '',
+    fechaNacimiento: data.birthDate ? String(data.birthDate).slice(0, 10) : '',
+    nacionalidad: data.nationalityId || '',
+    direccion: data.address || '',
     perfilCompleto: Boolean(data.profileComplete),
   }
 }
 
+export async function obtenerPerfil(_token?: string): Promise<UsuarioPerfil> {
+  const { data } = await apiClient.get('/users/me')
+  return mapPerfil(data)
+}
+
 export async function actualizarPerfil(_token: string, datos: FormEditarPerfil): Promise<UsuarioPerfil> {
   const payload = {
-    firstName: datos.nombres,
-    lastName: datos.apellidos,
-    phone: datos.telefono,
-    birthDate: datos.fechaNacimiento,
+    firstName: datos.nombres.trim(),
+    lastName: datos.apellidos.trim(),
+    phone: datos.telefono.trim(),
+    birthDate: datos.fechaNacimiento || undefined,
     nationalityId: datos.nacionalidad || undefined,
+    address: datos.direccion.trim() || undefined,
   }
   const { data } = await apiClient.put('/users/me', payload)
-  return {
-    id: data.id,
-    nombres: data.firstName || '',
-    apellidos: data.lastName || '',
-    correo: data.email || '',
-    telefono: data.phone || '',
-    tipoDocumento: (data.documentTypeId as any) || '',
-    numeroDocumento: data.documentNumber || '',
-    fechaNacimiento: data.birthDate || '',
-    nacionalidad: (data.nationalityId as any) || '',
-    perfilCompleto: Boolean(data.profileComplete),
-  }
+  return mapPerfil(data)
 }
 
 export async function obtenerPreferencias(): Promise<UserPreferencesDTO> {
@@ -93,4 +91,4 @@ export async function subirDocumentoKYC(formData: FormData): Promise<UserDocumen
 
 export async function cambiarCorreo(_token: string, _datos: FormCambiarCorreo): Promise<{ mensaje: string }> {
   throw new Error('El cambio de correo requiere verificación y se habilitará en la HU-INT-04.')
-}
+}
