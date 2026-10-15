@@ -33,7 +33,7 @@ export default function VehiculoResumenCard({ vehiculo }: Props) {
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
 
   const imagen = getSafeImage(vehiculo);
-  const nombreSucursal = vehiculo.sucursal || "Alquiler Neiva - Centro";
+  const nombreSucursal = vehiculo.sucursal || "";
 
   return (
     <View style={[styles.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
@@ -84,7 +84,7 @@ export default function VehiculoResumenCard({ vehiculo }: Props) {
         <View style={styles.badgeRating}>
           <Ionicons name="star" size={12} color="#F59E0B" />
           <Text style={styles.badgeRatingText}>
-            {(vehiculo.calificacion ?? 4.5).toFixed(1)}
+            {vehiculo.calificacion && vehiculo.calificacion > 0 ? vehiculo.calificacion.toFixed(1) : "Nuevo"}
           </Text>
         </View>
       </View>

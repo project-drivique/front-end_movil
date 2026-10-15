@@ -1,386 +1,221 @@
-// modules/reserva/services/reservaPersistService.ts
-//
-// Servicio temporal para simular el almacenamiento de reservas en el
-// dispositivo (AsyncStorage), igual que la web lo hace con localStorage
-// (src/services/reservaService.js). Esto debería migrarse a un backend.
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiClient } from "@/services/http/apiClient";
+import { useReferenceStore } from "@/store/referenceStore";
+import { catalogoService } from "@/modules/catalog/services/catalogService";
+import { Vehiculo } from "@/modules/catalog/types/catalog.types";
+import { DatosFechasLugar, DatosPlanes, Cupon } from "../types/reservation.types";
 
-const STORAGE_KEY = "drivique_reservas";
-
-// Tiempo que tiene el usuario para acercarse a la sucursal a pagar en
-// efectivo antes de que la reserva se cancele automáticamente.
-export const HORAS_LIMITE_PAGO_EFECTIVO = 72;
 export type EstadoReserva =
   | "PENDIENTE"
   | "PENDIENTE_EFECTIVO"
   | "PENDIENTE_VALIDACION"
+  | "PENDIENTE_HORARIO"
   | "CONFIRMADA"
+  | "EN_CURSO"
   | "FINALIZADA"
   | "CANCELADA"
   | "CANCELADA_POR_TIEMPO";
 
 export interface ReservaGuardada {
+  id: string;
   referencia: string;
   usuarioId?: string;
-  vehiculoId: number | string;
+  vehiculoId: string;
   vehiculoNombre: string;
+  vehiculoPlaca?: string;
   estado: EstadoReserva;
+  estadoApi: string;
   fechaReserva: string;
-  metodoPago: "wompi" | "efectivo" | null;
+  fechaRetiro: string;
+  fechaDevolucion: string;
+  horaRetiro: string;
+  horaDevolucion: string;
+  diasAlquiler: number;
+  metodoPago: "wompi" | "efectivo";
   total: number;
+  proteccion?: string;
+  planKilometraje?: string;
+  servicios: { nombre: string; precio: number }[];
+  codigoPagoEfectivo?: string | null;
   fechaLimitePago?: string | null;
-  horasLimitePago?: number | null;
-  paymentId?: string | null;
-  paymentMethodType?: string | null;
-  metodoPagoDetalle?: string | null;
-  convenioWompi?: string | null;
-  referenciaWompi?: string | null;
-  wompiExtra?: Record<string, any> | null;
-  [extra: string]: unknown;
+  sucursalPagoEfectivoId?: string | null;
+  vehiculoSnapshot?: Vehiculo;
 }
 
 export type GrupoReserva = "pendiente" | "confirmada" | "en_curso" | "finalizada" | "cancelada";
 
-/**
- * Deriva el "grupo" visual de una reserva (el que se usa para agruparlas
- * en Mis Reservas) a partir de su estado real y de las fechas de retiro /
- * devolución.
- * REGLA ESTRICTA: Ninguna reserva puede aparecer "en curso" ni "finalizada"
- * a menos que su estado sea estrictamente CONFIRMADA (pagada y con contrato)
- * o FINALIZADA.
- */
-export function calcularGrupoReserva(reserva: ReservaGuardada): GrupoReserva {
-  const estado = String(reserva.estado || "").toUpperCase();
-
-  if (estado === "FINALIZADA" || estado === "COMPLETADA") {
-    return "finalizada";
-  }
-  if (estado === "CANCELADA" || estado === "CANCELADA_POR_TIEMPO") {
-    return "cancelada";
-  }
-  
-  // Si no está CONFIRMADA (está en PENDIENTE, PENDIENTE_EFECTIVO, PENDIENTE_VALIDACION, etc.),
-  // SIEMPRE es pendiente. No puede estar "en curso" bajo ninguna circunstancia.
-  if (estado !== "CONFIRMADA") {
-    return "pendiente";
-  }
-
-  // CONFIRMADA: se distingue entre confirmada / en curso / finalizada
-  // comparando la fecha y hora actual contra el rango de la reserva.
-  const hoy = new Date();
-  const inicio = reserva.fechaRetiro ? new Date(String(reserva.fechaRetiro) + "T00:00:00") : null;
-  const fin = reserva.fechaDevolucion ? new Date(String(reserva.fechaDevolucion) + "T23:59:59") : null;
-
-  if (fin && hoy > fin) return "finalizada";
-  if (inicio && hoy >= inicio) return "en_curso";
-  return "confirmada";
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
 }
 
-/**
- * Calcula el plazo límite de pago de forma inteligente:
- * - Si la reserva es para hoy o en menos de 72h: el plazo es inmediato o antes de la hora de entrega.
- * - Si la reserva es para varios días adelante: tiene hasta 72 horas estándar.
- */
-export function calcularLimitePago(
-  fechaRetiro?: string | null,
-  horaRetiro?: string | null
-): {
-  fechaLimitePago: string;
-  horasLimitePago: number;
-} {
-  const ahora = Date.now();
-  const maxHoras = HORAS_LIMITE_PAGO_EFECTIVO; // 72 horas por defecto
+function fechaLocal(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
 
-  if (fechaRetiro) {
-    const hora = horaRetiro && String(horaRetiro).includes(":") ? String(horaRetiro) : "10:00";
-    const cleanFecha = String(fechaRetiro).split("T")[0];
-    const fechaHoraRetiro = new Date(`${cleanFecha}T${hora}:00`).getTime();
+function horaLocal(iso: string): string {
+  const d = new Date(iso);
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
-    if (!isNaN(fechaHoraRetiro)) {
-      const horasHastaRetiro = (fechaHoraRetiro - ahora) / (1000 * 60 * 60);
-
-      // Si la recogida es para hoy o inmediata (menos de 2 horas)
-      if (horasHastaRetiro <= 2) {
-        return {
-          fechaLimitePago: new Date(ahora + 2 * 60 * 60 * 1000).toISOString(),
-          horasLimitePago: 2,
-        };
-      }
-      // Si la recogida es antes de las 72 horas estándar
-      if (horasHastaRetiro < maxHoras) {
-        return {
-          fechaLimitePago: new Date(fechaHoraRetiro).toISOString(),
-          horasLimitePago: Math.max(1, Math.floor(horasHastaRetiro)),
-        };
-      }
-    }
+function estadoDesdeApi(status: string, esEfectivo: boolean): EstadoReserva {
+  switch (status) {
+    case "PENDING_PAYMENT":
+      return esEfectivo ? "PENDIENTE_EFECTIVO" : "PENDIENTE";
+    case "PENDING_DOCUMENT_REVIEW":
+      return "PENDIENTE_VALIDACION";
+    case "PENDING_SCHEDULE":
+      return "PENDIENTE_HORARIO";
+    case "CONFIRMED":
+      return "CONFIRMADA";
+    case "IN_PROGRESS":
+    case "ACTIVE":
+      return "EN_CURSO";
+    case "COMPLETED":
+      return "FINALIZADA";
+    case "CANCELLED_BY_TIMEOUT":
+      return "CANCELADA_POR_TIEMPO";
+    default:
+      return status.startsWith("CANCELLED") ? "CANCELADA" : "PENDIENTE";
   }
+}
 
+export function mapReserva(dto: any): ReservaGuardada {
+  const esEfectivo = !!dto.cashPaymentBranchId || !!dto.cashPaymentCode;
   return {
-    fechaLimitePago: new Date(ahora + maxHoras * 60 * 60 * 1000).toISOString(),
-    horasLimitePago: maxHoras,
+    id: dto.id,
+    referencia: dto.code,
+    usuarioId: dto.customerId,
+    vehiculoId: dto.vehicleId,
+    vehiculoNombre: dto.vehicleModel,
+    vehiculoPlaca: dto.vehiclePlate,
+    estado: estadoDesdeApi(String(dto.status), esEfectivo),
+    estadoApi: String(dto.status),
+    fechaReserva: dto.createdAt,
+    fechaRetiro: fechaLocal(dto.pickupDate),
+    fechaDevolucion: fechaLocal(dto.returnDate),
+    horaRetiro: horaLocal(dto.pickupDate),
+    horaDevolucion: horaLocal(dto.returnDate),
+    diasAlquiler: dto.rentalDays,
+    metodoPago: esEfectivo ? "efectivo" : "wompi",
+    total: Number(dto.totalEstimated ?? 0),
+    proteccion: dto.insuranceCoverageName,
+    planKilometraje: dto.mileagePlanName,
+    servicios: (dto.additionalServices ?? []).map((s: any) => ({
+      nombre: s.name ?? s.serviceName ?? "",
+      precio: Number(s.dailyRate ?? s.subtotal ?? 0),
+    })),
+    codigoPagoEfectivo: dto.cashPaymentCode ?? null,
+    fechaLimitePago: dto.cashPaymentExpiresAt ?? null,
+    sucursalPagoEfectivoId: dto.cashPaymentBranchId ?? null,
   };
 }
 
-function calcularFechaLimitePago(): string {
-  return new Date(
-    Date.now() + HORAS_LIMITE_PAGO_EFECTIVO * 60 * 60 * 1000
-  ).toISOString();
-}
-
-/**
- * Cancela automáticamente las reservas pendientes cuyo plazo límite ya venció.
- */
-function vencerReservasEfectivo(reservas: ReservaGuardada[]): {
-  actualizadas: ReservaGuardada[];
-  cambiaron: boolean;
-} {
-  const ahora = Date.now();
-  let cambiaron = false;
-
-  const actualizadas = reservas.map((r) => {
-    if (
-      r.estado === "PENDIENTE_EFECTIVO" ||
-      r.estado === "PENDIENTE" ||
-      r.estado === "PENDIENTE_VALIDACION"
-    ) {
-      let limiteMs = r.fechaLimitePago ? new Date(r.fechaLimitePago).getTime() : 0;
-      if (!limiteMs && r.fechaReserva) {
-        const fechaRetiro = r.fechaRetiro || (r.fechasLugarSnapshot as any)?.fechaRetiro;
-        const horaRetiro = r.horaRetiro || (r.fechasLugarSnapshot as any)?.horaRetiro;
-        limiteMs = new Date(calcularLimitePago(fechaRetiro, horaRetiro).fechaLimitePago).getTime();
-      }
-      if (limiteMs && limiteMs < ahora) {
-        cambiaron = true;
-        return {
-          ...r,
-          estado: "CANCELADA_POR_TIEMPO" as EstadoReserva,
-          motivoCancelacion: "Cancelada automáticamente por superar el plazo límite de pago.",
-        };
-      }
-    }
-    return r;
-  });
-
-  return { actualizadas, cambiaron };
-}
-
-const RESERVA_FINALIZADA_DEMO: ReservaGuardada = {
-  referencia: "DRV-98421-FINALIZADA",
-  vehiculoId: 2,
-  vehiculoNombre: "Mazda CX-5 2024",
-  metodoPago: "wompi",
-  metodoPagoDetalle: "Tarjeta Visa ••• 4242",
-  paymentId: "tx_demo_wompi_finalizada",
-  total: 540000,
-  fechaReserva: "2026-08-10T09:00:00Z",
-  fechaRetiro: "2026-08-12",
-  fechaDevolucion: "2026-08-15",
-  horaRetiro: "10:00",
-  horaDevolucion: "18:00",
-  lugarRetiro: "Alamo Bogotá - Aeropuerto",
-  lugarDevolucion: "Alamo Bogotá - Aeropuerto",
-  estado: "FINALIZADA",
-  proteccion: "Total",
-  tipoKilometraje: "ilimitado",
-  vehiculoSnapshot: {
-    id: 2,
-    nombre: "Mazda CX-5 2024",
-    marca: "Mazda",
-    modelo: "CX-5",
-    categoria: "SUV",
-    transmision: "Automático",
-    combustible: "Gasolina",
-    capacidadPasajeros: 5,
-    capacidadMaletas: 4,
-    puertas: 5,
-    precio: 180000,
-    precioDia: 180000,
-    imagenes: ["https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80"],
-    sucursal: "Alamo Bogotá - Aeropuerto",
-    año: 2024,
-    placa: "DRV-894",
-    color: "Gris Titanio",
-  } as any,
-  datosPersonalesSnapshot: {
-    nombreCompleto: "Cliente Drivique",
-    tipoDocumento: "CC",
-    numeroDocumento: "1075228306",
-    correo: "cliente@drivique.com",
-    celular: "3001234567",
-    nacionalidad: "Colombia",
-    terminosAceptados: true,
-  },
-  fechasLugarSnapshot: {
-    fechaRetiro: "2026-08-12",
-    fechaDevolucion: "2026-08-15",
-    horaRetiro: "10:00",
-    horaDevolucion: "18:00",
-    lugarRetiro: "Alamo Bogotá - Aeropuerto",
-    lugarDevolucion: "Alamo Bogotá - Aeropuerto",
-    direccionRetiro: "",
-    barrioRetiro: "",
-    referenciasRetiro: "",
-    direccionDevolucion: "",
-    barrioDevolucion: "",
-    referenciasDevolucion: "",
-    metodoPago: "wompi",
-  },
-  planesSnapshot: {
-    proteccion: "Total",
-    tipoKilometraje: "ilimitado",
-    serviciosSeleccionados: ["gps", "asientoBebe"],
-  },
-};
-
-async function leer(): Promise<ReservaGuardada[]> {
-  try {
-    const data = await AsyncStorage.getItem(STORAGE_KEY);
-    let reservas: ReservaGuardada[] = data ? JSON.parse(data) : [];
-
-    // Asegurar que la reserva demo finalizada siempre esté disponible
-    if (!reservas.some((r) => r.referencia === RESERVA_FINALIZADA_DEMO.referencia)) {
-      reservas.unshift(RESERVA_FINALIZADA_DEMO);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reservas));
-    }
-
-    const { actualizadas, cambiaron } = vencerReservasEfectivo(reservas);
-    if (cambiaron) {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(actualizadas));
-    }
-    return actualizadas;
-  } catch (error) {
-    console.error("[reservaPersistService] Error leyendo reservas", error);
-    return [RESERVA_FINALIZADA_DEMO];
+export function calcularGrupoReserva(reserva: ReservaGuardada): GrupoReserva {
+  switch (reserva.estado) {
+    case "FINALIZADA":
+      return "finalizada";
+    case "CANCELADA":
+    case "CANCELADA_POR_TIEMPO":
+      return "cancelada";
+    case "CONFIRMADA":
+      return "confirmada";
+    case "EN_CURSO":
+      return "en_curso";
+    default:
+      return "pendiente";
   }
 }
 
+async function adjuntarVehiculos(lista: ReservaGuardada[]): Promise<ReservaGuardada[]> {
+  const ids = Array.from(new Set(lista.map((r) => r.vehiculoId)));
+  const vehiculos = new Map<string, Vehiculo>();
+  await Promise.all(
+    ids.map(async (id) => {
+      try {
+        const v = await catalogoService.getVehiculoPorId(id);
+        if (v) vehiculos.set(id, v);
+      } catch {
+        // el detalle del vehiculo es opcional
+      }
+    }),
+  );
+  return lista.map((r) => ({ ...r, vehiculoSnapshot: vehiculos.get(r.vehiculoId) }));
+}
+
+export function mensajeDeError(error: any, porDefecto: string): string {
+  return error?.response?.data?.detail || error?.response?.data?.title || error?.message || porDefecto;
+}
+
+export interface DatosCrearReserva {
+  vehiculo: Vehiculo;
+  fechasLugar: DatosFechasLugar;
+  planes: DatosPlanes;
+  cupon: Cupon | null;
+}
+
 export const reservaPersistService = {
-  getReservas: leer,
-
-  getReservasUsuario: async (usuario: {
-    id?: string;
-    correo?: string;
-    numeroDocumento?: string;
-  }): Promise<ReservaGuardada[]> => {
-    const reservas = await leer();
-    const id = usuario.id?.trim();
-    const correo = usuario.correo?.trim().toLowerCase();
-    const documento = usuario.numeroDocumento?.replace(/\D/g, "");
-
-    return reservas.filter((reserva) => {
-      if (reserva.referencia === RESERVA_FINALIZADA_DEMO.referencia) return true;
-      if (reserva.usuarioId) return !!id && reserva.usuarioId === id;
-
-      // Compatibilidad con reservas creadas antes de guardar usuarioId.
-      const datos = reserva.datosPersonalesSnapshot as
-        | { correo?: string; numeroDocumento?: string }
-        | undefined;
-      const correoReserva = datos?.correo?.trim().toLowerCase();
-      const documentoReserva = datos?.numeroDocumento?.replace(/\D/g, "");
-      return (
-        (!!correo && correoReserva === correo) ||
-        (!!documento && documentoReserva === documento)
-      );
-    });
+  getReservasUsuario: async (): Promise<ReservaGuardada[]> => {
+    const { data } = await apiClient.get("/reservations/me");
+    const lista = (Array.isArray(data) ? data : []).map(mapReserva);
+    return adjuntarVehiculos(lista);
   },
 
-  /**
-   * Guarda una reserva nueva. Si el método de pago es "efectivo", calcula y
-   * asigna automáticamente el plazo límite para pagar en sucursal
-   * (fechaLimitePago) y deja el estado en PENDIENTE_EFECTIVO.
-   */
-  guardarReserva: async (
-    reserva: Omit<ReservaGuardada, "estado"> & { estado?: EstadoReserva }
-  ): Promise<ReservaGuardada> => {
-    const reservas = await leer();
-
-    const esEfectivo = reserva.metodoPago === "efectivo";
-    // La firma de índice de ReservaGuardada ([extra: string]: unknown) hace
-    // que Omit<ReservaGuardada, "estado"> pierda el tipo de las propiedades
-    // específicas — es un problema de inferencia de TS, no de runtime (acá
-    // sí están todas, vienen del spread de `reserva`).
-    const reservaFinal = {
-      ...reserva,
-      estado: esEfectivo ? "PENDIENTE_EFECTIVO" : reserva.estado ?? "PENDIENTE",
-    } as ReservaGuardada;
-    const fechaRetiro = reserva.fechaRetiro || (reserva.fechasLugarSnapshot as any)?.fechaRetiro;
-    const horaRetiro = reserva.horaRetiro || (reserva.fechasLugarSnapshot as any)?.horaRetiro;
-    const limiteInfo = calcularLimitePago(fechaRetiro, horaRetiro);
-
-    reservaFinal.fechaLimitePago = limiteInfo.fechaLimitePago;
-    reservaFinal.horasLimitePago = limiteInfo.horasLimitePago;
-
-    reservas.push(reservaFinal);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reservas));
-    return reservaFinal;
-  },
-
-  obtenerPorReferencia: async (
-    referencia: string
-  ): Promise<ReservaGuardada | undefined> => {
+  obtenerPorReferencia: async (referencia: string): Promise<ReservaGuardada | undefined> => {
     if (!referencia) return undefined;
-    const reservas = await leer();
     const clean = referencia.trim();
     const base = clean.includes("_") ? clean.split("_")[0] : clean;
-    return reservas.find((r) => r.referencia === clean || r.referencia === base);
-  },
-
-  actualizarEstado: async (
-    referencia: string,
-    nuevoEstado: EstadoReserva,
-    paymentId?: string | null
-  ): Promise<boolean> => {
-    if (!referencia) return false;
-    const reservas = await leer();
-    const clean = referencia.trim();
-    const base = clean.includes("_") ? clean.split("_")[0] : clean;
-    const index = reservas.findIndex((r) => r.referencia === clean || r.referencia === base);
-    if (index !== -1) {
-      reservas[index].estado = nuevoEstado;
-      if (paymentId) reservas[index].paymentId = paymentId;
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reservas));
-      return true;
+    const esUuid = /^[0-9a-f-]{36}$/i.test(base);
+    try {
+      const { data } = await apiClient.get(
+        esUuid ? `/reservations/${base}` : `/reservations/code/${encodeURIComponent(base)}`,
+      );
+      const [reserva] = await adjuntarVehiculos([mapReserva(data)]);
+      return reserva;
+    } catch {
+      return undefined;
     }
-    return false;
   },
 
-  actualizarReserva: async (
-    referencia: string,
-    cambios: Partial<ReservaGuardada>
-  ): Promise<boolean> => {
-    if (!referencia) return false;
-    const reservas = await leer();
-    const clean = referencia.trim();
-    const base = clean.includes("_") ? clean.split("_")[0] : clean;
-    const index = reservas.findIndex((r) => r.referencia === clean || r.referencia === base);
-    if (index !== -1) {
-      reservas[index] = { ...reservas[index], ...cambios };
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reservas));
-      return true;
-    }
-    return false;
+  crear: async ({ vehiculo, fechasLugar, planes, cupon }: DatosCrearReserva): Promise<ReservaGuardada> => {
+    const seguro = vehiculo.seguros?.find((s) => s.nombre === planes.proteccion);
+    const kmPlan =
+      planes.tipoKilometraje === "limitado" ? vehiculo.tarifas?.kmLimitado : vehiculo.tarifas?.kmIlimitado;
+    const serviciosIds = (vehiculo.servicios ?? [])
+      .filter((s) => planes.serviciosSeleccionados.includes(s.nombre))
+      .map((s) => s.id)
+      .filter(Boolean);
+
+    const body = {
+      vehicleId: vehiculo.uuid,
+      pickupDate: new Date(`${fechasLugar.fechaRetiro}T${fechasLugar.horaRetiro}:00`).toISOString(),
+      returnDate: new Date(`${fechasLugar.fechaDevolucion}T${fechasLugar.horaDevolucion}:00`).toISOString(),
+      insuranceCoverageId: seguro?.id ?? null,
+      mileagePlanId: kmPlan?.id ?? null,
+      additionalServiceIds: serviciosIds,
+      couponCode: cupon?.codigo ?? null,
+      cashPaymentBranchId: fechasLugar.metodoPago === "efectivo" ? vehiculo.sucursalId ?? null : null,
+      outsideScheduleAccepted: Boolean(fechasLugar.fueraDeHorarioAceptado),
+    };
+    const { data } = await apiClient.post("/reservations/checkout/initiate", body);
+    return mapReserva(data);
   },
 
-  cancelarReserva: async (referencia: string): Promise<boolean> => {
-    return reservaPersistService.actualizarEstado(referencia, "CANCELADA");
+  confirmarPago: async (id: string) => {
+    const { data } = await apiClient.post(`/reservations/checkout/confirm/${id}`);
+    return mapReserva(data);
   },
 
-  eliminarReserva: async (referencia: string): Promise<boolean> => {
-    if (!referencia) return false;
-    const reservas = await leer();
-    const clean = referencia.trim();
-    const base = clean.includes("_") ? clean.split("_")[0] : clean;
-    const index = reservas.findIndex((r) => r.referencia === clean || r.referencia === base);
-    if (index !== -1) {
-      reservas.splice(index, 1);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reservas));
-      return true;
-    }
-    return false;
+  reportarPagoFallido: async (id: string) => {
+    await apiClient.post(`/reservations/checkout/payment-failed/${id}`);
   },
 
-  limpiarTodas: async (): Promise<void> => {
-    await AsyncStorage.removeItem(STORAGE_KEY);
+  cancelar: async (id: string) => {
+    const { data } = await apiClient.patch(`/reservations/${id}/cancel`, { reason: "Cancelada por el cliente desde la app movil" });
+    return mapReserva(data);
   },
 };
+
+export function nombreSucursalEfectivo(reserva: ReservaGuardada): string {
+  const id = reserva.sucursalPagoEfectivoId;
+  return useReferenceStore.getState().sucursales.find((s) => s.id === id)?.name ?? "";
+}
