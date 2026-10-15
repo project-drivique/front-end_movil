@@ -32,11 +32,11 @@ import {
   EstadoReporte,
 } from "@/store/supportStore";
 import {
-  CANALES_CONTACTO_DUMMY,
-  TIPOS_INCIDENCIA_DUMMY,
-  FAQS_DUMMY,
+  CANALES_CONTACTO,
+  TIPOS_INCIDENCIA,
+  FAQS,
   CanalContacto,
-} from "@/modules/support/constants/support.dummy";
+} from "@/modules/support/constants/supportCatalog";
 
 import * as DocumentPicker from "expo-document-picker";
 
@@ -146,7 +146,7 @@ export default function SupportScreen() {
   const [reservaId, setReservaId] = useState(params.reservaId || "");
   const [vehiculoNombre, setVehiculoNombre] = useState(params.vehiculoNombre || "");
   const [placa, setPlaca] = useState(params.placa || "");
-  const [tipoSeleccionado, setTipoSeleccionado] = useState(TIPOS_INCIDENCIA_DUMMY[0].id);
+  const [tipoSeleccionado, setTipoSeleccionado] = useState(TIPOS_INCIDENCIA[0].id);
   const [descripcion, setDescripcion] = useState("");
   const [evidenciasAdjuntas, setEvidenciasAdjuntas] = useState<string[]>([]);
 
@@ -210,7 +210,7 @@ export default function SupportScreen() {
 
   // Objeto de tipo de incidencia seleccionado
   const tipoObj = useMemo(
-    () => TIPOS_INCIDENCIA_DUMMY.find((item) => item.id === tipoSeleccionado) || TIPOS_INCIDENCIA_DUMMY[0],
+    () => TIPOS_INCIDENCIA.find((item) => item.id === tipoSeleccionado) || TIPOS_INCIDENCIA[0],
     [tipoSeleccionado]
   );
 
@@ -366,7 +366,7 @@ export default function SupportScreen() {
         <Text style={styles.headerTitle}>{t("tabs.soporte")}</Text>
         <TouchableOpacity
           style={styles.headerHelpBtn}
-          onPress={() => Linking.openURL(CANALES_CONTACTO_DUMMY[0].urlAction)}
+          onPress={() => Linking.openURL(CANALES_CONTACTO[0].urlAction)}
         >
           <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
         </TouchableOpacity>
@@ -444,7 +444,7 @@ export default function SupportScreen() {
           {/* Canales de Contacto desde JSON */}
           <Text style={[styles.sectionTitle, { color: c.textPrimary }]}>{t("tabs.canalesAtencion")}</Text>
 
-          {CANALES_CONTACTO_DUMMY.map((canal) => (
+          {CANALES_CONTACTO.map((canal) => (
             <TouchableOpacity
               key={canal.id}
               style={[styles.contactCard, { backgroundColor: c.bgCard, borderColor: c.border }]}
@@ -471,7 +471,7 @@ export default function SupportScreen() {
             {t("tabs.preguntasFrecuentes")}
           </Text>
 
-          {FAQS_DUMMY.map((faq) => {
+          {FAQS.map((faq) => {
             const estaAbierto = faqsAbiertas.includes(faq.id);
             return (
               <View
@@ -606,7 +606,7 @@ export default function SupportScreen() {
               {t("soporte.incidencia.tipoIncidencia", { defaultValue: "Tipo de Incidencia *" })}
             </Text>
             <View style={styles.tiposGrid}>
-              {TIPOS_INCIDENCIA_DUMMY.map((tipo) => {
+              {TIPOS_INCIDENCIA.map((tipo) => {
                 const seleccionado = tipoSeleccionado === tipo.id;
                 return (
                   <TouchableOpacity

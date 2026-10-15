@@ -1,7 +1,7 @@
 /**
- * support.dummy.ts
+ * supportCatalog.ts
  *
- * Fuente de datos JSON / constantes dummy para la sección de Soporte.
+ * Contenido informativo (canales, tipos y preguntas frecuentes) de la sección de Soporte.
  * Incluye canales de atención con números reales, tipos de incidencia con tiempos de atención y FAQs.
  */
 
@@ -18,7 +18,7 @@ export interface CanalContacto {
   colorBg: string;
 }
 
-export interface TipoIncidenciaDummy {
+export interface TipoIncidencia {
   id: string;
   nombre: string;
   icono: string;
@@ -34,7 +34,7 @@ export interface FaqItem {
 
 // ─── Canales de Contacto Directo ──────────────────────────────────────────────
 
-export const CANALES_CONTACTO_DUMMY: CanalContacto[] = [
+export const CANALES_CONTACTO: CanalContacto[] = [
   {
     id: "whatsapp",
     nombreKey: "tabs.whatsappTitle",
@@ -75,7 +75,7 @@ export const CANALES_CONTACTO_DUMMY: CanalContacto[] = [
 
 // ─── Tipos de Incidencia ──────────────────────────────────────────────────────
 
-export const TIPOS_INCIDENCIA_DUMMY: TipoIncidenciaDummy[] = [
+export const TIPOS_INCIDENCIA: TipoIncidencia[] = [
   {
     id: "mecanica",
     nombre: "Avería mecánica",
@@ -122,7 +122,7 @@ export const TIPOS_INCIDENCIA_DUMMY: TipoIncidenciaDummy[] = [
 
 // ─── Preguntas Frecuentes (FAQs) ─────────────────────────────────────────────
 
-export const FAQS_DUMMY: FaqItem[] = [
+export const FAQS: FaqItem[] = [
   {
     id: "faq-1",
     pregunta: "¿Qué debo hacer si el vehículo sufre una avería en carretera?",
