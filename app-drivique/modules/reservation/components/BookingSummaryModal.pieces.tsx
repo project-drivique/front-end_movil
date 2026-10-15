@@ -19,6 +19,7 @@ import {
 import { GRADIENTES } from "@/constants/gradients";
 import { useMonedaStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/utils/currencyUtils";
+import { COLOR_ACENTO, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 
 // ---------- Helpers de formato ----------
 
@@ -66,7 +67,7 @@ export function SubcardHeader({
 }) {
   const c = useTemaColores();
   const { t } = useTranslation();
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   return (
     <View style={styles.subcardHeader}>
@@ -96,7 +97,7 @@ export function SubcardHeaderEditando({
   titulo: string;
 }) {
   const c = useTemaColores();
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   return (
     <View style={styles.rowGap}>
@@ -147,7 +148,7 @@ export function OpcionCard({
   onPress: () => void;
 }) {
   const c = useTemaColores();
-  const brandBg = c.oscuro ? "#3B82F6" : COLOR_MARCA;
+  const brandBg = c.oscuro ? COLOR_MARCA_OSCURO : COLOR_MARCA;
 
   return (
     <TouchableOpacity
@@ -188,7 +189,7 @@ export function ServicioRow({
   const c = useTemaColores();
   const { t } = useTranslation();
   const icono = ICONOS_SERVICIOS[nombre] ?? ICONO_SERVICIO_DEFECTO;
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   return (
     <TouchableOpacity

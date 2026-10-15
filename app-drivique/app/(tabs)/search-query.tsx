@@ -15,8 +15,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useLogoMarca } from "@/store/brandStore";
 
 export default function BusquedaScreen() {
+  const logoMarca = useLogoMarca();
   const usuario = useAuthStore((state) => state.usuario);
   const invitado = !usuario;
   const c = useTemaColores();
@@ -49,7 +51,7 @@ export default function BusquedaScreen() {
       {/* HEADER */}
       <View style={[styles.header, { backgroundColor: c.bgHeader, borderBottomColor: c.border }]}>
         <Image
-          source={require("@/assets/images/logo.png")}
+          source={logoMarca}
           style={styles.logo}
           resizeMode="contain"
         />

@@ -8,8 +8,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IdiomaKey, IDIOMAS } from "@/modules/i18n";
 import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { screen1Styles as styles } from "@/modules/onboarding/styles/screen1.styles";
+import { COLOR_ACENTO, COLOR_ENLACE, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
+import { useLogoMarca } from "@/store/brandStore";
 
 export default function OnboardingScreen1() {
+  const logoMarca = useLogoMarca();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { idiomaActual, cambiarIdioma, temaActual, cambiarTema } = useIdioma();
@@ -39,7 +42,7 @@ export default function OnboardingScreen1() {
       {/* Hero */}
       <Animated.View style={[styles.heroWrap, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
         <View style={[styles.heroCircle, { backgroundColor: c.primaryBg, borderColor: c.border }]}>
-          <Image source={require("@/assets/images/logo.png")} style={styles.heroLogo} resizeMode="contain" />
+          <Image source={logoMarca} style={styles.heroLogo} resizeMode="contain" />
         </View>
         <View style={styles.heroBadge}>
           <Text style={styles.heroBadgeText}>🇨🇴 {t("onboarding.screen1.badge")}</Text>
@@ -93,7 +96,7 @@ export default function OnboardingScreen1() {
             </View>
 
             {/* Tema */}
-            <Text style={[localStyles.seccionLabel, { color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>{t("config.tema")}</Text>
+            <Text style={[localStyles.seccionLabel, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE }]}>{t("config.tema")}</Text>
             <View style={localStyles.temaRow}>
               <TouchableOpacity
                 style={[
@@ -118,18 +121,18 @@ export default function OnboardingScreen1() {
               >
                 <Text style={[
                   localStyles.temaBtnText,
-                  { color: temaActual === "oscuro" ? "#60A5FA" : c.textPrimary },
+                  { color: temaActual === "oscuro" ? COLOR_ACENTO : c.textPrimary },
                 ]}>
                   {t("config.oscuro")}
                 </Text>
                 {temaActual === "oscuro" && (
-                  <Text style={[localStyles.temaCheck, { color: "#60A5FA" }]}>✓</Text>
+                  <Text style={[localStyles.temaCheck, { color: COLOR_ACENTO }]}>✓</Text>
                 )}
               </TouchableOpacity>
             </View>
 
             {/* Idioma */}
-            <Text style={[localStyles.seccionLabel, { marginTop: 16, color: c.oscuro ? "#60A5FA" : "#1D4ED8" }]}>
+            <Text style={[localStyles.seccionLabel, { marginTop: 16, color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE }]}>
               {t("config.idioma")}
             </Text>
             {(Object.keys(IDIOMAS) as IdiomaKey[]).map((key) => (
@@ -138,7 +141,7 @@ export default function OnboardingScreen1() {
                 style={[
                   localStyles.idiomaOption,
                   { backgroundColor: c.bgInput, borderColor: c.border },
-                  idiomaActual === key && [localStyles.idiomaOptionActive, { backgroundColor: c.primaryBg, borderColor: c.oscuro ? "#3B82F6" : "#1D4ED8" }],
+                  idiomaActual === key && [localStyles.idiomaOptionActive, { backgroundColor: c.primaryBg, borderColor: c.oscuro ? COLOR_MARCA_OSCURO : COLOR_ENLACE }],
                 ]}
                 onPress={() => cambiarIdioma(key)}
               >
@@ -146,7 +149,7 @@ export default function OnboardingScreen1() {
                 <Text style={[
                   localStyles.idiomaLabel,
                   { color: c.textPrimary },
-                  idiomaActual === key && { color: c.oscuro ? "#60A5FA" : "#1D4ED8", fontWeight: "700" },
+                  idiomaActual === key && { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE, fontWeight: "700" },
                 ]}>
                   {IDIOMAS[key].label}
                 </Text>

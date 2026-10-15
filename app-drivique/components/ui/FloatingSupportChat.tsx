@@ -20,6 +20,7 @@ import {
   obtenerHoraActual,
   procesarMensajeChatbot,
 } from "@/modules/support/services/chatbotEngine";
+import { COLOR_ACCENT, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 
 export function FloatingSupportChat() {
   const pathname = usePathname();
@@ -117,7 +118,7 @@ export function FloatingSupportChat() {
             styles.fab,
             {
               bottom: insets.bottom + 85, // Posicionado arriba de las pestañas de navegación
-              backgroundColor: c.oscuro ? "#3B82F6" : "#2563EB",
+              backgroundColor: c.oscuro ? COLOR_MARCA_OSCURO : COLOR_ACCENT,
               shadowColor: c.oscuro ? "#000" : "#2563EB",
             },
           ]}

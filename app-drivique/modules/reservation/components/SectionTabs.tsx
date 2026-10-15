@@ -43,7 +43,7 @@ export default function TabsSeccion<T extends string = SeccionReserva>({
             <Text
               style={[
                 styles.tabText,
-                activa && styles.tabTextActivo,
+                activa && [styles.tabTextActivo, { color: COLOR_MARCA }],
                 deshabilitado && styles.tabTextDeshabilitado,
               ]}
               numberOfLines={1}

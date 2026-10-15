@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLOR_MARCA, formatHoraAmPm } from "../constants/reservation.constants";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 function generarHoras(horaApertura = "06:00", horaCierre = "22:00"): string[] {
   const [hInicio, mInicio] = (horaApertura || "06:00").split(":").map(Number);
@@ -132,7 +133,7 @@ export default function SelectorHoraModal({
               )}
             </View>
             <TouchableOpacity onPress={onCerrar} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Text style={styles.cerrarTexto}>{t("reserva.resumen.cerrar")}</Text>
+              <Text style={[styles.cerrarTexto, { color: COLOR_MARCA }]}>{t("reserva.resumen.cerrar")}</Text>
             </TouchableOpacity>
           </View>
 
@@ -150,7 +151,7 @@ export default function SelectorHoraModal({
               <Ionicons
                 name="information-circle"
                 size={20}
-                color={c.oscuro ? "#60A5FA" : COLOR_MARCA}
+                color={c.oscuro ? COLOR_ACENTO : COLOR_MARCA}
                 style={{ marginTop: 1 }}
               />
               <View style={styles.alertaInformativaContenido}>
@@ -195,7 +196,7 @@ export default function SelectorHoraModal({
                       style={[
                         styles.itemTexto,
                         { color: bloqueada ? c.textMuted : c.textSecondary },
-                        activa && styles.itemTextoActivo,
+                        activa && [styles.itemTextoActivo, { color: COLOR_MARCA }],
                         bloqueada && styles.itemTextoBloqueado,
                       ]}
                     >

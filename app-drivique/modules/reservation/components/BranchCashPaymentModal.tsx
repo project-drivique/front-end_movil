@@ -8,6 +8,8 @@ import { COLOR_MARCA } from "../constants/reservation.constants";
 import { GRADIENTES, SOMBRA_BOTON_GRADIENTE } from "@/constants/gradients";
 import { getCiudadPorSucursal, getDireccionSucursal } from "@/modules/catalog/constants/catalog.constants";
 import { fmt } from "@/modules/reservation/components/BookingSummaryModal.pieces";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
+import { useLogoMarca } from "@/store/brandStore";
 
 interface Props {
   visible: boolean;
@@ -34,9 +36,10 @@ export function BranchCashPaymentModal({
   onCerrar,
   botonTexto,
 }: Props) {
+  const logoMarca = useLogoMarca();
   const c = useTemaColores();
   const { t } = useTranslation();
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   const ciudad = getCiudadPorSucursal(nombreSucursal);
   const direccion = getDireccionSucursal(nombreSucursal);
@@ -60,7 +63,7 @@ export function BranchCashPaymentModal({
             ]}
           >
             <Image
-              source={require("@/assets/images/logo.png")}
+              source={logoMarca}
               style={styles.logoImg}
               resizeMode="contain"
             />

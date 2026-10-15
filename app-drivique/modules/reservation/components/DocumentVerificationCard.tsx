@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { COLOR_MARCA, TAMANO_MAXIMO_ARCHIVO_BYTES } from "../constants/reservation.constants";
 import { useReservaStore } from "@/store/reservationStore";
 import CampoSubidaDocumento from "./DocumentUploadField";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 interface Props {
   /** Tipo de documento elegido en el formulario de datos personales (CC, TI, Doc. Extranjero, Pasaporte). */
@@ -48,7 +49,7 @@ export default function TarjetaVerificacionDocumental({ tipoDocumento, docsVerif
   const [cargandoCedula, setCargandoCedula] = useState(false);
   const [cargandoLicencia, setCargandoLicencia] = useState(false);
 
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   const seleccionarArchivo = async (
     llave: "cedulaFrente" | "licenciaConduccion",

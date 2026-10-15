@@ -6,6 +6,8 @@
 // Ahora: todo apunta a este archivo. Para cambiar el azul de toda la app,
 // se edita solo aquí.
 
+import { GRADIENTE_CLARO, GRADIENTE_FIN, GRADIENTE_INICIO, HERO_1, HERO_2, COLOR_ACCENT } from "./brandPalette";
+
 export type GradienteConfig = {
   colors: [string, string, ...string[]];
   start: { x: number; y: number };
@@ -13,34 +15,31 @@ export type GradienteConfig = {
   locations?: [number, number, ...number[]];
 };
 
+// Los colores salen de brandPalette y se leen al renderizar: al cambiar la marca en la web la app los toma
 export const GRADIENTES: Record<string, GradienteConfig> = {
   // Botón principal / CTA (Reservar, Confirmar, Pagar con Wompi, Buscar...) — 90deg
-  boton: {
-    colors: ["#1e3a8a", "#2563eb"],
-    start: { x: 0, y: 0 },
-    end: { x: 1, y: 0 },
+  get boton(): GradienteConfig {
+    return { colors: [GRADIENTE_INICIO, GRADIENTE_FIN], start: { x: 0, y: 0 }, end: { x: 1, y: 0 } };
   },
 
   // Fondo de tarjeta / panel (banners, headers de tarjeta) — 135deg
-  panel: {
-    colors: ["#1e3a8a", "#2563eb"],
-    start: { x: 0, y: 0 },
-    end: { x: 1, y: 1 },
+  get panel(): GradienteConfig {
+    return { colors: [GRADIENTE_INICIO, GRADIENTE_FIN], start: { x: 0, y: 0 }, end: { x: 1, y: 1 } };
   },
 
   // Fondo oscuro grande tipo hero (header de login / registro) — 160deg
-  heroOscuro: {
-    colors: ["#060e2e", "#0c1f5c", "#1e3a8a"],
-    locations: [0, 0.5, 1],
-    start: { x: 0, y: 0 },
-    end: { x: 0.34, y: 1 },
+  get heroOscuro(): GradienteConfig {
+    return {
+      colors: [HERO_1, HERO_2, GRADIENTE_INICIO],
+      locations: [0, 0.5, 1],
+      start: { x: 0, y: 0 },
+      end: { x: 0.34, y: 1 },
+    };
   },
 
   // Franja decorativa (contrato / detalle) — 90deg con 3 paradas
-  franjaContrato: {
-    colors: ["#1e3a8a", "#2563eb", "#93c5fd"],
-    start: { x: 0, y: 0 },
-    end: { x: 1, y: 0 },
+  get franjaContrato(): GradienteConfig {
+    return { colors: [GRADIENTE_INICIO, GRADIENTE_FIN, GRADIENTE_CLARO], start: { x: 0, y: 0 }, end: { x: 1, y: 0 } };
   },
 
   // Éxito (verde, para contraste — confirmaciones)
@@ -54,7 +53,9 @@ export const GRADIENTES: Record<string, GradienteConfig> = {
 // Sombra/resplandor que acompaña a los botones con gradiente
 // (equivalente a box-shadow: 0 8px 24px rgba(37,99,235,0.28) en web)
 export const SOMBRA_BOTON_GRADIENTE = {
-  shadowColor: "#2563eb",
+  get shadowColor() {
+    return COLOR_ACCENT;
+  },
   shadowOffset: { width: 0, height: 8 },
   shadowOpacity: 0.28,
   shadowRadius: 24,

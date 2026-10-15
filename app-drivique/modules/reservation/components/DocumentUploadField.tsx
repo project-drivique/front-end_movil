@@ -6,6 +6,7 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { COLOR_MARCA } from "../constants/reservation.constants";
 import { ArchivoDocumento } from "../types/reservation.types";
+import { COLOR_ACENTO } from "@/constants/brandPalette";
 
 interface Props {
   etiqueta: string;
@@ -30,7 +31,7 @@ export default function CampoSubidaDocumento({
 }: Props) {
   const c = useTemaColores();
   const { t } = useTranslation();
-  const primaryAccent = c.oscuro ? "#60A5FA" : COLOR_MARCA;
+  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   return (
     <View
