@@ -3,7 +3,6 @@ import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
   FILTROS_BASE,
-  VEHICULOS_MOCK,
   getCiudadPorSucursal,
   getDisponibilidadVehiculo,
 } from "../constants/catalog.constants";
@@ -83,7 +82,7 @@ export function useCatalogo(opciones: OpcionesCatalogo = {}) {
   const { t } = useTranslation();
   const monedaActual = useMonedaStore((s) => s.monedaActual);
   const tasaUSD = useMonedaStore((s) => s.tasaUSD);
-  const [vehiculos, setVehiculos] = useState<Vehiculo[]>(VEHICULOS_MOCK);
+  const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,9 +92,7 @@ export function useCatalogo(opciones: OpcionesCatalogo = {}) {
     catalogoService
       .getVehiculos()
       .then((data) => {
-        if (activo && data && data.length > 0) {
-          setVehiculos(data);
-        }
+        if (activo) setVehiculos(data ?? []);
       })
       .catch((err) => {
         if (activo) setError(err?.message || "Error al cargar catálogo");

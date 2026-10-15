@@ -1,17 +1,22 @@
 // modules/catalogo/types/catalogo.types.ts
 
 export interface Tarifa {
+  id?: string;
+  nombre?: string;
   km?: number;
   precio: number;
   excedente?: number;
 }
 
 export interface Seguro {
+  id?: string;
+  descripcion?: string;
   nombre: string;
   precio: number;
 }
 
 export interface ServicioExtra {
+  id?: string;
   nombre: string;
   precio: number;
 }
@@ -59,6 +64,9 @@ export interface ReservaOcupada {
 export interface Vehiculo {
   id: number;
   uuid?: string;
+  sucursalId?: string;
+  categoriaId?: string;
+  ciudad?: string;
   nombre: string;
   marca: string;
   modelo: string;
