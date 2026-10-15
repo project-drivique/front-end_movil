@@ -24,7 +24,7 @@ import { pricingService } from "@/modules/reservation/services/pricingService";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { CuponPromocion as CouponDummy } from "@/modules/notifications/types/promotion.types";
+import { CuponPromocion } from "@/modules/notifications/types/promotion.types";
 import { rutaDesdeActionPath } from "@/modules/notifications/services/deepLink";
 import { COLOR_ACENTO, COLOR_ENLACE } from "@/constants/brandPalette";
 
@@ -50,9 +50,9 @@ export default function NotificationsScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   // Modal states
-  const [selectedConditionsCoupon, setSelectedConditionsCoupon] = useState<CouponDummy | null>(null);
-  const [activeAppliedCoupon, setActiveAppliedCoupon] = useState<CouponDummy | null>(null);
-  const [activePendingCoupon, setActivePendingCoupon] = useState<CouponDummy | null>(null);
+  const [selectedConditionsCoupon, setSelectedConditionsCoupon] = useState<CuponPromocion | null>(null);
+  const [activeAppliedCoupon, setActiveAppliedCoupon] = useState<CuponPromocion | null>(null);
+  const [activePendingCoupon, setActivePendingCoupon] = useState<CuponPromocion | null>(null);
   const [selectedNotification, setSelectedNotification] = useState<Notificacion | null>(null);
 
   // Carga inicial y reactiva de notificaciones reales del backend
@@ -83,7 +83,7 @@ export default function NotificationsScreen() {
     [notificaciones]
   );
 
-  const [promociones, setPromociones] = useState<CouponDummy[]>([]);
+  const [promociones, setPromociones] = useState<CuponPromocion[]>([]);
 
   useEffect(() => {
     if (!usuario) return;
@@ -108,7 +108,7 @@ export default function NotificationsScreen() {
               fechaOtorgado: p.createdAt,
               expiracion: `${p.endDate}T23:59:59`,
               fechaExpiracion: `${p.endDate}T23:59:59`,
-            } as CouponDummy;
+            } as CuponPromocion;
           }),
         ),
       )
@@ -132,7 +132,7 @@ export default function NotificationsScreen() {
     marcaModelo: string;
   }[] = [];
 
-  const handleApplyCoupon = (coupon: CouponDummy) => {
+  const handleApplyCoupon = (coupon: CuponPromocion) => {
     if (appliedCoupons.includes(coupon.codigo)) return;
     setActivePendingCoupon(coupon);
   };
