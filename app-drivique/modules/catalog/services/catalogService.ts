@@ -2,7 +2,7 @@ import { apiClient } from "@/services/http/apiClient";
 import { useReferenceStore } from "@/store/referenceStore";
 import { Vehiculo } from "../types/catalog.types";
 
-function hashCode(str: string): number {
+export function hashCode(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = (hash << 5) - hash + str.charCodeAt(i);

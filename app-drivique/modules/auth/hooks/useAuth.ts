@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { LoginForm, RegistroForm, OlvideContrasenaForm, AuthError } from '../types/auth.types';
 import { esCorreoValido as validarCorreo, esContrasenaSegura as validarContrasenaSegura } from '@/utils/validators';
@@ -53,6 +54,10 @@ export function useLogin() {
       const status = error?.response?.status;
       const code = error?.response?.data?.code || error?.response?.data?.errorCode;
       const msg = errorMessage(error, '');
+      if (status === 404) {
+        Alert.alert('Cuenta no encontrada', errorMessage(error, 'No existe una cuenta registrada con ese correo.'));
+        return;
+      }
       const isNotVerified =
         code === 'USER_NOT_VERIFIED' ||
         code === 'PENDING_VERIFICATION' ||
@@ -116,7 +121,7 @@ export function useRegistro() {
 export function useOlvideContrasena() {
   const [form, setForm] = useState<OlvideContrasenaForm>({ correo: '', codigo: '', nuevaContrasena: '', confirmarContrasena: '' }); const [errores, setErrores] = useState<AuthError[]>([]); const [cargando, setCargando] = useState(false); const [fase, setFase] = useState<1 | 2 | 3 | 4>(1);
   const actualizarCampo = (campo: keyof OlvideContrasenaForm, valor: string) => { setForm((p) => ({ ...p, [campo]: valor })); setErrores((p) => p.filter((e) => e.campo !== campo)) };
-  const enviarEnlace = async () => { if (!validarCorreo(form.correo)) { setErrores([{ campo: 'correo', mensaje: 'Ingresa un correo válido' }]); return }; setCargando(true); try { await authService.recuperarContrasena(form.correo); setFase(2) } catch (error) { setErrores([{ campo: 'correo', mensaje: errorMessage(error, 'No fue posible enviar el código.') }]) } finally { setCargando(false) } };
+  const enviarEnlace = async () => { if (!validarCorreo(form.correo)) { setErrores([{ campo: 'correo', mensaje: 'Ingresa un correo válido' }]); return }; setCargando(true); try { await authService.recuperarContrasena(form.correo); setFase(2) } catch (error: any) { if (error?.response?.status === 404) { Alert.alert('Cuenta no encontrada', errorMessage(error, 'No existe una cuenta registrada con ese correo.')); return }; setErrores([{ campo: 'correo', mensaje: errorMessage(error, 'No fue posible enviar el código.') }]) } finally { setCargando(false) } };
   const validarCodigo = async () => { if (!/^\d{6}$/.test(form.codigo || '')) { setErrores([{ campo: 'codigo', mensaje: 'El código debe tener 6 dígitos.' }]); return }; setCargando(true); try { await authService.validarCodigoRecuperacion(form.correo, form.codigo!); setFase(3) } catch (error) { setErrores([{ campo: 'codigo', mensaje: errorMessage(error, 'Código inválido o expirado.') }]) } finally { setCargando(false) } };
   const cambiarContrasena = async (onSuccess?: () => void) => { if (!validarContrasenaSegura(form.nuevaContrasena || '') || form.nuevaContrasena !== form.confirmarContrasena) { setErrores([{ campo: 'nuevaContrasena', mensaje: 'Verifica la nueva contraseña.' }]); return }; setCargando(true); try { await authService.restablecerContrasena(form.correo, form.codigo!, form.nuevaContrasena!); onSuccess?.() || setFase(4) } catch (error) { setErrores([{ campo: 'nuevaContrasena', mensaje: errorMessage(error, 'No fue posible restablecer la contraseña.') }]) } finally { setCargando(false) } };
   return { form, errores, setErrores, cargando, fase, setFase, actualizarCampo, enviarEnlace, validarCodigo, cambiarContrasena };
