@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/services/http/apiClient";
 import { useAuthStore } from "@/store/authStore";
+import { hashCode } from "@/modules/catalog/services/catalogService";
 
 export interface FavoriteVehicle {
   id: string;
@@ -33,7 +34,7 @@ export function useFavoritos(usuarioId: string | null) {
       // HU-10: Cargar favoritos desde el backend (/v1/users/me/favorites)
       // La API devuelve una lista de objetos completos. Extraemos solo los IDs para el estado local.
       setError(null);
-      const response = await apiClient.get<FavoriteVehicle[]>("/v1/users/me/favorites");
+      const response = await apiClient.get<FavoriteVehicle[]>("/users/me/favorites");
       const vehicles = Array.isArray(response.data) ? response.data : [];
       const ids = vehicles.map((vehicle) => String(vehicle.id));
       setFavoritos(ids);
@@ -69,9 +70,9 @@ export function useFavoritos(usuarioId: string | null) {
       
       try {
         if (esFav) {
-          await apiClient.delete(`/v1/users/me/favorites/${normalizedId}`);
+          await apiClient.delete(`/users/me/favorites/${normalizedId}`);
         } else {
-          await apiClient.post(`/v1/users/me/favorites/${normalizedId}`);
+          await apiClient.post(`/users/me/favorites/${normalizedId}`);
           await fetchFavoritos();
         }
       } catch (e) {
@@ -82,8 +83,10 @@ export function useFavoritos(usuarioId: string | null) {
     [favoritos, isAuthenticated, fetchFavoritos]
   );
 
+  // Los favoritos se guardan con el UUID del servidor; el catálogo identifica cada carro con un número derivado de ese UUID
   const esFavorito = useCallback(
-    (vehiculoId: string | number): boolean => favoritos.includes(String(vehiculoId)),
+    (vehiculoId: string | number): boolean =>
+      favoritos.includes(String(vehiculoId)) || favoritos.some((uuid) => hashCode(uuid) === Number(vehiculoId)),
     [favoritos]
   );
 

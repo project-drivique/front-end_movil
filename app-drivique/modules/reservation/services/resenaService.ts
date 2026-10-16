@@ -36,7 +36,7 @@ async function resolverReservaId(referenciaOId: string): Promise<string> {
   if (UUID_PATTERN.test(value)) return value;
 
   const { data } = await apiClient.get<{ id: string }>(
-    `/v1/reservations/code/${encodeURIComponent(value)}`
+    `/reservations/code/${encodeURIComponent(value)}`
   );
   if (!data?.id) throw new Error("No fue posible identificar la reserva.");
   return String(data.id);
@@ -76,7 +76,7 @@ export const resenaService = {
     try {
       const reservationId = await resolverReservaId(referenciaReserva);
       const { data } = await apiClient.get<ReviewEligibilityDto>(
-        `/v1/reservations/${reservationId}/review-eligibility`
+        `/reservations/${reservationId}/review-eligibility`
       );
       return data?.vehicleReview
         ? mapReview(data.vehicleReview, referenciaReserva, usuarioId)
@@ -103,7 +103,7 @@ export const resenaService = {
   ): Promise<ResenaGuardada> => {
     const reservationId = await resolverReservaId(referenciaReserva);
     const { data: eligibility } = await apiClient.get<ReviewEligibilityDto>(
-      `/v1/reservations/${reservationId}/review-eligibility`
+      `/reservations/${reservationId}/review-eligibility`
     );
 
     if (!eligibility.canReviewVehicle) {
@@ -116,14 +116,14 @@ export const resenaService = {
       throw new Error("Solo se puede calificar una reserva finalizada.");
     }
 
-    await apiClient.post("/v1/reviews/vehicles", {
+    await apiClient.post("/reviews/vehicles", {
       reservationId,
       rating: datos.calificacion,
       comment: datos.comentario.trim() || null,
     });
 
     const { data: updated } = await apiClient.get<ReviewEligibilityDto>(
-      `/v1/reservations/${reservationId}/review-eligibility`
+      `/reservations/${reservationId}/review-eligibility`
     );
     if (!updated.vehicleReview) {
       throw new Error("La reseña fue enviada, pero no pudo recuperarse.");
