@@ -562,7 +562,16 @@ export default {
       "tuResena": "Sua avaliação",
       "sinResenasTitulo": "Este veículo ainda não tem avaliações",
       "sinResenasSubtitulo": "Reserve agora e seja o primeiro a compartilhar sua experiência!"
-    }
+    },
+    "picoYPlacaTitle": "Consultar rodízio de veículos",
+    "picoYPlacaDesc": "Não tem certeza se este veículo tem restrição de circulação hoje? Consulte as informações oficiais para planejar sua rota e evitar multas durante sua locação.",
+    "goToPage": "Ir para a página oficial",
+    "stepDates": "Datas e localização",
+    "stepDatesSub": "Complete os detalhes da sua reserva",
+    "stepProtection": "Proteção e adicionais",
+    "stepProtectionSub": "Personalize sua experiência",
+    "personalData": "Dados pessoais",
+    "personalDataSub": "Finalize sua reserva"
   },
   "misReservas": {
     "titulo": "Minhas Reservas",
@@ -1785,17 +1794,6 @@ export default {
   "Disfruta de tus viajes con 20% de descuento en el Chevrolet Spark": {
     "": "Aproveite suas viagens com 20% de desconto no Chevrolet Spark."
   },
-  "Categoría: SUV": "Categoria: SUV",
-  "vehiculo": {
-    "picoYPlacaTitle": "Consultar rodízio de veículos",
-    "picoYPlacaDesc": "Não tem certeza se este veículo tem restrição de circulação hoje? Consulte as informações oficiais para planejar sua rota e evitar multas durante sua locação.",
-    "goToPage": "Ir para a página oficial",
-    "stepDates": "Datas e localização",
-    "stepDatesSub": "Complete os detalhes da sua reserva",
-    "stepProtection": "Proteção e adicionais",
-    "stepProtectionSub": "Personalize sua experiência",
-    "personalData": "Dados pessoais",
-    "personalDataSub": "Finalize sua reserva"
-  }
+  "Categoría: SUV": "Categoria: SUV"
 };
 

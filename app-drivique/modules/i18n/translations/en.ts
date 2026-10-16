@@ -562,7 +562,16 @@ export default {
       "tuResena": "Your review",
       "sinResenasTitulo": "This vehicle has no reviews yet",
       "sinResenasSubtitulo": "Book it now and be the first to share your experience!"
-    }
+    },
+    "picoYPlacaTitle": "Check Plate Restrictions",
+    "picoYPlacaDesc": "Not sure if this vehicle has mobility restrictions today? Check official national information to plan your route and avoid fines or setbacks during your reservation. Remember that restrictions may vary by city and day of the week, so it is vital to be informed before traveling.",
+    "goToPage": "Go to official page",
+    "stepDates": "Dates and location",
+    "stepDatesSub": "Complete your reservation details",
+    "stepProtection": "Protection and extras",
+    "stepProtectionSub": "Personalize your experience",
+    "personalData": "Personal information",
+    "personalDataSub": "Finalize your reservation"
   },
   "misReservas": {
     "titulo": "My Bookings",
@@ -1785,17 +1794,6 @@ export default {
   "Disfruta de tus viajes con 20% de descuento en el Chevrolet Spark": {
     "": "Enjoy your trips with a 20% discount on the Chevrolet Spark."
   },
-  "Categoría: SUV": "Category: SUV",
-  "vehiculo": {
-    "picoYPlacaTitle": "Check Plate Restrictions",
-    "picoYPlacaDesc": "Not sure if this vehicle has mobility restrictions today? Check official national information to plan your route and avoid fines or setbacks during your reservation. Remember that restrictions may vary by city and day of the week, so it is vital to be informed before traveling.",
-    "goToPage": "Go to official page",
-    "stepDates": "Dates and location",
-    "stepDatesSub": "Complete your reservation details",
-    "stepProtection": "Protection and extras",
-    "stepProtectionSub": "Personalize your experience",
-    "personalData": "Personal information",
-    "personalDataSub": "Finalize your reservation"
-  }
+  "Categoría: SUV": "Category: SUV"
 };
 
