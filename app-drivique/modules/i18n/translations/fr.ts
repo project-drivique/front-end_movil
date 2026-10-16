@@ -1785,5 +1785,17 @@ export default {
   "Disfruta de tus viajes con 20% de descuento en el Chevrolet Spark": {
     "": "Profitez de vos trajets avec 20% de réduction sur la Chevrolet Spark."
   },
-  "Categoría: SUV": "Catégorie : SUV"
+  "Categoría: SUV": "Catégorie : SUV",
+  "vehiculo": {
+    "picoYPlacaTitle": "Vérifier les restrictions de circulation",
+    "picoYPlacaDesc": "Vous ne savez pas si ce véhicule fait l'objet d'une restriction de circulation aujourd'hui ? Consultez les règles officielles pour planifier votre itinéraire et éviter les amendes pendant votre réservation.",
+    "goToPage": "Accéder au site officiel",
+    "stepDates": "Dates et lieu",
+    "stepDatesSub": "Complétez les détails de votre réservation",
+    "stepProtection": "Protection et extras",
+    "stepProtectionSub": "Personnalisez votre expérience",
+    "personalData": "Données personnelles",
+    "personalDataSub": "Finalisez votre réservation"
+  }
 };
+

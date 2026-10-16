@@ -15,6 +15,7 @@ import TabsSeccion, { SeccionReserva } from "./SectionTabs";
 import PlanesAdicionales from "./AdditionalPlans";
 import FormDatosPersonales from "./PersonalDataForm";
 import { AlertModal } from "../../../components/ui/AlertModal";
+import { ConfiguracionModal } from "@/modules/i18n/components/ConfiguracionModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
@@ -35,6 +36,7 @@ export default function FlujoReserva({ vehiculo }: Props) {
 
   const [seccionActiva, setSeccionActiva] = useState<SeccionReserva>("fechas");
   const [modalResumenVisible, setModalResumenVisible] = useState(false);
+  const [modalConfigVisible, setModalConfigVisible] = useState(false);
   const [alertaFaltantesVisible, setAlertaFaltantesVisible] = useState(false);
   const [alertaHorarioVisible, setAlertaHorarioVisible] = useState(false);
   const outsideScheduleAccepted = !!fechasLugar.fueraDeHorarioAceptado;
@@ -138,12 +140,22 @@ export default function FlujoReserva({ vehiculo }: Props) {
       <View style={[styles.topRow, { backgroundColor: c.bgCard }]}>
         <TouchableOpacity onPress={handleVolver} style={styles.volverBtn}>
           <Ionicons name="chevron-back" size={16} color={c.primary} />
-          <Text style={[[styles.volverText, { color: COLOR_MARCA }], { color: c.primary }]}>{t("reserva.flujo.volver")}</Text>
+          <Text style={[styles.volverText, { color: c.primary }]}>{t("reserva.flujo.volver")}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[[styles.resumenBtn, { borderColor: COLOR_MARCA }], { borderColor: c.primary, backgroundColor: c.bgCard }]} onPress={() => setModalResumenVisible(true)}>
-          <Text style={[[styles.resumenBtnText, { color: COLOR_MARCA }], { color: c.primary }]}>{t("reserva.flujo.resumenReserva")}</Text>
-        </TouchableOpacity>
+        <View style={styles.topRightActions}>
+          <TouchableOpacity
+            style={[styles.configBtn, { borderColor: c.border, backgroundColor: c.bgInput }]}
+            onPress={() => setModalConfigVisible(true)}
+            accessibilityLabel={t("config.ajustes", { defaultValue: "Ajustes de idioma y tema" })}
+          >
+            <Ionicons name="options-outline" size={16} color={c.textPrimary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.resumenBtn, { borderColor: c.primary, backgroundColor: c.bgCard }]} onPress={() => setModalResumenVisible(true)}>
+            <Text style={[styles.resumenBtnText, { color: c.primary }]}>{t("reserva.flujo.resumenReserva")}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <LinearGradient
@@ -247,6 +259,11 @@ export default function FlujoReserva({ vehiculo }: Props) {
         ]}
         onCerrar={() => setAlertaHorarioVisible(false)}
       />
+
+      <ConfiguracionModal
+        visible={modalConfigVisible}
+        onClose={() => setModalConfigVisible(false)}
+      />
     </View>
   );
 }
@@ -262,6 +279,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 10,
+  },
+  topRightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  configBtn: {
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
   },
   volverBtn: { flexDirection: "row", alignItems: "center", gap: 2 },
   volverText: { fontSize: 13, fontWeight: "600", color: COLOR_MARCA },

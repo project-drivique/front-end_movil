@@ -186,7 +186,7 @@ export const reservaPersistService = {
       .filter(Boolean);
 
     const body = {
-      vehicleId: vehiculo.uuid,
+      vehicleId: vehiculo.uuid || String(vehiculo.id),
       pickupDate: new Date(`${fechasLugar.fechaRetiro}T${fechasLugar.horaRetiro}:00`).toISOString(),
       returnDate: new Date(`${fechasLugar.fechaDevolucion}T${fechasLugar.horaDevolucion}:00`).toISOString(),
       insuranceCoverageId: seguro?.id ?? null,

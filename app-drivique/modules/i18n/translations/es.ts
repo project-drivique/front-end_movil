@@ -1958,6 +1958,17 @@ export default {
   "estadoActualizado": "Estado actualizado",
   "abrirAdjunto": "Abrir adjunto",
   "adjuntoError": "No se pudo abrir el adjunto.",
-  "noEncontrada": "No se encontró la incidencia."
-}
+  "noEncontrada": "No se encontró la incidencia.",
+  "vehiculo": {
+    "picoYPlacaTitle": "Consultar Pico y Placa",
+    "picoYPlacaDesc": "¿No estás seguro de si este vehículo tiene restricción de movilidad hoy? Consulta la información oficial a nivel nacional para planificar tu ruta y evitar multas o contratiempos durante tu reserva. Recuerda que las restricciones pueden variar según la ciudad y el día de la semana, por lo que es vital estar informado antes de viajar.",
+    "goToPage": "Ir a la página oficial",
+    "stepDates": "Fechas y ubicación",
+    "stepDatesSub": "Completa los detalles de tu reserva",
+    "stepProtection": "Protección y extras",
+    "stepProtectionSub": "Personaliza tu experiencia",
+    "personalData": "Datos personales",
+    "personalDataSub": "Finaliza tu reserva"
+  }
 };
+
