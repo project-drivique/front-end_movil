@@ -20,6 +20,7 @@ import {
   esNacionalidadColombiana,
   getTiposDocumento,
 } from "../constants/reservation.constants";
+import { getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
 import { TipoDocumento } from "../types/reservation.types";
 import { aCentavos, construirUrlCheckout } from "../services/wompiService";
 import {
@@ -92,6 +93,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const actualizarDatosPersonales = useReservaStore(
     (s) => s.actualizarDatosPersonales,
   );
+  const actualizarFechasLugar = useReservaStore((s) => s.actualizarFechasLugar);
   const fechasLugar = useReservaStore((s) => s.fechasLugar);
   const planes = useReservaStore((s) => s.planes);
   const documentos = useReservaStore((s) => s.documentos);
@@ -114,6 +116,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     };
   }, [usuarioGlobal.id]);
   const [alertaFaltantesVisible, setAlertaFaltantesVisible] = useState(false);
+  const [alertaHorarioVisible, setAlertaHorarioVisible] = useState(false);
   const [alertaEfectivoVisible, setAlertaEfectivoVisible] = useState(false);
   const [alertaErrorPagoVisible, setAlertaErrorPagoVisible] = useState(false);
   const [alertaCancelarProcesoVisible, setAlertaCancelarProcesoVisible] = useState(false);
@@ -229,12 +232,40 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const cotizacion = useServerQuote({ vehiculo, fechasLugar, planes, cuponCodigo: cuponAplicado?.codigo });
   const total = cotizacion ? Number(cotizacion.estimatedTotal) : totalLocal;
 
-  const handleConfirmarReserva = async () => {
-    if (!datosCompletos) {
-      setAlertaFaltantesVisible(true);
-      return;
+  const branchName = fechasLugar.lugarRetiro || vehiculo.sucursal || "";
+  const horario = useMemo(() => getHorarioSucursal(branchName), [branchName]);
+
+  const checkOutsideSchedule = () => {
+    if (fechasLugar.fueraDeHorarioAceptado) return false;
+    let nowBogota = "12:00";
+    try {
+      nowBogota = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "America/Bogota",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(new Date());
+    } catch {
+      const now = new Date();
+      nowBogota = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     }
 
+    const openRaw = (horario.horaApertura || "08:00").slice(0, 5);
+    const closeRaw = (horario.horaCierre || "18:00").slice(0, 5);
+
+    const is24h =
+      (openRaw === "00:00" && (closeRaw === "23:59" || closeRaw === "23:30" || closeRaw === "24:00")) ||
+      openRaw === closeRaw;
+    if (is24h) return false;
+
+    if (openRaw < closeRaw) {
+      return nowBogota < openRaw || nowBogota > closeRaw;
+    } else {
+      return nowBogota < openRaw && nowBogota > closeRaw;
+    }
+  };
+
+  const ejecutarCreacionReserva = async (fueraDeHorario = false) => {
     setProcesandoPago(true);
     try {
       if (documentos.cedulaFrente || documentos.licenciaConduccion) {
@@ -247,9 +278,13 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         });
       }
 
+      const fechasAUsar = fueraDeHorario
+        ? { ...fechasLugar, fueraDeHorarioAceptado: true }
+        : fechasLugar;
+
       const creada = await reservaPersistService.crear({
         vehiculo,
-        fechasLugar,
+        fechasLugar: fechasAUsar,
         planes,
         cupon: cuponAplicado,
       });
@@ -257,7 +292,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
       if (creada.metodoPago === "efectivo") {
         setModalInstruccionesEfectivoVisible(true);
-      } else if (creada.estado === "PENDIENTE_HORARIO" || fechasLugar.fueraDeHorarioAceptado) {
+      } else if (creada.estado === "PENDIENTE_HORARIO" || fueraDeHorario || fechasLugar.fueraDeHorarioAceptado) {
         limpiarReserva();
         router.replace("/(tabs)/my-bookings");
       } else if (creada.estado === "PENDIENTE") {
@@ -271,6 +306,20 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     } finally {
       setProcesandoPago(false);
     }
+  };
+
+  const handleConfirmarReserva = async () => {
+    if (!datosCompletos) {
+      setAlertaFaltantesVisible(true);
+      return;
+    }
+
+    if (checkOutsideSchedule() && !fechasLugar.fueraDeHorarioAceptado) {
+      setAlertaHorarioVisible(true);
+      return;
+    }
+
+    await ejecutarCreacionReserva(false);
   };
 
   const handleIrAMisReservas = () => {
@@ -666,10 +715,47 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       <AlertModal
         visible={alertaFaltantesVisible}
         icono="alert-circle-outline"
-        titulo={t("reserva.datosPersonales.alertaFaltantesTitulo")}
-        mensaje={t("reserva.datosPersonales.alertaFaltantesMensaje")}
-        botones={[]}
+        titulo={t("reserva.datosPersonales.alertaFaltantesTitulo", { defaultValue: "Información incompleta" })}
+        mensaje={t("reserva.datosPersonales.alertaFaltantesMensaje", {
+          defaultValue: "Por favor completa todos los campos obligatorios y adjunta los documentos requeridos para confirmar tu reserva.",
+        })}
+        botones={[
+          {
+            texto: t("comun.entendido", { defaultValue: "Entendido" }),
+            variante: "primario",
+            onPress: () => setAlertaFaltantesVisible(false),
+          },
+        ]}
         onCerrar={() => setAlertaFaltantesVisible(false)}
+      />
+
+      <AlertModal
+        visible={alertaHorarioVisible}
+        icono="time-outline"
+        titulo={t("reserva.horario.titulo", { defaultValue: "Sucursal fuera de horario de atención" })}
+        mensaje={t("reserva.horario.mensaje", {
+          sucursal: branchName || t("reserva.horario.laSucursal", { defaultValue: "la sucursal" }),
+          apertura: horario.horaApertura,
+          cierre: horario.horaCierre,
+          defaultValue: `La sucursal ${branchName} tiene un horario de atención de ${horario.horaApertura} a ${horario.horaCierre}.\n\n⏱️ En este momento se encuentra cerrada, pero puedes registrar tu reserva ahora y quedará en estado PENDIENTE.\n\nMañana a las ${horario.horaApertura} te notificaremos por correo electrónico, notificación web y push para que puedas continuar con tu reserva.`,
+        })}
+        botones={[
+          {
+            texto: t("reserva.horario.modificar", { defaultValue: "Regresar" }),
+            variante: "secundario",
+            onPress: () => setAlertaHorarioVisible(false),
+          },
+          {
+            texto: t("reserva.horario.aceptar", { defaultValue: "Registrar como pendiente" }),
+            variante: "primario",
+            onPress: () => {
+              actualizarFechasLugar({ fueraDeHorarioAceptado: true });
+              setAlertaHorarioVisible(false);
+              ejecutarCreacionReserva(true);
+            },
+          },
+        ]}
+        onCerrar={() => setAlertaHorarioVisible(false)}
       />
 
       <AlertModal

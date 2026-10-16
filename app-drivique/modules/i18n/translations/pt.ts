@@ -1124,8 +1124,8 @@ export default {
       "numeroCelular": "NÚMERO DE TELEMÓVEL *",
       "tipoDeDocumento": "TIPO DE DOCUMENTO *",
       "numeroDeDocumento": "NÚMERO DE DOCUMENTO *",
-      "alertaFaltantesTitulo": "Faltam dados a preencher",
-      "alertaFaltantesMensaje": "Complete os seus dados pessoais, carregue os seus documentos e aceite os termos e condições antes de confirmar a reserva.",
+      "alertaFaltantesTitulo": "Informação incompleta",
+      "alertaFaltantesMensaje": "Por favor, complete todos os campos obrigatórios e anexe os documentos necessários para confirmar sua reserva.",
       "tiposDocumento": {
         "CC": "Cédula de Cidadania (CC)",
         "CE": "Cédula de Estrangeiro (CE)",

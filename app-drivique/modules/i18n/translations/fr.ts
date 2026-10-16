@@ -1124,8 +1124,8 @@ export default {
       "numeroCelular": "NUMÉRO DE MOBILE *",
       "tipoDeDocumento": "TYPE DE DOCUMENT *",
       "numeroDeDocumento": "NUMÉRO DE DOCUMENT *",
-      "alertaFaltantesTitulo": "Informations manquantes",
-      "alertaFaltantesMensaje": "Complétez vos informations personnelles, téléchargez vos documents et acceptez les conditions générales avant de confirmer votre réservation.",
+      "alertaFaltantesTitulo": "Informations incomplètes",
+      "alertaFaltantesMensaje": "Veuillez remplir tous les champs obligatoires et joindre les documents requis pour confirmer votre réservation.",
       "tiposDocumento": {
         "CC": "Carte d'identité (CC)",
         "CE": "Carte de séjour / étranger (CE)",

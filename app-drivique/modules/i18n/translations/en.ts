@@ -1124,8 +1124,8 @@ export default {
       "numeroCelular": "MOBILE NUMBER *",
       "tipoDeDocumento": "DOCUMENT TYPE *",
       "numeroDeDocumento": "DOCUMENT NUMBER *",
-      "alertaFaltantesTitulo": "Some info is missing",
-      "alertaFaltantesMensaje": "Complete your personal details, upload your documents and accept the terms and conditions before confirming your booking.",
+      "alertaFaltantesTitulo": "Incomplete information",
+      "alertaFaltantesMensaje": "Please complete all required fields and attach the required documents to confirm your booking.",
       "tiposDocumento": {
         "CC": "Citizenship ID (CC)",
         "CE": "Foreigner ID (CE)",
