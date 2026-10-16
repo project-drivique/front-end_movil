@@ -329,6 +329,14 @@ export default function FormFechasLugar({ vehiculo }: Props) {
               {`${nombreSucursal}${ciudadEntregaNombre ? ` · ${ciudadEntregaNombre}` : ""}`}
             </Text>
           </View>
+          <View style={styles.notaPuntoAutorizadoRow}>
+            <Ionicons name="information-circle-outline" size={14} color={c.textMuted} />
+            <Text style={[styles.notaPuntoAutorizadoTexto, { color: c.textMuted }]}>
+              {t("reserva.fechasLugar.notaPagoEfectivo", {
+                defaultValue: "El pago solo está autorizado para la sucursal donde se encuentra el vehículo.",
+              })}
+            </Text>
+          </View>
         </View>
       )}
 
@@ -813,6 +821,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   puntoAutorizadoTexto: { fontSize: 12, fontWeight: "400" },
+  notaPuntoAutorizadoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 6,
+    paddingHorizontal: 2,
+  },
+  notaPuntoAutorizadoTexto: {
+    fontSize: 11,
+    flex: 1,
+    lineHeight: 15,
+  },
   selectBox: {
     flex: 1,
     borderWidth: 1,
