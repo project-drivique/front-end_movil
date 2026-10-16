@@ -329,14 +329,6 @@ export default function FormFechasLugar({ vehiculo }: Props) {
               {`${nombreSucursal}${ciudadEntregaNombre ? ` · ${ciudadEntregaNombre}` : ""}`}
             </Text>
           </View>
-          <View style={styles.notaPuntoAutorizadoRow}>
-            <Ionicons name="information-circle-outline" size={14} color={c.textMuted} />
-            <Text style={[styles.notaPuntoAutorizadoTexto, { color: c.textMuted }]}>
-              {t("reserva.fechasLugar.notaPagoEfectivo", {
-                defaultValue: "El pago solo está autorizado para la sucursal donde se encuentra el vehículo.",
-              })}
-            </Text>
-          </View>
         </View>
       )}
 
