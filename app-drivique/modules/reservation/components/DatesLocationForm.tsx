@@ -10,7 +10,6 @@ import SelectorSucursalModal, { OpcionLugar } from "./BranchSelectorModal";
 import SelectorHoraModal from "./TimeSelectorModal";
 import { AlertaPagoEfectivo } from "./CashPaymentAlert";
 import { AlertModal } from "@/components/ui/AlertModal";
-import { PicoYPlacaCard } from "./PicoYPlacaCard";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { COLOR_ACENTO } from "@/constants/brandPalette";
@@ -645,8 +644,6 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         </View>
       )}
 
-      {/* --- CONSULTAR PICO Y PLACA (IDÉNTICO A WEB) --- */}
-      <PicoYPlacaCard />
 
       <SelectorSucursalModal
         visible={modalTipo !== null}

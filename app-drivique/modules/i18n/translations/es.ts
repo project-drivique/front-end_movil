@@ -500,6 +500,8 @@ export default {
     "estrellas": "estrellas"
   },
   "vehiculo": {
+    "selectNationalityFirst": "Primero selecciona tu nacionalidad",
+    "selectDocTypeFirst": "Primero selecciona tu tipo de documento",
     "volverCatalogo": "Volver al catálogo",
     "reservarAhora": "Reservar ahora",
     "noDisponible": "No disponible",
