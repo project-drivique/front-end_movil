@@ -4,6 +4,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   Linking,
   ScrollView,
@@ -55,8 +56,9 @@ export default function VehiculoDetallePage() {
   const { t } = useTranslation();
   const c = useTemaColores();
   const insets = useSafeAreaInsets();
-  const { id, descuentoPorcentaje } = useLocalSearchParams<{
+  const { id, from, descuentoPorcentaje } = useLocalSearchParams<{
     id: string;
+    from?: string;
     promoId?: string;
     descuentoPorcentaje?: string;
   }>();
@@ -66,13 +68,18 @@ export default function VehiculoDetallePage() {
 
   useReferenceStore((st) => st.sucursales);
   const [vehiculo, setVehiculo] = useState<Vehiculo | null>(null);
+  const [cargando, setCargando] = useState(true);
   const [caracteristicas, setCaracteristicas] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     if (id) {
-      catalogoService.getVehiculoPorId(id).then((v) => {
-        if (v) setVehiculo(v);
-      }).catch(() => {});
+      setCargando(true);
+      catalogoService.getVehiculoPorId(id)
+        .then((v) => {
+          if (v) setVehiculo(v);
+        })
+        .catch(() => {})
+        .finally(() => setCargando(false));
     }
   }, [id]);
 
@@ -97,16 +104,33 @@ export default function VehiculoDetallePage() {
     Animated.timing(opacidad, { toValue: 1, duration: 350, useNativeDriver: true }).start();
   }, [opacidad]);
 
-  const volverCatalogo = () =>
-    router.canGoBack() ? router.back() : router.replace("/(tabs)/catalog");
+  const volver = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else if (from === "favorites") {
+      router.replace("/(tabs)/favorites");
+    } else {
+      router.replace("/(tabs)/catalog");
+    }
+  };
+
+  if (cargando) {
+    return (
+      <View style={[s.contenedorVacio, { backgroundColor: c.bg, paddingTop: insets.top, justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={c.primary} />
+      </View>
+    );
+  }
 
   if (!vehiculo) {
     return (
       <View style={[s.contenedorVacio, { backgroundColor: c.bg, paddingTop: insets.top }]}>
         <Ionicons name="alert-circle-outline" size={40} color={c.textMuted} />
         <Text style={[s.vacioTexto, { color: c.textSecondary }]}>{t("vehiculo.noDisponible")}</Text>
-        <TouchableOpacity style={s.vacioBtn} onPress={volverCatalogo}>
-          <Text style={[s.vacioBtnTexto, { color: c.primary }]}>{t("vehiculo.volverCatalogo")}</Text>
+        <TouchableOpacity style={s.vacioBtn} onPress={volver}>
+          <Text style={[s.vacioBtnTexto, { color: c.primary }]}>
+            {from === "favorites" ? t("tabs.misFavoritos", { defaultValue: "Volver a favoritos" }) : t("vehiculo.volverCatalogo")}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -170,7 +194,7 @@ export default function VehiculoDetallePage() {
       {/* Top Header con botón Volver (<) */}
       <View style={[s.topHeader, { backgroundColor: bgPantalla, borderBottomColor: colorBorde }]}>
         <TouchableOpacity
-          onPress={volverCatalogo}
+          onPress={volver}
           style={s.volverBtn}
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}

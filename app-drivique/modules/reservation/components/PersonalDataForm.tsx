@@ -251,6 +251,9 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
       if (creada.metodoPago === "efectivo") {
         setModalInstruccionesEfectivoVisible(true);
+      } else if (creada.estado === "PENDIENTE_HORARIO" || fechasLugar.fueraDeHorarioAceptado) {
+        limpiarReserva();
+        router.replace("/(tabs)/my-bookings");
       } else if (creada.estado === "PENDIENTE") {
         setModalReservaVisible(true);
       } else {

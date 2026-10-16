@@ -34,7 +34,7 @@ export default function FavoritesScreen() {
   const handleCardPress = (id: string) => {
     router.push({
       pathname: "/vehicle/[id]",
-      params: { id: id.toString() }
+      params: { id: id.toString(), from: "favorites" }
     } as any);
   };
 
