@@ -127,10 +127,9 @@ export default function SelectorHoraModal({
 
         let bloqueada = false;
 
-        // Si la fecha elegida es hoy y la hora ya pasó en tiempo real
         if (esPasado) {
           bloqueada = true;
-        } else if (esHoy && totalMin <= ahoraMinutos) {
+        } else if (esHoy && totalMin < ahoraMinutos) {
           bloqueada = true;
         } else if (minLimiteMinutos >= 0 && totalMin <= minLimiteMinutos) {
           bloqueada = true;

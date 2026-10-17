@@ -14,6 +14,15 @@ import { useAuthStore } from "@/store/authStore";
 
 WebBrowser.maybeCompleteAuthSession();
 
+if (typeof window !== "undefined" && window.addEventListener) {
+  window.addEventListener("unhandledrejection", (event) => {
+    const msg = event?.reason?.message || String(event?.reason || "");
+    if (msg.includes("12000ms") || msg.includes("timeout exceeded")) {
+      event.preventDefault();
+    }
+  });
+}
+
 export default function RootLayout() {
   const { temaActual } = useIdioma();
   const token = useAuthStore((s) => s.token);

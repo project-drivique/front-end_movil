@@ -26,7 +26,15 @@ export interface UserDocumentDTO {
   createdAt?: string
 }
 
-const CODIGO_DOCUMENTO: Record<string, string> = { PASSPORT: 'Pasaporte' }
+const CODIGO_DOCUMENTO: Record<string, string> = {
+  PASSPORT: 'Pasaporte',
+  DRIVER_LICENSE: 'Licencia de Conducción',
+  CC: 'CC',
+  CE: 'CE',
+  DNI: 'DNI',
+  PPT: 'PPT',
+  PEP: 'PEP',
+}
 
 export function mapPerfil(data: any): UsuarioPerfil {
   const codigo = String(data.documentTypeCode || '')
@@ -50,14 +58,19 @@ export async function obtenerPerfil(_token?: string): Promise<UsuarioPerfil> {
   return mapPerfil(data)
 }
 
-export async function actualizarPerfil(_token: string, datos: FormEditarPerfil): Promise<UsuarioPerfil> {
+export async function actualizarPerfil(
+  _token: string,
+  datos: FormEditarPerfil & { numeroDocumento?: string; tipoDocumento?: string }
+): Promise<UsuarioPerfil> {
   const payload = {
     firstName: datos.nombres.trim(),
     lastName: datos.apellidos.trim(),
     phone: datos.telefono.trim(),
     birthDate: datos.fechaNacimiento || undefined,
     nationalityId: datos.nacionalidad || undefined,
-    address: datos.direccion.trim() || undefined,
+    address: datos.direccion ? datos.direccion.trim() : undefined,
+    documentNumber: datos.numeroDocumento ? datos.numeroDocumento.trim() : undefined,
+    documentTypeCode: datos.tipoDocumento || undefined,
   }
   const { data } = await apiClient.put('/users/me', payload)
   return mapPerfil(data)

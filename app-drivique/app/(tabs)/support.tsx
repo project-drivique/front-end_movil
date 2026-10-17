@@ -173,7 +173,7 @@ export default function SupportScreen() {
         if (activo) {
           const filtradas = data.filter((r) => {
             const grupo = calcularGrupoReserva(r);
-            return grupo === "en_curso" || grupo === "finalizada";
+            return grupo === "en_curso";
           });
           setReservasValidas(filtradas);
         }

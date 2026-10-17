@@ -374,11 +374,17 @@ export default function VehiculoDetallePage() {
                 <Text style={[s.filaTarifaLabel, { color: colorTextoPrimario }]}>
                   {t("catalogo.detalles.kmLimitado", { defaultValue: "Kilometraje limitado" })}
                 </Text>
-                <Text style={[s.filaTarifaPrecio, { color: colorTextoPrimario }]}>
-                  {formatCurrency(tarifas.kmLimitado?.precio ?? 60000, monedaActual, tasaUSD)}
-                  {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
-                    ? t("vehiculo.porDia", { defaultValue: "/día" })
-                    : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
+                <Text style={[s.filaTarifaPrecio, { color: tarifas.kmLimitado?.precio === 0 ? '#10b981' : colorTextoPrimario }]}>
+                  {tarifas.kmLimitado?.precio === 0 ? (
+                    t("vehiculo.includedInBaseRate", { defaultValue: "Incluido en la tarifa" }) + " (+$0)"
+                  ) : (
+                    <>
+                      {formatCurrency(tarifas.kmLimitado?.precio ?? 60000, monedaActual, tasaUSD)}
+                      {t("vehiculo.porDia", { defaultValue: "/día" }).startsWith("/")
+                        ? t("vehiculo.porDia", { defaultValue: "/día" })
+                        : ` /${t("vehiculo.porDia", { defaultValue: "día" })}`}
+                    </>
+                  )}
                 </Text>
               </View>
               <View style={[s.divisorFila, { backgroundColor: colorBorde }]} />

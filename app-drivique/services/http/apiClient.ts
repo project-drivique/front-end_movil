@@ -7,6 +7,7 @@ const baseURL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080/api/v
 export const apiClient = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30000,
 })
 
 let refreshRequest: Promise<string> | null = null

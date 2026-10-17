@@ -100,6 +100,10 @@ export default function PagoRespuestaScreen() {
 
   useEffect(() => {
     cargar();
+    const interval = setInterval(() => {
+      cargar();
+    }, 4000);
+    return () => clearInterval(interval);
   }, [cargar]);
 
   useEffect(() => {
@@ -131,8 +135,11 @@ export default function PagoRespuestaScreen() {
         pathname: "/wompi-checkout" as any,
         params: { url: encodeURIComponent(url), ref: encodeURIComponent(reserva.id) },
       });
-    } catch {
-      Alert.alert(t("comun.error"), t("reserva.confirmacion.errorWompi"));
+    } catch (e: any) {
+      Alert.alert(
+        t("comun.error", { defaultValue: "Error" }),
+        e?.message || t("reserva.confirmacion.errorWompi", { defaultValue: "No se pudo abrir la pasarela de pago de Wompi." })
+      );
     }
   };
 
@@ -184,12 +191,15 @@ export default function PagoRespuestaScreen() {
 
   const grupo = calcularGrupoReserva(reserva);
   const color = COLOR_GRUPO[grupo];
-  const enRevision = reserva.estado === "PENDIENTE_VALIDACION";
-  const enHorario = reserva.estado === "PENDIENTE_HORARIO";
-  const esperaPagoWompi = reserva.estado === "PENDIENTE" && reserva.metodoPago === "wompi";
+  const enRevision = reserva.estado === "PENDIENTE_VALIDACION" || reserva.estadoApi === "PENDING_DOCUMENT_REVIEW";
+  const enHorario = reserva.estado === "PENDIENTE_HORARIO" || reserva.estadoApi === "PENDING_SCHEDULE";
+  const pendienteFirma = reserva.estado === "PENDIENTE_FIRMA" || reserva.estadoApi === "PENDING_SIGNATURE";
+  const esperaPagoWompi =
+    (reserva.estado === "PENDIENTE" || reserva.estadoApi === "PENDING_PAYMENT") &&
+    reserva.metodoPago === "wompi";
   const esperaPagoEfectivo = reserva.estado === "PENDIENTE_EFECTIVO";
   const puedeCancelar = grupo === "pendiente" || reserva.estado === "CONFIRMADA";
-  const tieneContrato = ["CONFIRMADA", "EN_CURSO", "FINALIZADA"].includes(reserva.estado);
+  const tieneContrato = ["CONFIRMADA", "EN_CURSO", "FINALIZADA", "PENDIENTE_FIRMA"].includes(reserva.estado) || pendienteFirma;
   const vehiculo = reserva.vehiculoSnapshot;
   const foto = vehiculo?.imagenes?.[0];
   const sucursalEfectivo = nombreSucursalEfectivo(reserva);
@@ -198,7 +208,9 @@ export default function PagoRespuestaScreen() {
     ? t("misReservas.detalle.enRevisionDocumentos", { defaultValue: "En revisión de documentos" })
     : enHorario
       ? t("misReservas.detalle.pendienteHorario", { defaultValue: "Pendiente de atención de la sucursal" })
-      : t(`misReservas.grupos.${grupo}`);
+      : (pendienteFirma
+        ? t("misReservas.detalle.pendienteFirma", { defaultValue: "Pendiente de firma de contrato" })
+        : t(`misReservas.grupos.${grupo}`));
 
   return (
     <View style={[s.flex, { backgroundColor: c.bg, paddingTop: insets.top }]}>
@@ -308,9 +320,27 @@ export default function PagoRespuestaScreen() {
           <Boton texto={t("reserva.confirmacion.pagarConWompi")} onPress={pagarConWompi} />
         ) : null}
 
+        {pendienteFirma ? (
+          <View style={[s.aviso, { borderColor: primaryAccent, backgroundColor: c.primaryBg }]}>
+            <Text style={[s.avisoTitulo, { color: primaryAccent }]}>
+              {t("misReservas.detalle.pendienteFirmaTitulo", { defaultValue: "Firma de Contrato Digital Pendiente" })}
+            </Text>
+            <Text style={[s.avisoTexto, { color: c.textSecondary }]}>
+              {t("misReservas.detalle.pendienteFirmaTexto", {
+                defaultValue:
+                  "Tu pago ha sido registrado exitosamente. Para confirmar tu reserva, debes firmar digitalmente el contrato de alquiler.",
+              })}
+            </Text>
+          </View>
+        ) : null}
+
         {tieneContrato ? (
           <Boton
-            texto={t("misReservas.verContrato")}
+            texto={
+              pendienteFirma
+                ? t("misReservas.firmarContrato", { defaultValue: "Proceder a firmar contrato" })
+                : t("misReservas.verContrato")
+            }
             onPress={() => router.push(`/contract-view?ref=${encodeURIComponent(reserva.id)}` as any)}
           />
         ) : null}
@@ -323,7 +353,7 @@ export default function PagoRespuestaScreen() {
           />
         ) : null}
 
-        {(grupo === "en_curso" || grupo === "finalizada" || grupo === "confirmada") && (
+        {grupo === "en_curso" && (
           <Boton
             secundario
             texto={t("tabs.hacerReporte")}

@@ -993,7 +993,7 @@ export default {
       "entregaAeropuerto": "Airport delivery",
       "entregaTerminal": "Bus terminal delivery",
       "devolverEnSucursal": "Return at branch ({{sucursal}})",
-      "devolucionDomicilio": "Home pickup-back",
+      "devolucionDomicilio": "Home delivery",
       "devolucionAeropuerto": "Airport return",
       "devolucionTerminal": "Bus terminal return",
       "horaNoDisponibleTitulo": "Time not available",

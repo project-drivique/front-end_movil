@@ -94,20 +94,20 @@ export default function EditDatesLocationSection({
     if (esWompi) {
       base.push({
         value: "domicilio",
-        label: t("reserva.fechasLugar.entregaDomicilio"),
+        label: t("reserva.fechasLugar.entregaDomicilio", { defaultValue: "Domicilio a casa" }),
         icono: "home-outline",
       });
       if (ciudadInfo?.tieneAeropuerto === true) {
         base.push({
           value: "aeropuerto",
-          label: t("reserva.fechasLugar.entregaAeropuerto"),
+          label: t("reserva.fechasLugar.entregaAeropuerto", { defaultValue: "Entrega en aeropuerto" }),
           icono: "airplane-outline",
         });
       }
       if (ciudadInfo?.tieneTerminal === true) {
         base.push({
           value: "terminal",
-          label: t("reserva.fechasLugar.entregaTerminal"),
+          label: t("reserva.fechasLugar.entregaTerminal", { defaultValue: "Entrega en terminal de transporte" }),
           icono: "bus-outline",
         });
       }
@@ -119,27 +119,27 @@ export default function EditDatesLocationSection({
     const base: OpcionLugar[] = [
       {
         value: nombreSucursal,
-        label: t("reserva.fechasLugar.devolverEnSucursal", { sucursal: nombreSucursal }),
+        label: t("reserva.fechasLugar.devolverEnSucursal", { sucursal: nombreSucursal, defaultValue: `Devolver en sucursal (${nombreSucursal})` }),
         icono: "business-outline",
       },
     ];
     if (esWompi) {
       base.push({
         value: "domicilio",
-        label: t("reserva.fechasLugar.devolucionDomicilio"),
+        label: t("reserva.fechasLugar.devolucionDomicilio", { defaultValue: "Domicilio a casa" }),
         icono: "home-outline",
       });
       if (ciudadInfo?.tieneAeropuerto === true) {
         base.push({
           value: "aeropuerto",
-          label: t("reserva.fechasLugar.devolucionAeropuerto"),
+          label: t("reserva.fechasLugar.devolucionAeropuerto", { defaultValue: "Devolución en aeropuerto" }),
           icono: "airplane-outline",
         });
       }
       if (ciudadInfo?.tieneTerminal === true) {
         base.push({
           value: "terminal",
-          label: t("reserva.fechasLugar.devolucionTerminal"),
+          label: t("reserva.fechasLugar.devolucionTerminal", { defaultValue: "Devolución en terminal de transporte" }),
           icono: "bus-outline",
         });
       }
@@ -905,8 +905,6 @@ export default function EditDatesLocationSection({
               }
             : null
         }
-        horaApertura={horaVisible === "retiro" ? horarioRetiro.horaApertura : horarioDevolucion.horaApertura}
-        horaCierre={horaVisible === "retiro" ? horarioRetiro.horaCierre : horarioDevolucion.horaCierre}
         nombreSucursal={horaVisible === "retiro" ? (draft.lugarRetiro || nombreSucursal) : (draft.lugarDevolucion || nombreSucursal)}
         horaSeleccionada={horaVisible === "retiro" ? draft.horaRetiro : draft.horaDevolucion}
         onSeleccionar={handleElegirHora}

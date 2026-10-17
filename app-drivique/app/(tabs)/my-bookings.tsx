@@ -190,18 +190,28 @@ export default function MisReservasScreen() {
   useFocusEffect(
     useCallback(() => {
       let activo = true;
-      (async () => {
+
+      const cargar = async (silencioso = false) => {
         try {
           const data = await reservaPersistService.getReservasUsuario();
           if (activo) setReservas([...data].sort(ordenarPorCreacionDesc));
         } catch (e) {
-          if (activo) setErrorCarga(mensajeDeError(e, t("misReservas.errorCarga", { defaultValue: "No se pudieron cargar tus reservas." })));
+          if (activo && !silencioso) {
+            setErrorCarga(mensajeDeError(e, t("misReservas.errorCarga", { defaultValue: "No se pudieron cargar tus reservas." })));
+          }
         } finally {
-          if (activo) setCargando(false);
+          if (activo && !silencioso) setCargando(false);
         }
-      })();
+      };
+
+      cargar(false);
+      const interval = setInterval(() => {
+        cargar(true);
+      }, 4000);
+
       return () => {
         activo = false;
+        clearInterval(interval);
       };
     }, [t])
   );
@@ -586,7 +596,9 @@ function TarjetaReserva({
               <Text style={[styles.badgeTexto, { color: COLOR_GRUPO[grupo] }]} numberOfLines={1}>
                 {reserva.estado === "PENDIENTE_VALIDACION"
                   ? t("misReservas.detalle.enRevisionDocumentos", { defaultValue: "En revisión de documentos" })
-                  : t(`misReservas.grupos.${grupo}`)}
+                  : (reserva.estado === "PENDIENTE_FIRMA"
+                    ? t("misReservas.detalle.pendienteFirma", { defaultValue: "Pendiente de firma" })
+                    : t(`misReservas.grupos.${grupo}`))}
               </Text>
             </View>
           </View>
@@ -605,7 +617,7 @@ function TarjetaReserva({
             <Text style={[styles.tarjetaTotal, { color: c.textPrimary }]}>{fmt(reserva.total)}</Text>
           </View>
 
-          {(grupo === "en_curso" || grupo === "finalizada" || grupo === "confirmada") && (
+          {grupo === "en_curso" && (
             <TouchableOpacity
               style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
               onPress={(e) => {

@@ -253,15 +253,22 @@ export const SIGLA_DOCUMENTO: Record<string, string> = {
   CC: "CC",
   CE: "CE",
   Pasaporte: "PAS",
+  PASAPORTE: "PAS",
   DNI: "DNI",
   PPT: "PPT",
   PEP: "PEP",
+  DRIVER_LICENSE: "LIC",
+  LICENCIA: "LIC",
+  LICENCIA_CONDUCCION: "LIC",
   "Doc. Extranjero": "DOC",
 };
 
 export function getSiglaDocumento(tipo: string | null | undefined): string {
   if (!tipo) return "";
-  return SIGLA_DOCUMENTO[tipo] || tipo;
+  const t = String(tipo).trim().toUpperCase();
+  if (t === "DRIVER_LICENSE" || t === "LICENCIA" || t === "LICENCIA_CONDUCCION") return "LIC";
+  if (t === "PASAPORTE" || t === "PASSPORT") return "PAS";
+  return SIGLA_DOCUMENTO[tipo] || SIGLA_DOCUMENTO[t] || tipo;
 }
 
 export function getTiposDocumento(
@@ -316,24 +323,28 @@ export function esNacionalidadColombiana(id: string | null | undefined): boolean
 // Prefijo telefónico idéntico a Web según la nacionalidad elegida
 export function getPrefijoPorNacionalidad(nacionalidad: string | null | undefined): string {
   if (!nacionalidad) return "";
+  const nStr = String(nacionalidad).trim();
   const nApi = useReferenceStore
     .getState()
     .nacionalidades.find(
       (n) =>
-        n.id === nacionalidad ||
-        n.name.toLowerCase() === String(nacionalidad).toLowerCase() ||
-        n.isoCode?.toLowerCase() === String(nacionalidad).toLowerCase()
+        n.id === nStr ||
+        n.name.toLowerCase() === nStr.toLowerCase() ||
+        n.isoCode?.toLowerCase() === nStr.toLowerCase()
     );
-  const nombreBuscado = nApi?.name || nacionalidad;
+  const nombreBuscado = nApi?.name || nStr;
   const isoBuscado = nApi?.isoCode;
 
   const p = paisesMock.find(
     (item) =>
-      item.nombre.toLowerCase() === String(nombreBuscado).toLowerCase() ||
+      item.nombre.toLowerCase() === nombreBuscado.toLowerCase() ||
       (isoBuscado && item.iso.toLowerCase() === isoBuscado.toLowerCase()) ||
-      item.iso.toLowerCase() === String(nacionalidad).toLowerCase()
+      item.iso.toLowerCase() === nStr.toLowerCase()
   );
-  return p?.prefijo || "";
+  if (p?.prefijo) return p.prefijo;
+
+  if (esNacionalidadColombiana(nStr)) return "+57";
+  return "";
 }
 
 // Tipos de archivo aceptados por el selector de documentos

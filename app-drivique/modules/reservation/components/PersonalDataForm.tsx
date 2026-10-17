@@ -3,6 +3,7 @@ import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { useReferenceStore } from "@/store/referenceStore";
 import { useReservaStore } from "@/store/reservationStore";
 import { useUsuarioStore } from "@/store/userStore";
+import { obtenerPerfil, actualizarPerfil } from "@/modules/profile/services/profileService";
 import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Platform, StyleSheet, Text, TextInput, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -115,6 +116,40 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       activo = false;
     };
   }, [usuarioGlobal.id]);
+
+  useEffect(() => {
+    let activo = true;
+    obtenerPerfil()
+      .then((perfil) => {
+        if (!activo || !perfil) return;
+        actualizarUsuarioGlobal(perfil);
+        const nombreCompleto = combinarNombreCompleto(perfil.nombres, perfil.apellidos);
+        const tel = String(perfil.telefono || "").replace(/\D/g, "");
+        const celular = tel.startsWith("57") && tel.length > 10 ? tel.slice(2) : tel;
+        const tipoDocStr = String(perfil.tipoDocumento || "");
+        const tipoDoc =
+          tipoDocStr === "DRIVER_LICENSE" || tipoDocStr === "Licencia de Conducción" || tipoDocStr === "LIC"
+            ? null
+            : perfil.tipoDocumento;
+
+        const precarga: Partial<typeof datosPersonales> = {};
+        if (nombreCompleto) precarga.nombreCompleto = nombreCompleto;
+        if (perfil.correo) precarga.correo = perfil.correo;
+        if (celular) precarga.celular = celular;
+        if (perfil.nacionalidad) precarga.nacionalidad = perfil.nacionalidad;
+        if (tipoDoc) precarga.tipoDocumento = tipoDoc as any;
+        if (perfil.numeroDocumento) precarga.numeroDocumento = perfil.numeroDocumento;
+
+        if (Object.keys(precarga).length > 0) {
+          actualizarDatosPersonales(precarga);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      activo = false;
+    };
+  }, []);
+
   const [alertaFaltantesVisible, setAlertaFaltantesVisible] = useState(false);
   const [alertaHorarioVisible, setAlertaHorarioVisible] = useState(false);
   const [alertaEfectivoVisible, setAlertaEfectivoVisible] = useState(false);
@@ -129,15 +164,14 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const brandBg = c.oscuro ? COLOR_MARCA_OSCURO : COLOR_MARCA;
 
   useEffect(() => {
+    if (!usuarioGlobal) return;
     const precarga: Partial<typeof datosPersonales> = {};
-    if (
-      !datosPersonales.nombreCompleto &&
-      (usuarioGlobal.nombres || usuarioGlobal.apellidos)
-    ) {
-      precarga.nombreCompleto = combinarNombreCompleto(
-        usuarioGlobal.nombres,
-        usuarioGlobal.apellidos,
-      );
+    const nombreCompleto = combinarNombreCompleto(
+      usuarioGlobal.nombres,
+      usuarioGlobal.apellidos,
+    );
+    if (!datosPersonales.nombreCompleto && nombreCompleto) {
+      precarga.nombreCompleto = nombreCompleto;
     }
     if (!datosPersonales.correo && usuarioGlobal.correo) {
       precarga.correo = usuarioGlobal.correo;
@@ -145,23 +179,29 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     if (!datosPersonales.nacionalidad && usuarioGlobal.nacionalidad) {
       precarga.nacionalidad = usuarioGlobal.nacionalidad;
     }
-    if (!datosPersonales.tipoDocumento && usuarioGlobal.tipoDocumento) {
-      precarga.tipoDocumento = usuarioGlobal.tipoDocumento;
+    const tipoDocGlobalStr = String(usuarioGlobal.tipoDocumento || "");
+    const tipoDoc =
+      tipoDocGlobalStr === "DRIVER_LICENSE" || tipoDocGlobalStr === "Licencia de Conducción" || tipoDocGlobalStr === "LIC"
+        ? null
+        : usuarioGlobal.tipoDocumento;
+    if (!datosPersonales.tipoDocumento && tipoDoc) {
+      precarga.tipoDocumento = tipoDoc as any;
     }
     if (!datosPersonales.numeroDocumento && usuarioGlobal.numeroDocumento) {
       precarga.numeroDocumento = usuarioGlobal.numeroDocumento;
     }
     if (!datosPersonales.celular && usuarioGlobal.telefono) {
-      precarga.celular = usuarioGlobal.telefono;
+      const tel = String(usuarioGlobal.telefono).replace(/\D/g, "");
+      precarga.celular = tel.startsWith("57") && tel.length > 10 ? tel.slice(2) : tel;
     }
     if (Object.keys(precarga).length > 0) {
       actualizarDatosPersonales(precarga);
     }
-  }, []);
+  }, [usuarioGlobal]);
 
-  const prefijoTelefono = getPrefijoPorNacionalidad(
-    datosPersonales.nacionalidad || null,
-  );
+  const prefijoTelefono = useMemo(() => {
+    return getPrefijoPorNacionalidad(datosPersonales.nacionalidad || null);
+  }, [datosPersonales.nacionalidad, nacionalidadesApi]);
   const hayPrefijo = !!datosPersonales.nacionalidad;
 
   const datosCompletos =
@@ -278,6 +318,26 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         });
       }
 
+      // Persistir cambios de datos personales en el perfil de usuario (BD y store)
+      try {
+        const { nombres, apellidos } = separarNombreCompleto(datosPersonales.nombreCompleto);
+        const perfilActualizado = await actualizarPerfil("", {
+          nombres: nombres || usuarioGlobal.nombres,
+          apellidos: apellidos || usuarioGlobal.apellidos,
+          telefono: datosPersonales.celular,
+          numeroDocumento: datosPersonales.numeroDocumento,
+          tipoDocumento: datosPersonales.tipoDocumento,
+          nacionalidad: datosPersonales.nacionalidad,
+          direccion: usuarioGlobal.direccion || "",
+          fechaNacimiento: usuarioGlobal.fechaNacimiento || "",
+        });
+        if (perfilActualizado) {
+          actualizarUsuarioGlobal(perfilActualizado);
+        }
+      } catch (errPerfil) {
+        console.warn("No se pudo actualizar el perfil en BD:", errPerfil);
+      }
+
       const fechasAUsar = fueraDeHorario
         ? { ...fechasLugar, fueraDeHorarioAceptado: true }
         : fechasLugar;
@@ -301,8 +361,14 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         limpiarReserva();
         router.replace(`/payment-response?ref=${encodeURIComponent(creada.id)}` as any);
       }
-    } catch (error) {
-      setErrorServidor(mensajeDeError(error, t("reserva.confirmacion.errorPagoMensaje")));
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        t("reserva.confirmacion.errorCrearMensaje", { defaultValue: "No se pudo registrar la reserva. Verifica que todos los datos y documentos sean válidos." });
+      setErrorServidor(msg);
     } finally {
       setProcesandoPago(false);
     }
@@ -784,7 +850,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       <AlertModal
         visible={!!errorServidor}
         icono="close-circle-outline"
-        titulo={t("reserva.confirmacion.errorPagoTitulo")}
+        titulo={t("reserva.confirmacion.errorCrearTitulo", { defaultValue: "Error al registrar la reserva" })}
         mensaje={errorServidor}
         botones={[]}
         onCerrar={() => setErrorServidor("")}
@@ -793,8 +859,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       <AlertModal
         visible={alertaErrorPagoVisible}
         icono="close-circle-outline"
-        titulo={t("reserva.confirmacion.errorPagoTitulo")}
-        mensaje={t("reserva.confirmacion.errorPagoMensaje")}
+        titulo={t("reserva.confirmacion.errorPagoTitulo", { defaultValue: "No se pudo completar el pago" })}
+        mensaje={t("reserva.confirmacion.errorPagoMensaje", { defaultValue: "Hubo un error al procesar el pago con la pasarela. Intenta de nuevo." })}
         botones={[]}
         onCerrar={() => setAlertaErrorPagoVisible(false)}
       />
