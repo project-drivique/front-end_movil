@@ -461,6 +461,7 @@ export default function MisReservasScreen() {
               c={c}
               t={t}
               onPress={() => irADetalle(item.referencia)}
+              onPressResena={() => irADetalle(item.referencia)}
             />
           )}
         />
@@ -552,12 +553,14 @@ function TarjetaReserva({
   c,
   t,
   onPress,
+  onPressResena,
 }: {
   reserva: ReservaGuardada;
   usuarioId: string;
   c: ReturnType<typeof useTemaColores>;
   t: (key: string, opts?: any) => string;
   onPress: () => void;
+  onPressResena?: () => void;
 }) {
   const grupo = calcularGrupoReserva(reserva);
   const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
@@ -619,7 +622,7 @@ function TarjetaReserva({
 
           {grupo === "en_curso" && (
             <TouchableOpacity
-              style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
+              style={[styles.reportarBtn, { backgroundColor: c.primaryBg, borderColor: c.primary }]}
               onPress={(e) => {
                 e.stopPropagation();
                 router.push({
@@ -633,8 +636,24 @@ function TarjetaReserva({
               activeOpacity={0.8}
             >
               <Ionicons name="build-outline" size={13} color={c.primary} />
-              <Text style={[styles.reportarBtnText, { color: c.primary }]}>
-                {t("tabs.hacerReporte")}
+              <Text style={[styles.reportarBtnText, { color: c.primary, fontWeight: "700" }]}>
+                {t("tabs.hacerReporte", { defaultValue: "Soporte de incidencias" })}
+              </Text>
+            </TouchableOpacity>
+          )}
+          {grupo === "finalizada" && (
+            <TouchableOpacity
+              style={[styles.reportarBtn, { backgroundColor: "#fffbeb", borderColor: "#fde68a" }]}
+              onPress={(e) => {
+                e.stopPropagation();
+                if (onPressResena) onPressResena();
+                else onPress();
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="star" size={13} color="#f59e0b" />
+              <Text style={[styles.reportarBtnText, { color: "#b45309", fontWeight: "700" }]}>
+                {t("misReservas.hacerResena", { defaultValue: "Hacer reseña" })}
               </Text>
             </TouchableOpacity>
           )}
