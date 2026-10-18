@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { useOnboarding } from "@/modules/onboarding/hooks/use-onboarding";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { GRADIENTES } from "@/constants/gradients";
+import { lazyStyles } from "@/utils/lazyStyles";
+import { remapColor as mc } from "@/constants/brandColorMap";
 
 interface Props {
   currentPage: number;
@@ -87,7 +89,7 @@ export default function OnboardingNavigation({
   );
 }
 
-const styles = StyleSheet.create({
+const crear_styles = () => StyleSheet.create({
   container: {
     paddingTop: 4,
   },
@@ -133,7 +135,8 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
   },
   btnTextLink: {
-    color: "#1D4ED8",
+    color: mc("#1D4ED8"),
     fontWeight: "600",
   },
 });
+const styles = lazyStyles(crear_styles);

@@ -1,6 +1,8 @@
 import { StyleSheet } from "react-native";
+import { lazyStyles } from "@/utils/lazyStyles";
+import { remapColor as mc } from "@/constants/brandColorMap";
 
-export const screen2Styles = StyleSheet.create({
+const crear_screen2Styles = () => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -66,7 +68,7 @@ export const screen2Styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#1D4ED8",
+    backgroundColor: mc("#1D4ED8"),
     alignItems: "center",
     justifyContent: "center",
   },
@@ -107,7 +109,7 @@ export const screen2Styles = StyleSheet.create({
     color: "#374151",
   },
   reservaBtn: {
-    backgroundColor: "#1D4ED8",
+    backgroundColor: mc("#1D4ED8"),
     borderRadius: 8,
     paddingVertical: 8,
     alignItems: "center",
@@ -136,3 +138,4 @@ export const screen2Styles = StyleSheet.create({
     lineHeight: 23,
   },
 });
+export const screen2Styles = lazyStyles(crear_screen2Styles);
