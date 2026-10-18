@@ -138,7 +138,7 @@ export function BranchCashPaymentModal({
             </Text>
             <Text style={[styles.plazoTexto, { color: c.oscuro ? "#FDE68A" : "#713F12" }]}>
               {(() => {
-                const horas = horasLimitePago || 72;
+                const horas = horasLimitePago || 8;
                 const textoHoras = horas === 1 ? "1 hora" : `${horas} horas`;
                 return `Tienes aproximadamente ${textoHoras} para acercarte a la sucursal y realizar el pago. Si no realizas el pago dentro de este plazo, la reserva se cancelará automáticamente.`;
               })()}

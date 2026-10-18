@@ -217,6 +217,31 @@ export const reservaPersistService = {
       outsideScheduleAccepted: Boolean(fechasLugar.fueraDeHorarioAceptado),
     };
     const { data } = await apiClient.post("/reservations/checkout/initiate", body);
+
+    // Entrega/devolución a domicilio: el servidor las guarda aparte; sin esto la sucursal nunca ve el domicilio
+    const retiroDomicilio = fechasLugar.lugarRetiro === "domicilio";
+    const devolucionDomicilio = fechasLugar.lugarDevolucion === "domicilio";
+    if ((retiroDomicilio || devolucionDomicilio) && data?.id) {
+      const sede = useReferenceStore.getState().sucursales.find((b) => b.id === vehiculo.sucursalId);
+      const punto = (pointType: "PICKUP" | "RETURN", domicilio: boolean) =>
+        domicilio
+          ? {
+              pointType,
+              modality: "HOME_DELIVERY",
+              cityId: sede?.cityId,
+              neighborhood: pointType === "PICKUP" ? fechasLugar.barrioRetiro : fechasLugar.barrioDevolucion,
+              address: pointType === "PICKUP" ? fechasLugar.direccionRetiro : fechasLugar.direccionDevolucion,
+              referenceDetails: (pointType === "PICKUP" ? fechasLugar.referenciasRetiro : fechasLugar.referenciasDevolucion) || undefined,
+            }
+          : { pointType, modality: "BRANCH", branchId: vehiculo.sucursalId };
+      try {
+        await apiClient.post(`/reservations/${data.id}/delivery-points`, {
+          points: [punto("PICKUP", retiroDomicilio), punto("RETURN", devolucionDomicilio)],
+        });
+      } catch (e) {
+        console.warn("No se pudo guardar el domicilio de la reserva", e);
+      }
+    }
     return mapReserva(data);
   },
 
