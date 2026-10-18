@@ -230,7 +230,13 @@ export default {
       "reenviar": "Renvoyer le code",
       "codigoIncorrecto": "Le code saisi est incorrect. Réessayez.",
       "codigoEnviadoTitulo": "Code envoyé",
-      "codigoEnviadoMsg": "Nous avons envoyé un code de vérification à votre adresse e-mail. Veuillez vérifier votre boîte de réception ou votre dossier spam."
+      "codigoEnviadoMsg": "Nous avons envoyé un code de vérification à votre adresse e-mail. Veuillez vérifier votre boîte de réception ou votre dossier spam.",
+      "errorTitulo": "Erreur",
+      "errorEnvio": "Impossible d’envoyer le code. Réessayez dans quelques secondes.",
+      "verificadoTitulo": "E-mail vérifié",
+      "verificadoMsg": "Votre compte a été vérifié. Connectez-vous avec votre e-mail et votre mot de passe.",
+      "errorMsg": "Le code saisi n’est pas valide. Veuillez le vérifier et réessayer.",
+      "volverRegistro": "Retour à l’inscription"
     },
     "invitado": {
       "titulo": "Explorer les véhicules",
@@ -325,7 +331,9 @@ export default {
     "social": {
       "o": "ou continuer avec",
       "google": "Continuer avec Google",
-      "facebook": "Continuer avec Facebook"
+      "facebook": "Continuer avec Facebook",
+      "errorGoogle": "Erreur d’authentification avec Google",
+      "errorFacebook": "Erreur d’authentification avec Facebook"
     }
   },
   "catalogo": {
@@ -573,7 +581,14 @@ export default {
     "stepProtection": "Protection et extras",
     "stepProtectionSub": "Personnalisez votre expérience",
     "personalData": "Données personnelles",
-    "personalDataSub": "Finalisez votre réservation"
+    "personalDataSub": "Finalisez votre réservation",
+    "includedInBaseRate": "Inclus dans le tarif",
+    "day": "jour",
+    "days": "jours",
+    "selectPickupTime": "Sélectionnez l’heure de retrait",
+    "selectReturnTime": "Sélectionnez l’heure de retour",
+    "rentalDuration": "Durée de la location",
+    "earlyReturn": "Retour anticipé"
   },
   "misReservas": {
     "titulo": "Mes réservations",
@@ -655,7 +670,14 @@ export default {
       "fechaFin": "Date de retour",
       "proteccion": "Protection",
       "tituloHeader": "Détails de la réservation",
-      "tituloPagoDigitalPendiente": "Paiement en ligne avec Wompi"
+      "tituloPagoDigitalPendiente": "Paiement en ligne avec Wompi",
+      "enRevisionDocumentos": "Documents en cours d’examen",
+      "pendienteFirma": "Signature en attente",
+      "pendienteHorario": "En attente de traitement par l’agence",
+      "enRevisionTexto": "Le responsable de l’agence examine vos documents. Vous pourrez payer une fois qu’ils seront approuvés ; nous vous préviendrons par notification.",
+      "pendienteHorarioTexto": "Votre réservation a été enregistrée en dehors des horaires d’ouverture. L’agence la traitera à sa prochaine ouverture.",
+      "pendienteFirmaTitulo": "Signature du contrat numérique en attente",
+      "pendienteFirmaTexto": "Votre paiement a été enregistré avec succès. Pour confirmer votre réservation, vous devez signer numériquement le contrat de location."
     },
     "calificacionReservaTitulo": "Évaluer le véhicule",
     "calificacionExitosaDesc": "Votre avis a été enregistré avec succès. Vous pouvez voir le résumé ci-dessous ou modifier votre opinion à tout moment :",
@@ -666,7 +688,14 @@ export default {
     "puntuacion": "Note :",
     "comentario": "Commentaire :",
     "fechaRegistro": "Date d'enregistrement :",
-    "fotosAdjuntas": "Photos jointes :"
+    "fotosAdjuntas": "Photos jointes :",
+    "errorCarga": "Impossible de charger vos réservations.",
+    "hacerResena": "Écrire un avis",
+    "cancelarTitulo": "Annuler la réservation",
+    "cancelarMensaje": "Cette action est irréversible.",
+    "cancelarConfirmar": "Oui, annuler",
+    "firmarContrato": "Procéder à la signature du contrat",
+    "cancelarReserva": "Annuler la réservation"
   },
   "perfil": {
     "titulo": "Mon Profil",
@@ -792,7 +821,19 @@ export default {
       "telefono": "Ex : 3144214909",
       "nombreCompleto": "Ex : Jean Dupont",
       "correo": "client@drivique.com"
-    }
+    },
+    "direccion": "Adresse",
+    "placeholderDireccion": "Calle 10 # 20-30, Medellín",
+    "preferenciasEntrega": "PRÉFÉRENCES DE NOTIFICATION",
+    "preferenciasEntregaDesc": "Choisissez les canaux par lesquels vous souhaitez recevoir les mises à jour de réservations, contrats et alertes de votre compte.",
+    "prefEmail": "E-mail",
+    "prefEmailSub": "Confirmations, factures et contrats",
+    "prefPush": "Notifications push",
+    "prefPushSub": "Alertes instantanées sur votre appareil mobile",
+    "prefInApp": "Alertes dans l’application",
+    "prefInAppSub": "Boîte de réception et centre de notifications Drivique",
+    "prefMarketing": "Promotions et nouveautés",
+    "prefMarketingSub": "Remises exclusives et actualités de la flotte"
   },
   "tabs": {
     "masCuponesGeniales": "Plus de super coupons",
@@ -832,7 +873,9 @@ export default {
     "phoneTitle": "Ligne Téléphonique d'Assistance",
     "phoneDesc": "+57 322 3163531 · Assistance routière",
     "emailTitle": "E-mail de Support",
-    "emailDesc": "soporte@drivique.com · Réponse en moins de 2 heures"
+    "emailDesc": "soporte@drivique.com · Réponse en moins de 2 heures",
+    "sinPromociones": "Vous n’avez aucune promotion ni aucun coupon actif pour le moment.",
+    "sinPromocionesDesc": "Lorsqu’il y aura de nouveaux coupons ou avantages exclusifs pour vos réservations, vous les verrez ici."
   },
   "reserva": {
     "flujo": {
@@ -894,7 +937,7 @@ export default {
       "confirmacionCuandoExitoso": "Vous recevrez la confirmation de votre réservation une fois le paiement réussi.",
       "pagarConWompi": "Payer avec Wompi",
       "pagarMasTarde": "Payer plus tard",
-      "avisoGuardadoAutomatico": "En confirmant la réservation, elle sera automatiquement enregistrée sur votre compte. Vous aurez un délai de 72 heures pour finaliser le paiement avant annulation automatique.",
+      "avisoGuardadoAutomatico": "En confirmant la réservation, elle sera automatiquement enregistrée sur votre compte. Vous aurez un délai de 8 heures pour finaliser le paiement avant annulation automatique.",
       "cancelarProcesoReserva": "Annuler le processus de réservation",
       "cancelarProcesoTitulo": "Annuler le processus de réservation ?",
       "cancelarProcesoMensaje": "Les données saisies dans ce processus seront supprimées et vous retournerez au catalogue de véhicules.",
@@ -902,7 +945,7 @@ export default {
       "efectivoConfirmadaTitulo": "Réservation enregistrée",
       "efectivoConfirmadaSub": "Votre réservation est enregistrée. Pour la confirmer, effectuez le paiement en espèces au point agréé {{sucursal}}.",
       "plazoParaPagarTitulo": "DÉLAI DE PAIEMENT",
-      "efectivoConfirmadaMensaje": "Vous avez 72 heures à compter de maintenant pour vous rendre à l'agence et payer. Si le paiement n'est pas effectué dans ce délai, la réservation sera automatiquement annulée.",
+      "efectivoConfirmadaMensaje": "Vous avez 8 heures à compter de maintenant pour vous rendre à l'agence et payer. Si le paiement n'est pas effectué dans ce délai, la réservation sera automatiquement annulée.",
       "confirmarYVerMisReservas": "Confirmer et voir mes réservations",
       "entendidoIrAMisReservas": "Aller à Mes réservations",
       "volverAlInicio": "Retour à l'accueil",
@@ -941,7 +984,10 @@ export default {
       "acercateCorresponsalBancolombia": "Rendez-vous dans un point Bancolombia avec les informations ci-dessous et effectuez le paiement avant la date limite pour confirmer votre réservation :",
       "reservaRegistradaPuntoAutorizado": "Votre réservation a été enregistrée. Pour la confirmer, effectuez le paiement en espèces au point agréé {{sucursal}}.",
       "reservaRegistradaSucursalSeleccionada": "Votre réservation a été enregistrée. Pour la confirmer, effectuez le paiement en espèces dans l'agence sélectionnée.",
-      "avisoPlazoPagoDinamico": "Vous disposez d'environ {{horas}} pour effectuer le paiement en ligne et confirmer votre réservation. Si vous n'effectuez pas le paiement dans ce délai, la réservation sera automatiquement annulée."
+      "avisoPlazoPagoDinamico": "Vous disposez d'environ {{horas}} pour effectuer le paiement en ligne et confirmer votre réservation. Si vous n'effectuez pas le paiement dans ce délai, la réservation sera automatiquement annulée.",
+      "codigoPagoEfectivo": "Code de paiement en espèces",
+      "errorCrearMensaje": "La réservation n’a pas pu être enregistrée. Vérifiez que toutes les données et tous les documents sont valides.",
+      "errorCrearTitulo": "Erreur lors de l’enregistrement de la réservation"
     },
     "edicion": {
       "editarFechasYLugares": "Modifier dates et lieux",
@@ -1021,7 +1067,9 @@ export default {
       "direccionExacta": "Adresse exacte :",
       "indicacionesRef": "Indications / Réf :",
       "horaEntregaRetiro": "Heure de livraison (prise en charge) :",
-      "horaRecogidaDevolucion": "Heure de récupération (restitution) :"
+      "horaRecogidaDevolucion": "Heure de récupération (restitution) :",
+      "efectivoNoDisponibleTitulo": "Paiement en espèces indisponible",
+      "efectivoNoDisponibleMensaje": "L’agence {{sucursal}} n’accepte pas les paiements en espèces. Choisissez le paiement en ligne ou un véhicule d’une autre agence."
     },
     "planes": {
       "metodosPago": {
@@ -1130,13 +1178,12 @@ export default {
         "CC": "Carte d'identité (CC)",
         "CE": "Carte de séjour / étranger (CE)",
         "Pasaporte": "Passeport (PAS)",
-        "DNI": "Document national d'identité (DNI)",
-        "PPT": "Permis de protection temporaire (PPT)",
-        "PEP": "Permis spécial de séjour (PEP)",
-        "TI": "Carte d'identité mineur (TI)",
-        "DocExtranjero": "Document d'identité étranger"
+        "TI": "Carte d’identité jeune (TI)",
+        "DocExtranjero": "Document d'identité étranger",
+        "NIT": "Numéro fiscal (NIT)"
       },
-      "avisoGuardadoDinamico": "En confirmant la réservation, elle sera automatiquement enregistrée sur votre compte. Vous aurez un délai de {{horas}} pour effectuer le paiement avant son annulation automatique."
+      "avisoGuardadoDinamico": "En confirmant la réservation, elle sera automatiquement enregistrée sur votre compte. Vous aurez un délai de {{horas}} pour effectuer le paiement avant son annulation automatique.",
+      "avisoGuardado": "Lorsque vous confirmez la réservation, elle est enregistrée dans votre compte et vous disposez d’un délai limité pour effectuer le paiement avant son annulation automatique."
     },
     "terminos": {
       "autorizoTratamiento": "J'autorise le traitement de mes données personnelles conformément à la ",
@@ -1463,6 +1510,13 @@ export default {
       "recogido": "Récupéré",
       "aConvenir": "À convenir",
       "vehiculo": "Véhicule :"
+    },
+    "horario": {
+      "titulo": "Agence en dehors des horaires d’ouverture",
+      "mensaje": "l’agence",
+      "laSucursal": "l’agence",
+      "modificar": "Retour",
+      "aceptar": "Enregistrer comme en attente"
     }
   },
   "config": {
@@ -1524,7 +1578,8 @@ export default {
     "applied": "appliqué",
     "todosLosVehiculos": "Tous les véhicules",
     "appliedCheck": "✓ Appliqué",
-    "applyBtnSimple": "Appliquer"
+    "applyBtnSimple": "Appliquer",
+    "errorNeedDates": "Sélectionnez les dates de la réservation avant d’appliquer un coupon."
   },
   "simulator": {
     "title": "[Simulateur] Confirmation de Paiement en Espèces",
@@ -1632,7 +1687,8 @@ export default {
       "errorNombre": "Entrez le nom du contact.",
       "errorTelefono": "Entrez le numéro de téléphone.",
       "errorEmail": "Entrez une adresse e-mail valide.",
-      "alertaCamposRequeridos": "Veuillez remplir tous les champs obligatoires."
+      "alertaCamposRequeridos": "Veuillez remplir tous les champs obligatoires.",
+      "errorEnviar": "Impossible d’enregistrer le signalement. Veuillez réessayer."
     },
     "infoBanner": "Remplissez le formulaire pour signaler tout problème technique ou mécanique durant votre réservation.",
     "tipo": {
@@ -1692,7 +1748,10 @@ export default {
   "notificaciones": {
     "venceHoy": "Expire aujourd'hui",
     "venceEnDias": "Expire dans {{dias}} jours",
-    "promocionesDestacadas": "Promotions en vedette"
+    "promocionesDestacadas": "Promotions en vedette",
+    "detallesEvento": "Détails de l’événement",
+    "verDetalle": "Voir les détails",
+    "verReserva": "Voir la réservation / Continuer"
   },
   "Cupón de Bienvenida Drivique": "Coupon de Bienvenue Drivique",
   "Especial Aventura SUV": "Spécial Aventure SUV",
@@ -1796,6 +1855,193 @@ export default {
   "Disfruta de tus viajes con 20% de descuento en el Chevrolet Spark": {
     "": "Profitez de vos trajets avec 20% de réduction sur la Chevrolet Spark."
   },
-  "Categoría: SUV": "Catégorie : SUV"
+  "Categoría: SUV": "Catégorie : SUV",
+  "contratoFirma": {
+    "badgeLabel": "Document numérique",
+    "title": "Contrat de réservation et de location",
+    "subtitle": "Drivique · Plateforme académique de location de véhicules",
+    "autoGenNote": "Document généré automatiquement avec les données de votre réservation. Il vous suffit de le relire et de le signer.",
+    "contractCode": "Code du contrat",
+    "status": "Statut",
+    "statusPending": "Signature en attente",
+    "statusSigned": "Signé",
+    "generationDate": "Date de génération",
+    "reservationCode": "Réservation",
+    "intro": "Entre LA PLATEFORME, Drivique, et L’UTILISATEUR, {{nombre}}, identifié(e) par {{tipoDoc}} {{numDoc}}, est conclu le présent contrat de réservation et de location de véhicule, généré automatiquement à partir des informations enregistrées dans le système.",
+    "userDataTitle": "Données de l’utilisateur",
+    "fullName": "Nom complet",
+    "document": "Document",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "license": "Permis",
+    "notProvided": "Non précisé",
+    "reservationTitle": "Réservation et véhicule",
+    "vehicle": "Véhicule",
+    "plate": "Plaque",
+    "color": "Couleur",
+    "year": "Année",
+    "branch": "Agence",
+    "branchCity": "Ville de l’agence",
+    "branchAddress": "Adresse de l’agence",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "paymentMethod": "Moyen de paiement",
+    "paymentMethodCash": "Paiement en personne à l’agence",
+    "cashPaymentBranch": "Point de paiement en espèces",
+    "paymentMethodWompi": "Wompi (mode test)",
+    "totalValue": "Valeur totale",
+    "additionalServices": "Services supplémentaires",
+    "noneAdded": "Aucun",
+    "protectionPlan": "Formule de protection",
+    "clausesTitle": "Clauses",
+    "clause1Title": "1. Objet.",
+    "clause1Text": "Le présent contrat régit la réservation et l’utilisation temporaire du véhicule {{marca}} {{modelo}}, plaque {{placa}}, pour la période comprise entre le {{inicio}} et le {{fin}}.",
+    "clause2Title": "2. Génération automatique.",
+    "clause2Text": "Le contrat est créé automatiquement avec les données personnelles de l’utilisateur, les informations du véhicule, l’agence sélectionnée, la ville de l’agence, le moyen de paiement et le montant total de la réservation. L’UTILISATEUR doit uniquement relire les informations et signer.",
+    "clause3Title": "3. Obligations de l’utilisateur.",
+    "clause3Item1": "Fournir des informations exactes, à jour et complètes.",
+    "clause3Item2": "Utiliser le véhicule de manière responsable et conformément à la réglementation applicable.",
+    "clause3Item3": "Répondre des dommages, amendes ou manquements imputables à son utilisation.",
+    "clause3Item4": "Restituer le véhicule à l’heure et au lieu convenus, sauf modification approuvée dans le système.",
+    "clause4Title": "4. Obligations de la plateforme.",
+    "clause4Text": "Drivique doit générer, afficher et conserver ce contrat associé à la réservation, en permettant sa relecture avant la signature et sa conservation au format numérique.",
+    "clause5Title": "5. Traitement des données.",
+    "clause5Text": "L’UTILISATEUR autorise l’utilisation de ses données pour gérer la réservation, générer le contrat, enregistrer la signature, conserver les preuves numériques et assurer la traçabilité du processus.",
+    "clause6Title": "6. Nature académique.",
+    "clause6Text": "Drivique est une plateforme académique développée à des fins d’analyse, de conception et de mise en œuvre d’un système numérique de location de véhicules.",
+    "signaturesTitle": "Signatures",
+    "signCity": "Ville de signature",
+    "signDate": "Date de signature",
+    "userSignature": "Signature de l’utilisateur",
+    "platformSignature": "Signature de la plateforme",
+    "responsible": "Responsable",
+    "role": "Rôle",
+    "platformResponsible": "Système Drivique",
+    "platformRole": "Plateforme de location",
+    "signHere": "Signez ici avec la souris ou le doigt",
+    "clearSignature": "Effacer la signature",
+    "signatureRequired": "Vous devez signer pour continuer.",
+    "signAndContinue": "Signer le contrat et continuer",
+    "signing": "Signature en cours…",
+    "footerNote1": "Document généré automatiquement par Drivique.",
+    "footerNote2": "Usage académique et fonctionnel dans le cadre du parcours de réservation et de contractualisation numériques.",
+    "stepLabel": "Signature du contrat",
+    "pageTitleCash": "Signez votre contrat pour finaliser la réservation",
+    "pageTitleWompi": "Signez votre contrat pour finaliser le paiement",
+    "pageSubtitle": "Relisez les informations générées automatiquement et signez pour continuer.",
+    "signedSuccessTitle": "Contrat signé",
+    "signedSuccessText": "Votre contrat a été signé et enregistré avec votre réservation.",
+    "deliveryAddress": "Adresse de remise",
+    "deliveryNeighborhood": "Quartier de remise",
+    "deliveryReferences": "Repères de remise",
+    "deliveryReturnHome": "Retour à domicile",
+    "sameDeliveryAddress": "Oui (même adresse de remise)",
+    "statusDraft": "Signature en attente",
+    "notAvailable": "Non disponible",
+    "licenseApproved": "En vigueur (validée par l’agence)",
+    "licensePending": "Validation en attente",
+    "licenseRejected": "Refusée",
+    "downloadPdf": "Télécharger le PDF",
+    "sendEmail": "Envoyer à mon e-mail",
+    "emailSent": "Nous avons envoyé le contrat signé à votre adresse e-mail.",
+    "emailNotSent": "L’e-mail n’a pas pu être envoyé. Veuillez réessayer.",
+    "signNotAvailable": "Le contrat pourra être signé une fois le paiement de votre réservation confirmé.",
+    "loadError": "Impossible de charger le contrat.",
+    "signError": "Impossible de signer le contrat.",
+    "pdfError": "Impossible de télécharger le PDF.",
+    "dateTimeSeparator": "à",
+    "pdfOkTitulo": "PDF téléchargé",
+    "pdfOk": "Le contrat PDF a été téléchargé avec succès.",
+    "emailSentTitulo": "E-mail envoyé",
+    "emailSentMsg": "Nous avons envoyé le contrat signé à votre adresse e-mail.",
+    "emailSendingTitulo": "Envoi de l’e-mail",
+    "emailSending": "Nous envoyons le contrat signé à votre adresse e-mail…",
+    "pdfDownloadingTitulo": "Téléchargement du PDF",
+    "pdfDownloading": "Nous téléchargeons votre contrat au format PDF…"
+  },
+  "incidencias": {
+    "titulo": "Support",
+    "subtitulo": "Signalez et suivez vos incidents",
+    "nueva": "Nouvel incident",
+    "misIncidencias": "Mes incidents",
+    "vacio": "Vous n’avez encore signalé aucun incident.",
+    "cargando": "Chargement...",
+    "errorCarga": "Impossible de charger les informations.",
+    "reintentar": "Réessayer",
+    "categoria": "Catégorie",
+    "categorias": {
+      "RESERVATION": "Réservation",
+      "VEHICLE": "Véhicule",
+      "PAYMENT": "Paiement",
+      "OTHER": "Autre"
+    },
+    "estados": {
+      "OPEN": "Ouvert",
+      "IN_REVIEW": "En cours d’examen",
+      "RESOLVED": "Résolu",
+      "CLOSED": "Clôturé"
+    },
+    "prioridades": {
+      "LOW": "Faible",
+      "MEDIUM": "Moyenne",
+      "HIGH": "Élevée",
+      "CRITICAL": "Critique"
+    },
+    "prioridad": "Priorité (attribuée automatiquement)",
+    "reservaVinculada": "Réservation associée (facultatif)",
+    "sinReserva": "Aucune réservation associée",
+    "sede": "Site de traitement",
+    "sedeSeleccionar": "Sélectionnez un site",
+    "sedeObligatoria": "Sélectionnez le site qui traitera votre incident.",
+    "asunto": "Objet",
+    "descripcion": "Description",
+    "adjuntos": "Pièces jointes (JPG, PNG ou PDF, max. 5 Mo, jusqu’à 5 fichiers)",
+    "agregarAdjunto": "Ajouter un fichier",
+    "quitar": "Supprimer",
+    "enviar": "Envoyer l’incident",
+    "enviando": "Envoi en cours...",
+    "camposObligatorios": "Renseignez la catégorie, l’objet et la description.",
+    "archivoInvalido": "Seuls les fichiers JPG, PNG ou PDF de 5 Mo maximum sont autorisés.",
+    "maxArchivos": "Vous pouvez joindre jusqu’à 5 fichiers.",
+    "creada": "Incident créé",
+    "detalle": "Détail de l’incident",
+    "vehiculo": "Véhicule",
+    "reserva": "Réservation",
+    "sedeLabel": "Site",
+    "asignadoA": "Pris en charge par",
+    "sinAsignar": "Non assigné",
+    "sla": "Échéance",
+    "slaVencido": "SLA dépassé",
+    "creadaEl": "Créé",
+    "historial": "Historique",
+    "tuMensaje": "Vous",
+    "equipo": "Équipe Drivique",
+    "cambioEstado": "Changement de statut",
+    "asignacion": "Affectation",
+    "responder": "Répondre",
+    "escribeMensaje": "Écrivez votre message",
+    "enviarRespuesta": "Envoyer la réponse",
+    "mensajeObligatorio": "Écrivez un message avant d’envoyer.",
+    "acciones": "Actions",
+    "transiciones": {
+      "CLOSED_RESOLVED": "Confirmer la résolution",
+      "CLOSED_OPEN": "Annuler l’incident",
+      "CLOSED_IN_REVIEW": "Clôturer l’incident",
+      "IN_REVIEW": "Rouvrir",
+      "OPEN": "Marquer comme ouvert",
+      "RESOLVED": "Marquer comme résolu"
+    },
+    "estadoActualizado": "Statut mis à jour",
+    "abrirAdjunto": "Ouvrir la pièce jointe",
+    "adjuntoError": "Impossible d’ouvrir la pièce jointe.",
+    "noEncontrada": "L’incident est introuvable."
+  },
+  "busqueda": {
+    "validarReservasDocs": "Valider les réservations et les documents"
+  },
+  "resenas": {
+    "cargando": "Chargement des avis...",
+    "errorCarga": "Impossible de charger les avis."
+  }
 };
-
