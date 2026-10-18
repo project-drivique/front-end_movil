@@ -587,7 +587,7 @@ export default function VehiculoDetallePage() {
           <VehicleReviews
             comentarios={comentariosMostrar}
             calificacionPromedio={vehiculo.calificacion}
-            vehiculoId={vehiculo.id}
+            vehiculoId={String((vehiculo as { uuid?: string }).uuid ?? vehiculo.id)}
             vehiculoNombre={vehiculo.nombre}
           />
         </Animated.View>

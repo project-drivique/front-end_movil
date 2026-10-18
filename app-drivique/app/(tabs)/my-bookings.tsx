@@ -321,25 +321,6 @@ export default function MisReservasScreen() {
               {t("misReservas.subtitulo")}
             </Text>
           </View>
-          <TouchableOpacity
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: "rgba(255, 255, 255, 0.18)",
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 2,
-            }}
-            onPress={toggleTema}
-            activeOpacity={0.8}
-          >
-            <Ionicons
-              name={temaActual === "oscuro" ? "sunny-outline" : "moon-outline"}
-              size={18}
-              color="#ffffff"
-            />
-          </TouchableOpacity>
         </View>
       </LinearGradient>
 
@@ -638,22 +619,6 @@ function TarjetaReserva({
               <Ionicons name="build-outline" size={13} color={c.primary} />
               <Text style={[styles.reportarBtnText, { color: c.primary, fontWeight: "700" }]}>
                 {t("tabs.hacerReporte", { defaultValue: "Soporte de incidencias" })}
-              </Text>
-            </TouchableOpacity>
-          )}
-          {grupo === "finalizada" && (
-            <TouchableOpacity
-              style={[styles.reportarBtn, { backgroundColor: "#fffbeb", borderColor: "#fde68a" }]}
-              onPress={(e) => {
-                e.stopPropagation();
-                if (onPressResena) onPressResena();
-                else onPress();
-              }}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="star" size={13} color="#f59e0b" />
-              <Text style={[styles.reportarBtnText, { color: "#b45309", fontWeight: "700" }]}>
-                {t("misReservas.hacerResena", { defaultValue: "Hacer reseña" })}
               </Text>
             </TouchableOpacity>
           )}

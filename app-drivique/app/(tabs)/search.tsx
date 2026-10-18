@@ -125,7 +125,7 @@ export default function MasMenuScreen() {
                   onPress={() => router.push("/(tabs)/my-bookings")}
                 >
                   <Ionicons name="document-text" size={18} color="#10B981" style={{ marginRight: 10 }} />
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: c.textPrimary, flex: 1 }}>Validar Reservas y Documentación</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: c.textPrimary, flex: 1 }}>{t("busqueda.validarReservasDocs")}</Text>
                   <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
                 </TouchableOpacity>
 

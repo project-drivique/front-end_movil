@@ -118,7 +118,7 @@ export function VehicleReviews({ vehiculoId }: Props) {
   if (cargando) {
     return (
       <View style={[s.cardVacio, { backgroundColor: c.bgCard, borderColor: colorBorde, marginBottom: 14 }]}>
-        <Text style={[s.vacioSubtitulo, { color: c.textMuted }]}>Cargando reseñas...</Text>
+        <Text style={[s.vacioSubtitulo, { color: c.textMuted }]}>{t("resenas.cargando")}</Text>
       </View>
     );
   }
@@ -126,7 +126,7 @@ export function VehicleReviews({ vehiculoId }: Props) {
   if (error) {
     return (
       <View style={[s.cardVacio, { backgroundColor: c.bgCard, borderColor: colorBorde, marginBottom: 14 }]}>
-        <Text style={[s.vacioSubtitulo, { color: c.textMuted }]}>No fue posible cargar las reseñas.</Text>
+        <Text style={[s.vacioSubtitulo, { color: c.textMuted }]}>{t("resenas.errorCarga")}</Text>
       </View>
     );
   }
