@@ -906,6 +906,7 @@ export default function SupportScreen() {
                 contentContainerStyle={{ paddingBottom: 20 }}
                 renderItem={({ item }) => {
                   const vehSnap = item.vehiculoSnapshot as any;
+                  const itemPlaca = (item as any).vehiclePlate || item.vehiculoPlaca || vehSnap?.placa || vehSnap?.plate || "";
                   const esSeleccionada = item.referencia === reservaId;
                   return (
                     <TouchableOpacity
@@ -919,7 +920,7 @@ export default function SupportScreen() {
                       onPress={() => {
                         setReservaId(item.referencia);
                         setVehiculoNombre(item.vehiculoNombre);
-                        setPlaca(vehSnap?.placa || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" }));
+                        setPlaca(itemPlaca || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" }));
                         if (errores.vehiculoNombre) {
                           setErrores((prev) => ({ ...prev, vehiculoNombre: "" }));
                         }
@@ -932,7 +933,7 @@ export default function SupportScreen() {
                           {item.vehiculoNombre}
                         </Text>
                         <Text style={[styles.reservaSeleccionDetalle, { color: c.textSecondary }]}>
-                          {t("soporte.incidencia.placa", { defaultValue: "Placa" })}: <Text style={{ fontWeight: "700" }}>{vehSnap?.placa || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" })}</Text> · Ref: {item.referencia}
+                          {t("soporte.incidencia.placa", { defaultValue: "Placa" })}: <Text style={{ fontWeight: "700" }}>{itemPlaca || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" })}</Text> · Ref: {item.referencia}
                         </Text>
                         <Text style={[styles.reservaSeleccionFechas, { color: c.textMuted }]}>
                           {item.fechaRetiro ? fechaCorta(String(item.fechaRetiro)) : ""} - {item.fechaDevolucion ? fechaCorta(String(item.fechaDevolucion)) : ""}

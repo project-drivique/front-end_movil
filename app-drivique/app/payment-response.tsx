@@ -213,8 +213,8 @@ export default function PagoRespuestaScreen() {
     try {
       const dto = await contratoService.obtenerPorReserva(reserva.id);
       const docReserva = String(dto?.customerDocumentNumber || "").trim();
-      const soloDigitos = docReserva.replace(/D/g, "");
-      const claveDigitos = claveContrato.replace(/D/g, "");
+      const soloDigitos = docReserva.replace(/\D/g, "");
+      const claveDigitos = claveContrato.replace(/\D/g, "");
       const coincide =
         !!docReserva &&
         ((soloDigitos.length > 0 && claveDigitos === soloDigitos) || claveContrato.trim().toUpperCase() === docReserva.toUpperCase());
