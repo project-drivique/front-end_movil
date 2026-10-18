@@ -4,13 +4,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
+  Pressable,
   Text,
   TouchableOpacity,
   View,
@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { COLOR_MARCA } from "@/modules/catalog/constants/catalog.constants";
 import { GRADIENTES } from "@/constants/gradients";
+import { AlertModal } from "@/components/ui/AlertModal";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import FirmaCanvas, { FirmaCanvasHandle } from "@/modules/reservation/components/SignatureCanvas";
@@ -42,7 +43,7 @@ export default function ContratoScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
   const { t } = useTranslation();
-  const { ref } = useLocalSearchParams<{ ref?: string }>();
+  const { ref, ok } = useLocalSearchParams<{ ref?: string; ok?: string }>();
   const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const firmaRef = useRef<FirmaCanvasHandle>(null);
 
@@ -54,7 +55,10 @@ export default function ContratoScreen() {
   const [errorFirma, setErrorFirma] = useState("");
   const [firmando, setFirmando] = useState(false);
   const [ocupado, setOcupado] = useState(false);
-  const [claveDesbloqueada, setClaveDesbloqueada] = useState(false);
+  const [aviso, setAviso] = useState<{ titulo: string; mensaje: string; icono: string } | null>(null);
+  // Alert.alert no se muestra en web: se usa el mismo AlertModal de toda la app
+  const avisar = (titulo: string, mensaje?: string, icono = "alert-circle-outline") => setAviso({ titulo, mensaje: mensaje ?? "", icono });
+  const [claveDesbloqueada, setClaveDesbloqueada] = useState(ok === "1");
   const [claveIngresada, setClaveIngresada] = useState("");
   const [errorClave, setErrorClave] = useState("");
 
@@ -130,7 +134,7 @@ export default function ContratoScreen() {
       setContrato(actualizado);
       await cargarFirma(actualizado);
     } catch (e) {
-      Alert.alert(t("contratoFirma.signError"), mensajeDeError(e, t("contratoFirma.signError")));
+      avisar(t("contratoFirma.signError"), mensajeDeError(e, t("contratoFirma.signError")));
     } finally {
       setFirmando(false);
     }
@@ -139,6 +143,8 @@ export default function ContratoScreen() {
   const handlePdf = async () => {
     if (!contrato) return;
     setOcupado(true);
+    // Aviso inmediato "Descargando…"; al terminar pasa a "PDF descargado" (o al error si falla)
+    avisar(t("contratoFirma.pdfDownloadingTitulo"), t("contratoFirma.pdfDownloading"), "cloud-download-outline");
     try {
       const uri = await contratoService.descargarPdf(contrato.id, `contrato-${contrato.contractNumber}.pdf`);
       if (Platform.OS === "web") {
@@ -146,8 +152,9 @@ export default function ContratoScreen() {
       } else if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, { mimeType: "application/pdf", dialogTitle: contrato.contractNumber });
       }
+      avisar(t("contratoFirma.pdfOkTitulo"), t("contratoFirma.pdfOk"), "checkmark-circle-outline");
     } catch (e) {
-      Alert.alert(t("contratoFirma.pdfError"), mensajeDeError(e, t("contratoFirma.pdfError")));
+      avisar(t("contratoFirma.pdfError"), mensajeDeError(e, t("contratoFirma.pdfError")));
     } finally {
       setOcupado(false);
     }
@@ -156,11 +163,14 @@ export default function ContratoScreen() {
   const handleCorreo = async () => {
     if (!contrato) return;
     setOcupado(true);
+    // Aviso inmediato "Enviando…"; al terminar pasa a "Correo enviado" (o al error si falla)
+    avisar(t("contratoFirma.emailSendingTitulo"), t("contratoFirma.emailSending"), "mail-outline");
     try {
       const enviado = await contratoService.enviarPorCorreo(contrato.id);
-      Alert.alert(enviado ? t("contratoFirma.emailSent") : t("contratoFirma.emailNotSent"));
+      if (enviado) avisar(t("contratoFirma.emailSentTitulo"), t("contratoFirma.emailSentMsg"), "checkmark-circle-outline");
+      else avisar(t("contratoFirma.emailNotSent"));
     } catch (e) {
-      Alert.alert(t("contratoFirma.emailNotSent"), mensajeDeError(e, ""));
+      avisar(t("contratoFirma.emailNotSent"), mensajeDeError(e, ""));
     } finally {
       setOcupado(false);
     }
@@ -200,7 +210,9 @@ export default function ContratoScreen() {
   );
 
   return (
-    <View style={[s.flex, { backgroundColor: c.bg, paddingTop: insets.top }]}>
+    <View style={s.fondoModal}>
+      <Pressable style={StyleSheet.absoluteFill} onPress={volver} accessibilityLabel={t("comun.cerrar")} />
+      <View style={[s.tarjetaModal, { backgroundColor: c.bg, marginVertical: insets.top + 12 }]}>
       <StatusBar barStyle={c.oscuro ? "light-content" : "dark-content"} />
       <View style={[s.header, { borderBottomColor: c.border, backgroundColor: c.bgCard }]}>
         <TouchableOpacity onPress={volver} hitSlop={10}>
@@ -431,6 +443,15 @@ export default function ContratoScreen() {
           <Text style={[s.pie, { color: c.textMuted }]}>{t("contratoFirma.footerNote2")}</Text>
         </ScrollView>
       )}
+      <AlertModal
+        visible={!!aviso}
+        icono={(aviso?.icono ?? "alert-circle-outline") as any}
+        titulo={aviso?.titulo ?? ""}
+        mensaje={aviso?.mensaje ?? ""}
+        botones={[{ texto: t("comun.aceptar"), variante: "primario", onPress: () => setAviso(null) }]}
+        onCerrar={() => setAviso(null)}
+      />
+      </View>
     </View>
   );
 }
@@ -444,6 +465,8 @@ const s = StyleSheet.create({
   bloqueoBtn: { paddingVertical: 13, paddingHorizontal: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   bloqueoBtnTexto: { color: "#FFFFFF", fontSize: 14, fontWeight: "800" },
   flex: { flex: 1 },
+  fondoModal: { flex: 1, backgroundColor: "rgba(15, 23, 42, 0.55)", justifyContent: "center", alignItems: "center", paddingHorizontal: 12 },
+  tarjetaModal: { width: "100%", maxWidth: 640, flex: 1, borderRadius: 20, overflow: "hidden" },
   header: {
     flexDirection: "row",
     alignItems: "center",

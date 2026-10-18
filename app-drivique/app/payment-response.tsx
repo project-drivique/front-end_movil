@@ -37,6 +37,8 @@ import {
 } from "@/modules/reservation/services/wompiService";
 import { ModalCalificar } from "@/modules/reservation/components/ModalCalificar";
 import { ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { contratoService } from "@/modules/reservation/services/contractService";
 import { useUsuarioStore } from "@/store/userStore";
 import { COLOR_ACENTO } from "@/constants/brandPalette";
 
@@ -59,6 +61,9 @@ export default function PagoRespuestaScreen() {
   const [cargando, setCargando] = useState(true);
   const [reserva, setReserva] = useState<ReservaGuardada | null>(null);
   const [aviso, setAviso] = useState("");
+  const [claveContrato, setClaveContrato] = useState("");
+  const [errorClaveContrato, setErrorClaveContrato] = useState("");
+  const [validandoClave, setValidandoClave] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [resena, setResena] = useState<ResenaGuardada | null>(null);
   const [modalCalificar, setModalCalificar] = useState(false);
@@ -200,6 +205,31 @@ export default function PagoRespuestaScreen() {
   const esperaPagoEfectivo = reserva.estado === "PENDIENTE_EFECTIVO";
   const puedeCancelar = grupo === "pendiente" || reserva.estado === "CONFIRMADA";
   const tieneContrato = ["CONFIRMADA", "EN_CURSO", "FINALIZADA", "PENDIENTE_FIRMA"].includes(reserva.estado) || pendienteFirma;
+
+  // El contrato se abre en el mismo detalle: se pide el documento de la reserva y luego se muestra el contrato
+  const abrirContrato = async () => {
+    if (!reserva) return;
+    setValidandoClave(true);
+    try {
+      const dto = await contratoService.obtenerPorReserva(reserva.id);
+      const docReserva = String(dto?.customerDocumentNumber || "").trim();
+      const soloDigitos = docReserva.replace(/D/g, "");
+      const claveDigitos = claveContrato.replace(/D/g, "");
+      const coincide =
+        !!docReserva &&
+        ((soloDigitos.length > 0 && claveDigitos === soloDigitos) || claveContrato.trim().toUpperCase() === docReserva.toUpperCase());
+      if (!coincide) {
+        setErrorClaveContrato(t("misReservas.claveIncorrecta"));
+        return;
+      }
+      setClaveContrato("");
+      router.push(`/contract-view?ref=${encodeURIComponent(reserva.id)}&ok=1` as any);
+    } catch (e) {
+      setErrorClaveContrato(mensajeDeError(e, t("contratoFirma.loadError")));
+    } finally {
+      setValidandoClave(false);
+    }
+  };
   const vehiculo = reserva.vehiculoSnapshot;
   const foto = vehiculo?.imagenes?.[0];
   const sucursalEfectivo = nombreSucursalEfectivo(reserva);
@@ -335,14 +365,33 @@ export default function PagoRespuestaScreen() {
         ) : null}
 
         {tieneContrato ? (
-          <Boton
-            texto={
-              pendienteFirma
-                ? t("misReservas.firmarContrato", { defaultValue: "Proceder a firmar contrato" })
-                : t("misReservas.verContrato")
-            }
-            onPress={() => router.push(`/contract-view?ref=${encodeURIComponent(reserva.id)}` as any)}
-          />
+          <View style={[s.contratoCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+            <View style={[s.contratoIcono, { backgroundColor: c.primaryBg }]}>
+              <Ionicons name="lock-closed-outline" size={30} color={primaryAccent} />
+            </View>
+            <Text style={[s.contratoTitulo, { color: c.textPrimary }]}>{t("misReservas.contratoBloqueadoTitulo")}</Text>
+            <Text style={[s.contratoTexto, { color: c.textSecondary }]}>{t("misReservas.contratoBloqueadoTexto")}</Text>
+            <View style={{ width: "100%", marginTop: 14 }}>
+              <PasswordInput
+                placeholder={t("misReservas.claveContratoPlaceholder")}
+                value={claveContrato}
+                onChangeText={(v) => {
+                  setClaveContrato(v);
+                  if (errorClaveContrato) setErrorClaveContrato("");
+                }}
+                error={errorClaveContrato}
+              />
+            </View>
+            <TouchableOpacity style={{ width: "100%", marginTop: 8 }} onPress={abrirContrato} activeOpacity={0.85} disabled={validandoClave}>
+              <LinearGradient colors={GRADIENTES.boton.colors} start={GRADIENTES.boton.start} end={GRADIENTES.boton.end} style={s.contratoBtn}>
+                <Text style={s.contratoBtnTexto}>
+                  {pendienteFirma
+                    ? t("misReservas.firmarContrato", { defaultValue: "Proceder a firmar contrato" })
+                    : t("misReservas.verContrato")}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         ) : null}
 
         {grupo === "finalizada" ? (
@@ -438,6 +487,12 @@ function Boton({ texto, onPress, secundario }: { texto: string; onPress: () => v
 }
 
 const s = StyleSheet.create({
+  contratoCard: { borderWidth: 1, borderRadius: 18, padding: 20, alignItems: "center", marginTop: 8 },
+  contratoIcono: { width: 64, height: 64, borderRadius: 32, alignItems: "center", justifyContent: "center", marginBottom: 12 },
+  contratoTitulo: { fontSize: 18, fontWeight: "800", textAlign: "center" },
+  contratoTexto: { fontSize: 13, textAlign: "center", marginTop: 6, lineHeight: 19 },
+  contratoBtn: { borderRadius: 14, paddingVertical: 15, alignItems: "center" },
+  contratoBtnTexto: { color: "#FFFFFF", fontSize: 15, fontWeight: "800" },
   flex: { flex: 1 },
   centro: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
   titulo: { fontSize: 16, fontWeight: "800", textAlign: "center" },
