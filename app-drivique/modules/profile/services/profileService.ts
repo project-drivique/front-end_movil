@@ -1,4 +1,5 @@
 import { apiClient } from '@/services/http/apiClient'
+import { useReferenceStore } from '@/store/referenceStore'
 import { FormCambiarCorreo, FormEditarPerfil, UsuarioPerfil } from '../types/profile.types'
 
 export interface UserPreferencesDTO {
@@ -31,9 +32,6 @@ const CODIGO_DOCUMENTO: Record<string, string> = {
   DRIVER_LICENSE: 'Licencia de Conducción',
   CC: 'CC',
   CE: 'CE',
-  DNI: 'DNI',
-  PPT: 'PPT',
-  PEP: 'PEP',
 }
 
 export function mapPerfil(data: any): UsuarioPerfil {
@@ -58,6 +56,26 @@ export async function obtenerPerfil(_token?: string): Promise<UsuarioPerfil> {
   return mapPerfil(data)
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// El servidor guarda la nacionalidad por UUID: si llegó un nombre o código (lista aún sin cargar) se busca su id
+function resolverNacionalidadId(valor?: string): string | undefined {
+  if (!valor) return undefined;
+  if (UUID_RE.test(valor)) return valor;
+  const v = valor.trim().toLowerCase();
+  const n = useReferenceStore.getState().nacionalidades.find((x) => x.name.toLowerCase() === v || x.isoCode?.toLowerCase() === v);
+  return n?.id;
+}
+
+// La app usa etiquetas ("Pasaporte", "Doc. Extranjero"); el servidor guarda códigos (PASSPORT, CE...)
+function codigoDocumento(tipo?: string): string | undefined {
+  if (!tipo) return undefined;
+  const t = tipo.trim().toUpperCase();
+  if (t === 'PASAPORTE' || t === 'PAS') return 'PASSPORT';
+  if (t === 'DOC. EXTRANJERO' || t === 'DOCEXTRANJERO') return 'CE';
+  return t;
+}
+
 export async function actualizarPerfil(
   _token: string,
   datos: FormEditarPerfil & { numeroDocumento?: string; tipoDocumento?: string }
@@ -67,10 +85,10 @@ export async function actualizarPerfil(
     lastName: datos.apellidos.trim(),
     phone: datos.telefono.trim(),
     birthDate: datos.fechaNacimiento || undefined,
-    nationalityId: datos.nacionalidad || undefined,
+    nationalityId: resolverNacionalidadId(datos.nacionalidad),
     address: datos.direccion ? datos.direccion.trim() : undefined,
     documentNumber: datos.numeroDocumento ? datos.numeroDocumento.trim() : undefined,
-    documentTypeCode: datos.tipoDocumento || undefined,
+    documentTypeCode: codigoDocumento(datos.tipoDocumento),
   }
   const { data } = await apiClient.put('/users/me', payload)
   return mapPerfil(data)

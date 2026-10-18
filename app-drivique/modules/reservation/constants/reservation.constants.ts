@@ -254,9 +254,6 @@ export const SIGLA_DOCUMENTO: Record<string, string> = {
   CE: "CE",
   Pasaporte: "PAS",
   PASAPORTE: "PAS",
-  DNI: "DNI",
-  PPT: "PPT",
-  PEP: "PEP",
   DRIVER_LICENSE: "LIC",
   LICENCIA: "LIC",
   LICENCIA_CONDUCCION: "LIC",
@@ -278,9 +275,6 @@ export function getTiposDocumento(
     { id: "CC", label: t("reserva.datosPersonales.tiposDocumento.CC") },
     { id: "CE", label: t("reserva.datosPersonales.tiposDocumento.CE") },
     { id: "Pasaporte", label: t("reserva.datosPersonales.tiposDocumento.Pasaporte") },
-    { id: "DNI", label: t("reserva.datosPersonales.tiposDocumento.DNI") },
-    { id: "PPT", label: t("reserva.datosPersonales.tiposDocumento.PPT") },
-    { id: "PEP", label: t("reserva.datosPersonales.tiposDocumento.PEP") },
   ];
 }
 

@@ -84,11 +84,11 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     if (!datosPersonales.nacionalidad) return OPCIONES_TIPO_DOCUMENTO;
     if (esNacionalidadColombiana(datosPersonales.nacionalidad)) {
       return OPCIONES_TIPO_DOCUMENTO.filter(
-        (o) => o.id === "CC" || o.id === "CE" || o.id === "Pasaporte" || o.id === "PPT" || o.id === "PEP"
+        (o) => o.id === "CC" || o.id === "CE" || o.id === "Pasaporte"
       );
     }
     return OPCIONES_TIPO_DOCUMENTO.filter(
-      (o) => o.id === "Pasaporte" || o.id === "DNI" || o.id === "CE" || o.id === "PPT" || o.id === "PEP"
+      (o) => o.id === "Pasaporte" || o.id === "CE"
     );
   }, [datosPersonales.nacionalidad, OPCIONES_TIPO_DOCUMENTO]);
   const actualizarDatosPersonales = useReservaStore(
@@ -326,7 +326,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
           apellidos: apellidos || usuarioGlobal.apellidos,
           telefono: datosPersonales.celular,
           numeroDocumento: datosPersonales.numeroDocumento,
-          tipoDocumento: datosPersonales.tipoDocumento,
+          tipoDocumento: datosPersonales.tipoDocumento ?? undefined,
           nacionalidad: datosPersonales.nacionalidad,
           direccion: usuarioGlobal.direccion || "",
           fechaNacimiento: usuarioGlobal.fechaNacimiento || "",
@@ -507,7 +507,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                 if (esNacionalidadColombiana(id)) {
                   if (
                     datosPersonales.tipoDocumento &&
-                    !["CC", "CE", "Pasaporte", "PPT", "PEP"].includes(datosPersonales.tipoDocumento)
+                    !["CC", "CE", "Pasaporte"].includes(datosPersonales.tipoDocumento)
                   ) {
                     actualizarDatosPersonales({ tipoDocumento: null });
                     actualizarUsuarioGlobal({ tipoDocumento: "" });
@@ -515,7 +515,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                 } else {
                   if (
                     datosPersonales.tipoDocumento &&
-                    !["Pasaporte", "DNI", "CE", "PPT", "PEP"].includes(datosPersonales.tipoDocumento)
+                    !["Pasaporte", "CE"].includes(datosPersonales.tipoDocumento)
                   ) {
                     actualizarDatosPersonales({ tipoDocumento: null });
                     actualizarUsuarioGlobal({ tipoDocumento: "" });

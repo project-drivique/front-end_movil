@@ -8,6 +8,9 @@ import { useIdioma } from "@/modules/i18n/hooks/useLanguage";
 import { FloatingSupportChat } from "@/components/ui/FloatingSupportChat";
 import { Fragment, useEffect } from "react";
 import { AppState } from "react-native";
+import { apiClient } from "@/services/http/apiClient";
+import { mapPerfil } from "@/modules/profile/services/profileService";
+import { useUsuarioStore } from "@/store/userStore";
 import { useBrandStore } from "@/store/brandStore";
 import { useReferenceStore } from "@/store/referenceStore";
 import { useAuthStore } from "@/store/authStore";
@@ -50,6 +53,29 @@ export default function RootLayout() {
     if (token) useReferenceStore.getState().cargarNacionalidades().catch(() => {});
   }, [token]);
 
+  // Datos personales sincronizados con la web: lo que se cambie allá se ve aquí al volver a la app y cada minuto
+  useEffect(() => {
+    if (!token) return undefined;
+    const sincronizar = async () => {
+      try {
+        const { data } = await apiClient.get("/users/me");
+        const { id: _id, ...mapped } = mapPerfil(data);
+        useUsuarioStore.getState().actualizarUsuario(mapped);
+        useAuthStore.getState().actualizarUsuario({ nombres: mapped.nombres, apellidos: mapped.apellidos });
+      } catch {
+        /* sin conexión: se conserva lo que ya hay */
+      }
+    };
+    const sub = AppState.addEventListener("change", (estado) => {
+      if (estado === "active") sincronizar();
+    });
+    const timer = setInterval(sincronizar, 60000);
+    return () => {
+      sub.remove();
+      clearInterval(timer);
+    };
+  }, [token]);
+
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider value={temaActual === "oscuro" ? DarkTheme : DefaultTheme}>
@@ -61,7 +87,7 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="vehicle/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="payment-response" options={{ headerShown: false }} />
-            <Stack.Screen name="contract-view" options={{ headerShown: false }} />
+            <Stack.Screen name="contract-view" options={{ headerShown: false, presentation: "transparentModal", animation: "fade" }} />
             <Stack.Screen name="wompi-checkout" options={{ headerShown: false }} />
           </Stack>
 
