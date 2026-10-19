@@ -94,20 +94,20 @@ export default function EditDatesLocationSection({
     if (esWompi) {
       base.push({
         value: "domicilio",
-        label: t("reserva.fechasLugar.entregaDomicilio"),
+        label: t("reserva.fechasLugar.entregaDomicilio", { defaultValue: "Domicilio a casa" }),
         icono: "home-outline",
       });
       if (ciudadInfo?.tieneAeropuerto === true) {
         base.push({
           value: "aeropuerto",
-          label: t("reserva.fechasLugar.entregaAeropuerto"),
+          label: t("reserva.fechasLugar.entregaAeropuerto", { defaultValue: "Entrega en aeropuerto" }),
           icono: "airplane-outline",
         });
       }
       if (ciudadInfo?.tieneTerminal === true) {
         base.push({
           value: "terminal",
-          label: t("reserva.fechasLugar.entregaTerminal"),
+          label: t("reserva.fechasLugar.entregaTerminal", { defaultValue: "Entrega en terminal de transporte" }),
           icono: "bus-outline",
         });
       }
@@ -119,27 +119,27 @@ export default function EditDatesLocationSection({
     const base: OpcionLugar[] = [
       {
         value: nombreSucursal,
-        label: t("reserva.fechasLugar.devolverEnSucursal", { sucursal: nombreSucursal }),
+        label: t("reserva.fechasLugar.devolverEnSucursal", { sucursal: nombreSucursal, defaultValue: `Devolver en sucursal (${nombreSucursal})` }),
         icono: "business-outline",
       },
     ];
     if (esWompi) {
       base.push({
         value: "domicilio",
-        label: t("reserva.fechasLugar.devolucionDomicilio"),
+        label: t("reserva.fechasLugar.devolucionDomicilio", { defaultValue: "Domicilio a casa" }),
         icono: "home-outline",
       });
       if (ciudadInfo?.tieneAeropuerto === true) {
         base.push({
           value: "aeropuerto",
-          label: t("reserva.fechasLugar.devolucionAeropuerto"),
+          label: t("reserva.fechasLugar.devolucionAeropuerto", { defaultValue: "Devolución en aeropuerto" }),
           icono: "airplane-outline",
         });
       }
       if (ciudadInfo?.tieneTerminal === true) {
         base.push({
           value: "terminal",
-          label: t("reserva.fechasLugar.devolucionTerminal"),
+          label: t("reserva.fechasLugar.devolucionTerminal", { defaultValue: "Devolución en terminal de transporte" }),
           icono: "bus-outline",
         });
       }
@@ -282,6 +282,81 @@ export default function EditDatesLocationSection({
   const ciudadEntregaNombre = ciudadInfo?.nombre ?? ciudadNombre ?? "";
   const mostrarDomicilioRetiro = draft.lugarRetiro === "domicilio";
   const mostrarDomicilioDevolucion = draft.lugarDevolucion === "domicilio";
+
+  const diasReserva = useMemo(() => {
+    if (!draft.fechaRetiro || !draft.fechaDevolucion) return 0;
+    const fInicioStr = draft.fechaRetiro.split("T")[0];
+    const fFinStr = draft.fechaDevolucion.split("T")[0];
+    const startDate = new Date(`${fInicioStr}T00:00:00`);
+    const endDate = new Date(`${fFinStr}T00:00:00`);
+    const diffTime = endDate.getTime() - startDate.getTime();
+    let dias = Math.max(1, Math.round(diffTime / 86400000));
+    if (fInicioStr === fFinStr) dias = 1;
+    return dias;
+  }, [draft.fechaRetiro, draft.fechaDevolucion]);
+
+  const infoComputo = useMemo(() => {
+    if (!draft.horaRetiro || diasReserva <= 0 || !draft.fechaRetiro || !draft.fechaDevolucion) {
+      return null;
+    }
+    const fmtFecha = (d: number, m: number) => t("extra.computo.fecha", { d, mes: t(`extra.mesCorto.${m}`) });
+    let fInicioFmt = "";
+    let fFinFmt = "";
+    let fNextFmt = "";
+
+    const pI = draft.fechaRetiro.split("T")[0].split("-").map(Number);
+    if (pI.length === 3) fInicioFmt = fmtFecha(pI[2], pI[1] - 1);
+
+    const pF = draft.fechaDevolucion.split("T")[0].split("-").map(Number);
+    if (pF.length === 3) {
+      fFinFmt = fmtFecha(pF[2], pF[1] - 1);
+      const nextDt = new Date(pF[0], pF[1] - 1, pF[2]);
+      nextDt.setDate(nextDt.getDate() + 1);
+      fNextFmt = fmtFecha(nextDt.getDate(), nextDt.getMonth());
+    }
+
+    const hAmPm = formatHoraAmPm(draft.horaRetiro);
+
+    return {
+      titulo: t("extra.computo.titulo", { n: diasReserva, dia: diasReserva === 1 ? t("reserva.fechasLugar.diaSingular", { defaultValue: "día" }) : t("reserva.fechasLugar.diaPlural", { defaultValue: "días" }) }),
+      desc: t("extra.computo.desc", { inicio: fInicioFmt, fin: fFinFmt, siguiente: fNextFmt, hora: hAmPm, n: diasReserva }),
+    };
+  }, [draft.fechaRetiro, draft.fechaDevolucion, draft.horaRetiro, diasReserva]);
+
+  const devolucionAnticipadaText = useMemo(() => {
+    if (!draft.horaRetiro || !draft.horaDevolucion || diasReserva <= 0) return "";
+    const [hR, mR] = draft.horaRetiro.split(":").map(Number);
+    const [hD, mD] = draft.horaDevolucion.split(":").map(Number);
+    const minutosRetiro = hR * 60 + mR;
+    const minutosDevolucion = hD * 60 + mD;
+
+    if (minutosDevolucion < minutosRetiro) {
+      const diffEarlyMins = minutosRetiro - minutosDevolucion;
+      const totalContractMins = diasReserva * 24 * 60;
+      const totalEffectiveMins = totalContractMins - diffEarlyMins;
+
+      if (totalEffectiveMins > 0) {
+        const antDias = Math.floor(totalEffectiveMins / (24 * 60));
+        const remainderMins = totalEffectiveMins % (24 * 60);
+        const antHoras = Math.floor(remainderMins / 60);
+        const antMins = remainderMins % 60;
+
+        if (antDias > 0) {
+          const dayStr = `${antDias} ${antDias === 1 ? t("vehiculo.day", { defaultValue: "día" }) : t("vehiculo.days", { defaultValue: "días" })}`;
+          const timeParts: string[] = [];
+          if (antHoras > 0) timeParts.push(`${antHoras} h`);
+          if (antMins > 0) timeParts.push(`${antMins} min`);
+          return timeParts.length > 0 ? `${dayStr}, ${timeParts.join(" ")}` : dayStr;
+        } else {
+          const timeParts: string[] = [];
+          if (antHoras > 0) timeParts.push(`${antHoras} h`);
+          if (antMins > 0) timeParts.push(`${antMins} min`);
+          return timeParts.join(" ");
+        }
+      }
+    }
+    return "";
+  }, [draft.horaRetiro, draft.horaDevolucion, diasReserva, t]);
 
   const infoDuracion = useMemo(() => {
     return getDetalleDuracionAlquiler(
@@ -635,13 +710,36 @@ export default function EditDatesLocationSection({
             </View>
           </View>
 
+          {/* INFO ALERT: CÓMPUTO DE DÍAS (IDÉNTICO A WEB) */}
+          {!!infoComputo && (
+            <View
+              style={[
+                styles.computoAlertCard,
+                {
+                  backgroundColor: c.oscuro ? "rgba(59, 130, 246, 0.12)" : "rgba(59, 130, 246, 0.08)",
+                  borderColor: c.oscuro ? "rgba(59, 130, 246, 0.35)" : "rgba(59, 130, 246, 0.25)",
+                },
+              ]}
+            >
+              <Ionicons name="information-circle" size={20} color="#2563EB" style={{ marginTop: 2, flexShrink: 0 }} />
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text style={[styles.computoAlertTitulo, { color: c.textPrimary }]}>
+                  {infoComputo.titulo}
+                </Text>
+                <Text style={[styles.computoAlertDesc, { color: c.oscuro ? "#CBD5E1" : "#475569" }]}>
+                  {infoComputo.desc}
+                </Text>
+              </View>
+            </View>
+          )}
+
           {/* 6. Horas de retiro y devolución */}
           <View style={[styles.filaDosCols, { marginTop: 12, marginBottom: 0 }]}>
             <View style={styles.columnaMedia}>
               <View style={styles.headerConIcono}>
                 <Ionicons name="time" size={14} color={primaryAccent} />
                 <Text style={[styles.tituloHeaderConIcono, { color: primaryAccent }]} numberOfLines={1}>
-                  {t("reserva.fechasLugar.horaDeRetiro")}
+                  {t("vehiculo.selectPickupTime", { defaultValue: "Selecciona Hora de Retiro" })}
                 </Text>
               </View>
               <TouchableOpacity
@@ -656,7 +754,7 @@ export default function EditDatesLocationSection({
                   >
                     {draft.horaRetiro
                       ? formatHoraAmPm(draft.horaRetiro)
-                      : t("reserva.fechasLugar.seleccionarHora", { defaultValue: "Seleccionar hora" })}
+                      : t("reserva.fechasLugar.seleccionarHora", { defaultValue: "Seleccionar" })}
                   </Text>
                   <Ionicons name="chevron-down" size={14} color={c.textMuted} />
                 </View>
@@ -667,7 +765,7 @@ export default function EditDatesLocationSection({
               <View style={styles.headerConIcono}>
                 <Ionicons name="time" size={14} color={primaryAccent} />
                 <Text style={[styles.tituloHeaderConIcono, { color: primaryAccent }]} numberOfLines={1}>
-                  {t("reserva.fechasLugar.horaDeDevolucion")}
+                  {t("vehiculo.selectReturnTime", { defaultValue: "Selecciona Hora de Devolución" })}
                 </Text>
               </View>
               <TouchableOpacity
@@ -682,7 +780,7 @@ export default function EditDatesLocationSection({
                   >
                     {draft.horaDevolucion
                       ? formatHoraAmPm(draft.horaDevolucion)
-                      : t("reserva.fechasLugar.seleccionarHora", { defaultValue: "Seleccionar hora" })}
+                      : t("reserva.fechasLugar.seleccionarHora", { defaultValue: "Seleccionar" })}
                   </Text>
                   <Ionicons name="chevron-down" size={14} color={c.textMuted} />
                 </View>
@@ -690,46 +788,50 @@ export default function EditDatesLocationSection({
             </View>
           </View>
 
-          {/* 7. Strip Duración del alquiler */}
-          {!!infoDuracion && (
-            <View
-              style={[
-                styles.duracionStrip,
-                c.oscuro
-                  ? { backgroundColor: "rgba(47, 78, 162, 0.16)", borderColor: "rgba(47, 78, 162, 0.35)" }
-                  : { backgroundColor: "rgba(47, 78, 162, 0.04)", borderColor: "rgba(47, 78, 162, 0.15)" },
-              ]}
-            >
-              <View style={{ flex: 1 }}>
-                <View style={styles.duracionFilaSuperior}>
-                  <View style={styles.duracionLeftRow}>
-                    <Ionicons name="hourglass-outline" size={15} color={primaryAccent} />
-                    <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
-                      {t("reserva.fechasLugar.duracionAlquiler", { defaultValue: "Duración del alquiler" })}
-                    </Text>
-                  </View>
-                  <Text style={[[styles.duracionValor, { color: COLOR_MARCA }], { color: primaryAccent }]}>{infoDuracion.titulo}</Text>
+          {/* 7. Duración del alquiler y Devolución anticipada (IDÉNTICO A WEB) */}
+          {diasReserva > 0 && (
+            <View style={{ gap: 8, marginTop: 12 }}>
+              <View
+                style={[
+                  styles.summaryRowCard,
+                  {
+                    backgroundColor: c.oscuro ? "rgba(47, 78, 162, 0.12)" : "rgba(47, 78, 162, 0.05)",
+                    borderColor: c.oscuro ? "rgba(47, 78, 162, 0.3)" : "rgba(47, 78, 162, 0.15)",
+                  },
+                ]}
+              >
+                <View style={styles.summaryRowLeft}>
+                  <Ionicons name="hourglass-outline" size={15} color={c.textSecondary} />
+                  <Text style={[styles.summaryRowLabel, { color: c.textSecondary }]}>
+                    {t("vehiculo.rentalDuration", { defaultValue: "Duración del alquiler" })}
+                  </Text>
                 </View>
+                <Text style={[styles.summaryRowValue, { color: primaryAccent }]}>
+                  {diasReserva} {diasReserva === 1 ? t("vehiculo.day", { defaultValue: "día" }) : t("vehiculo.days", { defaultValue: "días" })}
+                </Text>
+              </View>
 
-                {!!infoDuracion.tiempoUso && (
-                  <View
-                    style={[
-                      styles.duracionFilaInferior,
-                      { borderTopColor: c.oscuro ? "rgba(255, 255, 255, 0.08)" : "rgba(47, 78, 162, 0.12)" },
-                    ]}
-                  >
-                    <View style={styles.duracionLeftRow}>
-                      <Ionicons name="time-outline" size={15} color={primaryAccent} />
-                      <Text style={[styles.duracionLabel, { color: c.textSecondary }]}>
-                        {t("reserva.fechasLugar.devolucionAnticipada", { defaultValue: "Devolución anticipada" })}
-                      </Text>
-                    </View>
-                    <Text style={[[styles.duracionValor, { color: COLOR_MARCA }], { color: primaryAccent }]} numberOfLines={1}>
-                      {infoDuracion.tiempoUso}
+              {!!devolucionAnticipadaText && (
+                <View
+                  style={[
+                    styles.summaryRowCard,
+                    {
+                      backgroundColor: c.oscuro ? "rgba(47, 78, 162, 0.12)" : "rgba(47, 78, 162, 0.05)",
+                      borderColor: c.oscuro ? "rgba(47, 78, 162, 0.3)" : "rgba(47, 78, 162, 0.15)",
+                    },
+                  ]}
+                >
+                  <View style={styles.summaryRowLeft}>
+                    <Ionicons name="time-outline" size={15} color={c.textSecondary} />
+                    <Text style={[styles.summaryRowLabel, { color: c.textSecondary }]}>
+                      {t("vehiculo.earlyReturn", { defaultValue: "Devolución anticipada" })}
                     </Text>
                   </View>
-                )}
-              </View>
+                  <Text style={[styles.summaryRowValue, { color: primaryAccent }]}>
+                    {devolucionAnticipadaText}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
 
@@ -788,7 +890,7 @@ export default function EditDatesLocationSection({
         }
         subtitulo={
           horaVisible === "devolucion" && esUnSoloDia && draft.fechaRetiro
-            ? `Devolución: ${fechaDevolucionEfectiva} (Día siguiente)`
+            ? t("extra.computo.devSiguiente", { fecha: fechaDevolucionEfectiva })
             : null
         }
         alertaInformativa={
@@ -803,8 +905,6 @@ export default function EditDatesLocationSection({
               }
             : null
         }
-        horaApertura={horaVisible === "retiro" ? horarioRetiro.horaApertura : horarioDevolucion.horaApertura}
-        horaCierre={horaVisible === "retiro" ? horarioRetiro.horaCierre : horarioDevolucion.horaCierre}
         nombreSucursal={horaVisible === "retiro" ? (draft.lugarRetiro || nombreSucursal) : (draft.lugarDevolucion || nombreSucursal)}
         horaSeleccionada={horaVisible === "retiro" ? draft.horaRetiro : draft.horaDevolucion}
         onSeleccionar={handleElegirHora}
@@ -1033,6 +1133,47 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     fontSize: 12,
     marginBottom: 4,
+  },
+  computoAlertCard: {
+    marginTop: 10,
+    marginBottom: 4,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "flex-start",
+  },
+  computoAlertTitulo: {
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 18,
+  },
+  computoAlertDesc: {
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  summaryRowCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  summaryRowLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  summaryRowLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  summaryRowValue: {
+    fontSize: 14,
+    fontWeight: "800",
   },
   duracionStrip: {
     backgroundColor: "rgba(47, 78, 162, 0.04)",

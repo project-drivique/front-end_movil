@@ -8,9 +8,9 @@
  * RF50.6: Cancelar edición
  */
 import React, { useEffect, useMemo, useState } from "react";
+import { COLOR_MARCA, mezclar } from "@/constants/brandPalette";
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   ScrollView,
   StatusBar,
@@ -45,13 +45,14 @@ import { GRADIENTES, SOMBRA_BOTON_GRADIENTE } from "@/constants/gradients";
 import { DateField } from "@/components/ui/DateField";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Ionicons } from "@expo/vector-icons";
-import { getPrefijoPorNacionalidad, getNacionalidades } from "@/modules/reservation/constants/reservation.constants";
+import { getPrefijoPorNacionalidad, getNacionalidades, getTiposDocumento } from "@/modules/reservation/constants/reservation.constants";
 import CampoSelectorLista from "@/modules/reservation/components/ListSelectorField";
 import { useMoneda } from "@/hooks/useCurrency";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { Moneda } from "@/utils/currencyUtils";
 import { useNotificationStore } from "@/store/notificationStore";
 import { sessionTokens } from "@/services/http/sessionTokens";
+import { Alert } from "@/utils/alerta";
 
 export default function PerfilScreen() {
   const { t } = useTranslation();
@@ -301,8 +302,9 @@ export default function PerfilScreen() {
         <Switch
           value={Boolean(preferencias.emailNotifications)}
           onValueChange={() => handleTogglePref("emailNotifications")}
-          trackColor={{ false: c.border, true: "#93C5FD" }}
-          thumbColor={preferencias.emailNotifications ? "#1D4ED8" : "#F3F4F6"}
+          trackColor={{ false: c.border, true: mezclar(COLOR_MARCA, "#FFFFFF", 0.55) }}
+          thumbColor={preferencias.emailNotifications ? COLOR_MARCA : "#F3F4F6"}
+          {...({ activeThumbColor: COLOR_MARCA } as object)}
         />
       </View>
 
@@ -322,8 +324,9 @@ export default function PerfilScreen() {
         <Switch
           value={Boolean(preferencias.pushNotifications)}
           onValueChange={() => handleTogglePref("pushNotifications")}
-          trackColor={{ false: c.border, true: "#86EFAC" }}
-          thumbColor={preferencias.pushNotifications ? "#059669" : "#F3F4F6"}
+          trackColor={{ false: c.border, true: mezclar(COLOR_MARCA, "#FFFFFF", 0.55) }}
+          thumbColor={preferencias.pushNotifications ? COLOR_MARCA : "#F3F4F6"}
+          {...({ activeThumbColor: COLOR_MARCA } as object)}
         />
       </View>
 
@@ -343,8 +346,9 @@ export default function PerfilScreen() {
         <Switch
           value={Boolean(preferencias.inAppNotifications)}
           onValueChange={() => handleTogglePref("inAppNotifications")}
-          trackColor={{ false: c.border, true: "#C4B5FD" }}
-          thumbColor={preferencias.inAppNotifications ? "#7C3AED" : "#F3F4F6"}
+          trackColor={{ false: c.border, true: mezclar(COLOR_MARCA, "#FFFFFF", 0.55) }}
+          thumbColor={preferencias.inAppNotifications ? COLOR_MARCA : "#F3F4F6"}
+          {...({ activeThumbColor: COLOR_MARCA } as object)}
         />
       </View>
 
@@ -364,8 +368,9 @@ export default function PerfilScreen() {
         <Switch
           value={Boolean(preferencias.marketingNotifications)}
           onValueChange={() => handleTogglePref("marketingNotifications")}
-          trackColor={{ false: c.border, true: "#FBCFE8" }}
-          thumbColor={preferencias.marketingNotifications ? "#DB2777" : "#F3F4F6"}
+          trackColor={{ false: c.border, true: mezclar(COLOR_MARCA, "#FFFFFF", 0.55) }}
+          thumbColor={preferencias.marketingNotifications ? COLOR_MARCA : "#F3F4F6"}
+          {...({ activeThumbColor: COLOR_MARCA } as object)}
         />
       </View>
     </View>
@@ -484,6 +489,27 @@ export default function PerfilScreen() {
                 placeholder={t("perfil.seleccionar")}
               />
               {errores.nacionalidad && <Text style={styles.editErrorText}>{errores.nacionalidad}</Text>}
+            </View>
+
+            <View style={styles.editCampoWrap}>
+              <CampoSelectorLista
+                etiqueta={t("perfil.tipoDocumento")}
+                valorSeleccionado={form.tipoDocumento || null}
+                opciones={getTiposDocumento(t).map((o) => ({ id: o.id, label: o.label }))}
+                onSeleccionar={(id) => actualizarCampo("tipoDocumento", id)}
+                placeholder={t("perfil.seleccionar")}
+              />
+            </View>
+
+            <View style={styles.editCampoWrap}>
+              <Text style={[styles.editCampoLabel, { color: c.textSecondary }]}>{t("perfil.numeroDocumento")}</Text>
+              <TextInput
+                style={[styles.editInput, { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary }]}
+                value={form.numeroDocumento || ""}
+                onChangeText={(val) => actualizarCampo("numeroDocumento", val)}
+                placeholderTextColor={c.textMuted}
+                maxLength={20}
+              />
             </View>
 
             <View style={styles.editCampoWrap}>

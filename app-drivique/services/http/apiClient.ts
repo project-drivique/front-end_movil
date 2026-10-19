@@ -7,6 +7,7 @@ const baseURL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080/api/v
 export const apiClient = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30000,
 })
 
 let refreshRequest: Promise<string> | null = null
@@ -23,7 +24,10 @@ apiClient.interceptors.response.use(
     const request = error.config as (InternalAxiosRequestConfig & { _retried?: boolean }) | undefined
     const isRefreshRequest = request?.url?.includes('/auth/refresh')
 
-    if (error.response?.status !== 401 || !request || request._retried || isRefreshRequest) {
+    // Solo se renueva la sesión si la petición iba con sesión: un visitante (sin token) no debe quedar logueado
+    const teniaSesion = Boolean(request?.headers?.Authorization);
+
+    if (error.response?.status !== 401 || !request || request._retried || isRefreshRequest || !teniaSesion) {
       return Promise.reject(error)
     }
 

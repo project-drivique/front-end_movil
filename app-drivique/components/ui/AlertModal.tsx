@@ -1,4 +1,5 @@
 import React from "react";
+import i18n from "@/modules/i18n";
 import {
   Modal,
   View,
@@ -49,7 +50,7 @@ export function AlertModal({
   const listaBotones: BotonAlerta[] =
     botones !== undefined
       ? botones
-      : [{ texto: "Aceptar", onPress: onCerrar ?? (() => {}), variante: "primario" }];
+      : [{ texto: i18n.t("extra.comun.aceptarBtn"), onPress: onCerrar ?? (() => {}), variante: "primario" }];
 
   return (
     <Modal

@@ -39,7 +39,7 @@ interface Props {
 function getSafeImages(vehiculo: Vehiculo): string[] {
   const imgs = vehiculo.imagenes ?? [];
   const filtradas = imgs.filter(Boolean);
-  if (filtradas.length > 0) return filtradas.slice(0, 3);
+  if (filtradas.length > 0) return filtradas.slice(0, 8);
   if (vehiculo.imagen) return [vehiculo.imagen];
   if (vehiculo.foto) return [vehiculo.foto];
   return [];

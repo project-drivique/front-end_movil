@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from "react";
+import { useFechasOcupadas } from "@/modules/reservation/hooks/useFechasOcupadas";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
 import { Ionicons } from "@expo/vector-icons";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
-import { getDisponibilidadVehiculo, getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
+import { getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
 import { COLOR_MARCA } from "../constants/reservation.constants";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
@@ -216,13 +217,8 @@ export default function CalendarioRango({
 
   LocaleConfig.defaultLocale = langKey;
 
-  const ocupados = useMemo(() => {
-    const mapa = new Map<string, "reservado" | "mantenimiento">();
-    getDisponibilidadVehiculo(vehiculo.id).ocupados.forEach((item) => {
-      mapa.set(item.fecha, item.motivo);
-    });
-    return mapa;
-  }, [vehiculo.id]);
+  // Días ocupados reales del servidor (la web usa el mismo endpoint)
+  const ocupados = useFechasOcupadas(vehiculo.uuid);
 
   const horarioSucursal = useMemo(
     () => getHorarioSucursal(vehiculo.sucursal),

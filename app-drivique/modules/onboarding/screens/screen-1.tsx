@@ -10,6 +10,8 @@ import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { screen1Styles as styles } from "@/modules/onboarding/styles/screen1.styles";
 import { COLOR_ACENTO, COLOR_ENLACE, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 import { useLogoMarca } from "@/store/brandStore";
+import { lazyStyles } from "@/utils/lazyStyles";
+import { remapColor as mc } from "@/constants/brandColorMap";
 
 export default function OnboardingScreen1() {
   const logoMarca = useLogoMarca();
@@ -106,7 +108,7 @@ export default function OnboardingScreen1() {
                 ]}
                 onPress={() => cambiarTema("claro")}
               >
-                <Text style={[localStyles.temaBtnText, { color: temaActual === "claro" ? "#1D4ED8" : c.textPrimary }]}>{t("config.claro")}</Text>
+                <Text style={[localStyles.temaBtnText, { color: temaActual === "claro" ? mc("#1D4ED8") : c.textPrimary }]}>{t("config.claro")}</Text>
                 {temaActual === "claro" && (
                   <Text style={localStyles.temaCheck}>✓</Text>
                 )}
@@ -115,7 +117,7 @@ export default function OnboardingScreen1() {
                 style={[
                   localStyles.temaBtn,
                   { backgroundColor: c.bgInput, borderColor: c.border },
-                  temaActual === "oscuro" && [localStyles.temaBtnActiveDark, { backgroundColor: c.primaryBg, borderColor: "#3B82F6" }],
+                  temaActual === "oscuro" && [localStyles.temaBtnActiveDark, { backgroundColor: c.primaryBg, borderColor: mc("#3B82F6") }],
                 ]}
                 onPress={() => cambiarTema("oscuro")}
               >
@@ -154,7 +156,7 @@ export default function OnboardingScreen1() {
                   {IDIOMAS[key].label}
                 </Text>
                 {idiomaActual === key && (
-                  <View style={[localStyles.idiomaCheck, { backgroundColor: c.oscuro ? "#2563EB" : "#1D4ED8" }]}>
+                  <View style={[localStyles.idiomaCheck, { backgroundColor: c.oscuro ? mc("#2563EB") : mc("#1D4ED8") }]}>
                     <Text style={{ fontSize: 12, color: "#fff", fontWeight: "800" }}>✓</Text>
                   </View>
                 )}
@@ -174,7 +176,7 @@ export default function OnboardingScreen1() {
   );
 }
 
-const localStyles = StyleSheet.create({
+const crear_localStyles = () => StyleSheet.create({
   configBtn: {
     position: "absolute",
     top: 16,
@@ -182,9 +184,9 @@ const localStyles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#EEF2FF",
+    backgroundColor: mc("#EEF2FF"),
     borderWidth: 1,
-    borderColor: "#DBEAFE",
+    borderColor: mc("#DBEAFE"),
     alignItems: "center",
     justifyContent: "center",
     zIndex: 10,
@@ -229,7 +231,7 @@ const localStyles = StyleSheet.create({
   },
   seccionLabel: {
     fontSize: 11, fontWeight: "700",
-    color: "#1D4ED8", letterSpacing: 1.2, marginBottom: 10,
+    color: mc("#1D4ED8"), letterSpacing: 1.2, marginBottom: 10,
   },
   temaRow: { flexDirection: "row", gap: 10, marginBottom: 4 },
   temaBtn: {
@@ -239,10 +241,10 @@ const localStyles = StyleSheet.create({
     borderWidth: 1, borderColor: "#E5E7EB",
     backgroundColor: "#F9FAFB",
   },
-  temaBtnActive: { backgroundColor: "#EEF2FF", borderColor: "#1D4ED8" },
+  temaBtnActive: { backgroundColor: mc("#EEF2FF"), borderColor: mc("#1D4ED8") },
   temaBtnActiveDark: { backgroundColor: "#1C2330", borderColor: "#4A5568" },
   temaBtnText: { fontSize: 13, fontWeight: "600", color: "#374151" },
-  temaCheck: { fontSize: 14, color: "#1D4ED8", fontWeight: "800" },
+  temaCheck: { fontSize: 14, color: mc("#1D4ED8"), fontWeight: "800" },
   idiomaOption: {
     flexDirection: "row", alignItems: "center", gap: 14,
     paddingVertical: 12, paddingHorizontal: 12,
@@ -250,13 +252,13 @@ const localStyles = StyleSheet.create({
     borderWidth: 1, borderColor: "#E5E7EB",
     backgroundColor: "#F9FAFB",
   },
-  idiomaOptionActive: { backgroundColor: "#EEF2FF", borderColor: "#1D4ED8" },
+  idiomaOptionActive: { backgroundColor: mc("#EEF2FF"), borderColor: mc("#1D4ED8") },
   idiomaFlag: { fontSize: 22 },
   idiomaLabel: { flex: 1, fontSize: 14, fontWeight: "600", color: "#374151" },
-  idiomaLabelActive: { color: "#1D4ED8" },
+  idiomaLabelActive: { color: mc("#1D4ED8") },
   idiomaCheck: {
     width: 24, height: 24, borderRadius: 12,
-    backgroundColor: "#1D4ED8",
+    backgroundColor: mc("#1D4ED8"),
     alignItems: "center", justifyContent: "center",
   },
   modalBtnCerrar: {
@@ -265,3 +267,4 @@ const localStyles = StyleSheet.create({
   },
   modalBtnCerrarText: { fontSize: 14, fontWeight: "600", color: "#374151" },
 });
+const localStyles = lazyStyles(crear_localStyles);

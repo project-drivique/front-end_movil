@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import i18n from "@/modules/i18n";
 import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   Image,
   Modal,
   Pressable,
@@ -35,6 +35,7 @@ import { useUsuarioStore } from "@/store/userStore";
 import { useAuthStore } from "@/store/authStore";
 import { aCentavos, construirUrlCheckout } from "@/modules/reservation/services/wompiService";
 import { Platform } from "react-native";
+import { Alert } from "@/utils/alerta";
 
 const COLOR_GRUPO: Record<GrupoReserva, string> = {
   pendiente: "#f59e0b",
@@ -114,10 +115,10 @@ function formatFechaCompleta(fechaStr?: string | null, locale: string = "es-CO")
 }
 
 function obtenerTituloSeccionFecha(fechaIsoStr?: string | null, locale: string = "es-CO"): string {
-  if (!fechaIsoStr) return "Otras reservas";
+  if (!fechaIsoStr) return i18n.t("extra.misReservas.otras");
   const clean = String(fechaIsoStr).split("T")[0];
   const [y, m, d] = clean.split("-").map(Number);
-  if (!y || !m || !d) return "Otras reservas";
+  if (!y || !m || !d) return i18n.t("extra.misReservas.otras");
 
   const ahora = new Date();
   const yearHoy = ahora.getFullYear();
@@ -130,10 +131,10 @@ function obtenerTituloSeccionFecha(fechaIsoStr?: string | null, locale: string =
   const ayerStr = `${ayerDate.getFullYear()}-${String(ayerDate.getMonth() + 1).padStart(2, "0")}-${String(ayerDate.getDate()).padStart(2, "0")}`;
 
   if (clean === hoyStr) {
-    return "Reservas de hoy";
+    return i18n.t("extra.misReservas.hoy");
   }
   if (clean === ayerStr) {
-    return "Ayer";
+    return i18n.t("extra.misReservas.ayer");
   }
 
   const fechaItem = new Date(y, m - 1, d);
@@ -147,7 +148,7 @@ function obtenerTituloSeccionFecha(fechaIsoStr?: string | null, locale: string =
   });
 
   if (diffDias > 1 && diffDias <= 7) {
-    return `Hace ${diffDias} días · ${fechaFormateada}`;
+    return i18n.t("extra.misReservas.haceDias", { n: diffDias, fecha: fechaFormateada });
   }
 
   return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
@@ -190,18 +191,28 @@ export default function MisReservasScreen() {
   useFocusEffect(
     useCallback(() => {
       let activo = true;
-      (async () => {
+
+      const cargar = async (silencioso = false) => {
         try {
           const data = await reservaPersistService.getReservasUsuario();
           if (activo) setReservas([...data].sort(ordenarPorCreacionDesc));
         } catch (e) {
-          if (activo) setErrorCarga(mensajeDeError(e, t("misReservas.errorCarga", { defaultValue: "No se pudieron cargar tus reservas." })));
+          if (activo && !silencioso) {
+            setErrorCarga(mensajeDeError(e, t("misReservas.errorCarga", { defaultValue: "No se pudieron cargar tus reservas." })));
+          }
         } finally {
-          if (activo) setCargando(false);
+          if (activo && !silencioso) setCargando(false);
         }
-      })();
+      };
+
+      cargar(false);
+      const interval = setInterval(() => {
+        cargar(true);
+      }, 4000);
+
       return () => {
         activo = false;
+        clearInterval(interval);
       };
     }, [t])
   );
@@ -311,25 +322,6 @@ export default function MisReservasScreen() {
               {t("misReservas.subtitulo")}
             </Text>
           </View>
-          <TouchableOpacity
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: "rgba(255, 255, 255, 0.18)",
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 2,
-            }}
-            onPress={toggleTema}
-            activeOpacity={0.8}
-          >
-            <Ionicons
-              name={temaActual === "oscuro" ? "sunny-outline" : "moon-outline"}
-              size={18}
-              color="#ffffff"
-            />
-          </TouchableOpacity>
         </View>
       </LinearGradient>
 
@@ -451,6 +443,7 @@ export default function MisReservasScreen() {
               c={c}
               t={t}
               onPress={() => irADetalle(item.referencia)}
+              onPressResena={() => irADetalle(item.referencia)}
             />
           )}
         />
@@ -542,12 +535,14 @@ function TarjetaReserva({
   c,
   t,
   onPress,
+  onPressResena,
 }: {
   reserva: ReservaGuardada;
   usuarioId: string;
   c: ReturnType<typeof useTemaColores>;
   t: (key: string, opts?: any) => string;
   onPress: () => void;
+  onPressResena?: () => void;
 }) {
   const grupo = calcularGrupoReserva(reserva);
   const vehiculoSnap = reserva.vehiculoSnapshot as Vehiculo | undefined;
@@ -586,7 +581,9 @@ function TarjetaReserva({
               <Text style={[styles.badgeTexto, { color: COLOR_GRUPO[grupo] }]} numberOfLines={1}>
                 {reserva.estado === "PENDIENTE_VALIDACION"
                   ? t("misReservas.detalle.enRevisionDocumentos", { defaultValue: "En revisión de documentos" })
-                  : t(`misReservas.grupos.${grupo}`)}
+                  : (reserva.estado === "PENDIENTE_FIRMA"
+                    ? t("misReservas.detalle.pendienteFirma", { defaultValue: "Pendiente de firma" })
+                    : t(`misReservas.grupos.${grupo}`))}
               </Text>
             </View>
           </View>
@@ -605,9 +602,9 @@ function TarjetaReserva({
             <Text style={[styles.tarjetaTotal, { color: c.textPrimary }]}>{fmt(reserva.total)}</Text>
           </View>
 
-          {(grupo === "en_curso" || grupo === "finalizada" || grupo === "confirmada") && (
+          {grupo === "en_curso" && (
             <TouchableOpacity
-              style={[styles.reportarBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
+              style={[styles.reportarBtn, { backgroundColor: c.primaryBg, borderColor: c.primary }]}
               onPress={(e) => {
                 e.stopPropagation();
                 router.push({
@@ -621,8 +618,8 @@ function TarjetaReserva({
               activeOpacity={0.8}
             >
               <Ionicons name="build-outline" size={13} color={c.primary} />
-              <Text style={[styles.reportarBtnText, { color: c.primary }]}>
-                {t("tabs.hacerReporte")}
+              <Text style={[styles.reportarBtnText, { color: c.primary, fontWeight: "700" }]}>
+                {t("tabs.hacerReporte", { defaultValue: "Soporte de incidencias" })}
               </Text>
             </TouchableOpacity>
           )}

@@ -473,7 +473,7 @@ export default function ResumenReservaModal({
               <View style={styles.filaDesglose}>
                 <Text style={[styles.filaDesgloseLabel, { color: c.textSecondary }]}>
                   {t("reserva.resumen.diarias", { defaultValue: "Diarias de alquiler" })}
-                  {desglose.diasCalc > 1 ? ` (${desglose.dias} días)` : ""}
+                  {desglose.diasCalc > 1 ? t("extra.resumen.diasEntre", { n: desglose.dias }) : ""}
                 </Text>
                 <Text style={[styles.filaDesgloseValor, { color: c.textPrimary }]}>
                   {fmt(desglose.diarias)}

@@ -6,9 +6,23 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { COLOR_ACENTO } from "@/constants/brandPalette";
 
-function generarHoras(horaApertura = "06:00", horaCierre = "22:00"): string[] {
-  const [hInicio, mInicio] = (horaApertura || "06:00").split(":").map(Number);
-  const [hFin, mFin] = (horaCierre || "22:00").split(":").map(Number);
+function getHorarioInfo(nombreSucursal?: string | null) {
+  if (!nombreSucursal) {
+    return { apertura: "00:00", cierre: "23:30" };
+  }
+  const nombreLower = nombreSucursal.toLowerCase();
+  if (nombreLower.includes("aeropuerto") || nombreLower.includes("terminal") || nombreLower.includes("el dorado")) {
+    return { apertura: "00:00", cierre: "23:30" };
+  }
+  if (nombreLower.includes("domicilio") || nombreLower.includes("hotel") || nombreLower.includes("airbnb")) {
+    return { apertura: "07:00", cierre: "19:00" };
+  }
+  return { apertura: "00:00", cierre: "23:30" };
+}
+
+function generarHoras(horaApertura = "00:00", horaCierre = "23:30"): string[] {
+  const [hInicio, mInicio] = (horaApertura || "00:00").split(":").map(Number);
+  const [hFin, mFin] = (horaCierre || "23:30").split(":").map(Number);
   const horas: string[] = [];
 
   for (let h = hInicio; h <= hFin; h++) {
@@ -92,31 +106,41 @@ export default function SelectorHoraModal({
       }
     }
 
-    const horasBase = generarHoras(horaApertura || "07:00", horaCierre || "19:00");
+    const horarioDefault = getHorarioInfo(nombreSucursal);
+    const aperturaEfectiva = horaApertura || horarioDefault.apertura;
+    const cierreEfectivo = horaCierre || horarioDefault.cierre;
 
-    return horasBase.map((horaStr) => {
-      const [h, m] = horaStr.split(":").map(Number);
-      const totalMin = h * 60 + m;
+    const horasBase = generarHoras(aperturaEfectiva, cierreEfectivo);
 
-      let bloqueada = false;
+    return horasBase
+      .filter((horaStr) => {
+        const [h, m] = horaStr.split(":").map(Number);
+        const totalMin = h * 60 + m;
+        if (maxLimiteMinutos < Infinity && totalMin > maxLimiteMinutos) {
+          return false;
+        }
+        return true;
+      })
+      .map((horaStr) => {
+        const [h, m] = horaStr.split(":").map(Number);
+        const totalMin = h * 60 + m;
 
-      // Si la fecha elegida es hoy y la hora ya pasó en tiempo real
-      if (esPasado) {
-        bloqueada = true;
-      } else if (esHoy && totalMin <= ahoraMinutos) {
-        bloqueada = true;
-      } else if (minLimiteMinutos >= 0 && totalMin <= minLimiteMinutos) {
-        bloqueada = true;
-      } else if (totalMin > maxLimiteMinutos) {
-        bloqueada = true;
-      }
+        let bloqueada = false;
 
-      return {
-        hora: horaStr,
-        bloqueada,
-      };
-    });
-  }, [fecha, minHora, maxHora, horaApertura, horaCierre]);
+        if (esPasado) {
+          bloqueada = true;
+        } else if (esHoy && totalMin < ahoraMinutos) {
+          bloqueada = true;
+        } else if (minLimiteMinutos >= 0 && totalMin <= minLimiteMinutos) {
+          bloqueada = true;
+        }
+
+        return {
+          hora: horaStr,
+          bloqueada,
+        };
+      });
+  }, [fecha, minHora, maxHora, horaApertura, horaCierre, nombreSucursal]);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCerrar}>

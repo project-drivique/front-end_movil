@@ -29,6 +29,14 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   ) {
     return { type: "sourceFile", filePath: path.resolve(__dirname, "utils/normalizeColorBrand.ts") };
   }
+  // Web: el compilador de estilos de react-native-web también debe aplicar la paleta
+  if (
+    moduleName === "./normalizeColor" &&
+    context.originModulePath.includes(path.join("react-native-web", "dist")) &&
+    context.originModulePath.includes("compiler")
+  ) {
+    return { type: "sourceFile", filePath: path.resolve(__dirname, "utils/normalizeColorWebBrand.ts") };
+  }
   return resolverOriginal ? resolverOriginal(context, moduleName, platform) : context.resolveRequest(context, moduleName, platform);
 };
 

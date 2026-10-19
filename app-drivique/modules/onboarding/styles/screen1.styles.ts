@@ -1,6 +1,8 @@
 import { StyleSheet } from "react-native";
+import { lazyStyles } from "@/utils/lazyStyles";
+import { remapColor as mc } from "@/constants/brandColorMap";
 
-export const screen1Styles = StyleSheet.create({
+const crear_screen1Styles = () => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -24,11 +26,11 @@ export const screen1Styles = StyleSheet.create({
     width: 190,
     height: 190,
     borderRadius: 95,
-    backgroundColor: "#EFF6FF",
+    backgroundColor: mc("#EFF6FF"),
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#DBEAFE",
+    borderColor: mc("#DBEAFE"),
   },
   heroLogo: {
     width: 140,
@@ -38,7 +40,7 @@ export const screen1Styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: -8,
-    backgroundColor: "#1D4ED8",
+    backgroundColor: mc("#1D4ED8"),
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 20,
@@ -64,7 +66,7 @@ export const screen1Styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1D4ED8",
+    color: mc("#1D4ED8"),
     textAlign: "center",
     marginBottom: 6,
   },
@@ -77,12 +79,12 @@ export const screen1Styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: "row",
-    backgroundColor: "#EFF6FF",
+    backgroundColor: mc("#EFF6FF"),
     borderRadius: 16,
     padding: 16,
     width: "100%",
     borderWidth: 1,
-    borderColor: "#DBEAFE",
+    borderColor: mc("#DBEAFE"),
   },
   statCell: {
     flex: 1,
@@ -91,7 +93,7 @@ export const screen1Styles = StyleSheet.create({
   statVal: {
     fontSize: 18,
     fontWeight: "800",
-    color: "#1D4ED8",
+    color: mc("#1D4ED8"),
     marginBottom: 2,
   },
   statLbl: {
@@ -104,7 +106,8 @@ export const screen1Styles = StyleSheet.create({
   marginTop: 16,
 },
 titleAccent: {
-  color: "#1D4ED8",
+  color: mc("#1D4ED8"),
   fontWeight: "800",
 },
 });
+export const screen1Styles = lazyStyles(crear_screen1Styles);
