@@ -2059,5 +2059,94 @@ export default {
   "resenas": {
     "cargando": "Loading reviews...",
     "errorCarga": "The reviews could not be loaded."
+  },
+  "extra": {
+    "misReservas": {
+      "otras": "Other bookings",
+      "hoy": "Today’s bookings",
+      "ayer": "Yesterday",
+      "haceDias": "{{n}} days ago · {{fecha}}"
+    },
+    "gestion": {
+      "panelAdmin": "ADMINISTRATOR PANEL",
+      "gestionSucursal": "BRANCH MANAGEMENT",
+      "operativa": "OPERATIONAL",
+      "rol": "Role",
+      "adminGeneral": "General Administrator",
+      "encargado": "Branch Manager",
+      "tabAdmin": "Admin",
+      "tabSucursal": "Branch"
+    },
+    "efectivo": {
+      "subPunto": "Your booking has been registered. To confirm it, pay in cash at the authorized point {{sucursal}}.",
+      "subSucursal": "Your booking has been registered. To confirm it, pay in cash at the selected branch.",
+      "plazo": "You have approximately {{horas}} to go to the branch and make the payment. If you do not pay within this period, the booking will be cancelled automatically.",
+      "unaHora": "1 hour",
+      "nHoras": "{{n}} hours"
+    },
+    "resumen": {
+      "diasEntre": " ({{n}} days)"
+    },
+    "computo": {
+      "titulo": "Count of your {{n}} rental {{dia}}",
+      "desc": "Your booking starts on {{inicio}} at {{hora}}. Each day gives you 24 full hours: your day {{n}} starts on {{fin}} at {{hora}} and its 24 hours end on {{siguiente}} at {{hora}}. Returning earlier is recorded as early return time.",
+      "fecha": "{{mes}} {{d}}",
+      "devSiguiente": "Return: {{fecha}} (Next day)",
+      "devAnticipada": "Early return: {{tiempo}}",
+      "cero": "0 hours"
+    },
+    "calificar": {
+      "e1": "Bad experience",
+      "e2": "Fair",
+      "e3": "Good",
+      "e4": "Very good",
+      "e5": "Excellent experience!"
+    },
+    "resena": {
+      "largo": "The comment cannot exceed 400 characters.",
+      "corto": "The comment must have at least 8 characters.",
+      "enlaces": "For security, links or web pages are not allowed in the review.",
+      "correo": "For your privacy, do not include email addresses.",
+      "telefono": "For your safety, do not include phone or contact numbers.",
+      "repeticion": "Please avoid excessive repetition of characters.",
+      "respeto": "Please keep respectful and courteous language in your review."
+    },
+    "comun": {
+      "nuevo": "New",
+      "cliente": "Customer",
+      "usuario": "User",
+      "resena": "review",
+      "resenas": "reviews",
+      "aceptarBtn": "Accept"
+    },
+    "registro": {
+      "terminosLeidos": "✓ You have read all the terms. You can now accept.",
+      "terminosDesplazar": "↓ Scroll to the bottom to enable the accept button."
+    },
+    "notif": {
+      "generica": "Notification",
+      "drivique": "Drivique notification"
+    },
+    "errores": {
+      "favoritos": "Could not load your favorites.",
+      "perfilGuardar": "Error saving profile changes",
+      "registro": "Registration error",
+      "google": "Error authenticating with Google",
+      "facebook": "Error authenticating with Facebook"
+    },
+    "mesCorto": {
+      "0": "Jan",
+      "1": "Feb",
+      "2": "Mar",
+      "3": "Apr",
+      "4": "May",
+      "5": "Jun",
+      "6": "Jul",
+      "7": "Aug",
+      "8": "Sep",
+      "9": "Oct",
+      "10": "Nov",
+      "11": "Dec"
+    }
   }
 };

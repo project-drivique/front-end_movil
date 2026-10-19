@@ -335,8 +335,8 @@ export default function RegistroScreen() {
                   textAlign: 'center',
                 }}>
                   {terminosLeidos
-                    ? '✓ Has leído la totalidad de los términos. Ya puedes aceptar.'
-                    : '↓ Desplázate hasta el final para habilitar el botón de aceptar.'}
+                    ? t('extra.registro.terminosLeidos')
+                    : t('extra.registro.terminosDesplazar')}
                 </Text>
               </View>
             </ScrollView>

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import i18n from "@/modules/i18n";
 import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -114,10 +115,10 @@ function formatFechaCompleta(fechaStr?: string | null, locale: string = "es-CO")
 }
 
 function obtenerTituloSeccionFecha(fechaIsoStr?: string | null, locale: string = "es-CO"): string {
-  if (!fechaIsoStr) return "Otras reservas";
+  if (!fechaIsoStr) return i18n.t("extra.misReservas.otras");
   const clean = String(fechaIsoStr).split("T")[0];
   const [y, m, d] = clean.split("-").map(Number);
-  if (!y || !m || !d) return "Otras reservas";
+  if (!y || !m || !d) return i18n.t("extra.misReservas.otras");
 
   const ahora = new Date();
   const yearHoy = ahora.getFullYear();
@@ -130,10 +131,10 @@ function obtenerTituloSeccionFecha(fechaIsoStr?: string | null, locale: string =
   const ayerStr = `${ayerDate.getFullYear()}-${String(ayerDate.getMonth() + 1).padStart(2, "0")}-${String(ayerDate.getDate()).padStart(2, "0")}`;
 
   if (clean === hoyStr) {
-    return "Reservas de hoy";
+    return i18n.t("extra.misReservas.hoy");
   }
   if (clean === ayerStr) {
-    return "Ayer";
+    return i18n.t("extra.misReservas.ayer");
   }
 
   const fechaItem = new Date(y, m - 1, d);
@@ -147,7 +148,7 @@ function obtenerTituloSeccionFecha(fechaIsoStr?: string | null, locale: string =
   });
 
   if (diffDias > 1 && diffDias <= 7) {
-    return `Hace ${diffDias} días · ${fechaFormateada}`;
+    return i18n.t("extra.misReservas.haceDias", { n: diffDias, fecha: fechaFormateada });
   }
 
   return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);

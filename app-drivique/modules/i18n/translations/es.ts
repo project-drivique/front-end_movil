@@ -2059,5 +2059,94 @@ export default {
   "resenas": {
     "cargando": "Cargando reseñas...",
     "errorCarga": "No fue posible cargar las reseñas."
+  },
+  "extra": {
+    "misReservas": {
+      "otras": "Otras reservas",
+      "hoy": "Reservas de hoy",
+      "ayer": "Ayer",
+      "haceDias": "Hace {{n}} días · {{fecha}}"
+    },
+    "gestion": {
+      "panelAdmin": "PANEL DE ADMINISTRADOR",
+      "gestionSucursal": "GESTIÓN DE SUCURSAL",
+      "operativa": "OPERATIVA",
+      "rol": "Rol",
+      "adminGeneral": "Administrador General",
+      "encargado": "Encargado de Sucursal",
+      "tabAdmin": "Admin",
+      "tabSucursal": "Sucursal"
+    },
+    "efectivo": {
+      "subPunto": "Tu reserva quedó registrada. Para confirmarla, realiza el pago en efectivo en el punto autorizado {{sucursal}}.",
+      "subSucursal": "Tu reserva quedó registrada. Para confirmarla, realiza el pago en efectivo en la sucursal seleccionada.",
+      "plazo": "Tienes aproximadamente {{horas}} para acercarte a la sucursal y realizar el pago. Si no realizas el pago dentro de este plazo, la reserva se cancelará automáticamente.",
+      "unaHora": "1 hora",
+      "nHoras": "{{n}} horas"
+    },
+    "resumen": {
+      "diasEntre": " ({{n}} días)"
+    },
+    "computo": {
+      "titulo": "Cómputo de tus {{n}} {{dia}} de alquiler",
+      "desc": "Tu reserva empieza el {{inicio}} a las {{hora}}. Cada día te otorga 24 horas completas: tu {{n}}º día inicia el {{fin}} a las {{hora}} y sus 24 horas terminan el {{siguiente}} a las {{hora}}. Entregar antes registra tiempo de devolución anticipada.",
+      "fecha": "{{d}} de {{mes}}",
+      "devSiguiente": "Devolución: {{fecha}} (Día siguiente)",
+      "devAnticipada": "Devolución anticipada: {{tiempo}}",
+      "cero": "0 horas"
+    },
+    "calificar": {
+      "e1": "Mala experiencia",
+      "e2": "Regular",
+      "e3": "Bueno",
+      "e4": "Muy bueno",
+      "e5": "¡Excelente experiencia!"
+    },
+    "resena": {
+      "largo": "El comentario no puede exceder los 400 caracteres.",
+      "corto": "El comentario debe tener al menos 8 caracteres.",
+      "enlaces": "Por seguridad, no se permiten enlaces o páginas web en la reseña.",
+      "correo": "Por tu privacidad, no incluyas direcciones de correo electrónico.",
+      "telefono": "Por tu seguridad, no incluyas números telefónicos ni de contacto.",
+      "repeticion": "Por favor evita la repetición excesiva de caracteres.",
+      "respeto": "Por favor mantén un lenguaje respetuoso y cordial en tu reseña."
+    },
+    "comun": {
+      "nuevo": "Nuevo",
+      "cliente": "Cliente",
+      "usuario": "Usuario",
+      "resena": "reseña",
+      "resenas": "reseñas",
+      "aceptarBtn": "Aceptar"
+    },
+    "registro": {
+      "terminosLeidos": "✓ Has leído la totalidad de los términos. Ya puedes aceptar.",
+      "terminosDesplazar": "↓ Desplázate hasta el final para habilitar el botón de aceptar."
+    },
+    "notif": {
+      "generica": "Notificación",
+      "drivique": "Notificación Drivique"
+    },
+    "errores": {
+      "favoritos": "No fue posible cargar tus favoritos.",
+      "perfilGuardar": "Error al guardar cambios en el perfil",
+      "registro": "Error en el registro",
+      "google": "Error al autenticar con Google",
+      "facebook": "Error al autenticar con Facebook"
+    },
+    "mesCorto": {
+      "0": "ene",
+      "1": "feb",
+      "2": "mar",
+      "3": "abr",
+      "4": "may",
+      "5": "jun",
+      "6": "jul",
+      "7": "ago",
+      "8": "sep",
+      "9": "oct",
+      "10": "nov",
+      "11": "dic"
+    }
   }
 };

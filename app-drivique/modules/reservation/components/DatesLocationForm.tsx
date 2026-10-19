@@ -253,27 +253,27 @@ export default function FormFechasLugar({ vehiculo }: Props) {
     if (!fechasLugar.horaRetiro || diasReserva <= 0 || !fechasLugar.fechaRetiro || !fechasLugar.fechaDevolucion) {
       return null;
     }
-    const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+    const fmtFecha = (d: number, m: number) => t("extra.computo.fecha", { d, mes: t(`extra.mesCorto.${m}`) });
     let fInicioFmt = "";
     let fFinFmt = "";
     let fNextFmt = "";
 
     const pI = fechasLugar.fechaRetiro.split("T")[0].split("-").map(Number);
-    if (pI.length === 3) fInicioFmt = `${pI[2]} de ${meses[pI[1] - 1]}`;
+    if (pI.length === 3) fInicioFmt = fmtFecha(pI[2], pI[1] - 1);
 
     const pF = fechasLugar.fechaDevolucion.split("T")[0].split("-").map(Number);
     if (pF.length === 3) {
-      fFinFmt = `${pF[2]} de ${meses[pF[1] - 1]}`;
+      fFinFmt = fmtFecha(pF[2], pF[1] - 1);
       const nextDt = new Date(pF[0], pF[1] - 1, pF[2]);
       nextDt.setDate(nextDt.getDate() + 1);
-      fNextFmt = `${nextDt.getDate()} de ${meses[nextDt.getMonth()]}`;
+      fNextFmt = fmtFecha(nextDt.getDate(), nextDt.getMonth());
     }
 
     const hAmPm = formatHoraAmPm(fechasLugar.horaRetiro);
 
     return {
-      titulo: `Cómputo de tus ${diasReserva} ${diasReserva === 1 ? "día" : "días"} de alquiler`,
-      desc: `Tu reserva empieza el ${fInicioFmt} a las ${hAmPm}.. Cada día te otorga 24 horas completas: tu ${diasReserva}º día inicia el ${fFinFmt} a las ${hAmPm} y sus 24 horas terminan el ${fNextFmt} a las ${hAmPm}.. Entregar antes registra tiempo de devolución anticipada.`,
+      titulo: t("extra.computo.titulo", { n: diasReserva, dia: diasReserva === 1 ? t("reserva.fechasLugar.diaSingular", { defaultValue: "día" }) : t("reserva.fechasLugar.diaPlural", { defaultValue: "días" }) }),
+      desc: t("extra.computo.desc", { inicio: fInicioFmt, fin: fFinFmt, siguiente: fNextFmt, hora: hAmPm, n: diasReserva }),
     };
   }, [fechasLugar.fechaRetiro, fechasLugar.fechaDevolucion, fechasLugar.horaRetiro, diasReserva]);
 
@@ -755,7 +755,7 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         }
         subtitulo={
           horaVisible === "devolucion" && esUnSoloDia && fechasLugar.fechaRetiro
-            ? `Devolución: ${fechaDevolucionEfectiva} (Día siguiente)`
+            ? t("extra.computo.devSiguiente", { fecha: fechaDevolucionEfectiva })
             : null
         }
         alertaInformativa={

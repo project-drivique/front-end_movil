@@ -208,7 +208,7 @@ export function usePerfil() {
       setEditando(false);
       onExito();
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Error al guardar cambios en el perfil';
+      const msg = err?.response?.data?.detail || err?.response?.data?.message || t('extra.errores.perfilGuardar');
       onError(msg);
     } finally {
       setCargando(false);

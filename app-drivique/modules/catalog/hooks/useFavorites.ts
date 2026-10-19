@@ -1,6 +1,7 @@
 // modules/catalogo/hooks/useFavoritos.ts
 
 import { useCallback, useEffect, useState } from "react";
+import i18n from "@/modules/i18n";
 import { apiClient } from "@/services/http/apiClient";
 import { useAuthStore } from "@/store/authStore";
 import { hashCode } from "@/modules/catalog/services/catalogService";
@@ -43,7 +44,7 @@ export function useFavoritos(usuarioId: string | null) {
       console.error("Error cargando favoritos desde backend:", e);
       setFavoritos([]);
       setVehiculosFavoritos([]);
-      setError("No fue posible cargar tus favoritos.");
+      setError(i18n.t("extra.errores.favoritos"));
     } finally {
       setCargando(false);
     }

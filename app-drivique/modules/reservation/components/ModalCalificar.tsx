@@ -42,11 +42,11 @@ interface Props {
 }
 
 const ETIQUETAS_ESTRELLAS: Record<number, { texto: string; emoji: string }> = {
-  1: { texto: "Mala experiencia", emoji: "😞" },
-  2: { texto: "Regular", emoji: "😐" },
-  3: { texto: "Bueno", emoji: "🙂" },
-  4: { texto: "Muy bueno", emoji: "😊" },
-  5: { texto: "¡Excelente experiencia!", emoji: "🤩" },
+  1: { texto: "extra.calificar.e1", emoji: "😞" },
+  2: { texto: "extra.calificar.e2", emoji: "😐" },
+  3: { texto: "extra.calificar.e3", emoji: "🙂" },
+  4: { texto: "extra.calificar.e4", emoji: "😊" },
+  5: { texto: "extra.calificar.e5", emoji: "🤩" },
 };
 
 export function ModalCalificar({
@@ -201,7 +201,7 @@ export function ModalCalificar({
                   <View style={[s.etiquetaFeedback, { backgroundColor: c.bgInput }]}>
                     <Text style={s.emojiFeedback}>{etiquetaActual.emoji}</Text>
                     <Text style={[s.textoFeedback, { color: c.textPrimary }]}>
-                      {t(`reserva.calificar.estrellas.${calificacion}`, { defaultValue: etiquetaActual.texto })}
+                      {t(`reserva.calificar.estrellas.${calificacion}`, { defaultValue: t(etiquetaActual.texto) })}
                     </Text>
                   </View>
                 ) : (

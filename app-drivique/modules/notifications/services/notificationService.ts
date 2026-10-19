@@ -1,4 +1,5 @@
 import { apiClient } from "@/services/http/apiClient";
+import i18n from "@/modules/i18n";
 
 export interface NotificationDTO {
   id: string;
@@ -37,7 +38,7 @@ export function normalizarNotificacion(raw: any): NotificacionMobile {
   if (!raw || typeof raw !== "object") {
     return {
       id: String(Math.random()),
-      titulo: "Notificación",
+      titulo: i18n.t("extra.notif.generica"),
       mensaje: "",
       fecha: new Date().toISOString(),
       leido: false,
@@ -49,7 +50,7 @@ export function normalizarNotificacion(raw: any): NotificacionMobile {
   }
 
   const id = String(raw.id || raw.notificationId || raw.uuid || Math.random());
-  const titulo = raw.subject || raw.title || raw.titulo || "Notificación Drivique";
+  const titulo = raw.subject || raw.title || raw.titulo || i18n.t("extra.notif.drivique");
   const mensaje = raw.message || raw.mensaje || raw.content || "";
   const tipo = (raw.eventType || raw.type || raw.tipo || "GENERAL").toUpperCase();
   const criticidad = ((raw.criticality || raw.criticidad || "NORMAL") as string).toUpperCase() as NotificacionMobile["criticidad"];

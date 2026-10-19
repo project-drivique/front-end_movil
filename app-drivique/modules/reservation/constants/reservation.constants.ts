@@ -146,8 +146,8 @@ export function getDetalleDuracionAlquiler(
           else if (horasUso > 0 && minsUso > 0) partesUso.push(`${horasUso} h ${minsUso} min`);
           else if (horasUso === 0 && minsUso > 0) partesUso.push(`${minsUso} min`);
 
-          tiempoUso = partesUso.join(", ") || "0 horas";
-          subtituloAnticipada = `Devolución anticipada: ${tiempoUso}`;
+          tiempoUso = partesUso.join(", ") || t("extra.computo.cero");
+          subtituloAnticipada = t("extra.computo.devAnticipada", { tiempo: tiempoUso });
         }
       } else if (minDev < minRetiro) {
         const diffMinutosAnticipo = minRetiro - minDev;
@@ -162,8 +162,8 @@ export function getDetalleDuracionAlquiler(
         else if (horasUso > 0 && minsUso > 0) partesUso.push(`${horasUso} h ${minsUso} min`);
         else if (horasUso === 0 && minsUso > 0) partesUso.push(`${minsUso} min`);
 
-        tiempoUso = partesUso.join(", ") || "0 horas";
-        subtituloAnticipada = `Devolución anticipada: ${tiempoUso}`;
+        tiempoUso = partesUso.join(", ") || t("extra.computo.cero");
+        subtituloAnticipada = t("extra.computo.devAnticipada", { tiempo: tiempoUso });
       }
     }
   }

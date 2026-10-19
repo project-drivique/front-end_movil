@@ -2059,5 +2059,94 @@ export default {
   "resenas": {
     "cargando": "Chargement des avis...",
     "errorCarga": "Impossible de charger les avis."
+  },
+  "extra": {
+    "misReservas": {
+      "otras": "Autres réservations",
+      "hoy": "Réservations du jour",
+      "ayer": "Hier",
+      "haceDias": "Il y a {{n}} jours · {{fecha}}"
+    },
+    "gestion": {
+      "panelAdmin": "PANNEAU ADMINISTRATEUR",
+      "gestionSucursal": "GESTION DE L’AGENCE",
+      "operativa": "OPÉRATIONNELLE",
+      "rol": "Rôle",
+      "adminGeneral": "Administrateur général",
+      "encargado": "Responsable d’agence",
+      "tabAdmin": "Admin",
+      "tabSucursal": "Agence"
+    },
+    "efectivo": {
+      "subPunto": "Votre réservation a été enregistrée. Pour la confirmer, payez en espèces au point autorisé {{sucursal}}.",
+      "subSucursal": "Votre réservation a été enregistrée. Pour la confirmer, payez en espèces à l’agence sélectionnée.",
+      "plazo": "Vous avez environ {{horas}} pour vous rendre à l’agence et effectuer le paiement. Sans paiement dans ce délai, la réservation sera annulée automatiquement.",
+      "unaHora": "1 heure",
+      "nHoras": "{{n}} heures"
+    },
+    "resumen": {
+      "diasEntre": " ({{n}} jours)"
+    },
+    "computo": {
+      "titulo": "Décompte de vos {{n}} {{dia}} de location",
+      "desc": "Votre réservation commence le {{inicio}} à {{hora}}. Chaque jour vous donne 24 heures complètes : votre jour {{n}} commence le {{fin}} à {{hora}} et ses 24 heures se terminent le {{siguiente}} à {{hora}}. Rendre le véhicule plus tôt est enregistré comme retour anticipé.",
+      "fecha": "{{d}} {{mes}}",
+      "devSiguiente": "Retour : {{fecha}} (Jour suivant)",
+      "devAnticipada": "Retour anticipé : {{tiempo}}",
+      "cero": "0 heure"
+    },
+    "calificar": {
+      "e1": "Mauvaise expérience",
+      "e2": "Moyen",
+      "e3": "Bien",
+      "e4": "Très bien",
+      "e5": "Excellente expérience !"
+    },
+    "resena": {
+      "largo": "Le commentaire ne peut pas dépasser 400 caractères.",
+      "corto": "Le commentaire doit contenir au moins 8 caractères.",
+      "enlaces": "Par sécurité, les liens ou pages web ne sont pas autorisés dans l’avis.",
+      "correo": "Pour votre vie privée, n’incluez pas d’adresses e-mail.",
+      "telefono": "Pour votre sécurité, n’incluez pas de numéros de téléphone ou de contact.",
+      "repeticion": "Veuillez éviter la répétition excessive de caractères.",
+      "respeto": "Merci de garder un langage respectueux et courtois dans votre avis."
+    },
+    "comun": {
+      "nuevo": "Nouveau",
+      "cliente": "Client",
+      "usuario": "Utilisateur",
+      "resena": "avis",
+      "resenas": "avis",
+      "aceptarBtn": "Accepter"
+    },
+    "registro": {
+      "terminosLeidos": "✓ Vous avez lu l’intégralité des conditions. Vous pouvez accepter.",
+      "terminosDesplazar": "↓ Faites défiler jusqu’en bas pour activer le bouton d’acceptation."
+    },
+    "notif": {
+      "generica": "Notification",
+      "drivique": "Notification Drivique"
+    },
+    "errores": {
+      "favoritos": "Impossible de charger vos favoris.",
+      "perfilGuardar": "Erreur lors de l’enregistrement du profil",
+      "registro": "Erreur lors de l’inscription",
+      "google": "Erreur d’authentification avec Google",
+      "facebook": "Erreur d’authentification avec Facebook"
+    },
+    "mesCorto": {
+      "0": "janv",
+      "1": "févr",
+      "2": "mars",
+      "3": "avr",
+      "4": "mai",
+      "5": "juin",
+      "6": "juil",
+      "7": "août",
+      "8": "sept",
+      "9": "oct",
+      "10": "nov",
+      "11": "déc"
+    }
   }
 };

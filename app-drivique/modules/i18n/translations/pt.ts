@@ -2059,5 +2059,94 @@ export default {
   "resenas": {
     "cargando": "A carregar avaliações...",
     "errorCarga": "Não foi possível carregar as avaliações."
+  },
+  "extra": {
+    "misReservas": {
+      "otras": "Outras reservas",
+      "hoy": "Reservas de hoje",
+      "ayer": "Ontem",
+      "haceDias": "Há {{n}} dias · {{fecha}}"
+    },
+    "gestion": {
+      "panelAdmin": "PAINEL DO ADMINISTRADOR",
+      "gestionSucursal": "GESTÃO DE FILIAL",
+      "operativa": "OPERACIONAL",
+      "rol": "Função",
+      "adminGeneral": "Administrador Geral",
+      "encargado": "Responsável de Filial",
+      "tabAdmin": "Admin",
+      "tabSucursal": "Filial"
+    },
+    "efectivo": {
+      "subPunto": "A sua reserva foi registada. Para a confirmar, efetue o pagamento em dinheiro no ponto autorizado {{sucursal}}.",
+      "subSucursal": "A sua reserva foi registada. Para a confirmar, efetue o pagamento em dinheiro na filial selecionada.",
+      "plazo": "Tem aproximadamente {{horas}} para se dirigir à filial e efetuar o pagamento. Se não pagar dentro deste prazo, a reserva será cancelada automaticamente.",
+      "unaHora": "1 hora",
+      "nHoras": "{{n}} horas"
+    },
+    "resumen": {
+      "diasEntre": " ({{n}} dias)"
+    },
+    "computo": {
+      "titulo": "Contagem dos seus {{n}} {{dia}} de aluguer",
+      "desc": "A sua reserva começa a {{inicio}} às {{hora}}. Cada dia dá-lhe 24 horas completas: o seu dia {{n}} começa a {{fin}} às {{hora}} e as suas 24 horas terminam a {{siguiente}} às {{hora}}. Devolver antes regista tempo de devolução antecipada.",
+      "fecha": "{{d}} de {{mes}}",
+      "devSiguiente": "Devolução: {{fecha}} (Dia seguinte)",
+      "devAnticipada": "Devolução antecipada: {{tiempo}}",
+      "cero": "0 horas"
+    },
+    "calificar": {
+      "e1": "Má experiência",
+      "e2": "Razoável",
+      "e3": "Bom",
+      "e4": "Muito bom",
+      "e5": "Experiência excelente!"
+    },
+    "resena": {
+      "largo": "O comentário não pode exceder 400 carateres.",
+      "corto": "O comentário deve ter pelo menos 8 carateres.",
+      "enlaces": "Por segurança, não são permitidas ligações ou páginas web na avaliação.",
+      "correo": "Pela sua privacidade, não inclua endereços de email.",
+      "telefono": "Pela sua segurança, não inclua números de telefone ou de contacto.",
+      "repeticion": "Evite a repetição excessiva de carateres.",
+      "respeto": "Mantenha uma linguagem respeitosa e cordial na sua avaliação."
+    },
+    "comun": {
+      "nuevo": "Novo",
+      "cliente": "Cliente",
+      "usuario": "Utilizador",
+      "resena": "avaliação",
+      "resenas": "avaliações",
+      "aceptarBtn": "Aceitar"
+    },
+    "registro": {
+      "terminosLeidos": "✓ Leu a totalidade dos termos. Já pode aceitar.",
+      "terminosDesplazar": "↓ Desloque até ao fim para ativar o botão de aceitar."
+    },
+    "notif": {
+      "generica": "Notificação",
+      "drivique": "Notificação Drivique"
+    },
+    "errores": {
+      "favoritos": "Não foi possível carregar os seus favoritos.",
+      "perfilGuardar": "Erro ao guardar as alterações do perfil",
+      "registro": "Erro no registo",
+      "google": "Erro ao autenticar com o Google",
+      "facebook": "Erro ao autenticar com o Facebook"
+    },
+    "mesCorto": {
+      "0": "jan",
+      "1": "fev",
+      "2": "mar",
+      "3": "abr",
+      "4": "mai",
+      "5": "jun",
+      "6": "jul",
+      "7": "ago",
+      "8": "set",
+      "9": "out",
+      "10": "nov",
+      "11": "dez"
+    }
   }
 };

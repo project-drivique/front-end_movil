@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   nombre?: string;
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function VehicleGallery({ nombre, imagenes, calificacion, borderColor, style }: Props) {
+  const { t } = useTranslation();
   const c = useTemaColores();
   const [activa, setActiva] = useState(0);
 
@@ -72,7 +74,7 @@ export function VehicleGallery({ nombre, imagenes, calificacion, borderColor, st
         <View style={s.badge}>
           <Ionicons name="star" size={12} color="#FBBF24" />
           <Text style={s.badgeTexto}>
-            {calificacion && calificacion > 0 ? calificacion.toFixed(1) : "Nuevo"}
+            {calificacion && calificacion > 0 ? calificacion.toFixed(1) : t("extra.comun.nuevo")}
           </Text>
         </View>
 
