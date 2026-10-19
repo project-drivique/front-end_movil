@@ -103,7 +103,7 @@ export function VehicleGallery({ nombre, imagenes, calificacion, borderColor, st
       {/* Fila de Miniaturas */}
       {imagenes.length > 1 && (
         <View style={s.miniaturasFila}>
-          {imagenes.slice(0, 3).map((uri, i) => {
+          {imagenes.slice(0, 8).map((uri, i) => {
             const esActiva = i === activa;
             return (
               <TouchableOpacity
