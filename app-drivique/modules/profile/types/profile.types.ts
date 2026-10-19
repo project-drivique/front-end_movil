@@ -2,9 +2,6 @@ export type TipoDocumento =
   | "CC"
   | "CE"
   | "Pasaporte"
-  | "DNI"
-  | "PPT"
-  | "PEP"
   | "Doc. Extranjero";
 
 // Nacionalidad es el UUID de GET /nationalities (nationalityId en el backend).
@@ -31,6 +28,8 @@ export interface FormEditarPerfil {
   fechaNacimiento: string;
   nacionalidad: Nacionalidad | "";
   direccion: string;
+  tipoDocumento?: string;
+  numeroDocumento?: string;
 }
 
 export interface FormCompletarPerfil {

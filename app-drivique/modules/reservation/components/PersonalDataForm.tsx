@@ -3,8 +3,9 @@ import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { useReferenceStore } from "@/store/referenceStore";
 import { useReservaStore } from "@/store/reservationStore";
 import { useUsuarioStore } from "@/store/userStore";
+import { obtenerPerfil, actualizarPerfil } from "@/modules/profile/services/profileService";
 import React, { useEffect, useMemo, useState } from "react";
-import { Alert, Platform, StyleSheet, Text, TextInput, View, TouchableOpacity } from "react-native";
+import { Platform, StyleSheet, Text, TextInput, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -20,6 +21,7 @@ import {
   esNacionalidadColombiana,
   getTiposDocumento,
 } from "../constants/reservation.constants";
+import { getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
 import { TipoDocumento } from "../types/reservation.types";
 import { aCentavos, construirUrlCheckout } from "../services/wompiService";
 import {
@@ -38,6 +40,7 @@ import TarjetaVerificacionDocumental from "./DocumentVerificationCard";
 import CouponSection from "./CouponSection";
 import { useServerQuote } from "../hooks/useServerQuote";
 import { COLOR_ACENTO, COLOR_ENLACE_OSCURO, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
+import { Alert } from "@/utils/alerta";
 
 function combinarNombreCompleto(nombres: string, apellidos: string): string {
   return [nombres, apellidos].filter(Boolean).join(" ").trim();
@@ -67,6 +70,12 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const OPCIONES_TIPO_DOCUMENTO = useMemo(() => getTiposDocumento(t), [t]);
   const datosPersonales = useReservaStore((s) => s.datosPersonales);
   const nacionalidadesApi = useReferenceStore((st) => st.nacionalidades);
+  const cargarNacionalidades = useReferenceStore((st) => st.cargarNacionalidades);
+
+  useEffect(() => {
+    cargarNacionalidades().catch(() => {});
+  }, [cargarNacionalidades]);
+
   const OPCIONES_NACIONALIDAD = useMemo(
     () => getNacionalidades().map((n) => ({ id: n.id, label: n.nombre })),
     [nacionalidadesApi],
@@ -76,16 +85,17 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     if (!datosPersonales.nacionalidad) return OPCIONES_TIPO_DOCUMENTO;
     if (esNacionalidadColombiana(datosPersonales.nacionalidad)) {
       return OPCIONES_TIPO_DOCUMENTO.filter(
-        (o) => o.id === "CC" || o.id === "CE" || o.id === "Pasaporte" || o.id === "PPT" || o.id === "PEP"
+        (o) => o.id === "CC" || o.id === "CE" || o.id === "Pasaporte"
       );
     }
     return OPCIONES_TIPO_DOCUMENTO.filter(
-      (o) => o.id === "Pasaporte" || o.id === "DNI" || o.id === "CE" || o.id === "PPT" || o.id === "PEP"
+      (o) => o.id === "Pasaporte" || o.id === "CE"
     );
   }, [datosPersonales.nacionalidad, OPCIONES_TIPO_DOCUMENTO]);
   const actualizarDatosPersonales = useReservaStore(
     (s) => s.actualizarDatosPersonales,
   );
+  const actualizarFechasLugar = useReservaStore((s) => s.actualizarFechasLugar);
   const fechasLugar = useReservaStore((s) => s.fechasLugar);
   const planes = useReservaStore((s) => s.planes);
   const documentos = useReservaStore((s) => s.documentos);
@@ -107,7 +117,42 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       activo = false;
     };
   }, [usuarioGlobal.id]);
+
+  useEffect(() => {
+    let activo = true;
+    obtenerPerfil()
+      .then((perfil) => {
+        if (!activo || !perfil) return;
+        actualizarUsuarioGlobal(perfil);
+        const nombreCompleto = combinarNombreCompleto(perfil.nombres, perfil.apellidos);
+        const tel = String(perfil.telefono || "").replace(/\D/g, "");
+        const celular = tel.startsWith("57") && tel.length > 10 ? tel.slice(2) : tel;
+        const tipoDocStr = String(perfil.tipoDocumento || "");
+        const tipoDoc =
+          tipoDocStr === "DRIVER_LICENSE" || tipoDocStr === "Licencia de Conducción" || tipoDocStr === "LIC"
+            ? null
+            : perfil.tipoDocumento;
+
+        const precarga: Partial<typeof datosPersonales> = {};
+        if (nombreCompleto) precarga.nombreCompleto = nombreCompleto;
+        if (perfil.correo) precarga.correo = perfil.correo;
+        if (celular) precarga.celular = celular;
+        if (perfil.nacionalidad) precarga.nacionalidad = perfil.nacionalidad;
+        if (tipoDoc) precarga.tipoDocumento = tipoDoc as any;
+        if (perfil.numeroDocumento) precarga.numeroDocumento = perfil.numeroDocumento;
+
+        if (Object.keys(precarga).length > 0) {
+          actualizarDatosPersonales(precarga);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      activo = false;
+    };
+  }, []);
+
   const [alertaFaltantesVisible, setAlertaFaltantesVisible] = useState(false);
+  const [alertaHorarioVisible, setAlertaHorarioVisible] = useState(false);
   const [alertaEfectivoVisible, setAlertaEfectivoVisible] = useState(false);
   const [alertaErrorPagoVisible, setAlertaErrorPagoVisible] = useState(false);
   const [alertaCancelarProcesoVisible, setAlertaCancelarProcesoVisible] = useState(false);
@@ -120,15 +165,14 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const brandBg = c.oscuro ? COLOR_MARCA_OSCURO : COLOR_MARCA;
 
   useEffect(() => {
+    if (!usuarioGlobal) return;
     const precarga: Partial<typeof datosPersonales> = {};
-    if (
-      !datosPersonales.nombreCompleto &&
-      (usuarioGlobal.nombres || usuarioGlobal.apellidos)
-    ) {
-      precarga.nombreCompleto = combinarNombreCompleto(
-        usuarioGlobal.nombres,
-        usuarioGlobal.apellidos,
-      );
+    const nombreCompleto = combinarNombreCompleto(
+      usuarioGlobal.nombres,
+      usuarioGlobal.apellidos,
+    );
+    if (!datosPersonales.nombreCompleto && nombreCompleto) {
+      precarga.nombreCompleto = nombreCompleto;
     }
     if (!datosPersonales.correo && usuarioGlobal.correo) {
       precarga.correo = usuarioGlobal.correo;
@@ -136,30 +180,37 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     if (!datosPersonales.nacionalidad && usuarioGlobal.nacionalidad) {
       precarga.nacionalidad = usuarioGlobal.nacionalidad;
     }
-    if (!datosPersonales.tipoDocumento && usuarioGlobal.tipoDocumento) {
-      precarga.tipoDocumento = usuarioGlobal.tipoDocumento;
+    const tipoDocGlobalStr = String(usuarioGlobal.tipoDocumento || "");
+    const tipoDoc =
+      tipoDocGlobalStr === "DRIVER_LICENSE" || tipoDocGlobalStr === "Licencia de Conducción" || tipoDocGlobalStr === "LIC"
+        ? null
+        : usuarioGlobal.tipoDocumento;
+    if (!datosPersonales.tipoDocumento && tipoDoc) {
+      precarga.tipoDocumento = tipoDoc as any;
     }
     if (!datosPersonales.numeroDocumento && usuarioGlobal.numeroDocumento) {
       precarga.numeroDocumento = usuarioGlobal.numeroDocumento;
     }
     if (!datosPersonales.celular && usuarioGlobal.telefono) {
-      precarga.celular = usuarioGlobal.telefono;
+      const tel = String(usuarioGlobal.telefono).replace(/\D/g, "");
+      precarga.celular = tel.startsWith("57") && tel.length > 10 ? tel.slice(2) : tel;
     }
     if (Object.keys(precarga).length > 0) {
       actualizarDatosPersonales(precarga);
     }
-  }, []);
+  }, [usuarioGlobal]);
 
-  const prefijoTelefono = getPrefijoPorNacionalidad(
-    datosPersonales.nacionalidad || null,
-  );
+  const prefijoTelefono = useMemo(() => {
+    return getPrefijoPorNacionalidad(datosPersonales.nacionalidad || null);
+  }, [datosPersonales.nacionalidad, nacionalidadesApi]);
   const hayPrefijo = !!datosPersonales.nacionalidad;
 
   const datosCompletos =
     !!datosPersonales.nombreCompleto.trim() &&
     !!datosPersonales.nacionalidad &&
-    !!datosPersonales.correo.trim() &&
-    !!datosPersonales.celular.trim() &&
+    // Mismas reglas que la web: correo con formato válido y celular de al menos 10 dígitos
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datosPersonales.correo.trim()) &&
+    datosPersonales.celular.trim().length >= 10 &&
     !!datosPersonales.tipoDocumento &&
     !!datosPersonales.numeroDocumento.trim() &&
     (docsVerificados || !!documentos.cedulaFrente) &&
@@ -223,12 +274,40 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const cotizacion = useServerQuote({ vehiculo, fechasLugar, planes, cuponCodigo: cuponAplicado?.codigo });
   const total = cotizacion ? Number(cotizacion.estimatedTotal) : totalLocal;
 
-  const handleConfirmarReserva = async () => {
-    if (!datosCompletos) {
-      setAlertaFaltantesVisible(true);
-      return;
+  const branchName = fechasLugar.lugarRetiro || vehiculo.sucursal || "";
+  const horario = useMemo(() => getHorarioSucursal(branchName), [branchName]);
+
+  const checkOutsideSchedule = () => {
+    if (fechasLugar.fueraDeHorarioAceptado) return false;
+    let nowBogota = "12:00";
+    try {
+      nowBogota = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "America/Bogota",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(new Date());
+    } catch {
+      const now = new Date();
+      nowBogota = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     }
 
+    const openRaw = (horario.horaApertura || "08:00").slice(0, 5);
+    const closeRaw = (horario.horaCierre || "18:00").slice(0, 5);
+
+    const is24h =
+      (openRaw === "00:00" && (closeRaw === "23:59" || closeRaw === "23:30" || closeRaw === "24:00")) ||
+      openRaw === closeRaw;
+    if (is24h) return false;
+
+    if (openRaw < closeRaw) {
+      return nowBogota < openRaw || nowBogota > closeRaw;
+    } else {
+      return nowBogota < openRaw && nowBogota > closeRaw;
+    }
+  };
+
+  const ejecutarCreacionReserva = async (fueraDeHorario = false) => {
     setProcesandoPago(true);
     try {
       if (documentos.cedulaFrente || documentos.licenciaConduccion) {
@@ -241,9 +320,33 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         });
       }
 
+      // Persistir cambios de datos personales en el perfil de usuario (BD y store)
+      try {
+        const { nombres, apellidos } = separarNombreCompleto(datosPersonales.nombreCompleto);
+        const perfilActualizado = await actualizarPerfil("", {
+          nombres: nombres || usuarioGlobal.nombres,
+          apellidos: apellidos || usuarioGlobal.apellidos,
+          telefono: datosPersonales.celular,
+          numeroDocumento: datosPersonales.numeroDocumento,
+          tipoDocumento: datosPersonales.tipoDocumento ?? undefined,
+          nacionalidad: datosPersonales.nacionalidad,
+          direccion: usuarioGlobal.direccion || "",
+          fechaNacimiento: usuarioGlobal.fechaNacimiento || "",
+        });
+        if (perfilActualizado) {
+          actualizarUsuarioGlobal(perfilActualizado);
+        }
+      } catch (errPerfil) {
+        console.warn("No se pudo actualizar el perfil en BD:", errPerfil);
+      }
+
+      const fechasAUsar = fueraDeHorario
+        ? { ...fechasLugar, fueraDeHorarioAceptado: true }
+        : fechasLugar;
+
       const creada = await reservaPersistService.crear({
         vehiculo,
-        fechasLugar,
+        fechasLugar: fechasAUsar,
         planes,
         cupon: cuponAplicado,
       });
@@ -251,7 +354,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
       if (creada.metodoPago === "efectivo") {
         setModalInstruccionesEfectivoVisible(true);
-      } else if (creada.estado === "PENDIENTE_HORARIO" || fechasLugar.fueraDeHorarioAceptado) {
+      } else if (creada.estado === "PENDIENTE_HORARIO" || fueraDeHorario || fechasLugar.fueraDeHorarioAceptado) {
         limpiarReserva();
         router.replace("/(tabs)/my-bookings");
       } else if (creada.estado === "PENDIENTE") {
@@ -260,11 +363,31 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         limpiarReserva();
         router.replace(`/payment-response?ref=${encodeURIComponent(creada.id)}` as any);
       }
-    } catch (error) {
-      setErrorServidor(mensajeDeError(error, t("reserva.confirmacion.errorPagoMensaje")));
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        t("reserva.confirmacion.errorCrearMensaje", { defaultValue: "No se pudo registrar la reserva. Verifica que todos los datos y documentos sean válidos." });
+      setErrorServidor(msg);
     } finally {
       setProcesandoPago(false);
     }
+  };
+
+  const handleConfirmarReserva = async () => {
+    if (!datosCompletos) {
+      setAlertaFaltantesVisible(true);
+      return;
+    }
+
+    if (checkOutsideSchedule() && !fechasLugar.fueraDeHorarioAceptado) {
+      setAlertaHorarioVisible(true);
+      return;
+    }
+
+    await ejecutarCreacionReserva(false);
   };
 
   const handleIrAMisReservas = () => {
@@ -386,7 +509,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                 if (esNacionalidadColombiana(id)) {
                   if (
                     datosPersonales.tipoDocumento &&
-                    !["CC", "CE", "Pasaporte", "PPT", "PEP"].includes(datosPersonales.tipoDocumento)
+                    !["CC", "CE", "Pasaporte"].includes(datosPersonales.tipoDocumento)
                   ) {
                     actualizarDatosPersonales({ tipoDocumento: null });
                     actualizarUsuarioGlobal({ tipoDocumento: "" });
@@ -394,7 +517,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                 } else {
                   if (
                     datosPersonales.tipoDocumento &&
-                    !["Pasaporte", "DNI", "CE", "PPT", "PEP"].includes(datosPersonales.tipoDocumento)
+                    !["Pasaporte", "CE"].includes(datosPersonales.tipoDocumento)
                   ) {
                     actualizarDatosPersonales({ tipoDocumento: null });
                     actualizarUsuarioGlobal({ tipoDocumento: "" });
@@ -429,49 +552,49 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
             <Text style={[styles.inputLabel, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
               {t("reserva.datosPersonales.numeroCelular", { defaultValue: "Teléfono celular *" })}
             </Text>
-            {hayPrefijo ? (
-              <View style={styles.filaCelular}>
-                {prefijoTelefono ? (
+            <View style={styles.filaCelular}>
+              {prefijoTelefono ? (
                 <View
                   style={[
                     styles.prefijoBox,
-                    { backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC", borderColor: c.oscuro ? c.border : "#E2E8F0" },
+                    {
+                      backgroundColor: c.oscuro ? "rgba(255,255,255,0.05)" : "#F8FAFC",
+                      borderColor: c.oscuro ? c.border : "#E2E8F0",
+                    },
                   ]}
                 >
                   <Text style={[styles.prefijoText, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
                     {prefijoTelefono}
                   </Text>
                 </View>
-                ) : null}
-                <TextInput
-                  style={[
-                    styles.input,
-                    styles.inputCelular,
-                    { backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC", borderColor: c.oscuro ? c.border : "#E2E8F0", color: c.oscuro ? "#F8FAFC" : "#0F172A" },
-                  ]}
-                  value={datosPersonales.celular}
-                  onChangeText={(v) => {
-                    const digits = v.replace(/\D/g, "");
-                    actualizarDatosPersonales({ celular: digits });
-                    actualizarUsuarioGlobal({ telefono: digits });
-                  }}
-                  keyboardType="phone-pad"
-                  placeholder={t("perfil.placeholders.telefono", { defaultValue: "Ej. 3144214909" })}
-                  placeholderTextColor={c.textMuted}
-                />
-              </View>
-            ) : (
+              ) : null}
               <TextInput
                 style={[
                   styles.input,
-                  { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", borderColor: c.border, color: c.textMuted },
+                  styles.inputCelular,
+                  {
+                    backgroundColor: c.oscuro ? c.bgInput : (hayPrefijo ? "#F8FAFC" : "#F3F4F6"),
+                    borderColor: c.oscuro ? c.border : "#E2E8F0",
+                    color: c.oscuro ? "#F8FAFC" : "#0F172A",
+                    opacity: !hayPrefijo ? 0.6 : 1,
+                  },
                 ]}
+                editable={hayPrefijo}
                 value={datosPersonales.celular}
-                placeholder="3144214909"
+                onChangeText={(v) => {
+                  const digits = v.replace(/\D/g, "").slice(0, 12);
+                  actualizarDatosPersonales({ celular: digits });
+                  actualizarUsuarioGlobal({ telefono: digits });
+                }}
+                keyboardType="phone-pad"
+                placeholder={
+                  !hayPrefijo
+                    ? t("vehiculo.selectNationalityFirst", { defaultValue: "Primero selecciona tu nacionalidad" })
+                    : t("perfil.placeholders.telefono", { defaultValue: "Ej. 3144214909" })
+                }
                 placeholderTextColor={c.textMuted}
-                editable={false}
               />
-            )}
+            </View>
           </View>
 
           <View style={styles.campo}>
@@ -480,7 +603,11 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
               valorSeleccionado={datosPersonales.tipoDocumento}
               opciones={opcionesTipoDocumentoFiltradas}
               deshabilitado={!hayPrefijo}
-              placeholder={t("perfil.seleccionar", { defaultValue: "Seleccionar" })}
+              placeholder={
+                !hayPrefijo
+                  ? t("vehiculo.selectNationalityFirst", { defaultValue: "Primero selecciona tu nacionalidad" })
+                  : t("perfil.seleccionar", { defaultValue: "Seleccionar" })
+              }
               onSeleccionar={(id) => {
                 actualizarDatosPersonales({
                   tipoDocumento: id as typeof datosPersonales.tipoDocumento,
@@ -496,54 +623,57 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
             <Text style={[styles.inputLabel, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
               {t("reserva.datosPersonales.numeroDeDocumento", { defaultValue: "Número de documento *" })}
             </Text>
-            {datosPersonales.tipoDocumento ? (
-              <View style={styles.filaCelular}>
+            <View style={styles.filaCelular}>
+              {datosPersonales.tipoDocumento ? (
                 <View
                   style={[
                     styles.prefijoBox,
-                    { backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC", borderColor: c.oscuro ? c.border : "#E2E8F0" },
+                    {
+                      backgroundColor: c.oscuro ? "rgba(255,255,255,0.05)" : "#F8FAFC",
+                      borderColor: c.oscuro ? c.border : "#E2E8F0",
+                    },
                   ]}
                 >
                   <Text style={[styles.prefijoText, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
                     {getSiglaDocumento(datosPersonales.tipoDocumento)}
                   </Text>
                 </View>
-                <TextInput
-                  style={[
-                    styles.input,
-                    styles.inputCelular,
-                    { backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC", borderColor: c.oscuro ? c.border : "#E2E8F0", color: c.oscuro ? "#F8FAFC" : "#0F172A" },
-                  ]}
-                  value={datosPersonales.numeroDocumento}
-                  onChangeText={(v) => {
-                    actualizarDatosPersonales({ numeroDocumento: v });
-                    actualizarUsuarioGlobal({ numeroDocumento: v });
-                  }}
-                  placeholder={
-                    datosPersonales.tipoDocumento === "Pasaporte"
-                      ? "Ej. P12345678"
-                      : "Ej. 1075228306"
-                  }
-                  placeholderTextColor={c.textMuted}
-                  keyboardType={
-                    datosPersonales.tipoDocumento === "CC"
-                      ? "numeric"
-                      : "default"
-                  }
-                />
-              </View>
-            ) : (
+              ) : null}
               <TextInput
                 style={[
                   styles.input,
-                  { backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", borderColor: c.border, color: c.textMuted },
+                  styles.inputCelular,
+                  {
+                    backgroundColor: c.oscuro ? c.bgInput : (datosPersonales.tipoDocumento ? "#F8FAFC" : "#F3F4F6"),
+                    borderColor: c.oscuro ? c.border : "#E2E8F0",
+                    color: c.oscuro ? "#F8FAFC" : "#0F172A",
+                    opacity: !datosPersonales.tipoDocumento ? 0.6 : 1,
+                  },
                 ]}
+                editable={!!datosPersonales.tipoDocumento}
                 value={datosPersonales.numeroDocumento}
-                placeholder="1075228306"
+                onChangeText={(v) => {
+                  const upper = v.toUpperCase();
+                  actualizarDatosPersonales({ numeroDocumento: upper });
+                  actualizarUsuarioGlobal({ numeroDocumento: upper });
+                }}
+                placeholder={
+                  !hayPrefijo
+                    ? t("vehiculo.selectNationalityFirst", { defaultValue: "Primero selecciona tu nacionalidad" })
+                    : !datosPersonales.tipoDocumento
+                      ? t("vehiculo.selectDocTypeFirst", { defaultValue: "Primero selecciona tu tipo de documento" })
+                      : datosPersonales.tipoDocumento === "Pasaporte"
+                        ? "Ej. P12345678"
+                        : "Ej. 1075228306"
+                }
                 placeholderTextColor={c.textMuted}
-                editable={false}
+                keyboardType={
+                  datosPersonales.tipoDocumento === "CC"
+                    ? "numeric"
+                    : "default"
+                }
               />
-            )}
+            </View>
           </View>
         </View>
       </View>
@@ -653,10 +783,47 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       <AlertModal
         visible={alertaFaltantesVisible}
         icono="alert-circle-outline"
-        titulo={t("reserva.datosPersonales.alertaFaltantesTitulo")}
-        mensaje={t("reserva.datosPersonales.alertaFaltantesMensaje")}
-        botones={[]}
+        titulo={t("reserva.datosPersonales.alertaFaltantesTitulo", { defaultValue: "Información incompleta" })}
+        mensaje={t("reserva.datosPersonales.alertaFaltantesMensaje", {
+          defaultValue: "Por favor completa todos los campos obligatorios y adjunta los documentos requeridos para confirmar tu reserva.",
+        })}
+        botones={[
+          {
+            texto: t("comun.entendido", { defaultValue: "Entendido" }),
+            variante: "primario",
+            onPress: () => setAlertaFaltantesVisible(false),
+          },
+        ]}
         onCerrar={() => setAlertaFaltantesVisible(false)}
+      />
+
+      <AlertModal
+        visible={alertaHorarioVisible}
+        icono="time-outline"
+        titulo={t("reserva.horario.titulo", { defaultValue: "Sucursal fuera de horario de atención" })}
+        mensaje={t("reserva.horario.mensaje", {
+          sucursal: branchName || t("reserva.horario.laSucursal", { defaultValue: "la sucursal" }),
+          apertura: horario.horaApertura,
+          cierre: horario.horaCierre,
+          defaultValue: `La sucursal ${branchName} tiene un horario de atención de ${horario.horaApertura} a ${horario.horaCierre}.\n\n⏱️ En este momento se encuentra cerrada, pero puedes registrar tu reserva ahora y quedará en estado PENDIENTE.\n\nMañana a las ${horario.horaApertura} te notificaremos por correo electrónico, notificación web y push para que puedas continuar con tu reserva.`,
+        })}
+        botones={[
+          {
+            texto: t("reserva.horario.modificar", { defaultValue: "Regresar" }),
+            variante: "secundario",
+            onPress: () => setAlertaHorarioVisible(false),
+          },
+          {
+            texto: t("reserva.horario.aceptar", { defaultValue: "Registrar como pendiente" }),
+            variante: "primario",
+            onPress: () => {
+              actualizarFechasLugar({ fueraDeHorarioAceptado: true });
+              setAlertaHorarioVisible(false);
+              ejecutarCreacionReserva(true);
+            },
+          },
+        ]}
+        onCerrar={() => setAlertaHorarioVisible(false)}
       />
 
       <AlertModal
@@ -685,7 +852,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       <AlertModal
         visible={!!errorServidor}
         icono="close-circle-outline"
-        titulo={t("reserva.confirmacion.errorPagoTitulo")}
+        titulo={t("reserva.confirmacion.errorCrearTitulo", { defaultValue: "Error al registrar la reserva" })}
         mensaje={errorServidor}
         botones={[]}
         onCerrar={() => setErrorServidor("")}
@@ -694,8 +861,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       <AlertModal
         visible={alertaErrorPagoVisible}
         icono="close-circle-outline"
-        titulo={t("reserva.confirmacion.errorPagoTitulo")}
-        mensaje={t("reserva.confirmacion.errorPagoMensaje")}
+        titulo={t("reserva.confirmacion.errorPagoTitulo", { defaultValue: "No se pudo completar el pago" })}
+        mensaje={t("reserva.confirmacion.errorPagoMensaje", { defaultValue: "Hubo un error al procesar el pago con la pasarela. Intenta de nuevo." })}
         botones={[]}
         onCerrar={() => setAlertaErrorPagoVisible(false)}
       />

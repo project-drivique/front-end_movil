@@ -139,7 +139,7 @@ export default function TabLayout() {
           name="search"
           options={{
             title: isMgmt
-              ? (usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN') ? "Admin" : "Sucursal")
+              ? (usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN') ? t("extra.gestion.tabAdmin") : t("extra.gestion.tabSucursal"))
               : t("tabs.mas"),
             tabBarIcon: ({ focused }) => (
               <TabIcon name={isMgmt ? "business" : "menu"} focused={focused} c={c} />

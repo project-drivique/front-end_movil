@@ -91,7 +91,7 @@ export default function MasMenuScreen() {
         {Boolean((usuario?.rol === 'encargado_sucursal' || usuario?.roles?.includes('BRANCH_ADMIN')) || (usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN'))) && (
           <View style={{ marginBottom: 20 }}>
             <Text style={[styles.sectionTitle, { color: '#2563eb', fontWeight: '800' }]}>
-              {usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN') ? "PANEL DE ADMINISTRADOR" : "GESTIÓN DE SUCURSAL"}
+              {usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN') ? t("extra.gestion.panelAdmin") : t("extra.gestion.gestionSucursal")}
             </Text>
             <View style={[styles.menuItem, { backgroundColor: c.oscuro ? '#1e293b' : '#eff6ff', borderColor: '#93c5fd', flexDirection: 'column', alignItems: 'flex-start', paddingVertical: 14 }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 6 }}>
@@ -102,11 +102,11 @@ export default function MasMenuScreen() {
                   </Text>
                 </View>
                 <View style={{ backgroundColor: '#10B98120', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '700', color: '#10B981' }}>OPERATIVA</Text>
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: '#10B981' }}>{t("extra.gestion.operativa")}</Text>
                 </View>
               </View>
               <Text style={{ fontSize: 12, color: c.textSecondary, marginBottom: 12 }}>
-                Rol: {usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN') ? 'Administrador General' : 'Encargado de Sucursal'}
+                {t('extra.gestion.rol')}: {usuario?.rol === 'administrador' || usuario?.roles?.includes('SUPER_ADMIN') ? t('extra.gestion.adminGeneral') : t('extra.gestion.encargado')}
               </Text>
 
               {/* Management quick action buttons */}
@@ -125,7 +125,7 @@ export default function MasMenuScreen() {
                   onPress={() => router.push("/(tabs)/my-bookings")}
                 >
                   <Ionicons name="document-text" size={18} color="#10B981" style={{ marginRight: 10 }} />
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: c.textPrimary, flex: 1 }}>Validar Reservas y Documentación</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: c.textPrimary, flex: 1 }}>{t("busqueda.validarReservasDocs")}</Text>
                   <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
                 </TouchableOpacity>
 

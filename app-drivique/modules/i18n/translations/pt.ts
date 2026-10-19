@@ -123,7 +123,7 @@ export default {
       "datosPersonales": "Dados pessoais",
       "nombre": "Nome completo *",
       "nacionalidad": "Nacionalidade *",
-      "documento": "Número de documento *",
+      "documento": "Número do documento *",
       "celular": "Número de telemóvel *",
       "fechaNac": "Data de nascimento *",
       "correoSection": "Endereço de e-mail",
@@ -160,7 +160,7 @@ export default {
       "tc6Titulo": "6. Pagamentos",
       "tc6Texto": "Os pagamentos são processados através da plataforma Wompi. Todas as transações são registadas e auditáveis. A Drivique não armazena dados bancários do utilizador.",
       "correoPlaceholder": "exemplo@email.com",
-      "contrasenaPlaceholder": "Mínimo 8 caracteres",
+      "contrasenaPlaceholder": "Mínimo de 8 carateres",
       "confirmarContrasenaPlaceholder": "Repita a sua palavra-passe",
       "yaTieneCuenta": "Já tem uma conta?",
       "inicieSesionLink": "Inicie sessão aqui",
@@ -230,7 +230,13 @@ export default {
       "reenviar": "Reenviar código",
       "codigoIncorrecto": "O código introduzido está incorreto. Tente novamente.",
       "codigoEnviadoTitulo": "Código enviado",
-      "codigoEnviadoMsg": "Enviámos um código de verificação para o seu e-mail. Por favor, verifique a sua caixa de entrada ou pasta de spam."
+      "codigoEnviadoMsg": "Enviámos um código de verificação para o seu e-mail. Por favor, verifique a sua caixa de entrada ou pasta de spam.",
+      "errorTitulo": "Erro",
+      "errorEnvio": "Não foi possível enviar o código. Tente novamente dentro de alguns segundos.",
+      "verificadoTitulo": "Email verificado",
+      "verificadoMsg": "A sua conta foi verificada. Inicie sessão com o seu email e palavra-passe.",
+      "errorMsg": "O código introduzido não é válido. Verifique e tente novamente.",
+      "volverRegistro": "Voltar ao registo"
     },
     "invitado": {
       "titulo": "Explorar veículos",
@@ -247,7 +253,7 @@ export default {
       "auto": "Auto",
       "manual": "Manual",
       "kmIlimitados": "∞ Km ilimitados",
-      "kmLimitado": "Km limitado",
+      "kmLimitado": "Km limitados",
       "tarifaDia": "Tarifa por dia",
       "noDisponible": "Não disponível",
       "kmIlimitadosFull": "Km ilimitados",
@@ -315,8 +321,8 @@ export default {
       "ventaja4Desc": "Acompanhamento em tempo real da sua reserva."
     },
     "pass": {
-      "min8": "Mínimo 12 caracteres",
-      "min12": "Mínimo 12 caracteres",
+      "min8": "Mínimo de 12 carateres",
+      "min12": "Mínimo de 12 carateres",
       "mayuscula": "1 letra maiúscula",
       "minuscula": "1 letra minúscula",
       "numero": "1 número",
@@ -325,7 +331,25 @@ export default {
     "social": {
       "o": "ou continuar com",
       "google": "Continuar com Google",
-      "facebook": "Continuar com Facebook"
+      "facebook": "Continuar com Facebook",
+      "errorGoogle": "Erro ao autenticar com a Google",
+      "errorFacebook": "Erro ao autenticar com o Facebook"
+    },
+    "errores": {
+      "correoInvalido": "Introduza um email válido",
+      "contrasenaObligatoria": "A palavra-passe é obrigatória",
+      "cuentaNoExiste": "Não existe nenhuma conta registada com esse email.",
+      "cuentaNoEncontrada": "Conta não encontrada",
+      "loginFallido": "Não foi possível iniciar sessão.",
+      "passwordDebil": "A palavra-passe deve ter pelo menos 12 carateres, uma maiúscula, uma minúscula, um número e um símbolo.",
+      "noCoinciden": "As palavras-passe não coincidem",
+      "aceptarTerminos": "Tem de aceitar os termos e condições",
+      "registroFallido": "Não foi possível criar a conta.",
+      "envioCodigoFallido": "Não foi possível enviar o código.",
+      "codigo6": "O código deve ter 6 dígitos.",
+      "codigoInvalido": "Código inválido ou expirado.",
+      "verificaNueva": "Verifique a nova palavra-passe.",
+      "restablecerFallido": "Não foi possível repor a palavra-passe."
     }
   },
   "catalogo": {
@@ -404,7 +428,7 @@ export default {
       "misFavoritos": "Os Meus Favoritos",
       "categoria": "CATEGORIA",
       "ciudad": "CIDADE",
-      "sucursal": "SUCURSAL",
+      "sucursal": "AGÊNCIA",
       "precioPorDia": "PREÇO POR DIA (COP)",
       "transmisionLbl": "TRANSMISSÃO",
       "combustibleLbl": "COMBUSTÍVEL",
@@ -443,7 +467,7 @@ export default {
       "tituloModal": "Consultar Disponibilidade",
       "limpiar": "Limpar",
       "ciudad": "CIDADE",
-      "sucursal": "SUCURSAL",
+      "sucursal": "AGÊNCIA",
       "fechaRecogida": "DATA DE RECOLHA",
       "fechaDevolucion": "DATA DE DEVOLUÇÃO",
       "formatoFecha": "dd/mm/aaaa",
@@ -500,6 +524,8 @@ export default {
     "estrellas": "estrelas"
   },
   "vehiculo": {
+    "selectNationalityFirst": "Selecione primeiro a sua nacionalidade",
+    "selectDocTypeFirst": "Selecione primeiro o seu tipo de documento",
     "volverCatalogo": "Voltar ao catálogo",
     "reservarAhora": "Reservar agora",
     "noDisponible": "Indisponível",
@@ -546,7 +572,7 @@ export default {
       "combustible": "Combustível"
     },
     "sucursal": {
-      "titulo": "Sucursal",
+      "titulo": "Agência",
       "horario": "Horário de atendimento",
       "comoLlegar": "Como chegar",
       "horarioTodosLosDias": "Todos os dias · 7:00 – 19:00",
@@ -562,7 +588,23 @@ export default {
       "tuResena": "A sua avaliação",
       "sinResenasTitulo": "Este veículo ainda não tem avaliações",
       "sinResenasSubtitulo": "Reserve-o agora e seja o primeiro a partilhar a sua experiência!"
-    }
+    },
+    "picoYPlacaTitle": "Consultar restrições de trânsito",
+    "picoYPlacaDesc": "Não tem certeza se este veículo tem restrições de circulação hoje? Consulte as regras oficiais para planejar a sua rota e evitar multas durante o aluguer.",
+    "goToPage": "Aceder ao site oficial",
+    "stepDates": "Datas e localização",
+    "stepDatesSub": "Complete os detalhes da sua reserva",
+    "stepProtection": "Proteção e extras",
+    "stepProtectionSub": "Personalize a sua experiência",
+    "personalData": "Dados pessoais",
+    "personalDataSub": "Finalize a sua reserva",
+    "includedInBaseRate": "Incluído na tarifa",
+    "day": "dia",
+    "days": "dias",
+    "selectPickupTime": "Selecione a hora de levantamento",
+    "selectReturnTime": "Selecione a hora de devolução",
+    "rentalDuration": "Duração do aluguer",
+    "earlyReturn": "Devolução antecipada"
   },
   "misReservas": {
     "titulo": "As Minhas Reservas",
@@ -612,7 +654,7 @@ export default {
     "calificacionGuardadaTitulo": "Obrigado pela sua avaliação!",
     "calificacionGuardadaMensaje": "A sua avaliação e comentário foram guardados.",
     "cancelar": "Cancelar",
-    "contratoBloqueadoTitulo": "Contrato Protegido",
+    "contratoBloqueadoTitulo": "Contrato protegido",
     "contratoBloqueadoTexto": "Introduza o seu número de identificação registado para visualizar ou transferir o seu contrato em PDF.",
     "contratoPendienteFirmaTexto": "Para desbloquear o contrato com a sua chave, o pagamento deve ser confirmado e o contrato assinado primeiro.",
     "contratoPendienteFirmaBadge": "Bloqueado até à assinatura",
@@ -624,7 +666,7 @@ export default {
     "claveContrato": "Introduza a sua chave",
     "claveContratoPlaceholder": "Introduza a sua identificação",
     "verContrato": "Ver contrato",
-    "leerContrato": "Ver Contrato Completo",
+    "leerContrato": "Ver contrato completo",
     "verDetalles": "Ver detalhes",
     "pagarWompi": "Pagar com Wompi",
     "claveIncorrecta": "A chave introduzida está incorreta.",
@@ -643,7 +685,14 @@ export default {
       "fechaFin": "Data de devolução",
       "proteccion": "Proteção",
       "tituloHeader": "Detalhes da Reserva",
-      "tituloPagoDigitalPendiente": "Pagamento online com Wompi"
+      "tituloPagoDigitalPendiente": "Pagamento online com Wompi",
+      "enRevisionDocumentos": "Documentos em revisão",
+      "pendienteFirma": "Pendente de assinatura",
+      "pendienteHorario": "Pendente de atendimento da agência",
+      "enRevisionTexto": "O responsável da agência está a rever os seus documentos. Poderá pagar quando forem aprovados; avisaremos por notificação.",
+      "pendienteHorarioTexto": "A sua reserva foi registada fora do horário de funcionamento. A agência tratará dela no próximo horário de abertura.",
+      "pendienteFirmaTitulo": "Assinatura do contrato digital pendente",
+      "pendienteFirmaTexto": "O seu pagamento foi registado com sucesso. Para confirmar a sua reserva, tem de assinar digitalmente o contrato de aluguer."
     },
     "calificacionReservaTitulo": "Avaliar veículo",
     "pagoPendienteWompiAviso": "Tem uma reserva pendente. Pague com o Wompi para confirmar.",
@@ -655,7 +704,17 @@ export default {
     "puntuacion": "Pontuação:",
     "comentario": "Comentário:",
     "fechaRegistro": "Data de registo:",
-    "fotosAdjuntas": "Fotos anexadas:"
+    "fotosAdjuntas": "Fotos anexadas:",
+    "errorCarga": "Não foi possível carregar as suas reservas.",
+    "hacerResena": "Escrever avaliação",
+    "cancelarTitulo": "Cancelar reserva",
+    "cancelarMensaje": "Esta ação não pode ser anulada.",
+    "cancelarConfirmar": "Sim, cancelar",
+    "firmarContrato": "Prosseguir para assinar o contrato",
+    "cancelarReserva": "Cancelar reserva",
+    "miResenaVehiculo": "A sua avaliação do veículo",
+    "miResenaSucursal": "A sua avaliação da filial",
+    "sinComentario": "Avaliou sem deixar comentário."
   },
   "perfil": {
     "titulo": "O Meu Perfil",
@@ -727,7 +786,7 @@ export default {
     "cerrarSesion": "Terminar sessão",
     "eliminarCuenta": "Eliminar a minha conta definitivamente",
     "volver": "Voltar",
-    "editarTitulo": "Editar Perfil",
+    "editarTitulo": "Editar perfil",
     "nombres": "Nomes",
     "apellidos": "Apelidos",
     "telefono": "Telefone",
@@ -736,7 +795,7 @@ export default {
     "completarPerfilSub": "Complete as suas informações para uma melhor experiência",
     "fechaNac": "Data de nascimento",
     "tipoDocumento": "Tipo de documento",
-    "numeroDocumento": "Número de documento",
+    "numeroDocumento": "Número do documento",
     "nacionalidad": "Nacionalidade",
     "guardarDatos": "Guardar dados",
     "seleccionar": "Selecionar",
@@ -781,7 +840,19 @@ export default {
       "telefono": "Ex: 3144214909",
       "nombreCompleto": "Ex: João Silva",
       "correo": "cliente@drivique.com"
-    }
+    },
+    "direccion": "Morada",
+    "placeholderDireccion": "Calle 10 # 20-30, Medellín",
+    "preferenciasEntrega": "PREFERÊNCIAS DE NOTIFICAÇÕES",
+    "preferenciasEntregaDesc": "Escolha os canais pelos quais deseja receber atualizações de reservas, contratos e alertas da sua conta.",
+    "prefEmail": "Email",
+    "prefEmailSub": "Confirmações, faturas e contratos",
+    "prefPush": "Notificações push",
+    "prefPushSub": "Alertas instantâneos no seu dispositivo móvel",
+    "prefInApp": "Alertas na aplicação",
+    "prefInAppSub": "Caixa de entrada e centro de notificações Drivique",
+    "prefMarketing": "Promoções e novidades",
+    "prefMarketingSub": "Descontos exclusivos e novidades da frota"
   },
   "tabs": {
     "masCuponesGeniales": "Mais cupões incríveis",
@@ -821,7 +892,9 @@ export default {
     "phoneTitle": "Linha Telefónica de Apoio",
     "phoneDesc": "+57 322 3163531 · Assistência em viagem",
     "emailTitle": "E-mail de Apoio",
-    "emailDesc": "soporte@drivique.com · Resposta em menos de 2 horas"
+    "emailDesc": "soporte@drivique.com · Resposta em menos de 2 horas",
+    "sinPromociones": "Não tem promoções nem cupões ativos neste momento.",
+    "sinPromocionesDesc": "Quando houver novos cupões ou benefícios exclusivos para as suas reservas, vai vê-los aqui."
   },
   "reserva": {
     "flujo": {
@@ -869,7 +942,7 @@ export default {
     "confirmacion": {
       "pagoEfectivoTitulo": "Pagamento em dinheiro: levantamento na sucursal",
       "pagoEfectivoMensaje": "Ao pagar em dinheiro, o único punto de levantamento e devolução é a sucursal onde se encontra o veículo. Dirija-se a:",
-      "sucursal": "Sucursal",
+      "sucursal": "Agência",
       "ciudad": "Cidade",
       "direccion": "Morada",
       "sinDefinir": "Não definido",
@@ -883,7 +956,7 @@ export default {
       "confirmacionCuandoExitoso": "Receberá a confirmação da sua reserva assim que o pagamento for bem-sucedido.",
       "pagarConWompi": "Pagar com Wompi",
       "pagarMasTarde": "Pagar mais tarde",
-      "avisoGuardadoAutomatico": "Ao confirmar a reserva, ela será salva automaticamente na sua conta. Terá um prazo de 72 horas para concluir o pagamento antes do cancelamento automático.",
+      "avisoGuardadoAutomatico": "Ao confirmar a reserva, ela será salva automaticamente na sua conta. Terá um prazo de 8 horas para concluir o pagamento antes do cancelamento automático.",
       "cancelarProcesoReserva": "Cancelar processo de reserva",
       "cancelarProcesoTitulo": "Cancelar processo de reserva?",
       "cancelarProcesoMensaje": "Os dados inseridos neste processo serão descartados e voltará ao catálogo de veículos.",
@@ -891,7 +964,7 @@ export default {
       "efectivoConfirmadaTitulo": "Reserva Registada",
       "efectivoConfirmadaSub": "A sua reserva ficou registada. Para a confirmar, efetue o pagamento em dinheiro no ponto autorizado {{sucursal}}.",
       "plazoParaPagarTitulo": "PRAZO PARA PAGAMENTO",
-      "efectivoConfirmadaMensaje": "Tem 72 horas a partir de agora para se dirigir à sucursal e pagar. Se não pagar dentro deste prazo, a reserva será cancelada automaticamente.",
+      "efectivoConfirmadaMensaje": "Tem 8 horas a partir de agora para se dirigir à sucursal e pagar. Se não pagar dentro deste prazo, a reserva será cancelada automaticamente.",
       "confirmarYVerMisReservas": "Confirmar e Ver As Minhas Reservas",
       "entendidoIrAMisReservas": "Ir para As Minhas Reservas",
       "volverAlInicio": "Voltar ao Início",
@@ -930,7 +1003,10 @@ export default {
       "acercateCorresponsalBancolombia": "Dirija-se a um Ponto Bancolombia com os dados apresentados abaixo e efetue o pagamento antes do prazo limite para confirmar a sua reserva:",
       "reservaRegistradaPuntoAutorizado": "A sua reserva foi registada. Para a confirmar, efetue o pagamento em dinheiro no ponto autorizado {{sucursal}}.",
       "reservaRegistradaSucursalSeleccionada": "A sua reserva foi registada. Para a confirmar, efetue o pagamento em dinheiro na agência selecionada.",
-      "avisoPlazoPagoDinamico": "Tem aproximadamente {{horas}} para efetuar o pagamento digital e confirmar a sua reserva. Se não efetuar o pagamento dentro deste prazo, a reserva será cancelada automaticamente."
+      "avisoPlazoPagoDinamico": "Tem aproximadamente {{horas}} para efetuar o pagamento digital e confirmar a sua reserva. Se não efetuar o pagamento dentro deste prazo, a reserva será cancelada automaticamente.",
+      "codigoPagoEfectivo": "Código de pagamento em numerário",
+      "errorCrearMensaje": "Não foi possível registar a reserva. Verifique se todos os dados e documentos são válidos.",
+      "errorCrearTitulo": "Erro ao registar a reserva"
     },
     "edicion": {
       "editarFechasYLugares": "Editar datas e locais",
@@ -1010,7 +1086,9 @@ export default {
       "direccionExacta": "Endereço exato:",
       "indicacionesRef": "Indicações / Ref:",
       "horaEntregaRetiro": "Hora de Entrega (Levantamento):",
-      "horaRecogidaDevolucion": "Hora de Recolha (Devolução):"
+      "horaRecogidaDevolucion": "Hora de Recolha (Devolução):",
+      "efectivoNoDisponibleTitulo": "Pagamento em numerário não disponível",
+      "efectivoNoDisponibleMensaje": "A agência {{sucursal}} não aceita pagamentos em numerário. Escolha pagamento online ou um veículo de outra agência."
     },
     "planes": {
       "metodosPago": {
@@ -1065,10 +1143,10 @@ export default {
         "Conductor adicional": "Condutor adicional",
         "Entrega en otra ciudad": "Entrega noutra cidade",
         "GPS": "GPS",
-        "GPS Integrado": "GPS Integrado",
+        "GPS Integrado": "GPS integrado",
         "Silla bebé": "Cadeira de bebé",
         "Silla de bebé": "Cadeira de bebé",
-        "WiFi portátil": "WiFi portátil",
+        "WiFi portátil": "Wi-Fi portátil",
         "Lavado de auto post-entrega": "Lavagem pós-aluguer",
         "Devolución con tanque vacío": "Devolução com depósito vazio"
       },
@@ -1113,19 +1191,18 @@ export default {
       "numeroCelular": "NÚMERO DE TELEMÓVEL *",
       "tipoDeDocumento": "TIPO DE DOCUMENTO *",
       "numeroDeDocumento": "NÚMERO DE DOCUMENTO *",
-      "alertaFaltantesTitulo": "Faltam dados a preencher",
-      "alertaFaltantesMensaje": "Complete os seus dados pessoais, carregue os seus documentos e aceite os termos e condições antes de confirmar a reserva.",
+      "alertaFaltantesTitulo": "Informação incompleta",
+      "alertaFaltantesMensaje": "Por favor, complete todos os campos obrigatórios e anexe os documentos necessários para confirmar sua reserva.",
       "tiposDocumento": {
         "CC": "Cédula de Cidadania (CC)",
         "CE": "Cédula de Estrangeiro (CE)",
         "Pasaporte": "Passaporte (PAS)",
-        "DNI": "Documento Nacional de Identidade (DNI)",
-        "PPT": "Permissão por Proteção Temporal (PPT)",
-        "PEP": "Permissão Especial de Permanência (PEP)",
         "TI": "Cartão de Identidade (TI)",
-        "DocExtranjero": "Documento de Estrangeiro"
+        "DocExtranjero": "Documento de Estrangeiro",
+        "NIT": "NIF (NIT)"
       },
-      "avisoGuardadoDinamico": "Ao confirmar a reserva, ela será guardada automaticamente na sua conta. Terá um prazo de {{horas}} para concluir o pagamento antes do cancelamento automático."
+      "avisoGuardadoDinamico": "Ao confirmar a reserva, ela será guardada automaticamente na sua conta. Terá um prazo de {{horas}} para concluir o pagamento antes do cancelamento automático.",
+      "avisoGuardado": "Ao confirmar a reserva, esta ficará guardada na sua conta e terá um prazo limitado para concluir o pagamento antes do cancelamento automático."
     },
     "terminos": {
       "autorizoTratamiento": "Autorizo o tratamento dos meus dados pessoais de acordo com a ",
@@ -1334,7 +1411,7 @@ export default {
       "plate": "Matrícula",
       "color": "Cor",
       "year": "Ano",
-      "branch": "Sucursal",
+      "branch": "Agência",
       "branchCity": "Cidade da sucursal",
       "branchAddress": "Morada da Agência",
       "startDate": "Data de início",
@@ -1432,7 +1509,11 @@ export default {
         "spam": "Por favor evite a repetição excessiva de caracteres.",
         "profanity": "Por favor mantenha uma linguagem respeitosa e cordial na sua avaliação."
       },
-      "seleccionaEstrellasAlerta": "Por favor selecione uma classificação de 1 a 5 estrelas."
+      "seleccionaEstrellasAlerta": "Por favor selecione uma classificação de 1 a 5 estrelas.",
+      "calificarSucursal": "Avaliar filial",
+      "sucursalTitulo": "Conte-nos a sua experiência na filial",
+      "sucursalResena": "A sua avaliação (opcional)",
+      "sucursalPlaceholder": "Como foi o atendimento, a entrega e a devolução do veículo?"
     },
     "detalle": {
       "informacionEntrega": "Informação de Entrega:",
@@ -1452,6 +1533,13 @@ export default {
       "recogido": "Recolhido",
       "aConvenir": "A combinar",
       "vehiculo": "Veículo:"
+    },
+    "horario": {
+      "titulo": "Agência fora do horário de funcionamento",
+      "mensaje": "a agência",
+      "laSucursal": "a agência",
+      "modificar": "Voltar",
+      "aceptar": "Registar como pendente"
     }
   },
   "config": {
@@ -1513,7 +1601,8 @@ export default {
     "applied": "aplicado",
     "todosLosVehiculos": "Todos os veículos",
     "appliedCheck": "✓ Aplicado",
-    "applyBtnSimple": "Aplicar"
+    "applyBtnSimple": "Aplicar",
+    "errorNeedDates": "Selecione as datas da reserva antes de aplicar um cupão."
   },
   "simulator": {
     "title": "[Simulador] Confirmação de Pagamento (Caixa)",
@@ -1551,7 +1640,7 @@ export default {
     "c4Terms": "Concede 50.000 COP de desconto. Requer reserva mínima de 200.000 COP. Válido para qualquer categoria.",
     "vp1Title": "Voltou! Não espere mais",
     "vp1Desc": "Este veículo está disponível novamente na sua área. Reserve antes que esgote.",
-    "vp2Title": "20% OFF solo hoy",
+    "vp2Title": "20% de desconto só hoje",
     "vp2Desc": "Oferta especial do dia. Reserve hoje e ganhe 28% de desconto na tarifa padrão.",
     "vp3Title": "Fim de semana inigualável",
     "vp3Desc": "Alugue este veículo premium de sexta a domingo e pague apenas 2 dias.",
@@ -1578,7 +1667,7 @@ export default {
       "descripcionLabel": "Descrição do problema *",
       "descripcionPlaceholder": "Descreva o que aconteceu, ruídos, luzes no painel ou localização atual...",
       "evidenciasLabel": "Evidências (Imagens / Fotos opcionais)",
-      "maxFotos": "Máx 3 fotos",
+      "maxFotos": "Máx. 3 fotografias",
       "adjuntar": "+ Anexar",
       "datosSeguimiento": "Dados de contacto para acompanhamento",
       "datosSeguimientoHint": "Pré-carregados automaticamente a partir do seu perfil registado (pode editá-los se necessário).",
@@ -1621,7 +1710,8 @@ export default {
       "errorNombre": "Insira o nome de contacto.",
       "errorTelefono": "Insira o número de telefone.",
       "errorEmail": "Insira um endereço de e-mail válido.",
-      "alertaCamposRequeridos": "Por favor preencha todos os campos obrigatórios."
+      "alertaCamposRequeridos": "Por favor preencha todos os campos obrigatórios.",
+      "errorEnviar": "Não foi possível registar o reporte. Tente novamente."
     },
     "infoBanner": "Preencha o formulário para comunicar qualquer problema técnico ou mecânico durante a sua reserva.",
     "tipo": {
@@ -1681,7 +1771,10 @@ export default {
   "notificaciones": {
     "venceHoy": "Expira hoje",
     "venceEnDias": "Expira em {{dias}} dias",
-    "promocionesDestacadas": "Promoções em destaque"
+    "promocionesDestacadas": "Promoções em destaque",
+    "detallesEvento": "Detalhes do evento",
+    "verDetalle": "Ver detalhes",
+    "verReserva": "Ver reserva / Continuar"
   },
   "Cupón de Bienvenida Drivique": "Cupom de Boas-Vindas Drivique",
   "Especial Aventura SUV": "Especial Aventura SUV",
@@ -1785,5 +1878,282 @@ export default {
   "Disfruta de tus viajes con 20% de descuento en el Chevrolet Spark": {
     "": "Aproveite as suas viagens com 20% de desconto no Chevrolet Spark."
   },
-  "Categoría: SUV": "Categoria: SUV"
+  "Categoría: SUV": "Categoria: SUV",
+  "contratoFirma": {
+    "badgeLabel": "Documento digital",
+    "title": "Contrato de reserva e aluguer",
+    "subtitle": "Drivique · Plataforma académica de aluguer de veículos",
+    "autoGenNote": "Documento gerado automaticamente com os dados da sua reserva. Só tem de o rever e assinar.",
+    "contractCode": "Código do contrato",
+    "status": "Estado",
+    "statusPending": "Pendente de assinatura",
+    "statusSigned": "Assinado",
+    "generationDate": "Data de geração",
+    "reservationCode": "Reserva",
+    "intro": "Entre A PLATAFORMA, Drivique, e O UTILIZADOR, {{nombre}}, identificado(a) com {{tipoDoc}} {{numDoc}}, celebra-se o presente contrato de reserva e aluguer de veículo, gerado automaticamente a partir da informação registada no sistema.",
+    "userDataTitle": "Dados do utilizador",
+    "fullName": "Nome completo",
+    "document": "Documento",
+    "email": "Email",
+    "phone": "Telefone",
+    "address": "Morada",
+    "license": "Carta de condução",
+    "notProvided": "Não especificada",
+    "reservationTitle": "Reserva e veículo",
+    "vehicle": "Veículo",
+    "plate": "Matrícula",
+    "color": "Cor",
+    "year": "Ano",
+    "branch": "Agência",
+    "branchCity": "Cidade da agência",
+    "branchAddress": "Morada da agência",
+    "startDate": "Data de início",
+    "endDate": "Data de fim",
+    "paymentMethod": "Método de pagamento",
+    "paymentMethodCash": "Pagamento presencial na agência",
+    "cashPaymentBranch": "Ponto de pagamento em numerário",
+    "paymentMethodWompi": "Wompi (modo de teste)",
+    "totalValue": "Valor total",
+    "additionalServices": "Serviços adicionais",
+    "noneAdded": "Nenhum",
+    "protectionPlan": "Plano de proteção",
+    "clausesTitle": "Cláusulas",
+    "clause1Title": "1. Objeto.",
+    "clause1Text": "O presente contrato regula a reserva e a utilização temporária do veículo {{marca}} {{modelo}}, matrícula {{placa}}, durante o período compreendido entre {{inicio}} e {{fin}}.",
+    "clause2Title": "2. Geração automática.",
+    "clause2Text": "O contrato é criado automaticamente com os dados pessoais do utilizador, a informação do veículo, a agência selecionada, a cidade da agência, o método de pagamento e o valor total da reserva. O UTILIZADOR só tem de rever a informação e assinar.",
+    "clause3Title": "3. Obrigações do utilizador.",
+    "clause3Item1": "Fornecer informação verdadeira, atual e completa.",
+    "clause3Item2": "Utilizar o veículo de forma responsável e em conformidade com a legislação aplicável.",
+    "clause3Item3": "Responder por danos, multas ou incumprimentos imputáveis à sua utilização.",
+    "clause3Item4": "Devolver o veículo no prazo e local acordados, salvo alteração aprovada no sistema.",
+    "clause4Title": "4. Obrigações da plataforma.",
+    "clause4Text": "A Drivique deve gerar, apresentar e armazenar este contrato associado à reserva, permitindo a sua revisão antes da assinatura e a sua conservação em formato digital.",
+    "clause5Title": "5. Tratamento de dados.",
+    "clause5Text": "O UTILIZADOR autoriza o uso dos seus dados para gerir a reserva, gerar o contrato, registar a assinatura, armazenar prova digital e manter a rastreabilidade do processo.",
+    "clause6Title": "6. Natureza académica.",
+    "clause6Text": "A Drivique é uma plataforma académica desenvolvida para fins de análise, conceção e implementação de um sistema digital de aluguer de veículos.",
+    "signaturesTitle": "Assinaturas",
+    "signCity": "Cidade da assinatura",
+    "signDate": "Data da assinatura",
+    "userSignature": "Assinatura do utilizador",
+    "platformSignature": "Assinatura da plataforma",
+    "responsible": "Responsável",
+    "role": "Função",
+    "platformResponsible": "Sistema Drivique",
+    "platformRole": "Plataforma de aluguer",
+    "signHere": "Assine aqui com o rato ou o dedo",
+    "clearSignature": "Limpar assinatura",
+    "signatureRequired": "Tem de assinar para continuar.",
+    "signAndContinue": "Assinar contrato e continuar",
+    "signing": "A assinar…",
+    "footerNote1": "Documento gerado automaticamente pela Drivique.",
+    "footerNote2": "Uso académico e funcional no âmbito do fluxo de reserva e contratação digital.",
+    "stepLabel": "Assinatura do contrato",
+    "pageTitleCash": "Assine o seu contrato para concluir a reserva",
+    "pageTitleWompi": "Assine o seu contrato para concluir o pagamento",
+    "pageSubtitle": "Reveja a informação gerada automaticamente e assine para continuar.",
+    "signedSuccessTitle": "Contrato assinado",
+    "signedSuccessText": "O seu contrato foi assinado e guardado junto com a sua reserva.",
+    "deliveryAddress": "Morada de entrega",
+    "deliveryNeighborhood": "Bairro de entrega",
+    "deliveryReferences": "Referências de entrega",
+    "deliveryReturnHome": "Devolução ao domicílio",
+    "sameDeliveryAddress": "Sim (mesma morada de entrega)",
+    "statusDraft": "Pendente de assinatura",
+    "notAvailable": "Não disponível",
+    "licenseApproved": "Em vigor (validada pela agência)",
+    "licensePending": "Pendente de validação",
+    "licenseRejected": "Rejeitada",
+    "downloadPdf": "Descarregar PDF",
+    "sendEmail": "Enviar para o meu email",
+    "emailSent": "Enviámos o contrato assinado para o seu email.",
+    "emailNotSent": "Não foi possível enviar o email. Tente novamente.",
+    "signNotAvailable": "O contrato poderá ser assinado quando o pagamento da sua reserva for confirmado.",
+    "loadError": "Não foi possível carregar o contrato.",
+    "signError": "Não foi possível assinar o contrato.",
+    "pdfError": "Não foi possível descarregar o PDF.",
+    "dateTimeSeparator": "às",
+    "pdfOkTitulo": "PDF descarregado",
+    "pdfOk": "O contrato em PDF foi descarregado com sucesso.",
+    "emailSentTitulo": "Email enviado",
+    "emailSentMsg": "Enviámos o contrato assinado para o seu email.",
+    "emailSendingTitulo": "A enviar email",
+    "emailSending": "Estamos a enviar o contrato assinado para o seu email…",
+    "pdfDownloadingTitulo": "A descarregar PDF",
+    "pdfDownloading": "Estamos a descarregar o seu contrato em PDF…"
+  },
+  "incidencias": {
+    "titulo": "Suporte",
+    "subtitulo": "Reporte e acompanhe as suas ocorrências",
+    "nueva": "Nova ocorrência",
+    "misIncidencias": "As minhas ocorrências",
+    "vacio": "Ainda não reportou ocorrências.",
+    "cargando": "A carregar...",
+    "errorCarga": "Não foi possível carregar a informação.",
+    "reintentar": "Tentar novamente",
+    "categoria": "Categoria",
+    "categorias": {
+      "RESERVATION": "Reserva",
+      "VEHICLE": "Veículo",
+      "PAYMENT": "Pagamento",
+      "OTHER": "Outro"
+    },
+    "estados": {
+      "OPEN": "Aberta",
+      "IN_REVIEW": "Em revisão",
+      "RESOLVED": "Resolvida",
+      "CLOSED": "Encerrada"
+    },
+    "prioridades": {
+      "LOW": "Baixa",
+      "MEDIUM": "Média",
+      "HIGH": "Alta",
+      "CRITICAL": "Crítica"
+    },
+    "prioridad": "Prioridade (atribuída automaticamente)",
+    "reservaVinculada": "Reserva relacionada (opcional)",
+    "sinReserva": "Sem reserva relacionada",
+    "sede": "Unidade de atendimento",
+    "sedeSeleccionar": "Selecione uma unidade",
+    "sedeObligatoria": "Selecione a unidade que tratará da sua ocorrência.",
+    "asunto": "Assunto",
+    "descripcion": "Descrição",
+    "adjuntos": "Anexos (JPG, PNG ou PDF, máx. 5 MB, até 5 ficheiros)",
+    "agregarAdjunto": "Adicionar ficheiro",
+    "quitar": "Remover",
+    "enviar": "Enviar ocorrência",
+    "enviando": "A enviar...",
+    "camposObligatorios": "Preencha a categoria, o assunto e a descrição.",
+    "archivoInvalido": "Só são permitidos ficheiros JPG, PNG ou PDF até 5 MB.",
+    "maxArchivos": "Pode anexar até 5 ficheiros.",
+    "creada": "Ocorrência criada",
+    "detalle": "Detalhe da ocorrência",
+    "vehiculo": "Veículo",
+    "reserva": "Reserva",
+    "sedeLabel": "Unidade",
+    "asignadoA": "Atendida por",
+    "sinAsignar": "Sem atribuição",
+    "sla": "Vence",
+    "slaVencido": "SLA expirado",
+    "creadaEl": "Criada",
+    "historial": "Histórico",
+    "tuMensaje": "Você",
+    "equipo": "Equipa Drivique",
+    "cambioEstado": "Alteração de estado",
+    "asignacion": "Atribuição",
+    "responder": "Responder",
+    "escribeMensaje": "Escreva a sua mensagem",
+    "enviarRespuesta": "Enviar resposta",
+    "mensajeObligatorio": "Escreva uma mensagem antes de enviar.",
+    "acciones": "Ações",
+    "transiciones": {
+      "CLOSED_RESOLVED": "Confirmar resolução",
+      "CLOSED_OPEN": "Cancelar ocorrência",
+      "CLOSED_IN_REVIEW": "Encerrar ocorrência",
+      "IN_REVIEW": "Reabrir",
+      "OPEN": "Marcar como aberta",
+      "RESOLVED": "Marcar como resolvida"
+    },
+    "estadoActualizado": "Estado atualizado",
+    "abrirAdjunto": "Abrir anexo",
+    "adjuntoError": "Não foi possível abrir o anexo.",
+    "noEncontrada": "A ocorrência não foi encontrada."
+  },
+  "busqueda": {
+    "validarReservasDocs": "Validar reservas e documentação"
+  },
+  "resenas": {
+    "cargando": "A carregar avaliações...",
+    "errorCarga": "Não foi possível carregar as avaliações."
+  },
+  "extra": {
+    "misReservas": {
+      "otras": "Outras reservas",
+      "hoy": "Reservas de hoje",
+      "ayer": "Ontem",
+      "haceDias": "Há {{n}} dias · {{fecha}}"
+    },
+    "gestion": {
+      "panelAdmin": "PAINEL DO ADMINISTRADOR",
+      "gestionSucursal": "GESTÃO DE FILIAL",
+      "operativa": "OPERACIONAL",
+      "rol": "Função",
+      "adminGeneral": "Administrador Geral",
+      "encargado": "Responsável de Filial",
+      "tabAdmin": "Admin",
+      "tabSucursal": "Filial"
+    },
+    "efectivo": {
+      "subPunto": "A sua reserva foi registada. Para a confirmar, efetue o pagamento em dinheiro no ponto autorizado {{sucursal}}.",
+      "subSucursal": "A sua reserva foi registada. Para a confirmar, efetue o pagamento em dinheiro na filial selecionada.",
+      "plazo": "Tem aproximadamente {{horas}} para se dirigir à filial e efetuar o pagamento. Se não pagar dentro deste prazo, a reserva será cancelada automaticamente.",
+      "unaHora": "1 hora",
+      "nHoras": "{{n}} horas"
+    },
+    "resumen": {
+      "diasEntre": " ({{n}} dias)"
+    },
+    "computo": {
+      "titulo": "Contagem dos seus {{n}} {{dia}} de aluguer",
+      "desc": "A sua reserva começa a {{inicio}} às {{hora}}. Cada dia dá-lhe 24 horas completas: o seu dia {{n}} começa a {{fin}} às {{hora}} e as suas 24 horas terminam a {{siguiente}} às {{hora}}. Devolver antes regista tempo de devolução antecipada.",
+      "fecha": "{{d}} de {{mes}}",
+      "devSiguiente": "Devolução: {{fecha}} (Dia seguinte)",
+      "devAnticipada": "Devolução antecipada: {{tiempo}}",
+      "cero": "0 horas"
+    },
+    "calificar": {
+      "e1": "Má experiência",
+      "e2": "Razoável",
+      "e3": "Bom",
+      "e4": "Muito bom",
+      "e5": "Experiência excelente!"
+    },
+    "resena": {
+      "largo": "O comentário não pode exceder 400 carateres.",
+      "corto": "O comentário deve ter pelo menos 8 carateres.",
+      "enlaces": "Por segurança, não são permitidas ligações ou páginas web na avaliação.",
+      "correo": "Pela sua privacidade, não inclua endereços de email.",
+      "telefono": "Pela sua segurança, não inclua números de telefone ou de contacto.",
+      "repeticion": "Evite a repetição excessiva de carateres.",
+      "respeto": "Mantenha uma linguagem respeitosa e cordial na sua avaliação."
+    },
+    "comun": {
+      "nuevo": "Novo",
+      "cliente": "Cliente",
+      "usuario": "Utilizador",
+      "resena": "avaliação",
+      "resenas": "avaliações",
+      "aceptarBtn": "Aceitar"
+    },
+    "registro": {
+      "terminosLeidos": "✓ Leu a totalidade dos termos. Já pode aceitar.",
+      "terminosDesplazar": "↓ Desloque até ao fim para ativar o botão de aceitar."
+    },
+    "notif": {
+      "generica": "Notificação",
+      "drivique": "Notificação Drivique"
+    },
+    "errores": {
+      "favoritos": "Não foi possível carregar os seus favoritos.",
+      "perfilGuardar": "Erro ao guardar as alterações do perfil",
+      "registro": "Erro no registo",
+      "google": "Erro ao autenticar com o Google",
+      "facebook": "Erro ao autenticar com o Facebook"
+    },
+    "mesCorto": {
+      "0": "jan",
+      "1": "fev",
+      "2": "mar",
+      "3": "abr",
+      "4": "mai",
+      "5": "jun",
+      "6": "jul",
+      "7": "ago",
+      "8": "set",
+      "9": "out",
+      "10": "nov",
+      "11": "dez"
+    }
+  }
 };

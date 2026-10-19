@@ -84,7 +84,7 @@ export default function VehiculoResumenCard({ vehiculo }: Props) {
         <View style={styles.badgeRating}>
           <Ionicons name="star" size={12} color="#F59E0B" />
           <Text style={styles.badgeRatingText}>
-            {vehiculo.calificacion && vehiculo.calificacion > 0 ? vehiculo.calificacion.toFixed(1) : "Nuevo"}
+            {vehiculo.calificacion && vehiculo.calificacion > 0 ? vehiculo.calificacion.toFixed(1) : t("extra.comun.nuevo")}
           </Text>
         </View>
       </View>

@@ -3,10 +3,11 @@ import { Animated, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { remapColor as mc } from "@/constants/brandColorMap";
 import { screen4Styles as styles } from "@/modules/onboarding/styles/screen4.styles";
 
 const METODOS = [
-  { icon: "🏦", label: "PSE",     color: "#1D4ED8", active: true  },
+  { icon: "🏦", label: "PSE",     get color() { return mc("#1D4ED8"); }, active: true  },
   { icon: "💳", label: "Tarjeta", color: "#7C3AED", active: false },
   { icon: "📱", label: "Nequi",   color: "#BE185D", active: false },
   { icon: "💵", label: "Efecty",  color: "#D97706", active: false },

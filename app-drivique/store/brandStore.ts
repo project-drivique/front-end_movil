@@ -5,7 +5,8 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiClient } from "@/services/http/apiClient";
-import { aplicarPaleta, esHex } from "@/constants/brandPalette";
+import { Platform } from "react-native";
+import { aplicarPaleta, esHex, PALETA_ARRANQUE } from "@/constants/brandPalette";
 
 export interface MarcaApp {
   nombre: string;
@@ -83,6 +84,12 @@ export const useBrandStore = create<BrandState>((set, get) => {
         const marca = desdeApi(data);
         if (!marca) return;
         if (adoptar(marca)) await AsyncStorage.setItem(CLAVE_CACHE, JSON.stringify(marca));
+        // Web: los estilos ya están compilados con la paleta de arranque; si cambió, se recarga una sola vez
+        if (Platform.OS === "web" && typeof window !== "undefined") {
+          const actual = `${marca.primary}|${marca.secondary}|${marca.accent}`.toUpperCase();
+          const base = PALETA_ARRANQUE || "#2563EB|#1E3A8A|#60A5FA";
+          if (actual !== base) window.location.reload();
+        }
       } catch {
         /* sin conexión: se conserva la marca actual */
       }

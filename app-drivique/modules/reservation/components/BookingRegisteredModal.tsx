@@ -86,7 +86,7 @@ export default function ModalReservaRegistrada({
               ]}
             >
               {(() => {
-                const horas = horasLimitePago || 72;
+                const horas = horasLimitePago || 8;
                 const textoHoras = `${horas} ${horas === 1 ? t("comun.hora", { defaultValue: "hora" }) : t("comun.horas", { defaultValue: "horas" })}`;
                 return t("reserva.confirmacion.avisoPlazoPagoDinamico", {
                   horas: textoHoras,

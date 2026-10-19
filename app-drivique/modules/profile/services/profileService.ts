@@ -1,4 +1,5 @@
 import { apiClient } from '@/services/http/apiClient'
+import { useReferenceStore } from '@/store/referenceStore'
 import { FormCambiarCorreo, FormEditarPerfil, UsuarioPerfil } from '../types/profile.types'
 
 export interface UserPreferencesDTO {
@@ -26,7 +27,12 @@ export interface UserDocumentDTO {
   createdAt?: string
 }
 
-const CODIGO_DOCUMENTO: Record<string, string> = { PASSPORT: 'Pasaporte' }
+const CODIGO_DOCUMENTO: Record<string, string> = {
+  PASSPORT: 'Pasaporte',
+  DRIVER_LICENSE: 'Licencia de Conducción',
+  CC: 'CC',
+  CE: 'CE',
+}
 
 export function mapPerfil(data: any): UsuarioPerfil {
   const codigo = String(data.documentTypeCode || '')
@@ -50,14 +56,39 @@ export async function obtenerPerfil(_token?: string): Promise<UsuarioPerfil> {
   return mapPerfil(data)
 }
 
-export async function actualizarPerfil(_token: string, datos: FormEditarPerfil): Promise<UsuarioPerfil> {
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// El servidor guarda la nacionalidad por UUID: si llegó un nombre o código (lista aún sin cargar) se busca su id
+function resolverNacionalidadId(valor?: string): string | undefined {
+  if (!valor) return undefined;
+  if (UUID_RE.test(valor)) return valor;
+  const v = valor.trim().toLowerCase();
+  const n = useReferenceStore.getState().nacionalidades.find((x) => x.name.toLowerCase() === v || x.isoCode?.toLowerCase() === v);
+  return n?.id;
+}
+
+// La app usa etiquetas ("Pasaporte", "Doc. Extranjero"); el servidor guarda códigos (PASSPORT, CE...)
+function codigoDocumento(tipo?: string): string | undefined {
+  if (!tipo) return undefined;
+  const t = tipo.trim().toUpperCase();
+  if (t === 'PASAPORTE' || t === 'PAS') return 'PASSPORT';
+  if (t === 'DOC. EXTRANJERO' || t === 'DOCEXTRANJERO') return 'CE';
+  return t;
+}
+
+export async function actualizarPerfil(
+  _token: string,
+  datos: FormEditarPerfil & { numeroDocumento?: string; tipoDocumento?: string }
+): Promise<UsuarioPerfil> {
   const payload = {
     firstName: datos.nombres.trim(),
     lastName: datos.apellidos.trim(),
     phone: datos.telefono.trim(),
     birthDate: datos.fechaNacimiento || undefined,
-    nationalityId: datos.nacionalidad || undefined,
-    address: datos.direccion.trim() || undefined,
+    nationalityId: resolverNacionalidadId(datos.nacionalidad),
+    address: datos.direccion ? datos.direccion.trim() : undefined,
+    documentNumber: datos.numeroDocumento ? datos.numeroDocumento.trim() : undefined,
+    documentTypeCode: codigoDocumento(datos.tipoDocumento),
   }
   const { data } = await apiClient.put('/users/me', payload)
   return mapPerfil(data)

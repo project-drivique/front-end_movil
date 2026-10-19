@@ -111,7 +111,7 @@ export const useReferenceStore = create<ReferenceStore>()((set, get) => ({
   },
 
   cargarNacionalidades: async () => {
-    if (get().nacionalidades.length > 0 || !useAuthStore.getState().token) return;
+    if (get().nacionalidades.length > 0) return;
     try {
       const { data } = await apiClient.get("/nationalities");
       set({ nacionalidades: lista<NacionalidadApi>(data) });

@@ -9,6 +9,7 @@ export type EstadoReserva =
   | "PENDIENTE_EFECTIVO"
   | "PENDIENTE_VALIDACION"
   | "PENDIENTE_HORARIO"
+  | "PENDIENTE_FIRMA"
   | "CONFIRMADA"
   | "EN_CURSO"
   | "FINALIZADA"
@@ -65,6 +66,8 @@ function estadoDesdeApi(status: string, esEfectivo: boolean): EstadoReserva {
       return "PENDIENTE_VALIDACION";
     case "PENDING_SCHEDULE":
       return "PENDIENTE_HORARIO";
+    case "PENDING_SIGNATURE":
+      return "PENDIENTE_FIRMA";
     case "CONFIRMED":
       return "CONFIRMADA";
     case "IN_PROGRESS":
@@ -185,10 +188,27 @@ export const reservaPersistService = {
       .map((s) => s.id)
       .filter(Boolean);
 
+    let dRetiro = new Date(`${fechasLugar.fechaRetiro}T${fechasLugar.horaRetiro || "10:00"}:00`);
+    let dDevolucion = new Date(`${fechasLugar.fechaDevolucion}T${fechasLugar.horaDevolucion || "10:00"}:00`);
+
+    const ahora = Date.now();
+    if (dRetiro.getTime() < ahora) {
+      const hoyLocal = new Date();
+      const fechaRetiroStr = fechasLugar.fechaRetiro ? String(fechasLugar.fechaRetiro).split("T")[0] : "";
+      const hoyStr = `${hoyLocal.getFullYear()}-${String(hoyLocal.getMonth() + 1).padStart(2, "0")}-${String(hoyLocal.getDate()).padStart(2, "0")}`;
+      if (fechaRetiroStr === hoyStr) {
+        // Si el usuario eligió hoy pero la hora expiró mientras llenaba el formulario, ajustamos al momento actual + 2 min
+        dRetiro = new Date(ahora + 2 * 60 * 1000);
+        if (dDevolucion.getTime() <= dRetiro.getTime()) {
+          dDevolucion = new Date(dRetiro.getTime() + 24 * 60 * 60 * 1000);
+        }
+      }
+    }
+
     const body = {
-      vehicleId: vehiculo.uuid,
-      pickupDate: new Date(`${fechasLugar.fechaRetiro}T${fechasLugar.horaRetiro}:00`).toISOString(),
-      returnDate: new Date(`${fechasLugar.fechaDevolucion}T${fechasLugar.horaDevolucion}:00`).toISOString(),
+      vehicleId: vehiculo.uuid || String(vehiculo.id),
+      pickupDate: dRetiro.toISOString(),
+      returnDate: dDevolucion.toISOString(),
       insuranceCoverageId: seguro?.id ?? null,
       mileagePlanId: kmPlan?.id ?? null,
       additionalServiceIds: serviciosIds,
@@ -197,6 +217,31 @@ export const reservaPersistService = {
       outsideScheduleAccepted: Boolean(fechasLugar.fueraDeHorarioAceptado),
     };
     const { data } = await apiClient.post("/reservations/checkout/initiate", body);
+
+    // Entrega/devolución a domicilio: el servidor las guarda aparte; sin esto la sucursal nunca ve el domicilio
+    const retiroDomicilio = fechasLugar.lugarRetiro === "domicilio";
+    const devolucionDomicilio = fechasLugar.lugarDevolucion === "domicilio";
+    if ((retiroDomicilio || devolucionDomicilio) && data?.id) {
+      const sede = useReferenceStore.getState().sucursales.find((b) => b.id === vehiculo.sucursalId);
+      const punto = (pointType: "PICKUP" | "RETURN", domicilio: boolean) =>
+        domicilio
+          ? {
+              pointType,
+              modality: "HOME_DELIVERY",
+              cityId: sede?.cityId,
+              neighborhood: pointType === "PICKUP" ? fechasLugar.barrioRetiro : fechasLugar.barrioDevolucion,
+              address: pointType === "PICKUP" ? fechasLugar.direccionRetiro : fechasLugar.direccionDevolucion,
+              referenceDetails: (pointType === "PICKUP" ? fechasLugar.referenciasRetiro : fechasLugar.referenciasDevolucion) || undefined,
+            }
+          : { pointType, modality: "BRANCH", branchId: vehiculo.sucursalId };
+      try {
+        await apiClient.post(`/reservations/${data.id}/delivery-points`, {
+          points: [punto("PICKUP", retiroDomicilio), punto("RETURN", devolucionDomicilio)],
+        });
+      } catch (e) {
+        console.warn("No se pudo guardar el domicilio de la reserva", e);
+      }
+    }
     return mapReserva(data);
   },
 

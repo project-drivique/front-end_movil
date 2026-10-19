@@ -78,3 +78,22 @@ export function aplicarPaleta(paleta: PaletaMarca) {
   HERO_1 = mezclar(s, "#000000", 0.8);
   HERO_2 = mezclar(s, "#000000", 0.55);
 }
+
+// --- Web ---------------------------------------------------------------------------------------
+// En web los estilos estáticos se compilan a CSS al importar los módulos, antes de que responda el servidor.
+// Por eso se lee la última marca guardada de forma síncrona y se aplica desde el arranque.
+export let PALETA_ARRANQUE = "";
+try {
+  if (typeof localStorage !== "undefined") {
+    const guardada = localStorage.getItem("drivique:marca");
+    if (guardada) {
+      const m = JSON.parse(guardada) as PaletaMarca;
+      if (esHex(m.primary) && esHex(m.secondary) && esHex(m.accent)) {
+        aplicarPaleta(m);
+        PALETA_ARRANQUE = `${m.primary}|${m.secondary}|${m.accent}`.toUpperCase();
+      }
+    }
+  }
+} catch {
+  /* sin almacenamiento: se usa la paleta original */
+}

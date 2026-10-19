@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Modal,
-  Alert,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from 'react-native';
@@ -29,6 +28,7 @@ import { PasswordRequirements } from '@/modules/auth/components/PasswordRequirem
 import { registroStyles as styles } from '@/modules/auth/styles/register.styles';
 import { GRADIENTES } from '@/constants/gradients';
 import { COLOR_ACENTO, COLOR_ENLACE } from "@/constants/brandPalette";
+import { Alert } from "@/utils/alerta";
 
 export default function RegistroScreen() {
   const { t } = useTranslation();
@@ -335,8 +335,8 @@ export default function RegistroScreen() {
                   textAlign: 'center',
                 }}>
                   {terminosLeidos
-                    ? '✓ Has leído la totalidad de los términos. Ya puedes aceptar.'
-                    : '↓ Desplázate hasta el final para habilitar el botón de aceptar.'}
+                    ? t('extra.registro.terminosLeidos')
+                    : t('extra.registro.terminosDesplazar')}
                 </Text>
               </View>
             </ScrollView>
