@@ -93,7 +93,12 @@ export const useReservaStore = create<ReservaStore>()((set) => ({
     set({
       vehiculoSeleccionado: vehiculo,
       pasoActual: "fechas",
-      fechasLugar: { ...fechasLugarInicial(), ...datosPrecarga },
+      fechasLugar: {
+        ...fechasLugarInicial(),
+        lugarRetiro: vehiculo.sucursal || "",
+        lugarDevolucion: vehiculo.sucursal || "",
+        ...datosPrecarga,
+      },
       planes: planesInicial(),
       datosPersonales: datosPersonalesInicial(),
       documentos: documentosInicial(),

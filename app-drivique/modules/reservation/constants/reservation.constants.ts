@@ -146,8 +146,8 @@ export function getDetalleDuracionAlquiler(
           else if (horasUso > 0 && minsUso > 0) partesUso.push(`${horasUso} h ${minsUso} min`);
           else if (horasUso === 0 && minsUso > 0) partesUso.push(`${minsUso} min`);
 
-          tiempoUso = partesUso.join(", ") || "0 horas";
-          subtituloAnticipada = `Devolución anticipada: ${tiempoUso}`;
+          tiempoUso = partesUso.join(", ") || t("extra.computo.cero");
+          subtituloAnticipada = t("extra.computo.devAnticipada", { tiempo: tiempoUso });
         }
       } else if (minDev < minRetiro) {
         const diffMinutosAnticipo = minRetiro - minDev;
@@ -162,8 +162,8 @@ export function getDetalleDuracionAlquiler(
         else if (horasUso > 0 && minsUso > 0) partesUso.push(`${horasUso} h ${minsUso} min`);
         else if (horasUso === 0 && minsUso > 0) partesUso.push(`${minsUso} min`);
 
-        tiempoUso = partesUso.join(", ") || "0 horas";
-        subtituloAnticipada = `Devolución anticipada: ${tiempoUso}`;
+        tiempoUso = partesUso.join(", ") || t("extra.computo.cero");
+        subtituloAnticipada = t("extra.computo.devAnticipada", { tiempo: tiempoUso });
       }
     }
   }
@@ -253,15 +253,19 @@ export const SIGLA_DOCUMENTO: Record<string, string> = {
   CC: "CC",
   CE: "CE",
   Pasaporte: "PAS",
-  DNI: "DNI",
-  PPT: "PPT",
-  PEP: "PEP",
+  PASAPORTE: "PAS",
+  DRIVER_LICENSE: "LIC",
+  LICENCIA: "LIC",
+  LICENCIA_CONDUCCION: "LIC",
   "Doc. Extranjero": "DOC",
 };
 
 export function getSiglaDocumento(tipo: string | null | undefined): string {
   if (!tipo) return "";
-  return SIGLA_DOCUMENTO[tipo] || tipo;
+  const t = String(tipo).trim().toUpperCase();
+  if (t === "DRIVER_LICENSE" || t === "LICENCIA" || t === "LICENCIA_CONDUCCION") return "LIC";
+  if (t === "PASAPORTE" || t === "PASSPORT") return "PAS";
+  return SIGLA_DOCUMENTO[tipo] || SIGLA_DOCUMENTO[t] || tipo;
 }
 
 export function getTiposDocumento(
@@ -271,14 +275,12 @@ export function getTiposDocumento(
     { id: "CC", label: t("reserva.datosPersonales.tiposDocumento.CC") },
     { id: "CE", label: t("reserva.datosPersonales.tiposDocumento.CE") },
     { id: "Pasaporte", label: t("reserva.datosPersonales.tiposDocumento.Pasaporte") },
-    { id: "DNI", label: t("reserva.datosPersonales.tiposDocumento.DNI") },
-    { id: "PPT", label: t("reserva.datosPersonales.tiposDocumento.PPT") },
-    { id: "PEP", label: t("reserva.datosPersonales.tiposDocumento.PEP") },
   ];
 }
 
-// Nacionalidades: siempre desde GET /nationalities ({id, name, isoCode}).
-// El id (UUID) es el valor que se guarda y se envia al backend.
+import paisesMock from "./nationalities.json";
+
+// Nacionalidades: desde GET /nationalities o catálogo de países con prefijo telefónico idéntico a Web
 export interface NacionalidadOpcion {
   id: string;
   nombre: string;
@@ -286,23 +288,56 @@ export interface NacionalidadOpcion {
 }
 
 export function getNacionalidades(): NacionalidadOpcion[] {
-  return useReferenceStore
-    .getState()
-    .nacionalidades.map((n) => ({ id: n.id, nombre: n.name, isoCode: n.isoCode }));
+  const deApi = useReferenceStore.getState().nacionalidades;
+  if (deApi && deApi.length > 0) {
+    return deApi.map((n) => ({ id: n.id, nombre: n.name, isoCode: n.isoCode }));
+  }
+  return paisesMock
+    .filter((p) => p.nombre !== "Otro")
+    .map((p) => ({ id: p.nombre, nombre: p.nombre, isoCode: p.iso }));
 }
 
 export function getNombreNacionalidad(id: string | null | undefined): string {
   if (!id) return "";
-  return useReferenceStore.getState().nacionalidades.find((n) => n.id === id)?.name ?? "";
+  const n = useReferenceStore.getState().nacionalidades.find((item) => item.id === id);
+  if (n) return n.name;
+  const p = paisesMock.find((item) => item.nombre.toLowerCase() === id.toLowerCase() || item.iso.toLowerCase() === id.toLowerCase());
+  return p?.nombre ?? id;
 }
 
 export function esNacionalidadColombiana(id: string | null | undefined): boolean {
   if (!id) return false;
-  return useReferenceStore.getState().nacionalidades.find((n) => n.id === id)?.isoCode === "CO";
+  const n = useReferenceStore.getState().nacionalidades.find((item) => item.id === id);
+  if (n) {
+    return n.isoCode === "CO" || n.name.toLowerCase() === "colombia";
+  }
+  return id.toLowerCase() === "colombia" || id.toUpperCase() === "CO";
 }
 
-// La API de nacionalidades no expone indicativo telefonico.
-export function getPrefijoPorNacionalidad(_nacionalidad: string | null): string {
+// Prefijo telefónico idéntico a Web según la nacionalidad elegida
+export function getPrefijoPorNacionalidad(nacionalidad: string | null | undefined): string {
+  if (!nacionalidad) return "";
+  const nStr = String(nacionalidad).trim();
+  const nApi = useReferenceStore
+    .getState()
+    .nacionalidades.find(
+      (n) =>
+        n.id === nStr ||
+        n.name.toLowerCase() === nStr.toLowerCase() ||
+        n.isoCode?.toLowerCase() === nStr.toLowerCase()
+    );
+  const nombreBuscado = nApi?.name || nStr;
+  const isoBuscado = nApi?.isoCode;
+
+  const p = paisesMock.find(
+    (item) =>
+      item.nombre.toLowerCase() === nombreBuscado.toLowerCase() ||
+      (isoBuscado && item.iso.toLowerCase() === isoBuscado.toLowerCase()) ||
+      item.iso.toLowerCase() === nStr.toLowerCase()
+  );
+  if (p?.prefijo) return p.prefijo;
+
+  if (esNacionalidadColombiana(nStr)) return "+57";
   return "";
 }
 

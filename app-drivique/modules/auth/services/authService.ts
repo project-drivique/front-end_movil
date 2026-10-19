@@ -1,5 +1,6 @@
 // modules/auth/services/authService.ts
 import { apiClient } from '@/services/http/apiClient';
+import i18n from "@/modules/i18n";
 import { sessionTokens } from '@/services/http/sessionTokens';
 
 export interface SocialLoginPayload {
@@ -86,7 +87,7 @@ export const authService = {
     const emailPrefix = correo.split('@')[0].replace(/[0-9]+$/, '').trim();
     const parts = emailPrefix.split(/[._\-\s]+/).filter(Boolean);
     const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '');
-    const derivedFirst = parts.length > 0 ? cap(parts[0]) : 'Usuario';
+    const derivedFirst = parts.length > 0 ? cap(parts[0]) : i18n.t("extra.comun.usuario");
     const derivedLast = parts.length > 1 ? parts.slice(1).map(cap).join(' ') : 'Drivique';
 
     const payload = {
@@ -114,7 +115,7 @@ export const authService = {
         if (response.ok) {
           return resData;
         }
-        const errDetail = resData?.detail || resData?.message || resData?.mensaje || primaryError?.response?.data?.detail || primaryError?.response?.data?.message || 'Error en el registro';
+        const errDetail = resData?.detail || resData?.message || resData?.mensaje || primaryError?.response?.data?.detail || primaryError?.response?.data?.message || i18n.t("extra.errores.registro");
         throw new Error(errDetail);
       } catch (fallbackError) {
         throw fallbackError instanceof Error ? fallbackError : primaryError;

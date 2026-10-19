@@ -1,3 +1,4 @@
+import i18n from "@/modules/i18n";
 // modules/reservation/utils/reviewModeration.ts
 //
 // Sistema de moderación y validación para las reseñas de vehículos:
@@ -79,7 +80,7 @@ export function validarComentarioResena(comentario: string): ResultadoValidacion
     return {
       valido: false,
       tipo: "length",
-      mensajeError: "El comentario no puede exceder los 400 caracteres.",
+      mensajeError: i18n.t("extra.resena.largo"),
     };
   }
 
@@ -88,7 +89,7 @@ export function validarComentarioResena(comentario: string): ResultadoValidacion
     return {
       valido: false,
       tipo: "length",
-      mensajeError: "El comentario debe tener al menos 8 caracteres.",
+      mensajeError: i18n.t("extra.resena.corto"),
     };
   }
 
@@ -98,7 +99,7 @@ export function validarComentarioResena(comentario: string): ResultadoValidacion
     return {
       valido: false,
       tipo: "links",
-      mensajeError: "Por seguridad, no se permiten enlaces o páginas web en la reseña.",
+      mensajeError: i18n.t("extra.resena.enlaces"),
     };
   }
 
@@ -108,7 +109,7 @@ export function validarComentarioResena(comentario: string): ResultadoValidacion
     return {
       valido: false,
       tipo: "privacy",
-      mensajeError: "Por tu privacidad, no incluyas direcciones de correo electrónico.",
+      mensajeError: i18n.t("extra.resena.correo"),
     };
   }
 
@@ -120,7 +121,7 @@ export function validarComentarioResena(comentario: string): ResultadoValidacion
       return {
         valido: false,
         tipo: "privacy",
-        mensajeError: "Por tu seguridad, no incluyas números telefónicos ni de contacto.",
+        mensajeError: i18n.t("extra.resena.telefono"),
       };
     }
   }
@@ -131,7 +132,7 @@ export function validarComentarioResena(comentario: string): ResultadoValidacion
     return {
       valido: false,
       tipo: "spam",
-      mensajeError: "Por favor evita la repetición excesiva de caracteres.",
+      mensajeError: i18n.t("extra.resena.repeticion"),
     };
   }
 
@@ -148,7 +149,7 @@ export function validarComentarioResena(comentario: string): ResultadoValidacion
       return {
         valido: false,
         tipo: "profanity",
-        mensajeError: "Por favor mantén un lenguaje respetuoso y cordial en tu reseña.",
+        mensajeError: i18n.t("extra.resena.respeto"),
       };
     }
   }

@@ -129,7 +129,14 @@ export async function construirUrlCheckout({
     targetRedirect = obtenerDefaultRedirectUrl();
   }
 
-  params.set("redirect-url", targetRedirect);
+  if (targetRedirect.includes("localhost")) {
+    targetRedirect = targetRedirect.replace("localhost", "localtest.me");
+  }
+
+  const isIpHost = /(?:\d{1,3}\.){3}\d{1,3}/.test(targetRedirect);
+  if (!isIpHost) {
+    params.set("redirect-url", targetRedirect);
+  }
 
   return `https://checkout.wompi.co/p/?${params.toString()}`;
 }

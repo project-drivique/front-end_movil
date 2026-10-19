@@ -9,7 +9,6 @@ import {
   Image,
   Modal,
   Linking,
-  Alert,
   FlatList,
   ActivityIndicator,
 } from "react-native";
@@ -39,6 +38,7 @@ import {
 } from "@/modules/support/constants/supportCatalog";
 
 import * as DocumentPicker from "expo-document-picker";
+import { Alert } from "@/utils/alerta";
 
 export default function SupportScreen() {
   const insets = useSafeAreaInsets();
@@ -173,7 +173,7 @@ export default function SupportScreen() {
         if (activo) {
           const filtradas = data.filter((r) => {
             const grupo = calcularGrupoReserva(r);
-            return grupo === "en_curso" || grupo === "finalizada";
+            return grupo === "en_curso";
           });
           setReservasValidas(filtradas);
         }
@@ -191,9 +191,21 @@ export default function SupportScreen() {
   // Manejar parámetros de navegación si viene desde "Mis Reservas"
   useEffect(() => {
     if (params.reservaId || params.vehiculoNombre) {
-      setReservaId(params.reservaId || "");
-      setVehiculoNombre(params.vehiculoNombre || "");
-      setPlaca(params.placa || "");
+      // La reserva puede llegar por id (UUID) o por referencia: se busca para autocompletar carro y placa
+      const reservaParam = reservasValidas.find(
+        (r) => r.id === params.reservaId || r.referencia === params.reservaId,
+      );
+      const snap = reservaParam?.vehiculoSnapshot as any;
+      setReservaId(reservaParam?.referencia || params.reservaId || "");
+      setVehiculoNombre(params.vehiculoNombre || reservaParam?.vehiculoNombre || "");
+      setPlaca(
+        params.placa ||
+          (reservaParam as any)?.vehiclePlate ||
+          reservaParam?.vehiculoPlaca ||
+          snap?.placa ||
+          snap?.plate ||
+          "",
+      );
       setActiveTab("reportar");
     } else if (params.tab === "reportar") {
       setActiveTab("reportar");
@@ -206,7 +218,7 @@ export default function SupportScreen() {
         }
       }
     }
-  }, [params.reservaId, params.vehiculoNombre, params.placa, params.tab, params.reporteId, reportes]);
+  }, [params.reservaId, params.vehiculoNombre, params.placa, params.tab, params.reporteId, reportes, reservasValidas]);
 
   // Objeto de tipo de incidencia seleccionado
   const tipoObj = useMemo(
@@ -906,6 +918,7 @@ export default function SupportScreen() {
                 contentContainerStyle={{ paddingBottom: 20 }}
                 renderItem={({ item }) => {
                   const vehSnap = item.vehiculoSnapshot as any;
+                  const itemPlaca = (item as any).vehiclePlate || item.vehiculoPlaca || vehSnap?.placa || vehSnap?.plate || "";
                   const esSeleccionada = item.referencia === reservaId;
                   return (
                     <TouchableOpacity
@@ -919,7 +932,7 @@ export default function SupportScreen() {
                       onPress={() => {
                         setReservaId(item.referencia);
                         setVehiculoNombre(item.vehiculoNombre);
-                        setPlaca(vehSnap?.placa || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" }));
+                        setPlaca(itemPlaca || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" }));
                         if (errores.vehiculoNombre) {
                           setErrores((prev) => ({ ...prev, vehiculoNombre: "" }));
                         }
@@ -932,7 +945,7 @@ export default function SupportScreen() {
                           {item.vehiculoNombre}
                         </Text>
                         <Text style={[styles.reservaSeleccionDetalle, { color: c.textSecondary }]}>
-                          {t("soporte.incidencia.placa", { defaultValue: "Placa" })}: <Text style={{ fontWeight: "700" }}>{vehSnap?.placa || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" })}</Text> · Ref: {item.referencia}
+                          {t("soporte.incidencia.placa", { defaultValue: "Placa" })}: <Text style={{ fontWeight: "700" }}>{itemPlaca || t("soporte.incidencia.sinPlaca", { defaultValue: "Sin placa" })}</Text> · Ref: {item.referencia}
                         </Text>
                         <Text style={[styles.reservaSeleccionFechas, { color: c.textMuted }]}>
                           {item.fechaRetiro ? fechaCorta(String(item.fechaRetiro)) : ""} - {item.fechaDevolucion ? fechaCorta(String(item.fechaDevolucion)) : ""}

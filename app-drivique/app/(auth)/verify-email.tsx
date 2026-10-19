@@ -6,7 +6,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -24,6 +23,7 @@ import { OtpInput } from "@/components/ui/OtpInput";
 import { useAuditoria } from "@/store/auditStore";
 import { verificarCorreoStyles as styles } from "@/modules/auth/styles/verify-email.styles";
 import { useLogoMarca } from "@/store/brandStore";
+import { Alert } from "@/utils/alerta";
 
 const DURACION_CODIGO_SEGUNDOS = 5 * 60;
 const ESPERA_REENVIO_SEGUNDOS = 60;
