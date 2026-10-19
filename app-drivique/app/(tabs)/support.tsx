@@ -9,7 +9,6 @@ import {
   Image,
   Modal,
   Linking,
-  Alert,
   FlatList,
   ActivityIndicator,
 } from "react-native";
@@ -39,6 +38,7 @@ import {
 } from "@/modules/support/constants/supportCatalog";
 
 import * as DocumentPicker from "expo-document-picker";
+import { Alert } from "@/utils/alerta";
 
 export default function SupportScreen() {
   const insets = useSafeAreaInsets();

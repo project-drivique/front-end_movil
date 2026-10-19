@@ -3,7 +3,6 @@ import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   Image,
   Modal,
   Pressable,
@@ -35,6 +34,7 @@ import { useUsuarioStore } from "@/store/userStore";
 import { useAuthStore } from "@/store/authStore";
 import { aCentavos, construirUrlCheckout } from "@/modules/reservation/services/wompiService";
 import { Platform } from "react-native";
+import { Alert } from "@/utils/alerta";
 
 const COLOR_GRUPO: Record<GrupoReserva, string> = {
   pendiente: "#f59e0b",

@@ -6,7 +6,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -26,6 +25,7 @@ import { GRADIENTES } from "@/constants/gradients";
 import { SelectorEstrellas } from "./SelectorEstrellas";
 import { ResenaGuardada, resenaService } from "../services/resenaService";
 import { validarComentarioResena } from "../utils/reviewModeration";
+import { Alert } from "@/utils/alerta";
 
 const MAX_CARACTERES = 400;
 

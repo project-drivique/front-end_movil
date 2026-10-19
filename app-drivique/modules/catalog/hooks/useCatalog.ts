@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
   FILTROS_BASE,
@@ -13,6 +12,7 @@ import {
 } from "../types/catalog.types";
 import { catalogoService } from "../services/catalogService";
 import { useMonedaStore } from "@/store/currencyStore";
+import { Alert } from "@/utils/alerta";
 
 function estaDisponibleEnRango(
   vehiculo: Vehiculo,

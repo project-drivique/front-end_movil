@@ -4,7 +4,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Platform,
   ScrollView,
@@ -41,6 +40,7 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { contratoService } from "@/modules/reservation/services/contractService";
 import { useUsuarioStore } from "@/store/userStore";
 import { COLOR_ACENTO } from "@/constants/brandPalette";
+import { Alert } from "@/utils/alerta";
 
 const COLOR_GRUPO: Record<string, string> = {
   pendiente: "#f59e0b",

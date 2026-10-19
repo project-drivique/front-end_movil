@@ -11,7 +11,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { COLOR_MARCA, mezclar } from "@/constants/brandPalette";
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   ScrollView,
   StatusBar,
@@ -53,6 +52,7 @@ import { AlertModal } from "@/components/ui/AlertModal";
 import { Moneda } from "@/utils/currencyUtils";
 import { useNotificationStore } from "@/store/notificationStore";
 import { sessionTokens } from "@/services/http/sessionTokens";
+import { Alert } from "@/utils/alerta";
 
 export default function PerfilScreen() {
   const { t } = useTranslation();

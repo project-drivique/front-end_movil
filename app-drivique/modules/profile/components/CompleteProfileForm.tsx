@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,6 +18,7 @@ import { inputFieldStyles } from "@/components/ui/InputField.styles";
 import { DateField } from "@/components/ui/DateField";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { esNacionalidadColombiana, getNacionalidades, getNombreNacionalidad, getPrefijoPorNacionalidad, getSiglaDocumento } from "@/modules/reservation/constants/reservation.constants";
+import { Alert } from "@/utils/alerta";
 
 const TIPOS_DOCUMENTO: TipoDocumento[] = ["CC", "CE", "Pasaporte"];
 

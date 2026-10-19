@@ -6,6 +6,7 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "@/modules/i18n";
 import { useIdioma } from "@/modules/i18n/hooks/useLanguage";
 import { FloatingSupportChat } from "@/components/ui/FloatingSupportChat";
+import { AlertHost } from "@/components/ui/AlertHost";
 import { Fragment, useEffect } from "react";
 import { AppState } from "react-native";
 import { apiClient } from "@/services/http/apiClient";
@@ -93,6 +94,7 @@ export default function RootLayout() {
 
           <StatusBar style={temaActual === "oscuro" ? "light" : "dark"} /> 
           <FloatingSupportChat />
+          <AlertHost />
         </Fragment>
       </ThemeProvider>
     </I18nextProvider>

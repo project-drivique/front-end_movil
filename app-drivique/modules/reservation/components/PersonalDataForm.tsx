@@ -5,7 +5,7 @@ import { useReservaStore } from "@/store/reservationStore";
 import { useUsuarioStore } from "@/store/userStore";
 import { obtenerPerfil, actualizarPerfil } from "@/modules/profile/services/profileService";
 import React, { useEffect, useMemo, useState } from "react";
-import { Alert, Platform, StyleSheet, Text, TextInput, View, TouchableOpacity } from "react-native";
+import { Platform, StyleSheet, Text, TextInput, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -40,6 +40,7 @@ import TarjetaVerificacionDocumental from "./DocumentVerificationCard";
 import CouponSection from "./CouponSection";
 import { useServerQuote } from "../hooks/useServerQuote";
 import { COLOR_ACENTO, COLOR_ENLACE_OSCURO, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
+import { Alert } from "@/utils/alerta";
 
 function combinarNombreCompleto(nombres: string, apellidos: string): string {
   return [nombres, apellidos].filter(Boolean).join(" ").trim();
@@ -207,8 +208,9 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const datosCompletos =
     !!datosPersonales.nombreCompleto.trim() &&
     !!datosPersonales.nacionalidad &&
-    !!datosPersonales.correo.trim() &&
-    !!datosPersonales.celular.trim() &&
+    // Mismas reglas que la web: correo con formato válido y celular de al menos 10 dígitos
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datosPersonales.correo.trim()) &&
+    datosPersonales.celular.trim().length >= 10 &&
     !!datosPersonales.tipoDocumento &&
     !!datosPersonales.numeroDocumento.trim() &&
     (docsVerificados || !!documentos.cedulaFrente) &&
