@@ -13,11 +13,12 @@ export function hashCode(str: string): number {
 
 function planesDesdeApi() {
   const { coberturas, planesKm, servicios } = useReferenceStore.getState();
-  const limitados = planesKm
-    .filter((p) => p.includedKm !== null && p.includedKm !== undefined)
-    .sort((a, b) => Number(a.dailyRate) - Number(b.dailyRate));
-  const ilimitado = planesKm.find((p) => p.includedKm === null || p.includedKm === undefined);
-  const limitado = limitados[0];
+  // Misma selección que la web: el primer plan con km incluidos es el "limitado"; el que no tiene límite (o se llama
+  // "unlimited/ilimitado") es el "ilimitado". El orden es el que entrega el servidor.
+  const limitado = planesKm.find((p) => p.includedKm !== null && p.includedKm !== undefined);
+  const ilimitado = planesKm.find(
+    (p) => p.includedKm === null || p.includedKm === undefined || /unlimited|ilimitado/i.test(p.name || ""),
+  );
 
   return {
     tarifas: {
