@@ -6,7 +6,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -24,8 +23,9 @@ import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { GRADIENTES } from "@/constants/gradients";
 import { SelectorEstrellas } from "./SelectorEstrellas";
-import { ResenaGuardada, resenaService } from "../services/resenaService";
+import { ElegibilidadResena, ResenaGuardada, resenaService } from "../services/resenaService";
 import { validarComentarioResena } from "../utils/reviewModeration";
+import { Alert } from "@/utils/alerta";
 
 const MAX_CARACTERES = 400;
 
@@ -38,15 +38,15 @@ interface Props {
   vehiculoNombre?: string;
   valorInicial?: ResenaGuardada | null;
   onCerrar: () => void;
-  onGuardado: (resena: ResenaGuardada) => void;
+  onGuardado: (resena: ResenaGuardada | null) => void;
 }
 
 const ETIQUETAS_ESTRELLAS: Record<number, { texto: string; emoji: string }> = {
-  1: { texto: "Mala experiencia", emoji: "😞" },
-  2: { texto: "Regular", emoji: "😐" },
-  3: { texto: "Bueno", emoji: "🙂" },
-  4: { texto: "Muy bueno", emoji: "😊" },
-  5: { texto: "¡Excelente experiencia!", emoji: "🤩" },
+  1: { texto: "extra.calificar.e1", emoji: "😞" },
+  2: { texto: "extra.calificar.e2", emoji: "😐" },
+  3: { texto: "extra.calificar.e3", emoji: "🙂" },
+  4: { texto: "extra.calificar.e4", emoji: "😊" },
+  5: { texto: "extra.calificar.e5", emoji: "🤩" },
 };
 
 export function ModalCalificar({
@@ -66,19 +66,41 @@ export function ModalCalificar({
   const [calificacion, setCalificacion] = useState(valorInicial?.calificacion ?? 0);
   const [comentario, setComentario] = useState(valorInicial?.comentario ?? "");
   const [guardando, setGuardando] = useState(false);
+  const [elegibilidad, setElegibilidad] = useState<ElegibilidadResena | null>(null);
+  const [calificacionSuc, setCalificacionSuc] = useState(0);
+  const [comentarioSuc, setComentarioSuc] = useState("");
 
   useEffect(() => {
     if (visible) {
       setCalificacion(valorInicial?.calificacion ?? 0);
       setComentario(valorInicial?.comentario ?? "");
+      setCalificacionSuc(0);
+      setComentarioSuc("");
       setGuardando(false);
     }
   }, [visible, valorInicial]);
+
+  // Igual que la web: el servidor dice si se puede reseñar el vehículo y/o la sucursal
+  useEffect(() => {
+    if (!visible || !referenciaReserva) return;
+    let activo = true;
+    resenaService
+      .obtenerElegibilidad(referenciaReserva)
+      .then((e) => activo && setElegibilidad(e))
+      .catch(() => {});
+    return () => {
+      activo = false;
+    };
+  }, [visible, referenciaReserva]);
+
+  const mostrarVehiculo = !valorInicial && (!elegibilidad || elegibilidad.puedeVehiculo);
+  const mostrarSucursal = !!elegibilidad?.puedeSucursal && !!elegibilidad.sucursalId;
 
   // Validación de moderación en tiempo real
   const validacion = useMemo(() => {
     return validarComentarioResena(comentario);
   }, [comentario]);
+  const validacionSuc = useMemo(() => validarComentarioResena(comentarioSuc), [comentarioSuc]);
 
   const getMensajeModeracion = () => {
     if (!validacion.tipo) return validacion.mensajeError;
@@ -101,7 +123,10 @@ export function ModalCalificar({
   };
 
   const handleGuardar = async () => {
-    if (calificacion < 1) {
+    const enviarVehiculo = mostrarVehiculo && calificacion >= 1;
+    const enviarSucursal = mostrarSucursal && calificacionSuc >= 1;
+
+    if (!enviarVehiculo && !enviarSucursal) {
       Alert.alert(
         t("reserva.calificar.calificarVehiculo", { defaultValue: "Calificar vehículo" }),
         t("reserva.calificar.seleccionaEstrellasAlerta", {
@@ -111,10 +136,10 @@ export function ModalCalificar({
       return;
     }
 
-    if (!validacion.valido) {
+    if ((enviarVehiculo && !validacion.valido) || (enviarSucursal && !validacionSuc.valido)) {
       Alert.alert(
         t("reserva.calificar.calificarVehiculo", { defaultValue: "Calificar vehículo" }),
-        getMensajeModeracion()
+        enviarVehiculo && !validacion.valido ? getMensajeModeracion() : validacionSuc.mensajeError
       );
       return;
     }
@@ -123,13 +148,22 @@ export function ModalCalificar({
 
     setGuardando(true);
     try {
-      const resena = await resenaService.guardar(referenciaReserva, usuarioId, {
-        calificacion,
-        comentario: comentario.trim(),
-        vehiculoId,
-        vehiculoNombre,
-        usuarioNombre,
-      });
+      let resena: ResenaGuardada | null = null;
+      if (enviarVehiculo) {
+        resena = await resenaService.guardar(referenciaReserva, usuarioId, {
+          calificacion,
+          comentario: comentario.trim(),
+          vehiculoId,
+          vehiculoNombre,
+          usuarioNombre,
+        });
+      }
+      if (enviarSucursal && elegibilidad?.sucursalId) {
+        await resenaService.guardarSucursal(referenciaReserva, elegibilidad.sucursalId, {
+          calificacion: calificacionSuc,
+          comentario: comentarioSuc.trim(),
+        });
+      }
       onGuardado(resena);
     } catch (error) {
       console.error("[ModalCalificar] Error guardando reseña", error);
@@ -143,7 +177,10 @@ export function ModalCalificar({
   };
 
   const etiquetaActual = ETIQUETAS_ESTRELLAS[calificacion];
-  const puedeGuardar = calificacion >= 1 && validacion.valido && !guardando;
+  const puedeGuardar =
+    ((mostrarVehiculo && calificacion >= 1 && validacion.valido) ||
+      (mostrarSucursal && calificacionSuc >= 1 && validacionSuc.valido)) &&
+    !guardando;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCerrar}>
@@ -170,7 +207,9 @@ export function ModalCalificar({
                 <Ionicons name="star" size={22} color="#F59E0B" />
               </View>
               <Text style={[s.titulo, { color: c.textPrimary }]}>
-                {valorInicial
+                {!mostrarVehiculo && mostrarSucursal
+                  ? t("reserva.calificar.calificarSucursal", { defaultValue: "Calificar sucursal" })
+                  : valorInicial
                   ? t("reserva.calificar.editarCalificacion", { defaultValue: "Editar calificación" })
                   : t("reserva.calificar.calificarVehiculo", { defaultValue: "Calificar vehículo" })}
               </Text>
@@ -188,6 +227,7 @@ export function ModalCalificar({
               contentContainerStyle={{ paddingVertical: 4, paddingBottom: 10 }}
               keyboardShouldPersistTaps="handled"
             >
+              {mostrarVehiculo && (<>
               {/* Selector de Estrellas */}
               <View style={s.bloqueEstrellas}>
                 <Text style={[s.label, { color: c.textSecondary }]}>
@@ -201,7 +241,7 @@ export function ModalCalificar({
                   <View style={[s.etiquetaFeedback, { backgroundColor: c.bgInput }]}>
                     <Text style={s.emojiFeedback}>{etiquetaActual.emoji}</Text>
                     <Text style={[s.textoFeedback, { color: c.textPrimary }]}>
-                      {t(`reserva.calificar.estrellas.${calificacion}`, { defaultValue: etiquetaActual.texto })}
+                      {t(`reserva.calificar.estrellas.${calificacion}`, { defaultValue: t(etiquetaActual.texto) })}
                     </Text>
                   </View>
                 ) : (
@@ -254,6 +294,50 @@ export function ModalCalificar({
                   </View>
                 )}
               </View>
+
+              </>)}
+
+              {mostrarSucursal && (
+                <View style={[s.bloqueComentario, mostrarVehiculo && { marginTop: 18, paddingTop: 16, borderTopWidth: 1, borderTopColor: c.border }]}>
+                  <Text style={[s.label, { color: c.textPrimary, fontWeight: "700" }]}>
+                    {t("reserva.calificar.sucursalTitulo", { defaultValue: "Cuéntanos tu experiencia en la sucursal" })}
+                  </Text>
+                  {!!elegibilidad?.sucursalNombre && (
+                    <Text style={[s.label, { color: c.textSecondary, marginBottom: 6 }]}>{elegibilidad.sucursalNombre}</Text>
+                  )}
+                  <View style={s.estrellasWrap}>
+                    <SelectorEstrellas valor={calificacionSuc} onCambiar={setCalificacionSuc} tamano={34} />
+                  </View>
+                  <View style={[s.labelFila, { marginTop: 10 }]}>
+                    <Text style={[s.label, { color: c.textSecondary }]}>
+                      {t("reserva.calificar.sucursalResena", { defaultValue: "Tu reseña (opcional)" })}
+                    </Text>
+                    <Text style={[s.contadorTexto, { color: c.textMuted }]}>
+                      {comentarioSuc.length}/{MAX_CARACTERES}
+                    </Text>
+                  </View>
+                  <TextInput
+                    style={[
+                      s.comentarioInput,
+                      { color: c.textPrimary, backgroundColor: c.bgInput, borderColor: !validacionSuc.valido ? "#EF4444" : c.border },
+                    ]}
+                    placeholder={t("reserva.calificar.sucursalPlaceholder", { defaultValue: "¿Cómo fue la atención, la entrega y la devolución del vehículo?" })}
+                    placeholderTextColor={c.textMuted}
+                    value={comentarioSuc}
+                    onChangeText={setComentarioSuc}
+                    multiline
+                    numberOfLines={4}
+                    maxLength={MAX_CARACTERES}
+                    textAlignVertical="top"
+                  />
+                  {!validacionSuc.valido && !!validacionSuc.mensajeError && (
+                    <View style={s.alertaModeracion}>
+                      <Ionicons name="alert-circle" size={15} color="#EF4444" style={{ marginTop: 1 }} />
+                      <Text style={s.alertaTexto}>{validacionSuc.mensajeError}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
 
             </ScrollView>
 

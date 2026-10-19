@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,8 +18,9 @@ import { inputFieldStyles } from "@/components/ui/InputField.styles";
 import { DateField } from "@/components/ui/DateField";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { esNacionalidadColombiana, getNacionalidades, getNombreNacionalidad, getPrefijoPorNacionalidad, getSiglaDocumento } from "@/modules/reservation/constants/reservation.constants";
+import { Alert } from "@/utils/alerta";
 
-const TIPOS_DOCUMENTO: TipoDocumento[] = ["CC", "CE", "Pasaporte", "DNI", "PPT", "PEP"];
+const TIPOS_DOCUMENTO: TipoDocumento[] = ["CC", "CE", "Pasaporte"];
 
 interface Props {
   onGuardado: () => void;
@@ -39,9 +39,9 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
   const tiposDocumentoFiltrados = TIPOS_DOCUMENTO.filter((tipo) => {
     if (!form.nacionalidad) return true;
     if (esNacionalidadColombiana(form.nacionalidad)) {
-      return tipo === "CC" || tipo === "CE" || tipo === "Pasaporte" || tipo === "PPT" || tipo === "PEP";
+      return tipo === "CC" || tipo === "CE" || tipo === "Pasaporte";
     }
-    return tipo === "Pasaporte" || tipo === "DNI" || tipo === "CE" || tipo === "PPT" || tipo === "PEP";
+    return tipo === "Pasaporte" || tipo === "CE";
   });
 
   const handleGuardar = () => {
@@ -123,11 +123,11 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
               onPress={() => {
                 actualizarCampo("nacionalidad", valor);
                 if (esNacionalidadColombiana(valor)) {
-                  if (form.tipoDocumento && !["CC", "CE", "Pasaporte", "PPT", "PEP"].includes(form.tipoDocumento)) {
+                  if (form.tipoDocumento && !["CC", "CE", "Pasaporte"].includes(form.tipoDocumento)) {
                     actualizarCampo("tipoDocumento", "");
                   }
                 } else {
-                  if (form.tipoDocumento && !["Pasaporte", "DNI", "CE", "PPT", "PEP"].includes(form.tipoDocumento)) {
+                  if (form.tipoDocumento && !["Pasaporte", "CE"].includes(form.tipoDocumento)) {
                     actualizarCampo("tipoDocumento", "");
                   }
                 }

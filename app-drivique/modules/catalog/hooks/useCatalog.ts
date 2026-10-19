@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
   FILTROS_BASE,
@@ -13,6 +12,7 @@ import {
 } from "../types/catalog.types";
 import { catalogoService } from "../services/catalogService";
 import { useMonedaStore } from "@/store/currencyStore";
+import { Alert } from "@/utils/alerta";
 
 function estaDisponibleEnRango(
   vehiculo: Vehiculo,
@@ -56,6 +56,52 @@ function aplicarCriteriosBusqueda(
   }
 
   return out;
+}
+
+const norm = (str?: string | null) =>
+  String(str || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+
+export function matchesCategoria(vehicleCategory?: string | null, filterCategory?: string | null): boolean {
+  if (!filterCategory || filterCategory === "Todos" || filterCategory === "Todas") return true;
+  const v = norm(vehicleCategory);
+  const f = norm(filterCategory);
+  if (!v) return false;
+  if (v === f) return true;
+  if (f === "sedan" && (v === "sedan" || v === "berlina")) return true;
+  if (f === "suv" && (v === "suv" || v === "camioneta" || v === "crossover" || v === "4x4")) return true;
+  if (f === "economico" && (v === "economico" || v === "hatchback" || v === "compacto" || v === "urbano")) return true;
+  if (f === "deportivo" && (v === "deportivo" || v === "lujo" || v === "sport" || v === "premium" || v === "coupe")) return true;
+  return v.includes(f) || f.includes(v);
+}
+
+export function matchesCombustible(vehicleFuel?: string | null, vehicleFuelCode?: string | null, filterFuel?: string | null): boolean {
+  if (!filterFuel || filterFuel === "Todos" || filterFuel === "Todas") return true;
+  const v = norm(vehicleFuel);
+  const c = norm(vehicleFuelCode);
+  const f = norm(filterFuel);
+  if (!v && !c) return false;
+  if (v === f || c === f) return true;
+  if (f === "gasolina" && (v === "gasolina" || c === "gasoline")) return true;
+  if (f === "diesel" && (v === "diesel" || c === "diesel")) return true;
+  if (f === "hibrido" && (v === "hibrido" || c === "hybrid")) return true;
+  if (f === "electrico" && (v === "electrico" || c === "electric")) return true;
+  return v.includes(f) || f.includes(v);
+}
+
+export function matchesTransmision(vehicleTransmission?: string | null, vehicleTransCode?: string | null, filterTransmission?: string | null): boolean {
+  if (!filterTransmission || filterTransmission === "Todos" || filterTransmission === "Todas") return true;
+  const v = norm(vehicleTransmission);
+  const c = norm(vehicleTransCode);
+  const f = norm(filterTransmission);
+  if (!v && !c) return false;
+  if (v === f || c === f) return true;
+  if (f === "automatica" && (v === "automatica" || c === "automatic")) return true;
+  if (f === "manual" && (v === "manual" || c === "manual")) return true;
+  return v.includes(f) || f.includes(v);
 }
 
 const BUSQUEDA_FORM_BASE: BusquedaForm = {
@@ -228,11 +274,11 @@ export function useCatalogo(opciones: OpcionesCatalogo = {}) {
     }
 
     if (filtros.categoria !== "Todos")
-      arr = arr.filter((v) => v.categoria === filtros.categoria);
+      arr = arr.filter((v) => matchesCategoria(v.categoria, filtros.categoria));
     if (filtros.transmision !== "Todas")
-      arr = arr.filter((v) => v.transmision === filtros.transmision);
+      arr = arr.filter((v) => matchesTransmision(v.transmision, (v as any).transmissionCode || (v as any).transmisionCode, filtros.transmision));
     if (filtros.combustible !== "Todos")
-      arr = arr.filter((v) => v.combustible === filtros.combustible);
+      arr = arr.filter((v) => matchesCombustible(v.combustible, (v as any).fuelTypeCode || (v as any).combustibleCode, filtros.combustible));
 
     // Ciudad/sucursal elegidas en el modal "Filtros" (independientes de disponibilidad)
     if (filtros.ciudad !== "Todas las ciudades") {
@@ -270,11 +316,7 @@ export function useCatalogo(opciones: OpcionesCatalogo = {}) {
   const sinResultadosFiltros = hayFiltrosActivos && resultadoCrudo.length === 0;
 
   const resultado = useMemo(() => {
-    const base = sinResultadosFiltros
-      ? busquedaRealizada
-        ? aplicarCriteriosBusqueda([...vehiculos], busquedaForm)
-        : [...vehiculos]
-      : resultadoCrudo;
+    const base = resultadoCrudo;
 
     const arr = [...base];
     if (filtros.orden === "precio_asc") arr.sort((a, b) => a.precio - b.precio);

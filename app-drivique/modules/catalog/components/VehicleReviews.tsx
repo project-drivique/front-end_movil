@@ -87,7 +87,7 @@ export function VehicleReviews({ vehiculoId }: Props) {
 
   // Convertimos las reseñas de la API en formato de comentarios
   const comentariosGuardados: (Comentario & { fotos?: string[] })[] = resenasApi.map((r) => ({
-    autor: r.customerName || "Cliente",
+    autor: r.customerName || t("extra.comun.cliente"),
     calificacion: r.rating,
     texto: r.comment,
     fecha: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "",
@@ -118,7 +118,7 @@ export function VehicleReviews({ vehiculoId }: Props) {
   if (cargando) {
     return (
       <View style={[s.cardVacio, { backgroundColor: c.bgCard, borderColor: colorBorde, marginBottom: 14 }]}>
-        <Text style={[s.vacioSubtitulo, { color: c.textMuted }]}>Cargando reseñas...</Text>
+        <Text style={[s.vacioSubtitulo, { color: c.textMuted }]}>{t("resenas.cargando")}</Text>
       </View>
     );
   }
@@ -126,7 +126,7 @@ export function VehicleReviews({ vehiculoId }: Props) {
   if (error) {
     return (
       <View style={[s.cardVacio, { backgroundColor: c.bgCard, borderColor: colorBorde, marginBottom: 14 }]}>
-        <Text style={[s.vacioSubtitulo, { color: c.textMuted }]}>No fue posible cargar las reseñas.</Text>
+        <Text style={[s.vacioSubtitulo, { color: c.textMuted }]}>{t("resenas.errorCarga")}</Text>
       </View>
     );
   }
@@ -165,7 +165,7 @@ export function VehicleReviews({ vehiculoId }: Props) {
           <Text style={[s.puntajeGrande, { color: colorScore }]}>{promedio.toFixed(1)}</Text>
           <Estrellas valor={promedio} tamano={15} />
           <Text style={[s.conteoTexto, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
-            {total} {total === 1 ? "reseña" : "reseñas"}
+            {total} {total === 1 ? t("extra.comun.resena") : t("extra.comun.resenas")}
           </Text>
         </View>
 

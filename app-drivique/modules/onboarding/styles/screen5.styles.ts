@@ -1,6 +1,8 @@
 import { StyleSheet } from "react-native";
+import { lazyStyles } from "@/utils/lazyStyles";
+import { remapColor as mc } from "@/constants/brandColorMap";
 
-export const screen5Styles = StyleSheet.create({
+const crear_screen5Styles = () => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -23,23 +25,23 @@ export const screen5Styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    backgroundColor: "#EFF6FF",
+    backgroundColor: mc("#EFF6FF"),
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "#1D4ED8",
+    borderColor: mc("#1D4ED8"),
   },
   successInner: {
     width: 74,
     height: 74,
     borderRadius: 37,
-    backgroundColor: "#DBEAFE",
+    backgroundColor: mc("#DBEAFE"),
     alignItems: "center",
     justifyContent: "center",
   },
   successCheck: {
     fontSize: 36,
-    color: "#1D4ED8",
+    color: mc("#1D4ED8"),
     fontWeight: "800",
   },
   ring1: {
@@ -48,7 +50,7 @@ export const screen5Styles = StyleSheet.create({
     height: 130,
     borderRadius: 65,
     borderWidth: 1,
-    borderColor: "#93C5FD",
+    borderColor: mc("#93C5FD"),
     opacity: 0.5,
   },
   ring2: {
@@ -57,7 +59,7 @@ export const screen5Styles = StyleSheet.create({
     height: 152,
     borderRadius: 76,
     borderWidth: 1,
-    borderColor: "#BFDBFE",
+    borderColor: mc("#BFDBFE"),
     opacity: 0.3,
   },
   title: {
@@ -105,7 +107,7 @@ export const screen5Styles = StyleSheet.create({
   },
   ctaBtnPrimary: {
     width: "100%",
-    backgroundColor: "#1D4ED8",
+    backgroundColor: mc("#1D4ED8"),
     paddingVertical: 15,
     borderRadius: 12,
     alignItems: "center",
@@ -125,7 +127,8 @@ export const screen5Styles = StyleSheet.create({
     color: "#9CA3AF",
   },
   ctaBtnTextLink: {
-    color: "#1D4ED8",
+    color: mc("#1D4ED8"),
     fontWeight: "600",
   },
 });
+export const screen5Styles = lazyStyles(crear_screen5Styles);

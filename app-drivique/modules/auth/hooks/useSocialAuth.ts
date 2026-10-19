@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import i18n from '@/modules/i18n';
 import { decodeJwtPayload } from '@/utils/jwt';
 import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -12,11 +13,11 @@ import { createPkceChallenge } from '@/utils/pkce';
 WebBrowser.maybeCompleteAuthSession();
 
 function deriveNamesFromEmail(email: string) {
-  if (!email) return { firstName: 'Usuario', lastName: '' };
+  if (!email) return { firstName: i18n.t('extra.comun.usuario'), lastName: '' };
   const prefix = email.split('@')[0].replace(/[0-9]+$/, '').trim();
   const parts = prefix.split(/[._\-\s]+/).filter(Boolean);
   const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '');
-  const firstName = parts.length > 0 ? cap(parts[0]) : 'Usuario';
+  const firstName = parts.length > 0 ? cap(parts[0]) : i18n.t('extra.comun.usuario');
   const lastName = parts.length > 1 ? parts.slice(1).map(cap).join(' ') : '';
   return { firstName, lastName };
 }
@@ -216,7 +217,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       onExito?.(usuario, token);
     } catch (err: any) {
-      const msg = err?.message || t('auth.social.errorGoogle', 'Error al autenticar con Google');
+      const msg = err?.message || t('extra.errores.google');
       setErrorSocial(msg);
     } finally {
       setCargandoGoogle(false);
@@ -313,7 +314,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const capitalizar = (str: string) =>
         str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
 
-      const primerNombre = capitalizar(rawFirst) || 'Usuario';
+      const primerNombre = capitalizar(rawFirst) || i18n.t('extra.comun.usuario');
       const primerApellido = rawLast ? capitalizar(rawLast.split(' ')[0]) : '';
 
       const emailCalculado = email;
@@ -359,7 +360,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
 
       onExito?.(usuario, token);
     } catch (err: any) {
-      const msg = err?.message || t('auth.social.errorFacebook', 'Error al autenticar con Facebook');
+      const msg = err?.message || t('extra.errores.facebook');
       setErrorSocial(msg);
     } finally {
       setCargandoFacebook(false);

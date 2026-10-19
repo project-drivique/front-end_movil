@@ -15,6 +15,7 @@ import TabsSeccion, { SeccionReserva } from "./SectionTabs";
 import PlanesAdicionales from "./AdditionalPlans";
 import FormDatosPersonales from "./PersonalDataForm";
 import { AlertModal } from "../../../components/ui/AlertModal";
+import { ConfiguracionModal } from "@/modules/i18n/components/ConfiguracionModal";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { useTranslation } from "react-i18next";
 import { getHorarioSucursal } from "@/modules/catalog/constants/catalog.constants";
@@ -35,11 +36,8 @@ export default function FlujoReserva({ vehiculo }: Props) {
 
   const [seccionActiva, setSeccionActiva] = useState<SeccionReserva>("fechas");
   const [modalResumenVisible, setModalResumenVisible] = useState(false);
+  const [modalConfigVisible, setModalConfigVisible] = useState(false);
   const [alertaFaltantesVisible, setAlertaFaltantesVisible] = useState(false);
-  const [alertaHorarioVisible, setAlertaHorarioVisible] = useState(false);
-  const outsideScheduleAccepted = !!fechasLugar.fueraDeHorarioAceptado;
-  const actualizarFechasLugar = useReservaStore((s) => s.actualizarFechasLugar);
-  const setOutsideScheduleAccepted = (v: boolean) => actualizarFechasLugar({ fueraDeHorarioAceptado: v });
 
   // "Alcanzada alguna vez" — una vez true, nunca vuelve a false, aunque
   // el usuario regrese a un tab anterior. Esto es lo que usa el modal
@@ -98,31 +96,10 @@ export default function FlujoReserva({ vehiculo }: Props) {
     router.back();
   };
 
-  // HU-INT-17: Verificación de horario de atención de la sucursal seleccionada
-  const branchName = fechasLugar.lugarRetiro || vehiculo.sucursal || "";
-  const horario = getHorarioSucursal(branchName);
-
-  const checkOutsideSchedule = () => {
-    if (outsideScheduleAccepted) return false;
-    const now = new Date();
-    const currentMins = now.getHours() * 60 + now.getMinutes();
-    const [hOpen, mOpen] = (horario.horaApertura || "08:00").split(":").map(Number);
-    const [hClose, mClose] = (horario.horaCierre || "18:00").split(":").map(Number);
-    const openMins = (hOpen || 8) * 60 + (mOpen || 0);
-    const closeMins = (hClose || 18) * 60 + (mClose || 0);
-    const is24h = openMins === 0 && closeMins >= 23 * 60 + 59;
-    if (is24h) return false;
-    return currentMins < openMins || currentMins > closeMins;
-  };
-
-  // Botón del tab "fechas": si falta info, muestra alerta; si fuera de horario, alerta interactiva
+  // Botón del tab "fechas": si falta info, muestra alerta requerida
   const handleVerPlanes = () => {
     if (!puedeContinuarAPlanes) {
       setAlertaFaltantesVisible(true);
-      return;
-    }
-    if (checkOutsideSchedule()) {
-      setAlertaHorarioVisible(true);
       return;
     }
     irASeccion("planes");
@@ -138,12 +115,22 @@ export default function FlujoReserva({ vehiculo }: Props) {
       <View style={[styles.topRow, { backgroundColor: c.bgCard }]}>
         <TouchableOpacity onPress={handleVolver} style={styles.volverBtn}>
           <Ionicons name="chevron-back" size={16} color={c.primary} />
-          <Text style={[[styles.volverText, { color: COLOR_MARCA }], { color: c.primary }]}>{t("reserva.flujo.volver")}</Text>
+          <Text style={[styles.volverText, { color: c.primary }]}>{t("reserva.flujo.volver")}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[[styles.resumenBtn, { borderColor: COLOR_MARCA }], { borderColor: c.primary, backgroundColor: c.bgCard }]} onPress={() => setModalResumenVisible(true)}>
-          <Text style={[[styles.resumenBtnText, { color: COLOR_MARCA }], { color: c.primary }]}>{t("reserva.flujo.resumenReserva")}</Text>
-        </TouchableOpacity>
+        <View style={styles.topRightActions}>
+          <TouchableOpacity
+            style={[styles.configBtn, { borderColor: c.border, backgroundColor: c.bgInput }]}
+            onPress={() => setModalConfigVisible(true)}
+            accessibilityLabel={t("config.ajustes", { defaultValue: "Ajustes de idioma y tema" })}
+          >
+            <Ionicons name="options-outline" size={16} color={c.textPrimary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.resumenBtn, { borderColor: c.primary, backgroundColor: c.bgCard }]} onPress={() => setModalResumenVisible(true)}>
+            <Text style={[styles.resumenBtnText, { color: c.primary }]}>{t("reserva.flujo.resumenReserva")}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <LinearGradient
@@ -215,37 +202,19 @@ export default function FlujoReserva({ vehiculo }: Props) {
         icono="alert-circle-outline"
         titulo={t("reserva.flujo.alertaFaltantesTitulo")}
         mensaje={t("reserva.flujo.alertaFaltantesMensaje")}
-        botones={[]}
+        botones={[
+          {
+            texto: t("comun.entendido", { defaultValue: "Entendido" }),
+            variante: "primario",
+            onPress: () => setAlertaFaltantesVisible(false),
+          },
+        ]}
         onCerrar={() => setAlertaFaltantesVisible(false)}
       />
 
-      <AlertModal
-        visible={alertaHorarioVisible}
-        icono="time-outline"
-        titulo={t("reserva.horario.titulo", { defaultValue: "Sucursal fuera de horario de atención" })}
-        mensaje={t("reserva.horario.mensaje", {
-          sucursal: branchName || t("reserva.horario.laSucursal", { defaultValue: "la sucursal" }),
-          apertura: horario.horaApertura,
-          cierre: horario.horaCierre,
-          defaultValue: `La sucursal ${branchName} tiene un horario de atención de ${horario.horaApertura} a ${horario.horaCierre}.\n\nEn este momento se encuentra cerrada, pero puedes registrar tu reserva ahora y quedará en estado PENDIENTE.\n\nMañana a las ${horario.horaApertura} te notificaremos por correo electrónico, notificación web y push para que puedas continuar con tu reserva.`,
-        })}
-        botones={[
-          {
-            texto: t("reserva.horario.modificar", { defaultValue: "Regresar y modificar" }),
-            variante: "secundario",
-            onPress: () => setAlertaHorarioVisible(false),
-          },
-          {
-            texto: t("reserva.horario.aceptar", { defaultValue: "Registrar como pendiente" }),
-            variante: "primario",
-            onPress: () => {
-              setOutsideScheduleAccepted(true);
-              setAlertaHorarioVisible(false);
-              irASeccion("planes");
-            },
-          },
-        ]}
-        onCerrar={() => setAlertaHorarioVisible(false)}
+      <ConfiguracionModal
+        visible={modalConfigVisible}
+        onClose={() => setModalConfigVisible(false)}
       />
     </View>
   );
@@ -262,6 +231,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 10,
+  },
+  topRightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  configBtn: {
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
   },
   volverBtn: { flexDirection: "row", alignItems: "center", gap: 2 },
   volverText: { fontSize: 13, fontWeight: "600", color: COLOR_MARCA },

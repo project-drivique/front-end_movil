@@ -1,5 +1,7 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { lazyStyles } from "@/utils/lazyStyles";
+import { remapColor as mc } from "@/constants/brandColorMap";
 
 interface Props {
   total: number;
@@ -23,7 +25,7 @@ export default function OnboardingPagination({ total, current }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const crear_styles = () => StyleSheet.create({
   container: {
     flexDirection: "row",
     justifyContent: "center",
@@ -41,12 +43,13 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#93C5FD",
+    backgroundColor: mc("#93C5FD"),
   },
   dotActive: {
     width: 24,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#1D4ED8",
+    backgroundColor: mc("#1D4ED8"),
   },
 });
+const styles = lazyStyles(crear_styles);
