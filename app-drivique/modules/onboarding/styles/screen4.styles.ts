@@ -1,6 +1,8 @@
 import { StyleSheet } from "react-native";
+import { lazyStyles } from "@/utils/lazyStyles";
+import { remapColor as mc } from "@/constants/brandColorMap";
 
-export const screen4Styles = StyleSheet.create({
+const crear_screen4Styles = () => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -15,18 +17,18 @@ export const screen4Styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#EFF6FF",
+    backgroundColor: mc("#EFF6FF"),
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#DBEAFE",
+    borderColor: mc("#DBEAFE"),
   },
   heroEmoji: {
     fontSize: 48,
   },
   wompiTag: {
     marginTop: 10,
-    backgroundColor: "#1D4ED8",
+    backgroundColor: mc("#1D4ED8"),
     paddingHorizontal: 14,
     paddingVertical: 5,
     borderRadius: 20,
@@ -66,8 +68,8 @@ export const screen4Styles = StyleSheet.create({
     position: "relative",
   },
   metodoCardActive: {
-    borderColor: "#1D4ED8",
-    backgroundColor: "#EFF6FF",
+    borderColor: mc("#1D4ED8"),
+    backgroundColor: mc("#EFF6FF"),
   },
   metodoIconWrap: {
     width: 40,
@@ -86,7 +88,7 @@ export const screen4Styles = StyleSheet.create({
     color: "#6B7280",
   },
   metodoLabelActive: {
-    color: "#1D4ED8",
+    color: mc("#1D4ED8"),
     fontWeight: "700",
   },
   metodoCheck: {
@@ -96,7 +98,7 @@ export const screen4Styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: "#1D4ED8",
+    backgroundColor: mc("#1D4ED8"),
     alignItems: "center",
     justifyContent: "center",
   },
@@ -125,3 +127,4 @@ export const screen4Styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
+export const screen4Styles = lazyStyles(crear_screen4Styles);

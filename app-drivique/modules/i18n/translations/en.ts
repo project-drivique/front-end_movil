@@ -230,7 +230,13 @@ export default {
       "reenviar": "Resend code",
       "codigoIncorrecto": "The code you entered is incorrect. Try again.",
       "codigoEnviadoTitulo": "Code sent",
-      "codigoEnviadoMsg": "We have sent a verification code to your email address. Please check your inbox or spam folder."
+      "codigoEnviadoMsg": "We have sent a verification code to your email address. Please check your inbox or spam folder.",
+      "errorTitulo": "Error",
+      "errorEnvio": "The code could not be sent. Try again in a few seconds.",
+      "verificadoTitulo": "Email verified",
+      "verificadoMsg": "Your account was verified. Sign in with your email and password.",
+      "errorMsg": "The code entered is not valid. Please check it and try again.",
+      "volverRegistro": "Back to registration"
     },
     "invitado": {
       "titulo": "Explore vehicles",
@@ -325,7 +331,25 @@ export default {
     "social": {
       "o": "or continue with",
       "google": "Continue with Google",
-      "facebook": "Continue with Facebook"
+      "facebook": "Continue with Facebook",
+      "errorGoogle": "Error authenticating with Google",
+      "errorFacebook": "Error authenticating with Facebook"
+    },
+    "errores": {
+      "correoInvalido": "Enter a valid email address",
+      "contrasenaObligatoria": "The password is required",
+      "cuentaNoExiste": "There is no account registered with that email.",
+      "cuentaNoEncontrada": "Account not found",
+      "loginFallido": "Could not sign in.",
+      "passwordDebil": "The password must have at least 12 characters, an uppercase letter, a lowercase letter, a number and a symbol.",
+      "noCoinciden": "The passwords do not match",
+      "aceptarTerminos": "You must accept the terms and conditions",
+      "registroFallido": "The account could not be created.",
+      "envioCodigoFallido": "The code could not be sent.",
+      "codigo6": "The code must have 6 digits.",
+      "codigoInvalido": "Invalid or expired code.",
+      "verificaNueva": "Check the new password.",
+      "restablecerFallido": "The password could not be reset."
     }
   },
   "catalogo": {
@@ -500,6 +524,8 @@ export default {
     "estrellas": "stars"
   },
   "vehiculo": {
+    "selectNationalityFirst": "First select your nationality",
+    "selectDocTypeFirst": "First select your document type",
     "volverCatalogo": "Back to catalog",
     "reservarAhora": "Book now",
     "noDisponible": "Not available",
@@ -562,7 +588,23 @@ export default {
       "tuResena": "Your review",
       "sinResenasTitulo": "This vehicle has no reviews yet",
       "sinResenasSubtitulo": "Book it now and be the first to share your experience!"
-    }
+    },
+    "picoYPlacaTitle": "Check Plate Restrictions",
+    "picoYPlacaDesc": "Not sure if this vehicle has mobility restrictions today? Check official national information to plan your route and avoid fines or setbacks during your reservation. Remember that restrictions may vary by city and day of the week, so it is vital to be informed before traveling.",
+    "goToPage": "Go to official page",
+    "stepDates": "Dates and location",
+    "stepDatesSub": "Complete your reservation details",
+    "stepProtection": "Protection and extras",
+    "stepProtectionSub": "Personalize your experience",
+    "personalData": "Personal information",
+    "personalDataSub": "Finalize your reservation",
+    "includedInBaseRate": "Included in the rate",
+    "day": "day",
+    "days": "days",
+    "selectPickupTime": "Select pickup time",
+    "selectReturnTime": "Select return time",
+    "rentalDuration": "Rental duration",
+    "earlyReturn": "Early return"
   },
   "misReservas": {
     "titulo": "My Bookings",
@@ -644,7 +686,14 @@ export default {
       "fechaFin": "Return date",
       "proteccion": "Protection",
       "tituloHeader": "Booking Details",
-      "tituloPagoDigitalPendiente": "Online payment with Wompi"
+      "tituloPagoDigitalPendiente": "Online payment with Wompi",
+      "enRevisionDocumentos": "Documents under review",
+      "pendienteFirma": "Pending signature",
+      "pendienteHorario": "Pending branch attention",
+      "enRevisionTexto": "The branch manager is reviewing your documents. You'll be able to pay once they are approved; we'll notify you.",
+      "pendienteHorarioTexto": "Your reservation was registered outside business hours. The branch will handle it at its next opening time.",
+      "pendienteFirmaTitulo": "Digital contract signature pending",
+      "pendienteFirmaTexto": "Your payment has been registered successfully. To confirm your reservation, you must digitally sign the rental contract."
     },
     "calificacionReservaTitulo": "Rate vehicle",
     "calificacionExitosaDesc": "Your review has been successfully registered. You can see the summary below or modify your feedback at any time:",
@@ -655,7 +704,17 @@ export default {
     "puntuacion": "Rating:",
     "comentario": "Comment:",
     "fechaRegistro": "Date registered:",
-    "fotosAdjuntas": "Attached photos:"
+    "fotosAdjuntas": "Attached photos:",
+    "errorCarga": "Your reservations could not be loaded.",
+    "hacerResena": "Write a review",
+    "cancelarTitulo": "Cancel reservation",
+    "cancelarMensaje": "This action cannot be undone.",
+    "cancelarConfirmar": "Yes, cancel",
+    "firmarContrato": "Proceed to sign contract",
+    "cancelarReserva": "Cancel reservation",
+    "miResenaVehiculo": "Your vehicle review",
+    "miResenaSucursal": "Your branch review",
+    "sinComentario": "You rated without leaving a comment."
   },
   "perfil": {
     "titulo": "My Profile",
@@ -781,7 +840,19 @@ export default {
       "telefono": "Ex: 3144214909",
       "nombreCompleto": "Ex: John Doe",
       "correo": "client@drivique.com"
-    }
+    },
+    "direccion": "Address",
+    "placeholderDireccion": "Calle 10 # 20-30, Medellín",
+    "preferenciasEntrega": "NOTIFICATION PREFERENCES",
+    "preferenciasEntregaDesc": "Choose the channels through which you want to receive updates about reservations, contracts and account alerts.",
+    "prefEmail": "Email",
+    "prefEmailSub": "Confirmations, invoices and contracts",
+    "prefPush": "Push notifications",
+    "prefPushSub": "Instant alerts on your mobile device",
+    "prefInApp": "In-app alerts",
+    "prefInAppSub": "Drivique inbox and notification center",
+    "prefMarketing": "Promotions and news",
+    "prefMarketingSub": "Exclusive discounts and fleet news"
   },
   "tabs": {
     "masCuponesGeniales": "More awesome coupons",
@@ -821,7 +892,9 @@ export default {
     "phoneTitle": "Customer Support Phone Line",
     "phoneDesc": "+57 322 3163531 · Roadside support",
     "emailTitle": "Support Email",
-    "emailDesc": "soporte@drivique.com · Response in under 2 hours"
+    "emailDesc": "soporte@drivique.com · Response in under 2 hours",
+    "sinPromociones": "You have no active promotions or coupons at the moment.",
+    "sinPromocionesDesc": "When there are new coupons or exclusive benefits for your reservations, you'll see them here."
   },
   "reserva": {
     "flujo": {
@@ -891,7 +964,7 @@ export default {
       "efectivoConfirmadaTitulo": "Booking Registered",
       "efectivoConfirmadaSub": "Your booking has been registered. To confirm it, complete the cash payment at authorized point {{sucursal}}.",
       "plazoParaPagarTitulo": "PAYMENT DEADLINE",
-      "efectivoConfirmadaMensaje": "You have 72 hours from now to go to the branch and pay. If you do not pay within this period, the booking will be cancelled automatically.",
+      "efectivoConfirmadaMensaje": "You have 8 hours from now to go to the branch and pay. If you do not pay within this period, the booking will be cancelled automatically.",
       "confirmarYVerMisReservas": "Confirm and View My Bookings",
       "entendidoIrAMisReservas": "Go to My Bookings",
       "volverAlInicio": "Back to Home",
@@ -930,7 +1003,10 @@ export default {
       "acercateCorresponsalBancolombia": "Visit a Bancolombia Banking Correspondent with the details shown below and make the payment before the deadline to confirm your reservation:",
       "reservaRegistradaPuntoAutorizado": "Your reservation has been registered. To confirm it, please make the cash payment at authorized branch {{sucursal}}.",
       "reservaRegistradaSucursalSeleccionada": "Your reservation has been registered. To confirm it, make the cash payment at the selected branch.",
-      "avisoPlazoPagoDinamico": "You have approximately {{horas}} to make the digital payment and confirm your reservation. If you do not make the payment within this deadline, the reservation will be automatically cancelled."
+      "avisoPlazoPagoDinamico": "You have approximately {{horas}} to make the digital payment and confirm your reservation. If you do not make the payment within this deadline, the reservation will be automatically cancelled.",
+      "codigoPagoEfectivo": "Cash payment code",
+      "errorCrearMensaje": "The reservation could not be registered. Check that all data and documents are valid.",
+      "errorCrearTitulo": "Error registering the reservation"
     },
     "edicion": {
       "editarFechasYLugares": "Edit Dates and Locations",
@@ -982,7 +1058,7 @@ export default {
       "entregaAeropuerto": "Airport delivery",
       "entregaTerminal": "Bus terminal delivery",
       "devolverEnSucursal": "Return at branch ({{sucursal}})",
-      "devolucionDomicilio": "Home pickup-back",
+      "devolucionDomicilio": "Home delivery",
       "devolucionAeropuerto": "Airport return",
       "devolucionTerminal": "Bus terminal return",
       "horaNoDisponibleTitulo": "Time not available",
@@ -1010,7 +1086,9 @@ export default {
       "direccionExacta": "Exact address:",
       "indicacionesRef": "Directions / Ref:",
       "horaEntregaRetiro": "Delivery / Pickup Time:",
-      "horaRecogidaDevolucion": "Collection / Return Time:"
+      "horaRecogidaDevolucion": "Collection / Return Time:",
+      "efectivoNoDisponibleTitulo": "Cash payment not available",
+      "efectivoNoDisponibleMensaje": "The branch {{sucursal}} does not accept cash payments. Choose online payment or a vehicle from another branch."
     },
     "planes": {
       "metodosPago": {
@@ -1113,19 +1191,18 @@ export default {
       "numeroCelular": "MOBILE NUMBER *",
       "tipoDeDocumento": "DOCUMENT TYPE *",
       "numeroDeDocumento": "DOCUMENT NUMBER *",
-      "alertaFaltantesTitulo": "Some info is missing",
-      "alertaFaltantesMensaje": "Complete your personal details, upload your documents and accept the terms and conditions before confirming your booking.",
+      "alertaFaltantesTitulo": "Incomplete information",
+      "alertaFaltantesMensaje": "Please complete all required fields and attach the required documents to confirm your booking.",
       "tiposDocumento": {
         "CC": "Citizenship ID (CC)",
         "CE": "Foreigner ID (CE)",
         "Pasaporte": "Passport (PAS)",
-        "DNI": "National Identity Document (DNI)",
-        "PPT": "Temporary Protection Permit (PPT)",
-        "PEP": "Special Stay Permit (PEP)",
         "TI": "Identity Card (TI)",
-        "DocExtranjero": "Foreign ID document"
+        "DocExtranjero": "Foreign ID document",
+        "NIT": "Tax ID (NIT)"
       },
-      "avisoGuardadoDinamico": "Upon confirming the booking, it will be automatically saved to your account. You will have {{horas}} to complete the payment before automatic cancellation."
+      "avisoGuardadoDinamico": "Upon confirming the booking, it will be automatically saved to your account. You will have {{horas}} to complete the payment before automatic cancellation.",
+      "avisoGuardado": "When you confirm the reservation, it will be saved in your account and you will have a limited time to complete the payment before it is automatically cancelled."
     },
     "terminos": {
       "autorizoTratamiento": "I authorize the processing of my personal data in accordance with the ",
@@ -1274,7 +1351,7 @@ export default {
       "subtotalReserva": "Booking subtotal",
       "recargoLogistico": "Logistics surcharge",
       "iva": "VAT ({{pct}})",
-      "totalFinal": "TOTAL FINAL",
+      "totalFinal": "FINAL TOTAL",
       "desgloseDeTarifa": "RATE BREAKDOWN",
       "elTotalFinalIncluye": "The final total includes VAT and additional charges",
       "incluido": "Included",
@@ -1432,7 +1509,11 @@ export default {
         "spam": "Please avoid excessive repetition of characters.",
         "profanity": "Please maintain respectful and cordial language in your review."
       },
-      "seleccionaEstrellasAlerta": "Please select a rating of 1 to 5 stars."
+      "seleccionaEstrellasAlerta": "Please select a rating of 1 to 5 stars.",
+      "calificarSucursal": "Rate branch",
+      "sucursalTitulo": "Tell us about your experience at the branch",
+      "sucursalResena": "Your review (optional)",
+      "sucursalPlaceholder": "How was the service, the pick-up and the return of the vehicle?"
     },
     "detalle": {
       "informacionEntrega": "Delivery Information:",
@@ -1452,6 +1533,13 @@ export default {
       "recogido": "Collected",
       "aConvenir": "To be agreed",
       "vehiculo": "Vehicle:"
+    },
+    "horario": {
+      "titulo": "Branch outside opening hours",
+      "mensaje": "the branch",
+      "laSucursal": "the branch",
+      "modificar": "Go back",
+      "aceptar": "Register as pending"
     }
   },
   "config": {
@@ -1513,7 +1601,8 @@ export default {
     "applied": "applied",
     "todosLosVehiculos": "All vehicles",
     "appliedCheck": "✓ Applied",
-    "applyBtnSimple": "Apply"
+    "applyBtnSimple": "Apply",
+    "errorNeedDates": "Select the reservation dates before applying a coupon."
   },
   "simulator": {
     "title": "[Simulator] Cash Payment Confirmation",
@@ -1551,7 +1640,7 @@ export default {
     "c4Terms": "Grants 50,000 COP discount. Requires a minimum booking of 200,000 COP. Valid for any category.",
     "vp1Title": "It's back! Don't wait",
     "vp1Desc": "This vehicle is available again in your area. Book it before it sells out.",
-    "vp2Title": "20% OFF solo hoy",
+    "vp2Title": "20% OFF today only",
     "vp2Desc": "Special daily offer. Book today and get a 28% discount on the standard rate.",
     "vp3Title": "Unmatched weekend price",
     "vp3Desc": "Rent this premium vehicle from Friday to Sunday and pay for only 2 days.",
@@ -1621,7 +1710,8 @@ export default {
       "errorNombre": "Enter the contact name.",
       "errorTelefono": "Enter the phone number.",
       "errorEmail": "Enter a valid email address.",
-      "alertaCamposRequeridos": "Please fill in all required fields."
+      "alertaCamposRequeridos": "Please fill in all required fields.",
+      "errorEnviar": "The report could not be registered. Please try again."
     },
     "infoBanner": "Complete the form to report any technical or mechanical issue during your reservation.",
     "tipo": {
@@ -1681,7 +1771,10 @@ export default {
   "notificaciones": {
     "venceHoy": "Expires today",
     "venceEnDias": "Expires in {{dias}} days",
-    "promocionesDestacadas": "Featured Promotions"
+    "promocionesDestacadas": "Featured Promotions",
+    "detallesEvento": "Event details",
+    "verDetalle": "View details",
+    "verReserva": "View Reservation / Continue"
   },
   "Cupón de Bienvenida Drivique": "Drivique Welcome Coupon",
   "Especial Aventura SUV": "Special SUV Adventure",
@@ -1785,5 +1878,282 @@ export default {
   "Disfruta de tus viajes con 20% de descuento en el Chevrolet Spark": {
     "": "Enjoy your trips with a 20% discount on the Chevrolet Spark."
   },
-  "Categoría: SUV": "Category: SUV"
+  "Categoría: SUV": "Category: SUV",
+  "contratoFirma": {
+    "badgeLabel": "Digital document",
+    "title": "Reservation and rental contract",
+    "subtitle": "Drivique · Academic vehicle rental platform",
+    "autoGenNote": "Document automatically generated with your reservation data. You only need to review it and sign.",
+    "contractCode": "Contract code",
+    "status": "Status",
+    "statusPending": "Pending signature",
+    "statusSigned": "Signed",
+    "generationDate": "Generation date",
+    "reservationCode": "Reservation",
+    "intro": "Between THE PLATFORM, Drivique, and THE USER, {{nombre}}, identified with {{tipoDoc}} {{numDoc}}, this vehicle reservation and rental contract is entered into, automatically generated from the information registered in the system.",
+    "userDataTitle": "User data",
+    "fullName": "Full name",
+    "document": "Document",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "license": "License",
+    "notProvided": "Not specified",
+    "reservationTitle": "Reservation and vehicle",
+    "vehicle": "Vehicle",
+    "plate": "Plate",
+    "color": "Color",
+    "year": "Year",
+    "branch": "Branch",
+    "branchCity": "Branch city",
+    "branchAddress": "Branch address",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "paymentMethod": "Payment method",
+    "paymentMethodCash": "In-person payment at the branch",
+    "cashPaymentBranch": "Cash payment point",
+    "paymentMethodWompi": "Wompi (test mode)",
+    "totalValue": "Total value",
+    "additionalServices": "Additional services",
+    "noneAdded": "None",
+    "protectionPlan": "Protection plan",
+    "clausesTitle": "Clauses",
+    "clause1Title": "1. Purpose.",
+    "clause1Text": "This contract governs the reservation and temporary use of the vehicle {{marca}} {{modelo}}, plate {{placa}}, for the period between {{inicio}} and {{fin}}.",
+    "clause2Title": "2. Automatic generation.",
+    "clause2Text": "The contract is created automatically with the user's personal data, the vehicle information, the selected branch, the branch city, the payment method and the total value of the reservation. THE USER only needs to review the information and sign.",
+    "clause3Title": "3. User obligations.",
+    "clause3Item1": "Provide truthful, current and complete information.",
+    "clause3Item2": "Use the vehicle responsibly and in accordance with applicable regulations.",
+    "clause3Item3": "Be liable for damages, fines or breaches attributable to its use.",
+    "clause3Item4": "Return the vehicle at the agreed time and place, unless a modification is approved in the system.",
+    "clause4Title": "4. Platform obligations.",
+    "clause4Text": "Drivique must generate, display and store this contract associated with the reservation, allowing its review before signing and its preservation in digital format.",
+    "clause5Title": "5. Data processing.",
+    "clause5Text": "THE USER authorizes the use of their data to manage the reservation, generate the contract, record the signature, store digital evidence and maintain traceability of the process.",
+    "clause6Title": "6. Academic nature.",
+    "clause6Text": "Drivique is an academic platform developed for the analysis, design and implementation of a digital vehicle rental system.",
+    "signaturesTitle": "Signatures",
+    "signCity": "Signing city",
+    "signDate": "Signing date",
+    "userSignature": "User signature",
+    "platformSignature": "Platform signature",
+    "responsible": "Responsible",
+    "role": "Role",
+    "platformResponsible": "Drivique System",
+    "platformRole": "Rental platform",
+    "signHere": "Sign here with your mouse or finger",
+    "clearSignature": "Clear signature",
+    "signatureRequired": "You must sign to continue.",
+    "signAndContinue": "Sign contract and continue",
+    "signing": "Signing…",
+    "footerNote1": "Document automatically generated by Drivique.",
+    "footerNote2": "Academic and functional use within the digital reservation and contracting flow.",
+    "stepLabel": "Contract signature",
+    "pageTitleCash": "Sign your contract to complete the reservation",
+    "pageTitleWompi": "Sign your contract to complete the payment",
+    "pageSubtitle": "Review the automatically generated information and sign to continue.",
+    "signedSuccessTitle": "Contract signed",
+    "signedSuccessText": "Your contract has been signed and stored with your reservation.",
+    "deliveryAddress": "Delivery address",
+    "deliveryNeighborhood": "Delivery neighborhood",
+    "deliveryReferences": "Delivery references",
+    "deliveryReturnHome": "Home return",
+    "sameDeliveryAddress": "Yes (same delivery address)",
+    "statusDraft": "Pending signature",
+    "notAvailable": "Not available",
+    "licenseApproved": "Valid (validated by the branch)",
+    "licensePending": "Pending validation",
+    "licenseRejected": "Rejected",
+    "downloadPdf": "Download PDF",
+    "sendEmail": "Send to my email",
+    "emailSent": "We sent the signed contract to your email.",
+    "emailNotSent": "The email could not be sent. Please try again.",
+    "signNotAvailable": "The contract can be signed once your reservation payment is confirmed.",
+    "loadError": "The contract could not be loaded.",
+    "signError": "The contract could not be signed.",
+    "pdfError": "The PDF could not be downloaded.",
+    "dateTimeSeparator": "at",
+    "pdfOkTitulo": "PDF downloaded",
+    "pdfOk": "The contract PDF was downloaded successfully.",
+    "emailSentTitulo": "Email sent",
+    "emailSentMsg": "We sent the signed contract to your email.",
+    "emailSendingTitulo": "Sending email",
+    "emailSending": "We are sending the signed contract to your email…",
+    "pdfDownloadingTitulo": "Downloading PDF",
+    "pdfDownloading": "We are downloading your contract as a PDF…"
+  },
+  "incidencias": {
+    "titulo": "Support",
+    "subtitulo": "Report and track your incidents",
+    "nueva": "New incident",
+    "misIncidencias": "My incidents",
+    "vacio": "You haven't reported any incidents yet.",
+    "cargando": "Loading...",
+    "errorCarga": "The information could not be loaded.",
+    "reintentar": "Retry",
+    "categoria": "Category",
+    "categorias": {
+      "RESERVATION": "Reservation",
+      "VEHICLE": "Vehicle",
+      "PAYMENT": "Payment",
+      "OTHER": "Other"
+    },
+    "estados": {
+      "OPEN": "Open",
+      "IN_REVIEW": "Under review",
+      "RESOLVED": "Resolved",
+      "CLOSED": "Closed"
+    },
+    "prioridades": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High",
+      "CRITICAL": "Critical"
+    },
+    "prioridad": "Priority (assigned automatically)",
+    "reservaVinculada": "Related reservation (optional)",
+    "sinReserva": "No related reservation",
+    "sede": "Support location",
+    "sedeSeleccionar": "Select a location",
+    "sedeObligatoria": "Select the location that will handle your incident.",
+    "asunto": "Subject",
+    "descripcion": "Description",
+    "adjuntos": "Attachments (JPG, PNG or PDF, max. 5 MB, up to 5 files)",
+    "agregarAdjunto": "Add file",
+    "quitar": "Remove",
+    "enviar": "Submit incident",
+    "enviando": "Sending...",
+    "camposObligatorios": "Complete the category, subject and description.",
+    "archivoInvalido": "Only JPG, PNG or PDF files of up to 5 MB are allowed.",
+    "maxArchivos": "You can attach up to 5 files.",
+    "creada": "Incident created",
+    "detalle": "Incident details",
+    "vehiculo": "Vehicle",
+    "reserva": "Reservation",
+    "sedeLabel": "Location",
+    "asignadoA": "Handled by",
+    "sinAsignar": "Unassigned",
+    "sla": "Due",
+    "slaVencido": "SLA expired",
+    "creadaEl": "Created",
+    "historial": "History",
+    "tuMensaje": "You",
+    "equipo": "Drivique Team",
+    "cambioEstado": "Status change",
+    "asignacion": "Assignment",
+    "responder": "Reply",
+    "escribeMensaje": "Write your message",
+    "enviarRespuesta": "Send reply",
+    "mensajeObligatorio": "Write a message before sending.",
+    "acciones": "Actions",
+    "transiciones": {
+      "CLOSED_RESOLVED": "Confirm resolution",
+      "CLOSED_OPEN": "Cancel incident",
+      "CLOSED_IN_REVIEW": "Close incident",
+      "IN_REVIEW": "Reopen",
+      "OPEN": "Mark as open",
+      "RESOLVED": "Mark as resolved"
+    },
+    "estadoActualizado": "Status updated",
+    "abrirAdjunto": "Open attachment",
+    "adjuntoError": "The attachment could not be opened.",
+    "noEncontrada": "The incident was not found."
+  },
+  "busqueda": {
+    "validarReservasDocs": "Validate Reservations and Documents"
+  },
+  "resenas": {
+    "cargando": "Loading reviews...",
+    "errorCarga": "The reviews could not be loaded."
+  },
+  "extra": {
+    "misReservas": {
+      "otras": "Other bookings",
+      "hoy": "Today’s bookings",
+      "ayer": "Yesterday",
+      "haceDias": "{{n}} days ago · {{fecha}}"
+    },
+    "gestion": {
+      "panelAdmin": "ADMINISTRATOR PANEL",
+      "gestionSucursal": "BRANCH MANAGEMENT",
+      "operativa": "OPERATIONAL",
+      "rol": "Role",
+      "adminGeneral": "General Administrator",
+      "encargado": "Branch Manager",
+      "tabAdmin": "Admin",
+      "tabSucursal": "Branch"
+    },
+    "efectivo": {
+      "subPunto": "Your booking has been registered. To confirm it, pay in cash at the authorized point {{sucursal}}.",
+      "subSucursal": "Your booking has been registered. To confirm it, pay in cash at the selected branch.",
+      "plazo": "You have approximately {{horas}} to go to the branch and make the payment. If you do not pay within this period, the booking will be cancelled automatically.",
+      "unaHora": "1 hour",
+      "nHoras": "{{n}} hours"
+    },
+    "resumen": {
+      "diasEntre": " ({{n}} days)"
+    },
+    "computo": {
+      "titulo": "Count of your {{n}} rental {{dia}}",
+      "desc": "Your booking starts on {{inicio}} at {{hora}}. Each day gives you 24 full hours: your day {{n}} starts on {{fin}} at {{hora}} and its 24 hours end on {{siguiente}} at {{hora}}. Returning earlier is recorded as early return time.",
+      "fecha": "{{mes}} {{d}}",
+      "devSiguiente": "Return: {{fecha}} (Next day)",
+      "devAnticipada": "Early return: {{tiempo}}",
+      "cero": "0 hours"
+    },
+    "calificar": {
+      "e1": "Bad experience",
+      "e2": "Fair",
+      "e3": "Good",
+      "e4": "Very good",
+      "e5": "Excellent experience!"
+    },
+    "resena": {
+      "largo": "The comment cannot exceed 400 characters.",
+      "corto": "The comment must have at least 8 characters.",
+      "enlaces": "For security, links or web pages are not allowed in the review.",
+      "correo": "For your privacy, do not include email addresses.",
+      "telefono": "For your safety, do not include phone or contact numbers.",
+      "repeticion": "Please avoid excessive repetition of characters.",
+      "respeto": "Please keep respectful and courteous language in your review."
+    },
+    "comun": {
+      "nuevo": "New",
+      "cliente": "Customer",
+      "usuario": "User",
+      "resena": "review",
+      "resenas": "reviews",
+      "aceptarBtn": "Accept"
+    },
+    "registro": {
+      "terminosLeidos": "✓ You have read all the terms. You can now accept.",
+      "terminosDesplazar": "↓ Scroll to the bottom to enable the accept button."
+    },
+    "notif": {
+      "generica": "Notification",
+      "drivique": "Drivique notification"
+    },
+    "errores": {
+      "favoritos": "Could not load your favorites.",
+      "perfilGuardar": "Error saving profile changes",
+      "registro": "Registration error",
+      "google": "Error authenticating with Google",
+      "facebook": "Error authenticating with Facebook"
+    },
+    "mesCorto": {
+      "0": "Jan",
+      "1": "Feb",
+      "2": "Mar",
+      "3": "Apr",
+      "4": "May",
+      "5": "Jun",
+      "6": "Jul",
+      "7": "Aug",
+      "8": "Sep",
+      "9": "Oct",
+      "10": "Nov",
+      "11": "Dec"
+    }
+  }
 };

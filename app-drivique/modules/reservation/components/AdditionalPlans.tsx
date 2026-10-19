@@ -335,12 +335,20 @@ export default function PlanesAdicionales({ vehiculo, onContinuar }: Props) {
 
               {/* Precio diario */}
               <View style={styles.planPrecioRow}>
-                <Text style={[styles.planPrecioValor, { color: primaryAccent }]}>
-                  {formatPrecio(kmLimitado.precio)}
-                </Text>
-                <Text style={[styles.planPrecioUnidad, { color: c.textMuted }]}>
-                  {t("reserva.planes.porDia", { defaultValue: "/ día" })}
-                </Text>
+                {kmLimitado.precio === 0 ? (
+                  <Text style={[styles.planPrecioValor, { color: primaryAccent, fontSize: 15 }]}>
+                    {t("vehiculo.includedInBaseRate", { defaultValue: "Incluido en la tarifa" })}
+                  </Text>
+                ) : (
+                  <>
+                    <Text style={[styles.planPrecioValor, { color: primaryAccent }]}>
+                      +{formatPrecio(kmLimitado.precio)}
+                    </Text>
+                    <Text style={[styles.planPrecioUnidad, { color: c.textMuted }]}>
+                      {t("reserva.planes.porDia", { defaultValue: "/ día" })}
+                    </Text>
+                  </>
+                )}
               </View>
 
               {/* Botón Inferior: ELEGIR PLAN o PLAN SELECCIONADO */}
@@ -407,7 +415,7 @@ export default function PlanesAdicionales({ vehiculo, onContinuar }: Props) {
               {/* Precio diario */}
               <View style={styles.planPrecioRow}>
                 <Text style={[styles.planPrecioValor, { color: primaryAccent }]}>
-                  {formatPrecio(kmIlimitado.precio)}
+                  +{formatPrecio(kmIlimitado.precio)}
                 </Text>
                 <Text style={[styles.planPrecioUnidad, { color: c.textMuted }]}>
                   {t("reserva.planes.porDia", { defaultValue: "/ día" })}

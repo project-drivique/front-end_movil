@@ -10,6 +10,7 @@
  */
 
 import { useUsuarioStore } from "@/store/userStore";
+import { useReferenceStore } from "@/store/referenceStore";
 import { useAuthStore } from "@/store/authStore";
 import { apiClient } from "@/services/http/apiClient";
 import { actualizarPerfil, mapPerfil } from "../services/profileService";
@@ -42,6 +43,8 @@ export function usePerfil() {
     fechaNacimiento: usuario.fechaNacimiento,
     nacionalidad: usuario.nacionalidad,
     direccion: usuario.direccion,
+    tipoDocumento: usuario.tipoDocumento,
+    numeroDocumento: usuario.numeroDocumento,
   });
 
   // Sincronizar perfil en tiempo real desde la API del backend
@@ -64,6 +67,8 @@ export function usePerfil() {
             fechaNacimiento: mapped.fechaNacimiento || prev.fechaNacimiento,
             nacionalidad: mapped.nacionalidad || prev.nacionalidad,
             direccion: mapped.direccion || prev.direccion,
+            tipoDocumento: mapped.tipoDocumento || prev.tipoDocumento,
+            numeroDocumento: mapped.numeroDocumento || prev.numeroDocumento,
           }));
         }
       }).catch(() => {});
@@ -82,6 +87,8 @@ export function usePerfil() {
         fechaNacimiento: usuario.fechaNacimiento,
         nacionalidad: usuario.nacionalidad,
         direccion: usuario.direccion,
+        tipoDocumento: usuario.tipoDocumento,
+        numeroDocumento: usuario.numeroDocumento,
       });
     }
   }, [usuario, editando]);
@@ -201,7 +208,7 @@ export function usePerfil() {
       setEditando(false);
       onExito();
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Error al guardar cambios en el perfil';
+      const msg = err?.response?.data?.detail || err?.response?.data?.message || t('extra.errores.perfilGuardar');
       onError(msg);
     } finally {
       setCargando(false);
@@ -217,6 +224,8 @@ export function usePerfil() {
       fechaNacimiento: usuario.fechaNacimiento,
       nacionalidad: usuario.nacionalidad,
       direccion: usuario.direccion,
+      tipoDocumento: usuario.tipoDocumento,
+      numeroDocumento: usuario.numeroDocumento,
     });
     setErrores({});
     setEditando(false);
@@ -360,6 +369,8 @@ export function useCompletarPerfil() {
         fechaNacimiento: form.fechaNacimiento,
         nacionalidad: form.nacionalidad,
         direccion: usuario.direccion,
+        tipoDocumento: form.tipoDocumento,
+        numeroDocumento: form.numeroDocumento,
       });
       const { id: _id, ...mapped } = guardado;
       actualizarUsuarioGlobal(mapped);

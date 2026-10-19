@@ -22,6 +22,13 @@ const FIJOS: Record<string, () => string> = {
   "#dbeafe": () => P.mezclar(P.COLOR_MARCA, "#FFFFFF", 0.82),
   "#bfdbfe": () => P.mezclar(P.COLOR_MARCA, "#FFFFFF", 0.66),
   "#b9c4e8": () => P.mezclar(P.COLOR_MARCA, "#FFFFFF", 0.7),
+  "#172554": () => P.mezclar(P.GRADIENTE_INICIO, "#000000", 0.5),
+  "#3730a3": () => P.COLOR_ENLACE_OSCURO,
+  "#e0e7ff": () => P.mezclar(P.COLOR_MARCA, "#FFFFFF", 0.88),
+  "#1e3a5f": () => P.GRADIENTE_INICIO,
+  "#0c447c": () => P.COLOR_ENLACE_OSCURO,
+  "#185fa5": () => P.COLOR_ENLACE,
+  "#0284c7": () => P.COLOR_ACCENT,
   "#93a5d1": () => P.mezclar(P.COLOR_MARCA, "#FFFFFF", 0.55),
 };
 
@@ -30,6 +37,9 @@ const RGBA: Record<string, () => string> = {
   "47,78,162": () => P.COLOR_MARCA,
   "37,99,235": () => P.COLOR_ACCENT,
   "30,58,138": () => P.GRADIENTE_INICIO,
+  "59,130,246": () => P.COLOR_MARCA_OSCURO,
+  "96,165,250": () => P.COLOR_ACENTO,
+  "29,78,216": () => P.COLOR_ENLACE,
 };
 
 const RGBA_RE = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/i;

@@ -78,6 +78,12 @@ export default function WompiCheckoutScreen() {
     };
   }, [params.url, params.ref, refDestino]);
 
+  useEffect(() => {
+    if (Platform.OS === "web" && typeof window !== "undefined" && checkoutUrl) {
+      window.location.href = checkoutUrl;
+    }
+  }, [checkoutUrl]);
+
   const extraerTransactionId = (url: string): string | null => {
     try {
       const parsed = Linking.parse(url);

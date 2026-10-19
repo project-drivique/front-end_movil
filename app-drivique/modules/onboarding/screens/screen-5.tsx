@@ -5,6 +5,7 @@ import React, { useEffect, useRef } from "react";
 import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { remapColor as mc } from "@/constants/brandColorMap";
 import { screen5Styles as styles } from "@/modules/onboarding/styles/screen5.styles";
 import { useLogoMarca } from "@/store/brandStore";
 
@@ -52,7 +53,7 @@ export default function OnboardingScreen5() {
       {/* Check animado */}
       <Animated.View style={[styles.successWrap, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
         <View style={[styles.successOuter, { backgroundColor: c.primaryBg }]}>
-          <View style={[styles.successInner, { backgroundColor: c.oscuro ? "#1e3a5f" : "#DBEAFE" }]}>
+          <View style={[styles.successInner, { backgroundColor: mc(c.oscuro ? "#1e3a5f" : "#DBEAFE") }]}>
             <Text style={styles.successCheck}>✓</Text>
           </View>
         </View>
