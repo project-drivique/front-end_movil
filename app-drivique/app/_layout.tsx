@@ -1,6 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
+import "@/utils/webReferrer";
 import * as WebBrowser from "expo-web-browser";
 import { I18nextProvider } from "react-i18next";
 import i18n from "@/modules/i18n";
