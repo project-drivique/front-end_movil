@@ -70,7 +70,7 @@ function mapVehicle(v: any): Vehiculo {
     transmision: v.transmissionName || v.transmissionCode || "",
     combustible: v.fuelTypeName || v.fuelTypeCode || "",
     precio: Number(v.dailyRate ?? 0),
-    calificacion: 0,
+    calificacion: Number(v.averageRating ?? 0),
     disponible: Boolean(v.allowsReservation),
     destacado: Boolean(v.isFeatured),
     puertas: v.doorsCount ?? undefined,
