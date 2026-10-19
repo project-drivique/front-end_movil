@@ -67,6 +67,7 @@ export default function PagoRespuestaScreen() {
   const [ocupado, setOcupado] = useState(false);
   const [resena, setResena] = useState<ResenaGuardada | null>(null);
   const [modalCalificar, setModalCalificar] = useState(false);
+  const [sucursalPendiente, setSucursalPendiente] = useState(false);
   const procesado = useRef(false);
 
   const cargar = useCallback(async () => {
@@ -117,6 +118,11 @@ export default function PagoRespuestaScreen() {
     resenaService
       .obtenerPorReserva(reserva.referencia, usuario.id)
       .then((r) => activo && setResena(r))
+      .catch(() => {});
+    // Igual que la web: la sucursal también se puede reseñar si el servidor lo permite
+    resenaService
+      .obtenerElegibilidad(reserva.referencia)
+      .then((e) => activo && setSucursalPendiente(e.puedeSucursal))
       .catch(() => {});
     return () => {
       activo = false;
@@ -397,8 +403,14 @@ export default function PagoRespuestaScreen() {
         {grupo === "finalizada" ? (
           <Boton
             secundario
-            texto={resena ? t("misReservas.calificada") : t("reserva.calificar.calificarVehiculo")}
-            onPress={() => setModalCalificar(true)}
+            texto={
+              resena && sucursalPendiente
+                ? t("reserva.calificar.calificarSucursal", { defaultValue: "Calificar sucursal" })
+                : resena
+                ? t("misReservas.calificada")
+                : t("reserva.calificar.calificarVehiculo")
+            }
+            onPress={() => (!resena || sucursalPendiente) && setModalCalificar(true)}
           />
         ) : null}
 
@@ -432,7 +444,8 @@ export default function PagoRespuestaScreen() {
         valorInicial={resena}
         onCerrar={() => setModalCalificar(false)}
         onGuardado={(r) => {
-          setResena(r);
+          if (r) setResena(r);
+          resenaService.obtenerElegibilidad(reserva.referencia).then((e) => setSucursalPendiente(e.puedeSucursal));
           setModalCalificar(false);
         }}
       />

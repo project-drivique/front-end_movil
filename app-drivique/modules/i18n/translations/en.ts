@@ -1506,7 +1506,11 @@ export default {
         "spam": "Please avoid excessive repetition of characters.",
         "profanity": "Please maintain respectful and cordial language in your review."
       },
-      "seleccionaEstrellasAlerta": "Please select a rating of 1 to 5 stars."
+      "seleccionaEstrellasAlerta": "Please select a rating of 1 to 5 stars.",
+      "calificarSucursal": "Rate branch",
+      "sucursalTitulo": "Tell us about your experience at the branch",
+      "sucursalResena": "Your review (optional)",
+      "sucursalPlaceholder": "How was the service, the pick-up and the return of the vehicle?"
     },
     "detalle": {
       "informacionEntrega": "Delivery Information:",

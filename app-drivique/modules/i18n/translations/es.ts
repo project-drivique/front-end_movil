@@ -1506,7 +1506,11 @@ export default {
         "spam": "Por favor evita la repetición excesiva de caracteres.",
         "profanity": "Por favor mantén un lenguaje respetuoso y cordial en tu reseña."
       },
-      "seleccionaEstrellasAlerta": "Por favor selecciona una calificación de 1 a 5 estrellas."
+      "seleccionaEstrellasAlerta": "Por favor selecciona una calificación de 1 a 5 estrellas.",
+      "calificarSucursal": "Calificar sucursal",
+      "sucursalTitulo": "Cuéntanos tu experiencia en la sucursal",
+      "sucursalResena": "Tu reseña (opcional)",
+      "sucursalPlaceholder": "¿Cómo fue la atención, la entrega y la devolución del vehículo?"
     },
     "detalle": {
       "informacionEntrega": "Información de Entrega:",

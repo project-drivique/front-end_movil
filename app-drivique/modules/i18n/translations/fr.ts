@@ -1506,7 +1506,11 @@ export default {
         "spam": "Veuillez éviter la répétition excessive de caractères.",
         "profanity": "Veuillez conserver un langage respectueux et courtois dans votre avis."
       },
-      "seleccionaEstrellasAlerta": "Veuillez sélectionner une note de 1 à 5 étoiles."
+      "seleccionaEstrellasAlerta": "Veuillez sélectionner une note de 1 à 5 étoiles.",
+      "calificarSucursal": "Noter l’agence",
+      "sucursalTitulo": "Parlez-nous de votre expérience à l’agence",
+      "sucursalResena": "Votre avis (facultatif)",
+      "sucursalPlaceholder": "Comment s’est passé l’accueil, la remise et le retour du véhicule ?"
     },
     "detalle": {
       "informacionEntrega": "Informations de livraison :",

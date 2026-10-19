@@ -1506,7 +1506,11 @@ export default {
         "spam": "Por favor evite a repetição excessiva de caracteres.",
         "profanity": "Por favor mantenha uma linguagem respeitosa e cordial na sua avaliação."
       },
-      "seleccionaEstrellasAlerta": "Por favor selecione uma nota de 1 a 5 estrelas."
+      "seleccionaEstrellasAlerta": "Por favor selecione uma nota de 1 a 5 estrelas.",
+      "calificarSucursal": "Avaliar filial",
+      "sucursalTitulo": "Conte-nos sua experiência na filial",
+      "sucursalResena": "Sua avaliação (opcional)",
+      "sucursalPlaceholder": "Como foi o atendimento, a entrega e a devolução do veículo?"
     },
     "detalle": {
       "informacionEntrega": "Informações de Entrega:",

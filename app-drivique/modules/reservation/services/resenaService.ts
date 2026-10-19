@@ -26,6 +26,16 @@ interface ReviewEligibilityDto {
   canReviewVehicle: boolean;
   canReviewBranch: boolean;
   vehicleReview?: VehicleReviewDto | null;
+  branchId?: string | null;
+  branchName?: string | null;
+  branchReview?: VehicleReviewDto | null;
+}
+
+export interface ElegibilidadResena {
+  puedeVehiculo: boolean;
+  puedeSucursal: boolean;
+  sucursalId: string | null;
+  sucursalNombre: string;
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -68,6 +78,40 @@ function mapReview(
 }
 
 export const resenaService = {
+  // Misma consulta que usa la web para decidir qué tarjetas de reseña mostrar (vehículo y/o sucursal)
+  obtenerElegibilidad: async (referenciaReserva: string): Promise<ElegibilidadResena> => {
+    try {
+      const reservationId = await resolverReservaId(referenciaReserva);
+      const { data } = await apiClient.get<ReviewEligibilityDto>(
+        `/reservations/${reservationId}/review-eligibility`
+      );
+      return {
+        puedeVehiculo: !!data?.canReviewVehicle,
+        puedeSucursal: !!data?.canReviewBranch,
+        sucursalId: data?.branchId ?? null,
+        sucursalNombre: data?.branchName ?? "",
+      };
+    } catch {
+      return { puedeVehiculo: true, puedeSucursal: false, sucursalId: null, sucursalNombre: "" };
+    }
+  },
+
+  guardarSucursal: async (
+    referenciaReserva: string,
+    sucursalId: string,
+    datos: { calificacion: number; comentario: string }
+  ): Promise<void> => {
+    const reservationId = await resolverReservaId(referenciaReserva);
+    await apiClient.post("/reviews/branches", {
+      branchId: sucursalId,
+      review: {
+        reservationId,
+        rating: datos.calificacion,
+        comment: datos.comentario.trim() || null,
+      },
+    });
+  },
+
   obtenerPorReserva: async (
     referenciaReserva: string | null | undefined,
     usuarioId: string
