@@ -82,7 +82,7 @@ function mapVehicle(v: any): Vehiculo {
     sucursal: v.branchName || "",
     descripcion: "",
     imagen: mainImage,
-    imagenes: mainImage ? [mainImage] : [],
+    imagenes: Array.isArray(v.imageUrls) && v.imageUrls.length ? v.imageUrls : (mainImage ? [mainImage] : []),
     tarifas: planes.tarifas,
     seguros: planes.seguros,
     servicios: planes.servicios,
