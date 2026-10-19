@@ -191,9 +191,21 @@ export default function SupportScreen() {
   // Manejar parámetros de navegación si viene desde "Mis Reservas"
   useEffect(() => {
     if (params.reservaId || params.vehiculoNombre) {
-      setReservaId(params.reservaId || "");
-      setVehiculoNombre(params.vehiculoNombre || "");
-      setPlaca(params.placa || "");
+      // La reserva puede llegar por id (UUID) o por referencia: se busca para autocompletar carro y placa
+      const reservaParam = reservasValidas.find(
+        (r) => r.id === params.reservaId || r.referencia === params.reservaId,
+      );
+      const snap = reservaParam?.vehiculoSnapshot as any;
+      setReservaId(reservaParam?.referencia || params.reservaId || "");
+      setVehiculoNombre(params.vehiculoNombre || reservaParam?.vehiculoNombre || "");
+      setPlaca(
+        params.placa ||
+          (reservaParam as any)?.vehiclePlate ||
+          reservaParam?.vehiculoPlaca ||
+          snap?.placa ||
+          snap?.plate ||
+          "",
+      );
       setActiveTab("reportar");
     } else if (params.tab === "reportar") {
       setActiveTab("reportar");
@@ -206,7 +218,7 @@ export default function SupportScreen() {
         }
       }
     }
-  }, [params.reservaId, params.vehiculoNombre, params.placa, params.tab, params.reporteId, reportes]);
+  }, [params.reservaId, params.vehiculoNombre, params.placa, params.tab, params.reporteId, reportes, reservasValidas]);
 
   // Objeto de tipo de incidencia seleccionado
   const tipoObj = useMemo(
