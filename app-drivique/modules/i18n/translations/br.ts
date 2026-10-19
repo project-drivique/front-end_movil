@@ -711,7 +711,10 @@ export default {
     "cancelarMensaje": "Esta ação não pode ser desfeita.",
     "cancelarConfirmar": "Sim, cancelar",
     "firmarContrato": "Prosseguir para assinar o contrato",
-    "cancelarReserva": "Cancelar reserva"
+    "cancelarReserva": "Cancelar reserva",
+    "miResenaVehiculo": "Sua avaliação do veículo",
+    "miResenaSucursal": "Sua avaliação da filial",
+    "sinComentario": "Você avaliou sem deixar comentário."
   },
   "perfil": {
     "titulo": "Meu Perfil",

@@ -711,7 +711,10 @@ export default {
     "cancelarMensaje": "This action cannot be undone.",
     "cancelarConfirmar": "Yes, cancel",
     "firmarContrato": "Proceed to sign contract",
-    "cancelarReserva": "Cancel reservation"
+    "cancelarReserva": "Cancel reservation",
+    "miResenaVehiculo": "Your vehicle review",
+    "miResenaSucursal": "Your branch review",
+    "sinComentario": "You rated without leaving a comment."
   },
   "perfil": {
     "titulo": "My Profile",

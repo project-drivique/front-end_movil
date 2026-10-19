@@ -35,7 +35,7 @@ import {
   consultarTransaccionWompi,
 } from "@/modules/reservation/services/wompiService";
 import { ModalCalificar } from "@/modules/reservation/components/ModalCalificar";
-import { ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
+import { ElegibilidadResena, ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { contratoService } from "@/modules/reservation/services/contractService";
 import { useUsuarioStore } from "@/store/userStore";
@@ -68,6 +68,7 @@ export default function PagoRespuestaScreen() {
   const [resena, setResena] = useState<ResenaGuardada | null>(null);
   const [modalCalificar, setModalCalificar] = useState(false);
   const [sucursalPendiente, setSucursalPendiente] = useState(false);
+  const [misResenas, setMisResenas] = useState<{ titulo: string; rating: number; comment: string }[]>([]);
   const procesado = useRef(false);
 
   const cargar = useCallback(async () => {
@@ -122,7 +123,11 @@ export default function PagoRespuestaScreen() {
     // Igual que la web: la sucursal también se puede reseñar si el servidor lo permite
     resenaService
       .obtenerElegibilidad(reserva.referencia)
-      .then((e) => activo && setSucursalPendiente(e.puedeSucursal))
+      .then((e) => {
+        if (!activo) return;
+        setSucursalPendiente(e.puedeSucursal);
+        setMisResenas(resenasPublicadas(e, t));
+      })
       .catch(() => {});
     return () => {
       activo = false;
@@ -400,6 +405,24 @@ export default function PagoRespuestaScreen() {
           </View>
         ) : null}
 
+        {grupo === "finalizada" && misResenas.length > 0
+          ? misResenas.map((r) => (
+              <View key={r.titulo} style={{ backgroundColor: "#FFFBEB", borderColor: "#FDE68A", borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 10 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: "#92400E", flexShrink: 1 }}>{r.titulo}</Text>
+                  <View style={{ flexDirection: "row", gap: 2 }}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Ionicons key={n} name="star" size={15} color={n <= r.rating ? "#F59E0B" : "#E2E8F0"} />
+                    ))}
+                  </View>
+                </View>
+                <Text style={{ marginTop: 8, fontSize: 13, lineHeight: 19, color: r.comment ? "#78350F" : "#A16207", fontStyle: r.comment ? "normal" : "italic" }}>
+                  {r.comment || t("misReservas.sinComentario", { defaultValue: "Calificaste sin dejar un comentario." })}
+                </Text>
+              </View>
+            ))
+          : null}
+
         {grupo === "finalizada" ? (
           <Boton
             secundario
@@ -445,12 +468,22 @@ export default function PagoRespuestaScreen() {
         onCerrar={() => setModalCalificar(false)}
         onGuardado={(r) => {
           if (r) setResena(r);
-          resenaService.obtenerElegibilidad(reserva.referencia).then((e) => setSucursalPendiente(e.puedeSucursal));
+          resenaService.obtenerElegibilidad(reserva.referencia).then((e) => {
+            setSucursalPendiente(e.puedeSucursal);
+            setMisResenas(resenasPublicadas(e, t));
+          });
           setModalCalificar(false);
         }}
       />
     </View>
   );
+}
+
+function resenasPublicadas(e: ElegibilidadResena, t: (k: string, o?: any) => string) {
+  const out: { titulo: string; rating: number; comment: string }[] = [];
+  if (e.resenaVehiculo) out.push({ titulo: t("misReservas.miResenaVehiculo", { defaultValue: "Tu reseña del vehículo" }), ...e.resenaVehiculo });
+  if (e.resenaSucursal) out.push({ titulo: t("misReservas.miResenaSucursal", { defaultValue: "Tu reseña de la sucursal" }), ...e.resenaSucursal });
+  return out;
 }
 
 function Fila({

@@ -711,7 +711,10 @@ export default {
     "cancelarMensaje": "Esta accion no se puede deshacer.",
     "cancelarConfirmar": "Si, cancelar",
     "firmarContrato": "Proceder a firmar contrato",
-    "cancelarReserva": "Cancelar reserva"
+    "cancelarReserva": "Cancelar reserva",
+    "miResenaVehiculo": "Tu reseña del vehículo",
+    "miResenaSucursal": "Tu reseña de la sucursal",
+    "sinComentario": "Calificaste sin dejar un comentario."
   },
   "perfil": {
     "direccion": "Dirección",

@@ -711,7 +711,10 @@ export default {
     "cancelarMensaje": "Cette action est irréversible.",
     "cancelarConfirmar": "Oui, annuler",
     "firmarContrato": "Procéder à la signature du contrat",
-    "cancelarReserva": "Annuler la réservation"
+    "cancelarReserva": "Annuler la réservation",
+    "miResenaVehiculo": "Votre avis sur le véhicule",
+    "miResenaSucursal": "Votre avis sur l’agence",
+    "sinComentario": "Vous avez noté sans laisser de commentaire."
   },
   "perfil": {
     "titulo": "Mon Profil",

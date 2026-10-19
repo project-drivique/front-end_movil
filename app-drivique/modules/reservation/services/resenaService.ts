@@ -36,6 +36,8 @@ export interface ElegibilidadResena {
   puedeSucursal: boolean;
   sucursalId: string | null;
   sucursalNombre: string;
+  resenaVehiculo: { rating: number; comment: string } | null;
+  resenaSucursal: { rating: number; comment: string } | null;
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -90,9 +92,15 @@ export const resenaService = {
         puedeSucursal: !!data?.canReviewBranch,
         sucursalId: data?.branchId ?? null,
         sucursalNombre: data?.branchName ?? "",
+        resenaVehiculo: data?.vehicleReview
+          ? { rating: Number(data.vehicleReview.rating), comment: data.vehicleReview.comment || "" }
+          : null,
+        resenaSucursal: data?.branchReview
+          ? { rating: Number(data.branchReview.rating), comment: data.branchReview.comment || "" }
+          : null,
       };
     } catch {
-      return { puedeVehiculo: true, puedeSucursal: false, sucursalId: null, sucursalNombre: "" };
+      return { puedeVehiculo: true, puedeSucursal: false, sucursalId: null, sucursalNombre: "", resenaVehiculo: null, resenaSucursal: null };
     }
   },
 
