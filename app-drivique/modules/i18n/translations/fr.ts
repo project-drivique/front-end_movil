@@ -334,6 +334,22 @@ export default {
       "facebook": "Continuer avec Facebook",
       "errorGoogle": "Erreur d’authentification avec Google",
       "errorFacebook": "Erreur d’authentification avec Facebook"
+    },
+    "errores": {
+      "correoInvalido": "Saisissez une adresse e-mail valide",
+      "contrasenaObligatoria": "Le mot de passe est obligatoire",
+      "cuentaNoExiste": "Aucun compte n’est enregistré avec cette adresse e-mail.",
+      "cuentaNoEncontrada": "Compte introuvable",
+      "loginFallido": "Impossible de se connecter.",
+      "passwordDebil": "Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un symbole.",
+      "noCoinciden": "Les mots de passe ne correspondent pas",
+      "aceptarTerminos": "Vous devez accepter les conditions générales",
+      "registroFallido": "Impossible de créer le compte.",
+      "envioCodigoFallido": "Impossible d’envoyer le code.",
+      "codigo6": "Le code doit contenir 6 chiffres.",
+      "codigoInvalido": "Code invalide ou expiré.",
+      "verificaNueva": "Vérifiez le nouveau mot de passe.",
+      "restablecerFallido": "Impossible de réinitialiser le mot de passe."
     }
   },
   "catalogo": {

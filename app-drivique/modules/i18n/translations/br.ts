@@ -334,6 +334,22 @@ export default {
       "facebook": "Continuar com Facebook",
       "errorGoogle": "Erro ao autenticar com o Google",
       "errorFacebook": "Erro ao autenticar com o Facebook"
+    },
+    "errores": {
+      "correoInvalido": "Informe um e-mail válido",
+      "contrasenaObligatoria": "A senha é obrigatória",
+      "cuentaNoExiste": "Não existe nenhuma conta cadastrada com esse e-mail.",
+      "cuentaNoEncontrada": "Conta não encontrada",
+      "loginFallido": "Não foi possível entrar.",
+      "passwordDebil": "A senha deve ter pelo menos 12 caracteres, maiúscula, minúscula, número e símbolo.",
+      "noCoinciden": "As senhas não coincidem",
+      "aceptarTerminos": "Você deve aceitar os termos e condições",
+      "registroFallido": "Não foi possível criar a conta.",
+      "envioCodigoFallido": "Não foi possível enviar o código.",
+      "codigo6": "O código deve ter 6 dígitos.",
+      "codigoInvalido": "Código inválido ou expirado.",
+      "verificaNueva": "Verifique a nova senha.",
+      "restablecerFallido": "Não foi possível redefinir a senha."
     }
   },
   "catalogo": {

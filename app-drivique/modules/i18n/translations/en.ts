@@ -334,6 +334,22 @@ export default {
       "facebook": "Continue with Facebook",
       "errorGoogle": "Error authenticating with Google",
       "errorFacebook": "Error authenticating with Facebook"
+    },
+    "errores": {
+      "correoInvalido": "Enter a valid email address",
+      "contrasenaObligatoria": "The password is required",
+      "cuentaNoExiste": "There is no account registered with that email.",
+      "cuentaNoEncontrada": "Account not found",
+      "loginFallido": "Could not sign in.",
+      "passwordDebil": "The password must have at least 12 characters, an uppercase letter, a lowercase letter, a number and a symbol.",
+      "noCoinciden": "The passwords do not match",
+      "aceptarTerminos": "You must accept the terms and conditions",
+      "registroFallido": "The account could not be created.",
+      "envioCodigoFallido": "The code could not be sent.",
+      "codigo6": "The code must have 6 digits.",
+      "codigoInvalido": "Invalid or expired code.",
+      "verificaNueva": "Check the new password.",
+      "restablecerFallido": "The password could not be reset."
     }
   },
   "catalogo": {
