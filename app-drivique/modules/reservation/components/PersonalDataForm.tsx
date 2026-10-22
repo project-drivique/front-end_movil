@@ -311,12 +311,26 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     setProcesandoPago(true);
     try {
       if (documentos.cedulaFrente || documentos.licenciaConduccion) {
-        const idSucursal = (vehiculo as any).sucursalId ?? (vehiculo as any).branchId ?? (vehiculo as any).currentBranchId ?? "";
+        const sucursales = useReferenceStore.getState().sucursales;
+        const sedeVehiculo = sucursales.find(
+          (b) =>
+            b.id === vehiculo.sucursalId ||
+            (vehiculo.sucursal && b.name.toLowerCase() === vehiculo.sucursal.toLowerCase())
+        );
+        const idSucursal =
+          (vehiculo as any).sucursalId ||
+          (vehiculo as any).branchId ||
+          (vehiculo as any).currentBranchId ||
+          sedeVehiculo?.id ||
+          sucursales[0]?.id ||
+          "";
+
         await documentosService.subir({
           tipoDocumento: datosPersonales.tipoDocumento,
           numeroDocumento: datosPersonales.numeroDocumento,
           sucursalId: idSucursal,
           identificacion: documentos.cedulaFrente,
+          identificacionReverso: documentos.cedulaReverso,
           licencia: documentos.licenciaConduccion,
         });
       }
@@ -365,7 +379,12 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         router.replace(`/payment-response?ref=${encodeURIComponent(creada.id)}` as any);
       }
     } catch (error: any) {
+      const apiErrors = error?.response?.data?.errors;
+      const detailsErrors = Array.isArray(apiErrors) && apiErrors.length > 0
+        ? apiErrors.map((e: any) => e.message || `${e.field}: inválido`).join("\n")
+        : "";
       const msg =
+        detailsErrors ||
         error?.response?.data?.detail ||
         error?.response?.data?.message ||
         error?.response?.data?.error ||

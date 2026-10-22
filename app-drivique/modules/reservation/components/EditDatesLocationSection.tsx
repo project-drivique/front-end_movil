@@ -535,11 +535,15 @@ export default function EditDatesLocationSection({
             </View>
           </View>
 
-          {/* Domicilio retiro info */}
-          {mostrarDomicilioRetiro && (
+          {/* Domicilio info (unificado, idéntico a web) */}
+          {(mostrarDomicilioRetiro || mostrarDomicilioDevolucion) && (
             <View style={[styles.domicilioCard, { borderColor: c.border }]}>
               <Text style={[styles.domicilioTitulo, { color: primaryAccent }]}>
-                {t("reserva.fechasLugar.infoEntregaDomicilio")}
+                {mostrarDomicilioRetiro && mostrarDomicilioDevolucion
+                  ? t("reserva.fechasLugar.infoDomicilio", { defaultValue: "Información de entrega y devolución a domicilio" })
+                  : mostrarDomicilioRetiro
+                  ? t("reserva.fechasLugar.infoEntregaDomicilio", { defaultValue: "Información de entrega a domicilio" })
+                  : t("reserva.fechasLugar.infoDevolucionDomicilio", { defaultValue: "Información de devolución a domicilio" })}
               </Text>
               <View style={[styles.ciudadBox, { backgroundColor: c.primaryBg }]}>
                 <View style={styles.selectLabelRow}>
@@ -563,8 +567,8 @@ export default function EditDatesLocationSection({
                 ]}
                 placeholder={t("reserva.fechasLugar.placeholderBarrio")}
                 placeholderTextColor={c.textMuted}
-                value={draft.barrioRetiro ?? ""}
-                onChangeText={(texto) => setDraft((prev) => ({ ...prev, barrioRetiro: texto }))}
+                value={draft.barrioRetiro || draft.barrioDevolucion || ""}
+                onChangeText={(texto) => setDraft((prev) => ({ ...prev, barrioRetiro: texto, barrioDevolucion: texto }))}
               />
               <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.direccion")}</Text>
               <TextInput
@@ -574,8 +578,8 @@ export default function EditDatesLocationSection({
                 ]}
                 placeholder={t("reserva.fechasLugar.placeholderDireccion")}
                 placeholderTextColor={c.textMuted}
-                value={draft.direccionRetiro ?? ""}
-                onChangeText={(texto) => setDraft((prev) => ({ ...prev, direccionRetiro: texto }))}
+                value={draft.direccionRetiro || draft.direccionDevolucion || ""}
+                onChangeText={(texto) => setDraft((prev) => ({ ...prev, direccionRetiro: texto, direccionDevolucion: texto }))}
               />
               <Text style={[styles.inputLabel, { color: c.textSecondary }]}>
                 {t("reserva.fechasLugar.referenciasEntrega")}
@@ -587,66 +591,8 @@ export default function EditDatesLocationSection({
                 ]}
                 placeholder={t("reserva.fechasLugar.placeholderReferencias")}
                 placeholderTextColor={c.textMuted}
-                value={draft.referenciasRetiro ?? ""}
-                onChangeText={(texto) => setDraft((prev) => ({ ...prev, referenciasRetiro: texto }))}
-              />
-            </View>
-          )}
-
-          {/* Domicilio devolución info */}
-          {mostrarDomicilioDevolucion && (
-            <View style={[styles.domicilioCard, { borderColor: c.border }]}>
-              <Text style={[styles.domicilioTitulo, { color: primaryAccent }]}>
-                {t("reserva.fechasLugar.infoDevolucionDomicilio")}
-              </Text>
-              <View style={[styles.ciudadBox, { backgroundColor: c.primaryBg }]}>
-                <View style={styles.selectLabelRow}>
-                  <Ionicons name="location" size={13} color={primaryAccent} />
-                  <Text style={[styles.ciudadLabel, { color: c.textMuted }]}>
-                    {t("reserva.fechasLugar.ciudadDevolucion")}
-                  </Text>
-                </View>
-                <View style={styles.ciudadValorRow}>
-                  <Text style={[styles.ciudadValor, { color: c.textPrimary }]}>{ciudadEntregaNombre}</Text>
-                  <Text style={[styles.autoDetectado, { color: primaryAccent }]}>
-                    {t("reserva.fechasLugar.autoDetectado")}
-                  </Text>
-                </View>
-              </View>
-              <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.barrio")}</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" },
-                ]}
-                placeholder={t("reserva.fechasLugar.placeholderBarrio")}
-                placeholderTextColor={c.textMuted}
-                value={draft.barrioDevolucion ?? ""}
-                onChangeText={(texto) => setDraft((prev) => ({ ...prev, barrioDevolucion: texto }))}
-              />
-              <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.direccion")}</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" },
-                ]}
-                placeholder={t("reserva.fechasLugar.placeholderDireccion")}
-                placeholderTextColor={c.textMuted}
-                value={draft.direccionDevolucion ?? ""}
-                onChangeText={(texto) => setDraft((prev) => ({ ...prev, direccionDevolucion: texto }))}
-              />
-              <Text style={[styles.inputLabel, { color: c.textSecondary }]}>
-                {t("reserva.fechasLugar.referenciasDevolucion")}
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" },
-                ]}
-                placeholder={t("reserva.fechasLugar.placeholderReferencias")}
-                placeholderTextColor={c.textMuted}
-                value={draft.referenciasDevolucion ?? ""}
-                onChangeText={(texto) => setDraft((prev) => ({ ...prev, referenciasDevolucion: texto }))}
+                value={draft.referenciasRetiro || draft.referenciasDevolucion || ""}
+                onChangeText={(texto) => setDraft((prev) => ({ ...prev, referenciasRetiro: texto, referenciasDevolucion: texto }))}
               />
             </View>
           )}

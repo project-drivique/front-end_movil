@@ -188,6 +188,25 @@ export const reservaPersistService = {
       .map((s) => s.id)
       .filter(Boolean);
 
+    const isUuid = (val?: string | null) =>
+      !!val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+
+    const sucursales = useReferenceStore.getState().sucursales;
+    const sede =
+      sucursales.find(
+        (b) =>
+          b.id === vehiculo.sucursalId ||
+          (vehiculo.sucursal && b.name.toLowerCase() === vehiculo.sucursal.toLowerCase())
+      ) || sucursales[0];
+    const targetBranchId = (isUuid(vehiculo.sucursalId) ? vehiculo.sucursalId : sede?.id) || null;
+    const targetCityId = sede?.cityId;
+
+    const resolvedVehicleId = isUuid(vehiculo.uuid)
+      ? vehiculo.uuid
+      : isUuid(String(vehiculo.id))
+      ? String(vehiculo.id)
+      : vehiculo.uuid || String(vehiculo.id);
+
     let dRetiro = new Date(`${fechasLugar.fechaRetiro}T${fechasLugar.horaRetiro || "10:00"}:00`);
     let dDevolucion = new Date(`${fechasLugar.fechaDevolucion}T${fechasLugar.horaDevolucion || "10:00"}:00`);
 
@@ -199,21 +218,21 @@ export const reservaPersistService = {
       if (fechaRetiroStr === hoyStr) {
         // Si el usuario eligió hoy pero la hora expiró mientras llenaba el formulario, ajustamos al momento actual + 2 min
         dRetiro = new Date(ahora + 2 * 60 * 1000);
-        if (dDevolucion.getTime() <= dRetiro.getTime()) {
-          dDevolucion = new Date(dRetiro.getTime() + 24 * 60 * 60 * 1000);
-        }
       }
+    }
+    if (dDevolucion.getTime() <= dRetiro.getTime()) {
+      dDevolucion = new Date(dRetiro.getTime() + 24 * 60 * 60 * 1000);
     }
 
     const body = {
-      vehicleId: vehiculo.uuid || String(vehiculo.id),
+      vehicleId: resolvedVehicleId,
       pickupDate: dRetiro.toISOString(),
       returnDate: dDevolucion.toISOString(),
       insuranceCoverageId: seguro?.id ?? null,
       mileagePlanId: kmPlan?.id ?? null,
       additionalServiceIds: serviciosIds,
       couponCode: cupon?.codigo ?? null,
-      cashPaymentBranchId: fechasLugar.metodoPago === "efectivo" ? vehiculo.sucursalId ?? null : null,
+      cashPaymentBranchId: fechasLugar.metodoPago === "efectivo" ? targetBranchId : null,
       outsideScheduleAccepted: Boolean(fechasLugar.fueraDeHorarioAceptado),
     };
     const { data } = await apiClient.post("/reservations/checkout/initiate", body);
@@ -222,18 +241,21 @@ export const reservaPersistService = {
     const retiroDomicilio = fechasLugar.lugarRetiro === "domicilio";
     const devolucionDomicilio = fechasLugar.lugarDevolucion === "domicilio";
     if ((retiroDomicilio || devolucionDomicilio) && data?.id) {
-      const sede = useReferenceStore.getState().sucursales.find((b) => b.id === vehiculo.sucursalId);
+      const barrioCompartido = fechasLugar.barrioRetiro || fechasLugar.barrioDevolucion || "";
+      const direccionCompartida = fechasLugar.direccionRetiro || fechasLugar.direccionDevolucion || "";
+      const referenciasCompartidas = fechasLugar.referenciasRetiro || fechasLugar.referenciasDevolucion || undefined;
+
       const punto = (pointType: "PICKUP" | "RETURN", domicilio: boolean) =>
         domicilio
           ? {
               pointType,
               modality: "HOME_DELIVERY",
-              cityId: sede?.cityId,
-              neighborhood: pointType === "PICKUP" ? fechasLugar.barrioRetiro : fechasLugar.barrioDevolucion,
-              address: pointType === "PICKUP" ? fechasLugar.direccionRetiro : fechasLugar.direccionDevolucion,
-              referenceDetails: (pointType === "PICKUP" ? fechasLugar.referenciasRetiro : fechasLugar.referenciasDevolucion) || undefined,
+              cityId: targetCityId,
+              neighborhood: pointType === "PICKUP" ? (fechasLugar.barrioRetiro || barrioCompartido) : (fechasLugar.barrioDevolucion || barrioCompartido),
+              address: pointType === "PICKUP" ? (fechasLugar.direccionRetiro || direccionCompartida) : (fechasLugar.direccionDevolucion || direccionCompartida),
+              referenceDetails: (pointType === "PICKUP" ? (fechasLugar.referenciasRetiro || referenciasCompartidas) : (fechasLugar.referenciasDevolucion || referenciasCompartidas)) || undefined,
             }
-          : { pointType, modality: "BRANCH", branchId: vehiculo.sucursalId };
+          : { pointType, modality: "BRANCH", branchId: targetBranchId };
       try {
         await apiClient.post(`/reservations/${data.id}/delivery-points`, {
           points: [punto("PICKUP", retiroDomicilio), punto("RETURN", devolucionDomicilio)],
