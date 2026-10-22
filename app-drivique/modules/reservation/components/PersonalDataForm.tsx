@@ -311,10 +311,11 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
     setProcesandoPago(true);
     try {
       if (documentos.cedulaFrente || documentos.licenciaConduccion) {
+        const idSucursal = (vehiculo as any).sucursalId ?? (vehiculo as any).branchId ?? (vehiculo as any).currentBranchId ?? "";
         await documentosService.subir({
           tipoDocumento: datosPersonales.tipoDocumento,
           numeroDocumento: datosPersonales.numeroDocumento,
-          sucursalId: vehiculo.sucursalId ?? "",
+          sucursalId: idSucursal,
           identificacion: documentos.cedulaFrente,
           licencia: documentos.licenciaConduccion,
         });
