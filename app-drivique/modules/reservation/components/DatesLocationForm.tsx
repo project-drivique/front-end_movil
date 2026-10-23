@@ -452,10 +452,16 @@ export default function FormFechasLugar({ vehiculo }: Props) {
         </View>
       </View>
 
-      {/* --- INFO DE ENTREGA A DOMICILIO (solo si lugarRetiro === "domicilio") --- */}
-      {mostrarDomicilioRetiro && (
+      {/* --- INFO DE DOMICILIO (unificado para entrega y/o devolución, idéntico a web) --- */}
+      {(mostrarDomicilioRetiro || mostrarDomicilioDevolucion) && (
         <View style={[styles.domicilioCard, { borderColor: c.border }]}>
-          <Text style={[styles.domicilioTitulo, { color: COLOR_MARCA }]}>{t("reserva.fechasLugar.infoEntregaDomicilio")}</Text>
+          <Text style={[styles.domicilioTitulo, { color: COLOR_MARCA }]}>
+            {mostrarDomicilioRetiro && mostrarDomicilioDevolucion
+              ? t("reserva.fechasLugar.infoDomicilio", { defaultValue: "Información de entrega y devolución a domicilio" })
+              : mostrarDomicilioRetiro
+              ? t("reserva.fechasLugar.infoEntregaDomicilio", { defaultValue: "Información de entrega a domicilio" })
+              : t("reserva.fechasLugar.infoDevolucionDomicilio", { defaultValue: "Información de devolución a domicilio" })}
+          </Text>
 
           <View style={[styles.ciudadBox, { backgroundColor: c.primaryBg }]}>
             <View style={styles.selectLabelRow}>
@@ -473,8 +479,8 @@ export default function FormFechasLugar({ vehiculo }: Props) {
             style={[styles.input, { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
             placeholder={t("reserva.fechasLugar.placeholderBarrio")}
             placeholderTextColor={c.textMuted}
-            value={fechasLugar.barrioRetiro ?? ""}
-            onChangeText={(texto) => actualizarFechasLugar({ barrioRetiro: texto })}
+            value={fechasLugar.barrioRetiro || fechasLugar.barrioDevolucion || ""}
+            onChangeText={(texto) => actualizarFechasLugar({ barrioRetiro: texto, barrioDevolucion: texto })}
           />
 
           <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.direccion")}</Text>
@@ -482,8 +488,8 @@ export default function FormFechasLugar({ vehiculo }: Props) {
             style={[styles.input, { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
             placeholder={t("reserva.fechasLugar.placeholderDireccion")}
             placeholderTextColor={c.textMuted}
-            value={fechasLugar.direccionRetiro ?? ""}
-            onChangeText={(texto) => actualizarFechasLugar({ direccionRetiro: texto })}
+            value={fechasLugar.direccionRetiro || fechasLugar.direccionDevolucion || ""}
+            onChangeText={(texto) => actualizarFechasLugar({ direccionRetiro: texto, direccionDevolucion: texto })}
           />
 
           <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.referenciasEntrega")}</Text>
@@ -491,53 +497,8 @@ export default function FormFechasLugar({ vehiculo }: Props) {
             style={[styles.input, { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
             placeholder={t("reserva.fechasLugar.placeholderReferencias")}
             placeholderTextColor={c.textMuted}
-            value={fechasLugar.referenciasRetiro ?? ""}
-            onChangeText={(texto) => actualizarFechasLugar({ referenciasRetiro: texto })}
-          />
-        </View>
-      )}
-
-      {/* --- INFO DE DEVOLUCIÓN A DOMICILIO (solo si lugarDevolucion === "domicilio") --- */}
-      {mostrarDomicilioDevolucion && (
-        <View style={[styles.domicilioCard, { borderColor: c.border }]}>
-          <Text style={[styles.domicilioTitulo, { color: COLOR_MARCA }]}>{t("reserva.fechasLugar.infoDevolucionDomicilio")}</Text>
-
-          <View style={[styles.ciudadBox, { backgroundColor: c.primaryBg }]}>
-            <View style={styles.selectLabelRow}>
-              <Ionicons name="location" size={13} color={COLOR_MARCA} />
-              <Text style={[styles.ciudadLabel, { color: c.textMuted }]}>{t("reserva.fechasLugar.ciudadDevolucion")}</Text>
-            </View>
-            <View style={styles.ciudadValorRow}>
-              <Text style={[styles.ciudadValor, { color: c.textPrimary }]}>{ciudadEntregaNombre}</Text>
-              <Text style={[styles.autoDetectado, { color: COLOR_MARCA }]}>{t("reserva.fechasLugar.autoDetectado")}</Text>
-            </View>
-          </View>
-
-          <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.barrio")}</Text>
-          <TextInput
-            style={[styles.input, { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
-            placeholder={t("reserva.fechasLugar.placeholderBarrio")}
-            placeholderTextColor={c.textMuted}
-            value={fechasLugar.barrioDevolucion ?? ""}
-            onChangeText={(texto) => actualizarFechasLugar({ barrioDevolucion: texto })}
-          />
-
-          <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.direccion")}</Text>
-          <TextInput
-            style={[styles.input, { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
-            placeholder={t("reserva.fechasLugar.placeholderDireccion")}
-            placeholderTextColor={c.textMuted}
-            value={fechasLugar.direccionDevolucion ?? ""}
-            onChangeText={(texto) => actualizarFechasLugar({ direccionDevolucion: texto })}
-          />
-
-          <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.referenciasDevolucion")}</Text>
-          <TextInput
-            style={[styles.input, { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
-            placeholder={t("reserva.fechasLugar.placeholderReferencias")}
-            placeholderTextColor={c.textMuted}
-            value={fechasLugar.referenciasDevolucion ?? ""}
-            onChangeText={(texto) => actualizarFechasLugar({ referenciasDevolucion: texto })}
+            value={fechasLugar.referenciasRetiro || fechasLugar.referenciasDevolucion || ""}
+            onChangeText={(texto) => actualizarFechasLugar({ referenciasRetiro: texto, referenciasDevolucion: texto })}
           />
         </View>
       )}
