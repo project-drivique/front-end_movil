@@ -57,6 +57,7 @@ export interface ArchivoDocumento {
   nombre: string;
   tipoMime?: string;
   tamanoBytes?: number;
+  file?: any;
 }
 
 export type LlaveDocumento =

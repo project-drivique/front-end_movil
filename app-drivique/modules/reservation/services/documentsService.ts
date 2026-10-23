@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { apiClient } from "@/services/http/apiClient";
 import { useReferenceStore } from "@/store/referenceStore";
 import { ArchivoDocumento } from "../types/reservation.types";
@@ -24,7 +25,22 @@ const CODIGO_POR_TIPO: Record<string, string> = {
   PASSPORT: "PASSPORT",
 };
 
-function aParteArchivo(archivo: ArchivoDocumento): any {
+async function aParteArchivo(archivo: ArchivoDocumento): Promise<any> {
+  if (Platform.OS === "web") {
+    if (archivo.file instanceof Blob) {
+      return archivo.file;
+    }
+    if (archivo.uri) {
+      try {
+        const res = await fetch(archivo.uri);
+        const blob = await res.blob();
+        const mime = archivo.tipoMime || blob.type || "application/pdf";
+        return new File([blob], archivo.nombre || "documento.pdf", { type: mime });
+      } catch (e) {
+        console.warn("[documentsService] Error convirtiendo uri a File en web:", e);
+      }
+    }
+  }
   return {
     uri: archivo.uri,
     name: archivo.nombre,
@@ -80,13 +96,18 @@ export const documentosService = {
       form.append("documentTypeId", tipo.id);
       if (params.numeroDocumento) form.append("documentNumber", params.numeroDocumento);
       if (branchIdValido) form.append("branchId", branchIdValido);
-      form.append("frontFile", aParteArchivo(archivo));
-      const reverso = archivoReverso || archivo;
-      if (reverso) {
-        form.append("backFile", aParteArchivo(reverso));
+
+      const frontFile = await aParteArchivo(archivo);
+      form.append("frontFile", frontFile);
+
+      if (archivoReverso) {
+        const backFile = await aParteArchivo(archivoReverso);
+        form.append("backFile", backFile);
       }
+
       await apiClient.post("/users/me/documents", form, {
         headers: { "Content-Type": "multipart/form-data" },
+        transformRequest: (data) => data,
       });
     };
     if (params.identificacion) await subirUno(codigoIdentidad, params.identificacion, params.identificacionReverso);
