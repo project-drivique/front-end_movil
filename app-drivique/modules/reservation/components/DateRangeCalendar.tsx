@@ -118,7 +118,8 @@ function DiaCalendario({
 }) {
   if (!date) return <View style={diaStyles.celda} />;
 
-  const deshabilitado = state === "disabled";
+  const esOcupado = !!marking?.ocupado;
+  const deshabilitado = state === "disabled" || esOcupado;
   const hoy = state === "today";
   const seleccionado = !!marking?.seleccionado;
   const esInicio = !!marking?.inicioRango;
@@ -131,7 +132,7 @@ function DiaCalendario({
       style={[
         diaStyles.texto,
         { color: c.textPrimary },
-        deshabilitado && [diaStyles.textoDeshabilitado, { color: c.textMuted }],
+        deshabilitado && [diaStyles.textoDeshabilitado, { color: esOcupado ? "#EF4444" : c.textMuted, opacity: esOcupado ? 0.75 : 0.4 }],
         hoy && !seleccionado && { color: COLOR_MARCA, fontWeight: "600" as const },
         enExtremoRango && diaStyles.textoExtremo,
         esRangoContinuo && diaStyles.textoContinuo,
@@ -218,7 +219,8 @@ export default function CalendarioRango({
   LocaleConfig.defaultLocale = langKey;
 
   // Días ocupados reales del servidor (la web usa el mismo endpoint)
-  const ocupados = useFechasOcupadas(vehiculo.uuid);
+  const uuidFinal = vehiculo.uuid || (typeof vehiculo.id === "string" ? vehiculo.id : undefined);
+  const ocupados = useFechasOcupadas(uuidFinal);
 
   const horarioSucursal = useMemo(
     () => getHorarioSucursal(vehiculo.sucursal),

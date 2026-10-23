@@ -53,7 +53,7 @@ export default function BarraTotalConfirmar({ total, cargando = false, onConfirm
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}>
             <ActivityIndicator size="small" color={primaryAccent} />
             <Text style={[styles.botonTexto, { color: primaryAccent }]}>
-              {t("comun.procesando", { defaultValue: "Abriendo pasarela..." })}
+              {t("reserva.confirmacion.confirmando", { defaultValue: "Confirmando reserva..." })}
             </Text>
           </View>
         ) : (
