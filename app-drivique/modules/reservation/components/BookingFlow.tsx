@@ -53,13 +53,16 @@ export default function FlujoReserva({ vehiculo }: Props) {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   }, [seccionActiva]);
 
+  const barrioDomicilioFinal = (fechasLugar.barrioRetiro || fechasLugar.barrioDevolucion || "").trim();
+  const direccionDomicilioFinal = (fechasLugar.direccionRetiro || fechasLugar.direccionDevolucion || "").trim();
+
   const esDomicilioRetiroValido =
     fechasLugar.lugarRetiro !== "domicilio" ||
-    (!!fechasLugar.barrioRetiro?.trim() && !!fechasLugar.direccionRetiro?.trim());
+    (!!barrioDomicilioFinal && !!direccionDomicilioFinal);
 
   const esDomicilioDevolucionValido =
     fechasLugar.lugarDevolucion !== "domicilio" ||
-    (!!fechasLugar.barrioDevolucion?.trim() && !!fechasLugar.direccionDevolucion?.trim());
+    (!!barrioDomicilioFinal && !!direccionDomicilioFinal);
 
   const puedeContinuarAPlanes =
     !!fechasLugar.metodoPago &&
