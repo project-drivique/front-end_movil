@@ -38,6 +38,7 @@ import { diasEntre } from "./BookingSummaryModal.pieces";
 import TarjetaTerminosCondiciones from "./TermsConditionsCard";
 import TarjetaVerificacionDocumental from "./DocumentVerificationCard";
 import CouponSection from "./CouponSection";
+import SecurityCaptcha from "./SecurityCaptcha";
 import { useServerQuote } from "../hooks/useServerQuote";
 import { COLOR_ACENTO, COLOR_ENLACE_OSCURO, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 import { Alert } from "@/utils/alerta";
@@ -162,6 +163,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const [errorServidor, setErrorServidor] = useState("");
   const [tipoErrorAlerta, setTipoErrorAlerta] = useState<"general" | "documento" | "reserva" | "vehiculo_ocupado">("general");
   const [modalInstruccionesEfectivoVisible, setModalInstruccionesEfectivoVisible] = useState(false);
+  const [captchaVerificado, setCaptchaVerificado] = useState(false);
+  const [errorCaptcha, setErrorCaptcha] = useState(false);
 
   const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const brandBg = c.oscuro ? COLOR_MARCA_OSCURO : COLOR_MARCA;
@@ -465,6 +468,12 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       setAlertaFaltantesVisible(true);
       return;
     }
+
+    if (!captchaVerificado) {
+      setErrorCaptcha(true);
+      return;
+    }
+    setErrorCaptcha(false);
 
     if (checkOutsideSchedule() && !fechasLugar.fueraDeHorarioAceptado) {
       setAlertaHorarioVisible(true);
@@ -812,6 +821,15 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                 })}
               </Text>
             </View>
+
+            <SecurityCaptcha
+              isVerified={captchaVerificado}
+              onVerified={(verified) => {
+                setCaptchaVerificado(verified);
+                if (verified) setErrorCaptcha(false);
+              }}
+              hasError={errorCaptcha}
+            />
 
             <BarraTotalConfirmar
               total={total}
