@@ -1565,6 +1565,17 @@ export default {
     "errorCategory": "This coupon is only valid for categories: {{categories}}.",
     "errorExpired": "This coupon has expired or is no longer available.",
     "errorInvalid": "The entered coupon is invalid or does not exist.",
+    "errorAuthRequired": "You must log in to apply this coupon to your reservation.",
+    "errorNotFoundOrExpired": "The code entered does not exist or has expired.",
+    "errorNotActive": "This coupon is currently not active.",
+    "errorConditionsNotMet": "Your reservation does not meet the minimum day requirements for this coupon.",
+    "errorVehicleMismatch": "This coupon does not apply to the selected vehicle or category.",
+    "errorMinimumAmount": "The total reservation amount does not reach the minimum value required for this coupon.",
+    "errorAlreadyUsed": "You have already used this coupon on a previous reservation.",
+    "errorLimitReached": "This coupon has reached its maximum usage limit.",
+    "errorAudience": "This coupon is reserved for customers with another profile type (e.g. first booking).",
+    "errorGeneric": "Could not apply coupon. Please check the terms and conditions.",
+    "errorNeedDates": "Select reservation dates before applying a coupon.",
     "title": "Discount Coupon (Optional)",
     "placeholder": "Enter a code",
     "applyBtn": "APPLY",
@@ -1601,8 +1612,7 @@ export default {
     "applied": "applied",
     "todosLosVehiculos": "All vehicles",
     "appliedCheck": "✓ Applied",
-    "applyBtnSimple": "Apply",
-    "errorNeedDates": "Select the reservation dates before applying a coupon."
+    "applyBtnSimple": "Apply"
   },
   "simulator": {
     "title": "[Simulator] Cash Payment Confirmation",
@@ -2155,5 +2165,20 @@ export default {
       "10": "Nov",
       "11": "Dec"
     }
+  },
+  "captcha": {
+    "title": "Security Verification",
+    "antiBotBadge": "Anti-bot",
+    "verifiedBadge": "Verified ✓",
+    "promptDesc": "Enter the 5 characters from the image to confirm you are human.",
+    "verifiedDesc": "Verification complete. You can now confirm your reservation.",
+    "successLabel": "Human successfully verified",
+    "reset": "Change",
+    "placeholder": "Enter code",
+    "validateBtn": "Verify",
+    "refreshTooltip": "Generate new code",
+    "emptyCode": "Please enter the security code.",
+    "invalidCode": "Incorrect code. A new code was generated.",
+    "mustVerify": "You must complete the security verification before confirming the reservation."
   }
 };
