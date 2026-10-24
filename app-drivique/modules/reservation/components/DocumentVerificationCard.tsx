@@ -77,6 +77,7 @@ export default function TarjetaVerificacionDocumental({ tipoDocumento, docsVerif
         nombre: archivo.name,
         tamanoBytes: archivo.size ?? 0,
         tipoMime: archivo.mimeType ?? "application/pdf",
+        file: (archivo as any).file,
       });
       setCargando(false);
     }, 800);

@@ -266,72 +266,199 @@ export default function PagoRespuestaScreen() {
       </View>
 
       <ScrollView contentContainerStyle={[s.scroll, { paddingBottom: insets.bottom + 32 }]}>
-        <View style={[s.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-          {foto ? <Image source={{ uri: foto }} style={s.foto} resizeMode="cover" /> : null}
-          <View style={[s.badge, { backgroundColor: `${color}18`, borderColor: `${color}40` }]}>
-            <View style={[s.punto, { backgroundColor: color }]} />
-            <Text style={[s.badgeTexto, { color }]}>{tituloEstado}</Text>
-          </View>
-          <Text style={[s.vehiculo, { color: c.textPrimary }]}>{reserva.vehiculoNombre}</Text>
-          {reserva.vehiculoPlaca ? <Text style={[s.sub, { color: c.textSecondary }]}>{reserva.vehiculoPlaca}</Text> : null}
-          <Fila c={c} label={t("reserva.confirmacion.respuesta.referencia")} valor={reserva.referencia} />
-          <Fila
-            c={c}
-            label={t("misReservas.detalle.fechaInicio")}
-            valor={`${fechaCorta(reserva.fechaRetiro)} ${formatHoraAmPm(reserva.horaRetiro)}`}
-          />
-          <Fila
-            c={c}
-            label={t("misReservas.detalle.fechaFin")}
-            valor={`${fechaCorta(reserva.fechaDevolucion)} ${formatHoraAmPm(reserva.horaDevolucion)}`}
-          />
-          {vehiculo?.sucursal ? (
-            <Fila
-              c={c}
-              label={t("misReservas.detalle.lugarRetiro")}
-              valor={`${vehiculo.sucursal}${getDireccionSucursal(vehiculo.sucursal) ? ` - ${getDireccionSucursal(vehiculo.sucursal)}` : ""}`}
-            />
-          ) : null}
-          {reserva.proteccion ? <Fila c={c} label={t("misReservas.detalle.proteccion")} valor={reserva.proteccion} /> : null}
-          {reserva.planKilometraje ? <Fila c={c} label="Kilometraje" valor={reserva.planKilometraje} /> : null}
-          {reserva.servicios.length > 0 ? (
-            <Fila c={c} label="Servicios adicionales" valor={reserva.servicios.map((x) => x.nombre).join(", ")} />
-          ) : null}
-          <Fila
-            c={c}
-            label={t("reserva.confirmacion.respuesta.medioPago")}
-            valor={reserva.metodoPago === "efectivo" ? t("reserva.confirmacion.pagoEnSucursalCorto") : "Wompi"}
-          />
-          <Fila c={c} label={t("reserva.confirmacion.respuesta.total")} valor={fmt(reserva.total)} fuerte />
+        {/* Cabecera de estado y vehículo */}
+        <View style={s.topHeader}>
+          <Text style={[s.topTituloEstado, { color: c.textPrimary }]}>{tituloEstado}</Text>
+          <Text style={[s.topSubtituloVehiculo, { color: c.textSecondary }]}>{reserva.vehiculoNombre}</Text>
         </View>
+
+        {/* 1. Imagen del vehículo con bordes redondeados */}
+        {foto ? (
+          <View style={[s.fotoCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
+            <Image source={{ uri: foto }} style={s.foto} resizeMode="cover" />
+          </View>
+        ) : null}
+
+        {/* 2. Grid de datos de la reserva en 2 columnas estilo Web */}
+        <View style={s.grid}>
+          {/* Vehículo */}
+          <CeldaDato
+            c={c}
+            icono="car-sport-outline"
+            label={t("reservas.vehicle", { defaultValue: "Vehículo" })}
+            valor={reserva.vehiculoNombre}
+          />
+
+          {/* Fecha de retiro */}
+          <CeldaDato
+            c={c}
+            icono="calendar-outline"
+            label={t("reservas.pickupDate", { defaultValue: "Fecha de retiro" })}
+            valor={fechaCorta(reserva.fechaRetiro)}
+          />
+
+          {/* Hora de retiro */}
+          <CeldaDato
+            c={c}
+            icono="time-outline"
+            label={t("reservas.pickupTime", { defaultValue: "Hora de retiro" })}
+            valor={formatHoraAmPm(reserva.horaRetiro) || "—"}
+          />
+
+          {/* Fecha de devolución */}
+          <CeldaDato
+            c={c}
+            icono="calendar-outline"
+            label={t("reservas.returnDate", { defaultValue: "Fecha de devolución" })}
+            valor={fechaCorta(reserva.fechaDevolucion)}
+          />
+
+          {/* Hora de devolución */}
+          <CeldaDato
+            c={c}
+            icono="time-outline"
+            label={t("reservas.returnTime", { defaultValue: "Hora de devolución" })}
+            valor={formatHoraAmPm(reserva.horaDevolucion) || "—"}
+          />
+
+          {/* Lugar de retiro */}
+          <CeldaDato
+            c={c}
+            icono="location-outline"
+            label={t("reservas.pickupLocation", { defaultValue: "Lugar de retiro" })}
+            valor={vehiculo?.sucursal || sucursalEfectivo || "Drivique Principal"}
+          />
+
+          {/* Lugar de devolución */}
+          <CeldaDato
+            c={c}
+            icono="location-outline"
+            label={t("reservas.returnLocation", { defaultValue: "Lugar de devolución" })}
+            valor={vehiculo?.sucursal || sucursalEfectivo || "Drivique Principal"}
+          />
+
+          {/* Medio de pago */}
+          <CeldaDato
+            c={c}
+            icono="card-outline"
+            label={t("reservas.paymentMethod", { defaultValue: "Medio de pago" })}
+            valor={reserva.metodoPago === "efectivo" ? t("reserva.confirmacion.pagoEnSucursalCorto", { defaultValue: "Pago en sucursal" }) : "Pago Wompi"}
+          />
+
+          {/* Protección */}
+          <CeldaDato
+            c={c}
+            icono="shield-checkmark-outline"
+            label={t("reservas.protection", { defaultValue: "Protección" })}
+            valor={reserva.proteccion || "Protección Básica Estándar"}
+          />
+
+          {/* Referencia */}
+          <CeldaDato
+            c={c}
+            icono="receipt-outline"
+            label={t("reserva.confirmacion.respuesta.referencia", { defaultValue: "Referencia" })}
+            valor={reserva.referencia}
+          />
+
+          {/* Total */}
+          <CeldaDato
+            c={c}
+            icono="cash-outline"
+            label={t("reserva.confirmacion.respuesta.total", { defaultValue: "Total" })}
+            valor={fmt(reserva.total)}
+            esTotal={true}
+          />
+
+          {/* Estado */}
+          <CeldaDato
+            c={c}
+            icono="checkmark-circle-outline"
+            label={t("reservas.status", { defaultValue: "Estado" })}
+            valor={tituloEstado}
+            colorValor={color}
+          />
+        </View>
+
+        {/* Tarjeta de Reserva en Espera de Horario de Atención (Idéntica a la Web) */}
+        {enHorario ? (
+          <View
+            style={[
+              s.tarjetaInformativa,
+              {
+                backgroundColor: c.oscuro ? "rgba(30, 58, 138, 0.25)" : "#EFF6FF",
+                borderColor: c.oscuro ? "#1E40AF" : "#BFDBFE",
+              },
+            ]}
+          >
+            <View style={s.tarjetaInfoHead}>
+              <Ionicons name="time" size={24} color={c.oscuro ? COLOR_ACENTO : COLOR_MARCA} />
+              <Text style={[s.tarjetaInfoTitulo, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
+                {t("reservas.esperaAperturaTitulo", { defaultValue: "En Espera de Apertura de Sucursal" })}
+              </Text>
+            </View>
+            <Text style={[s.tarjetaInfoTexto, { color: c.oscuro ? "#DBEAFE" : "#1E3A8A" }]}>
+              {t("reservas.esperaAperturaDesc", {
+                defaultValue: `Tu reserva fue registrada fuera del horario de atención de la sucursal ${vehiculo?.sucursal || sucursalEfectivo || "Drivique"}. En cuanto la sede inicie su jornada de atención, recibirás una notificación automática por correo, web y push para proceder con el pago y confirmación de tu reserva.`,
+              })}
+            </Text>
+            <View
+              style={[
+                s.tarjetaInfoBadge,
+                {
+                  backgroundColor: c.oscuro ? "rgba(30, 64, 175, 0.4)" : "#DBEAFE",
+                },
+              ]}
+            >
+              <Ionicons name="time" size={14} color={c.oscuro ? "#93C5FD" : "#1E3A8A"} />
+              <Text style={[s.tarjetaInfoBadgeTexto, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
+                {t("reservas.esperaAperturaEstado", { defaultValue: "Estado: Esperando apertura de sucursal" })}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
+        {/* Tarjeta de Documentación en Proceso de Validación */}
+        {enRevision ? (
+          <View
+            style={[
+              s.tarjetaInformativa,
+              {
+                backgroundColor: c.oscuro ? "rgba(30, 58, 138, 0.25)" : "#EFF6FF",
+                borderColor: c.oscuro ? "#1E40AF" : "#BFDBFE",
+              },
+            ]}
+          >
+            <View style={s.tarjetaInfoHead}>
+              <Ionicons name="shield-checkmark" size={24} color={c.oscuro ? COLOR_ACENTO : COLOR_MARCA} />
+              <Text style={[s.tarjetaInfoTitulo, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
+                {t("misReservas.detalle.enRevisionDocumentos", { defaultValue: "Documentación en Proceso de Validación" })}
+              </Text>
+            </View>
+            <Text style={[s.tarjetaInfoTexto, { color: c.oscuro ? "#DBEAFE" : "#1E3A8A" }]}>
+              {t("misReservas.detalle.enRevisionTexto", {
+                defaultValue: `Tus documentos de identidad y licencia de conducción están siendo revisados por el encargado de la sucursal ${vehiculo?.sucursal || sucursalEfectivo || "Drivique"}. En cuanto los documentos sean aprobados, tu reserva se confirmará automáticamente y se habilitará la firma digital del contrato.`,
+              })}
+            </Text>
+            <View
+              style={[
+                s.tarjetaInfoBadge,
+                {
+                  backgroundColor: c.oscuro ? "rgba(30, 64, 175, 0.4)" : "#DBEAFE",
+                },
+              ]}
+            >
+              <Ionicons name="time" size={14} color={c.oscuro ? "#93C5FD" : "#1E3A8A"} />
+              <Text style={[s.tarjetaInfoBadgeTexto, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
+                {t("reservas.docsEnRevisionEstado", { defaultValue: "Estado: En revisión por encargado de sucursal" })}
+              </Text>
+            </View>
+          </View>
+        ) : null}
 
         {aviso ? (
           <View style={[s.aviso, { borderColor: "#f59e0b", backgroundColor: c.oscuro ? "#422006" : "#fffbeb" }]}>
             <Text style={[s.avisoTexto, { color: c.oscuro ? "#fde68a" : "#92400e" }]}>{aviso}</Text>
-          </View>
-        ) : null}
-
-        {enRevision ? (
-          <View style={[s.aviso, { borderColor: primaryAccent, backgroundColor: c.primaryBg }]}>
-            <Text style={[s.avisoTitulo, { color: primaryAccent }]}>
-              {t("misReservas.detalle.enRevisionDocumentos", { defaultValue: "En revisión de documentos" })}
-            </Text>
-            <Text style={[s.avisoTexto, { color: c.textSecondary }]}>
-              {t("misReservas.detalle.enRevisionTexto", {
-                defaultValue:
-                  "El encargado de la sucursal esta revisando tus documentos. Podras pagar cuando sean aprobados; te avisaremos por notificacion.",
-              })}
-            </Text>
-          </View>
-        ) : null}
-
-        {enHorario ? (
-          <View style={[s.aviso, { borderColor: primaryAccent, backgroundColor: c.primaryBg }]}>
-            <Text style={[s.avisoTexto, { color: c.textSecondary }]}>
-              {t("misReservas.detalle.pendienteHorarioTexto", {
-                defaultValue: "Tu reserva fue registrada fuera del horario de atencion. La sucursal la gestionara en su proximo horario.",
-              })}
-            </Text>
           </View>
         ) : null}
 
@@ -451,8 +578,19 @@ export default function PagoRespuestaScreen() {
         )}
 
         {puedeCancelar ? (
-          <TouchableOpacity onPress={cancelar} disabled={ocupado} style={s.cancelar}>
-            <Text style={s.cancelarTexto}>{t("misReservas.cancelarReserva", { defaultValue: "Cancelar reserva" })}</Text>
+          <TouchableOpacity
+            onPress={cancelar}
+            disabled={ocupado}
+            style={[
+              s.cancelarBtn,
+              { backgroundColor: c.oscuro ? "rgba(220, 38, 38, 0.15)" : "#FEF2F2" },
+            ]}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="close-circle-outline" size={17} color="#DC2626" />
+            <Text style={s.cancelarTexto}>
+              {t("misReservas.cancelarReserva", { defaultValue: "Cancelar reserva" })}
+            </Text>
           </TouchableOpacity>
         ) : null}
       </ScrollView>
@@ -484,6 +622,66 @@ function resenasPublicadas(e: ElegibilidadResena, t: (k: string, o?: any) => str
   if (e.resenaVehiculo) out.push({ titulo: t("misReservas.miResenaVehiculo", { defaultValue: "Tu reseña del vehículo" }), ...e.resenaVehiculo });
   if (e.resenaSucursal) out.push({ titulo: t("misReservas.miResenaSucursal", { defaultValue: "Tu reseña de la sucursal" }), ...e.resenaSucursal });
   return out;
+}
+
+function CeldaDato({
+  c,
+  icono,
+  label,
+  valor,
+  anchoCompleto,
+  esTotal,
+  colorValor,
+}: {
+  c: ReturnType<typeof useTemaColores>;
+  icono: keyof typeof Ionicons.glyphMap;
+  label: string;
+  valor: string;
+  anchoCompleto?: boolean;
+  esTotal?: boolean;
+  colorValor?: string;
+}) {
+  return (
+    <View
+      style={[
+        s.celda,
+        {
+          backgroundColor: c.oscuro ? "#1F2937" : "#F8FAFC",
+          borderColor: c.border,
+          width: anchoCompleto ? "100%" : "48.2%",
+        },
+      ]}
+    >
+      <View
+        style={[
+          s.celdaIcono,
+          {
+            backgroundColor: c.oscuro ? "rgba(30, 64, 175, 0.25)" : "#EFF6FF",
+            borderColor: c.oscuro ? "rgba(30, 64, 175, 0.4)" : "#DBEAFE",
+          },
+        ]}
+      >
+        <Ionicons name={icono} size={16} color={c.oscuro ? COLOR_ACENTO : COLOR_MARCA} />
+      </View>
+      <View style={s.celdaContenido}>
+        <Text style={[s.celdaLabel, { color: c.textMuted }]} numberOfLines={1}>
+          {label}
+        </Text>
+        <Text
+          style={[
+            s.celdaValor,
+            {
+              color: colorValor || (esTotal ? (c.oscuro ? COLOR_ACENTO : COLOR_MARCA) : c.textPrimary),
+              fontWeight: esTotal ? "800" : "700",
+            },
+          ]}
+          numberOfLines={2}
+        >
+          {valor}
+        </Text>
+      </View>
+    </View>
+  );
 }
 
 function Fila({
@@ -553,8 +751,103 @@ const s = StyleSheet.create({
   },
   headerTitulo: { fontSize: 16, fontWeight: "800" },
   scroll: { padding: 16, gap: 12 },
+  topHeader: {
+    alignItems: "center",
+    marginBottom: 4,
+    gap: 3,
+  },
+  topTituloEstado: {
+    fontSize: 18,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  topSubtituloVehiculo: {
+    fontSize: 13.5,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  fotoCard: {
+    width: "100%",
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    marginBottom: 4,
+  },
+  foto: {
+    width: "100%",
+    height: 180,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 10,
+  },
+  celda: {
+    borderWidth: 1.5,
+    borderRadius: 14,
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+  },
+  celdaIcono: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  celdaContenido: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  celdaLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  celdaValor: {
+    fontSize: 12.5,
+    lineHeight: 16,
+  },
+  tarjetaInformativa: {
+    borderWidth: 1.5,
+    borderRadius: 16,
+    padding: 16,
+    gap: 10,
+    marginVertical: 4,
+  },
+  tarjetaInfoHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  tarjetaInfoTitulo: {
+    fontSize: 15,
+    fontWeight: "800",
+    flex: 1,
+  },
+  tarjetaInfoTexto: {
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  tarjetaInfoBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    alignSelf: "flex-start",
+  },
+  tarjetaInfoBadgeTexto: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
   card: { borderWidth: 1, borderRadius: 14, padding: 14, gap: 8 },
-  foto: { width: "100%", height: 150, borderRadius: 10 },
   badge: {
     flexDirection: "row",
     alignItems: "center",
@@ -580,6 +873,16 @@ const s = StyleSheet.create({
   botonTexto: { color: "#fff", fontWeight: "800", fontSize: 14 },
   botonSec: { paddingVertical: 12, borderRadius: 12, alignItems: "center", borderWidth: 1.5 },
   botonSecTexto: { fontWeight: "800", fontSize: 13 },
-  cancelar: { alignItems: "center", paddingVertical: 10 },
-  cancelarTexto: { color: "#dc2626", fontWeight: "700", fontSize: 13 },
+  cancelarBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: "#FCA5A5",
+    borderRadius: 14,
+    paddingVertical: 13,
+    marginTop: 8,
+  },
+  cancelarTexto: { color: "#DC2626", fontWeight: "800", fontSize: 13.5 },
 });
