@@ -324,28 +324,62 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
     try {
       if (documentos.cedulaFrente || documentos.licenciaConduccion) {
-        const sucursales = useReferenceStore.getState().sucursales;
-        const sedeVehiculo = sucursales.find(
-          (b) =>
-            b.id === vehiculo.sucursalId ||
-            (vehiculo.sucursal && b.name.toLowerCase() === vehiculo.sucursal.toLowerCase())
-        );
-        const idSucursal =
-          (vehiculo as any).sucursalId ||
-          (vehiculo as any).branchId ||
-          (vehiculo as any).currentBranchId ||
-          sedeVehiculo?.id ||
-          sucursales[0]?.id ||
-          "";
+        try {
+          const sucursales = useReferenceStore.getState().sucursales;
+          const sedeVehiculo = sucursales.find(
+            (b) =>
+              b.id === vehiculo.sucursalId ||
+              (vehiculo.sucursal && b.name.toLowerCase() === vehiculo.sucursal.toLowerCase())
+          );
+          const idSucursal =
+            (vehiculo as any).sucursalId ||
+            (vehiculo as any).branchId ||
+            (vehiculo as any).currentBranchId ||
+            sedeVehiculo?.id ||
+            sucursales[0]?.id ||
+            "";
 
-        await documentosService.subir({
-          tipoDocumento: datosPersonales.tipoDocumento,
-          numeroDocumento: datosPersonales.numeroDocumento,
-          sucursalId: idSucursal,
-          identificacion: documentos.cedulaFrente,
-          identificacionReverso: documentos.cedulaReverso,
-          licencia: documentos.licenciaConduccion,
-        });
+          await documentosService.subir({
+            tipoDocumento: datosPersonales.tipoDocumento,
+            numeroDocumento: datosPersonales.numeroDocumento,
+            sucursalId: idSucursal,
+            identificacion: documentos.cedulaFrente,
+            identificacionReverso: documentos.cedulaReverso,
+            licencia: documentos.licenciaConduccion,
+          });
+        } catch (errDoc: any) {
+          const errDocMsg =
+            errDoc?.response?.data?.detail ||
+            errDoc?.response?.data?.message ||
+            errDoc?.message ||
+            "";
+          const errDocLower = String(errDocMsg).toLowerCase();
+          setTipoErrorAlerta("documento");
+          if (
+            errDoc?.response?.status === 409 ||
+            errDocLower.includes("document") ||
+            errDocLower.includes("registrado") ||
+            errDocLower.includes("unique") ||
+            errDocLower.includes("cedula") ||
+            errDocLower.includes("cédula")
+          ) {
+            setErrorServidor(
+              t("reserva.confirmacion.errorDocumentoDuplicado", {
+                defaultValue:
+                  "El número de documento ingresado ya se encuentra registrado con otra cuenta de usuario. Por favor verifica tus datos o inicia sesión con tu cuenta registrada.",
+              })
+            );
+          } else {
+            setErrorServidor(
+              errDocMsg ||
+                t("reserva.confirmacion.errorSubirDocs", {
+                  defaultValue:
+                    "No se pudieron subir los documentos de verificación. Por favor revisa los archivos e intenta nuevamente.",
+                })
+            );
+          }
+          return;
+        }
       }
 
       // Persistir cambios de datos personales en el perfil de usuario (BD y store)
@@ -436,13 +470,22 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
           })
         );
       } else if (error?.response?.status === 409) {
-        setTipoErrorAlerta("reserva");
-        setErrorServidor(
-          errorMsg ||
-          t("reserva.confirmacion.error409", {
-            defaultValue: "Ya se está procesando una reserva para este vehículo o fechas. Por favor verifica en 'Mis reservas'.",
-          })
-        );
+        if (errorMsgLower.includes("documento ya registrado") || errorMsgLower.includes("número de documento")) {
+          setTipoErrorAlerta("documento");
+          setErrorServidor(
+            t("reserva.confirmacion.errorDocumentoDuplicado", {
+              defaultValue: "El número de documento ingresado ya se encuentra registrado con otra cuenta de usuario. Por favor verifica tus datos o inicia sesión con tu cuenta registrada.",
+            })
+          );
+        } else {
+          setTipoErrorAlerta("reserva");
+          const safeMsg = (!errorMsg || errorMsgLower.includes("conflicto con el estado actual"))
+            ? t("reserva.confirmacion.error409", {
+                defaultValue: "Ya se está procesando una reserva para este vehículo o fechas. Por favor verifica en 'Mis reservas'.",
+              })
+            : errorMsg;
+          setErrorServidor(safeMsg);
+        }
       } else {
         setTipoErrorAlerta("general");
         const apiErrors = error?.response?.data?.errors;
@@ -829,6 +872,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
                 if (verified) setErrorCaptcha(false);
               }}
               hasError={errorCaptcha}
+              style={{ marginTop: 10, marginBottom: 20 }}
             />
 
             <BarraTotalConfirmar
