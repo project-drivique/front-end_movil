@@ -14,6 +14,7 @@ import { formatCurrency } from "@/utils/currencyUtils";
 import { useMonedaStore } from "@/store/currencyStore";
 import { pricingService } from "../services/pricingService";
 import { COLOR_ACENTO } from "@/constants/brandPalette";
+import { useBrandStore } from "@/store/brandStore";
 
 const { height } = Dimensions.get("window");
 
@@ -83,7 +84,8 @@ export default function CouponSection({ vehiculo }: Props) {
     };
   }, [vehiculo?.uuid, vehiculo?.categoriaId]);
 
-  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
+  const marca = useBrandStore((s) => s.marca);
+  const primaryAccent = marca?.primary || (c.oscuro ? COLOR_ACENTO : COLOR_MARCA);
 
   const getCouponVehicleImages = (_cpx: any): string[] => {
     const img = (vehiculo.imagenes && vehiculo.imagenes[0]) || vehiculo.imagen;
