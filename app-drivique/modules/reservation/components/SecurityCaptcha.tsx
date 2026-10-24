@@ -194,7 +194,8 @@ export default function SecurityCaptcha({
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    marginVertical: 4,
+    marginTop: 8,
+    marginBottom: 20,
   },
   card: {
     flexDirection: "row",
