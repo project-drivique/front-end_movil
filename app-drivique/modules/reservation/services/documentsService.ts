@@ -62,9 +62,12 @@ export const documentosService = {
   tieneDocumentos: async (): Promise<boolean> => {
     try {
       const docs = await documentosService.listar();
-      const aprobados = docs.filter((d) => d.statusCode === "APPROVED");
-      const licencia = aprobados.some((d) => d.documentType?.code === "DRIVER_LICENSE");
-      const identidad = aprobados.some((d) => d.documentType?.code !== "DRIVER_LICENSE");
+      const validos = docs.filter((d) => {
+        const st = String(d.statusCode || "").toUpperCase();
+        return st === "APPROVED" || st === "PENDING";
+      });
+      const licencia = validos.some((d) => d.documentType?.code === "DRIVER_LICENSE");
+      const identidad = validos.some((d) => d.documentType?.code !== "DRIVER_LICENSE");
       return licencia && identidad;
     } catch {
       return false;
