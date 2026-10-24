@@ -160,13 +160,13 @@ export default function CouponSection({ vehiculo }: Props) {
       });
     }
 
-    if (rawMsg.includes("already used") || rawMsg.includes("ya fue usado") || rawMsg.includes("ya utilizado")) {
+    if (rawMsg.includes("already used") || rawMsg.includes("ya fue usado") || rawMsg.includes("ya utilizado") || rawMsg.includes("ya has utilizado") || rawMsg.includes("reserva anterior")) {
       return t("coupon.errorAlreadyUsed", {
         defaultValue: "Ya has utilizado este cupón en una reserva anterior.",
       });
     }
 
-    if (rawMsg.includes("limit reached") || rawMsg.includes("límite de usos")) {
+    if (rawMsg.includes("limit reached") || rawMsg.includes("límite máximo de usos") || rawMsg.includes("límite de usos")) {
       return t("coupon.errorLimitReached", {
         defaultValue: "Este cupón ha alcanzado el límite máximo de usos disponibles.",
       });
@@ -176,6 +176,17 @@ export default function CouponSection({ vehiculo }: Props) {
       return t("coupon.errorAudience", {
         defaultValue: "Este cupón está reservado para clientes con otro tipo de perfil (ej. primera reserva).",
       });
+    }
+
+    if (rawMsg.includes("conflicto") || rawMsg.includes("conflict")) {
+      return t("coupon.errorGeneric", {
+        defaultValue: "No fue posible aplicar el cupón. Es posible que ya lo hayas utilizado o no cumpla los requisitos de la reserva.",
+      });
+    }
+
+    const originalDetail = error?.response?.data?.detail;
+    if (originalDetail && typeof originalDetail === "string" && !originalDetail.toLowerCase().includes("conflicto con el estado actual")) {
+      return originalDetail;
     }
 
     return t("coupon.errorGeneric", {
