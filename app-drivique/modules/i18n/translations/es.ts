@@ -1565,6 +1565,17 @@ export default {
     "errorCategory": "Este cupón solo es válido para categorías: {{categories}}.",
     "errorExpired": "Este cupón ha expirado o ya no está disponible.",
     "errorInvalid": "El cupón ingresado no es válido o no existe.",
+    "errorAuthRequired": "Debes iniciar sesión para aplicar este cupón a tu reserva.",
+    "errorNotFoundOrExpired": "El código ingresado no existe o ya expiró.",
+    "errorNotActive": "Este cupón no se encuentra activo actualmente.",
+    "errorConditionsNotMet": "Tu reserva no cumple con las condiciones mínimas de días requeridas para este cupón.",
+    "errorVehicleMismatch": "Este cupón no aplica para el vehículo o categoría seleccionada.",
+    "errorMinimumAmount": "El monto total de la reserva no alcanza el valor mínimo requerido para este cupón.",
+    "errorAlreadyUsed": "Ya has utilizado este cupón en una reserva anterior.",
+    "errorLimitReached": "Este cupón ha alcanzado el límite máximo de usos disponibles.",
+    "errorAudience": "Este cupón está reservado para clientes con otro tipo de perfil (ej. primera reserva).",
+    "errorGeneric": "No fue posible aplicar el cupón. Por favor verifica los términos y condiciones.",
+    "errorNeedDates": "Selecciona las fechas de la reserva antes de aplicar un cupón.",
     "title": "Cupón de descuento (Opcional)",
     "placeholder": "Ingresa un código",
     "applyBtn": "APLICAR",
@@ -1601,8 +1612,7 @@ export default {
     "applied": "aplicado",
     "todosLosVehiculos": "Todos los vehículos",
     "appliedCheck": "✓ Aplicado",
-    "applyBtnSimple": "Aplicar",
-    "errorNeedDates": "Selecciona las fechas de la reserva antes de aplicar un cupón."
+    "applyBtnSimple": "Aplicar"
   },
   "simulator": {
     "title": "[Simulador] Confirmación de Pago (Cajero)",
@@ -2155,5 +2165,24 @@ export default {
       "10": "nov",
       "11": "dic"
     }
+  },
+  "captcha": {
+    "title": "Verificación de Seguridad",
+    "antiBotBadge": "Anti-bot",
+    "verifiedBadge": "Verificado ✓",
+    "promptDesc": "Ingresa los 5 caracteres de la imagen para confirmar que eres una persona.",
+    "verifiedDesc": "Verificación completada. Ya puedes confirmar tu reserva.",
+    "successLabel": "Humano verificado con éxito",
+    "verifyHuman": "Confirmar que soy una persona",
+    "verifying": "Verificando seguridad...",
+    "clickToVerify": "Toca la casilla para verificar seguridad",
+    "privacy": "Seguridad",
+    "reset": "Cambiar",
+    "placeholder": "Ingresa el código",
+    "validateBtn": "Verificar",
+    "refreshTooltip": "Generar nuevo código",
+    "emptyCode": "Por favor ingresa el código de seguridad.",
+    "invalidCode": "Código incorrecto. Generamos uno nuevo.",
+    "mustVerify": "Debes completar la verificación de seguridad antes de confirmar la reserva."
   }
 };

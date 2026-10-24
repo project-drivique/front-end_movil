@@ -267,8 +267,9 @@ export const reservaPersistService = {
     return mapReserva(data);
   },
 
-  confirmarPago: async (id: string) => {
-    const { data } = await apiClient.post(`/reservations/checkout/confirm/${id}`);
+  confirmarPago: async (id: string, transactionId?: string) => {
+    const params = transactionId ? { transactionId } : undefined;
+    const { data } = await apiClient.post(`/reservations/checkout/confirm/${id}`, null, { params });
     return mapReserva(data);
   },
 

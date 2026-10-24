@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Vehiculo } from "@/modules/catalog/types/catalog.types";
 import { pricingService, PriceQuoteResponseDTO } from "../services/pricingService";
+import { useReservaStore } from "@/store/reservationStore";
 
 interface Params {
   vehiculo: Vehiculo;
@@ -41,7 +42,13 @@ export function useServerQuote({ vehiculo, fechasLugar, planes, cuponCodigo }: P
     let activo = true;
     pricingService
       .quotePrice({ ...solicitud, couponCode: cuponCodigo ?? null })
-      .catch(() => (cuponCodigo ? pricingService.quotePrice(solicitud) : null))
+      .catch((err) => {
+        if (cuponCodigo) {
+          useReservaStore.getState().removerCupon();
+          return pricingService.quotePrice(solicitud);
+        }
+        throw err;
+      })
       .then((r) => activo && setQuote(r))
       .catch(() => activo && setQuote(null));
     return () => {

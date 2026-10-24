@@ -14,6 +14,7 @@ import { formatCurrency } from "@/utils/currencyUtils";
 import { useMonedaStore } from "@/store/currencyStore";
 import { pricingService } from "../services/pricingService";
 import { COLOR_ACENTO } from "@/constants/brandPalette";
+import { useBrandStore } from "@/store/brandStore";
 
 const { height } = Dimensions.get("window");
 
@@ -44,17 +45,36 @@ export default function CouponSection({ vehiculo }: Props) {
   useEffect(() => {
     let activo = true;
     pricingService
-      .getFeaturedPromotions()
+      .getPublishedPromotions()
       .then((lista) => {
         if (!activo) return;
+        // Filtrar cupones activos que aplican al vehículo o universales
+        const filtrados = lista.filter((p: any) => {
+          if (!p.active) return false;
+          if (p.vehicleId && vehiculo?.uuid && p.vehicleId !== vehiculo.uuid && p.vehicleId !== vehiculo.id) {
+            return false;
+          }
+          if (p.categoryId && vehiculo?.categoriaId && p.categoryId !== vehiculo.categoriaId) {
+            return false;
+          }
+          return true;
+        });
+
         setCuponesDisponibles(
-          lista.map((p: any) => ({
+          filtrados.map((p: any) => ({
             id: p.id,
             codigo: p.code,
-            tituloPremio: p.code,
+            tituloPremio: p.name || p.code,
+            descripcion: p.conditions || p.name || `Descuento ${p.code}`,
             descuentoPorcentaje: String(p.discountType).toUpperCase().includes("PERCENT") ? Number(p.discountValue) : undefined,
             descuentoFijo: String(p.discountType).toUpperCase().includes("PERCENT") ? undefined : Number(p.discountValue),
-            expiracion: p.endsAt,
+            expiracion: p.endDate || p.endsAt,
+            condicionesDetalladas: p.conditions,
+            reglas: {
+              minimoDias: p.minimumRentalDays,
+              montoMinimo: p.minimumAmount,
+              categoriasValidas: p.categoryName ? [p.categoryName] : [],
+            },
           })),
         );
       })
@@ -62,9 +82,10 @@ export default function CouponSection({ vehiculo }: Props) {
     return () => {
       activo = false;
     };
-  }, []);
+  }, [vehiculo?.uuid, vehiculo?.categoriaId]);
 
-  const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
+  const marca = useBrandStore((s) => s.marca);
+  const primaryAccent = marca?.primary || (c.oscuro ? COLOR_ACENTO : COLOR_MARCA);
 
   const getCouponVehicleImages = (_cpx: any): string[] => {
     const img = (vehiculo.imagenes && vehiculo.imagenes[0]) || vehiculo.imagen;
@@ -92,6 +113,87 @@ export default function CouponSection({ vehiculo }: Props) {
   
   const [validando, setValidando] = useState(false);
 
+  const getFriendlyErrorMessage = (error: any): string => {
+    const rawMsg = String(
+      error?.response?.data?.detail ||
+      error?.response?.data?.title ||
+      error?.response?.data?.message ||
+      error?.message ||
+      ""
+    ).toLowerCase();
+
+    const status = error?.response?.status;
+
+    if (rawMsg.includes("full authentication") || status === 401) {
+      return t("coupon.errorAuthRequired", {
+        defaultValue: "Debes iniciar sesión para aplicar este cupón a tu reserva.",
+      });
+    }
+
+    if (rawMsg.includes("not found") || rawMsg.includes("no encontrado") || status === 404) {
+      return t("coupon.errorNotFoundOrExpired", {
+        defaultValue: "El código ingresado no existe o ya expiró.",
+      });
+    }
+
+    if (rawMsg.includes("not active") || rawMsg.includes("no está activa") || rawMsg.includes("no se encuentra activa")) {
+      return t("coupon.errorNotActive", {
+        defaultValue: "Este cupón no se encuentra activo actualmente.",
+      });
+    }
+
+    if (rawMsg.includes("not met") || rawMsg.includes("condiciones") || rawMsg.includes("minimumrental") || rawMsg.includes("días")) {
+      return t("coupon.errorConditionsNotMet", {
+        defaultValue: "Tu reserva no cumple con las condiciones mínimas de días requeridas para este cupón.",
+      });
+    }
+
+    if (rawMsg.includes("no aplica a este vehículo") || rawMsg.includes("vehicle mismatch") || rawMsg.includes("no aplica a esta categoría")) {
+      return t("coupon.errorVehicleMismatch", {
+        defaultValue: "Este cupón no aplica para el vehículo o categoría seleccionada.",
+      });
+    }
+
+    if (rawMsg.includes("valor mínimo") || rawMsg.includes("minimum amount") || rawMsg.includes("no alcanza")) {
+      return t("coupon.errorMinimumAmount", {
+        defaultValue: "El monto total de la reserva no alcanza el valor mínimo requerido para este cupón.",
+      });
+    }
+
+    if (rawMsg.includes("already used") || rawMsg.includes("ya fue usado") || rawMsg.includes("ya utilizado") || rawMsg.includes("ya has utilizado") || rawMsg.includes("reserva anterior")) {
+      return t("coupon.errorAlreadyUsed", {
+        defaultValue: "Ya has utilizado este cupón en una reserva anterior.",
+      });
+    }
+
+    if (rawMsg.includes("limit reached") || rawMsg.includes("límite máximo de usos") || rawMsg.includes("límite de usos")) {
+      return t("coupon.errorLimitReached", {
+        defaultValue: "Este cupón ha alcanzado el límite máximo de usos disponibles.",
+      });
+    }
+
+    if (rawMsg.includes("no está disponible para tu perfil") || rawMsg.includes("audience")) {
+      return t("coupon.errorAudience", {
+        defaultValue: "Este cupón está reservado para clientes con otro tipo de perfil (ej. primera reserva).",
+      });
+    }
+
+    if (rawMsg.includes("conflicto") || rawMsg.includes("conflict")) {
+      return t("coupon.errorGeneric", {
+        defaultValue: "No fue posible aplicar el cupón. Es posible que ya lo hayas utilizado o no cumpla los requisitos de la reserva.",
+      });
+    }
+
+    const originalDetail = error?.response?.data?.detail;
+    if (originalDetail && typeof originalDetail === "string" && !originalDetail.toLowerCase().includes("conflicto con el estado actual")) {
+      return originalDetail;
+    }
+
+    return t("coupon.errorGeneric", {
+      defaultValue: "No fue posible aplicar el cupón. Por favor verifica los términos y condiciones.",
+    });
+  };
+
   const validarYAplicar = async (codigo: string, fromModal: boolean) => {
     setErrorMsg("");
     setErrorMsgModal("");
@@ -118,8 +220,7 @@ export default function CouponSection({ vehiculo }: Props) {
       setModalVisible(false);
       setCodigoManual("");
     } catch (e: any) {
-      const detail = e?.response?.data?.detail || e?.response?.data?.title;
-      setError(detail || t("coupon.errorInvalid"));
+      setError(getFriendlyErrorMessage(e));
     } finally {
       setValidando(false);
     }
@@ -152,7 +253,7 @@ export default function CouponSection({ vehiculo }: Props) {
   return (
     <View style={[styles.cardForm, { backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF", borderColor: c.border }]}>
       <View style={styles.cardHeaderFila}>
-        <Text style={[styles.cardHeaderTitulo, { color: primaryAccent }]}>
+        <Text style={[styles.cardHeaderTitulo, { color: c.oscuro ? "#F8FAFC" : "#0F172A" }]}>
           {t("coupon.title", { defaultValue: "Cupón de descuento (Opcional)" })}
         </Text>
       </View>
@@ -162,19 +263,33 @@ export default function CouponSection({ vehiculo }: Props) {
           style={[
             styles.appliedContainer,
             {
-              backgroundColor: c.oscuro ? "#17255433" : "#EFF6FF",
-              borderColor: c.oscuro ? "#1D4ED8" : "#BFDBFE",
+              backgroundColor: c.oscuro ? "rgba(30, 64, 175, 0.12)" : "#F0F7FF",
+              borderColor: c.oscuro ? "rgba(59, 130, 246, 0.3)" : "#BFDBFE",
             },
           ]}
         >
           <View style={styles.appliedLeft}>
-            <Ionicons name="checkmark-circle" size={20} color={primaryAccent} />
+            <View
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 12,
+                backgroundColor: "#1D4ED8",
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 10,
+              }}
+            >
+              <Ionicons name="checkmark" size={15} color="#FFFFFF" />
+            </View>
             <View>
-              <Text style={[styles.appliedCode, { color: primaryAccent }]}>{cuponAplicado.codigo}</Text>
+              <Text style={[styles.appliedCode, { color: c.oscuro ? "#93C5FD" : "#1E40AF" }]}>
+                {cuponAplicado.codigo}
+              </Text>
               <Text style={[styles.appliedDesc, { color: c.textSecondary }]}>
                 {cuponAplicado.descuentoPorcentaje
                   ? `${cuponAplicado.descuentoPorcentaje}% ${t("coupon.offApplied", { defaultValue: "OFF aplicado" })}`
-                  : `-$${cuponAplicado.descuentoFijo} ${t("coupon.applied", { defaultValue: "aplicado" })}`}
+                  : `-$${Number(cuponAplicado.descuentoFijo).toLocaleString("es-CO")} ${t("coupon.applied", { defaultValue: "aplicado" })}`}
               </Text>
             </View>
           </View>
@@ -273,6 +388,19 @@ export default function CouponSection({ vehiculo }: Props) {
                   <Ionicons name="close" size={20} color={c.oscuro ? "#9CA3AF" : "#6B7280"} />
                 </TouchableOpacity>
               </View>
+
+              {/* Banner de error visible en ambas vistas del modal */}
+              {errorMsgModal ? (
+                <View style={[styles.errorAlertBanner, { marginHorizontal: 16, marginTop: 12, marginBottom: 4, backgroundColor: c.oscuro ? "#450a0a" : "#FEF2F2", borderColor: c.oscuro ? "#7f1d1d" : "#FCA5A5" }]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                    <Ionicons name="alert-circle" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
+                    <Text style={[styles.errorAlertText, { color: c.oscuro ? "#fca5a5" : "#B91C1C" }]}>{errorMsgModal}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setErrorMsgModal("")}>
+                    <Ionicons name="close" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
+                  </TouchableOpacity>
+                </View>
+              ) : null}
 
               {/* CONTENIDO 1: CONDICIONES DEL CUPÓN */}
               {selectedConditionsCoupon ? (
@@ -423,17 +551,7 @@ export default function CouponSection({ vehiculo }: Props) {
                   bounces={true}
                   overScrollMode="always"
                 >
-                {errorMsgModal ? (
-                  <View style={[styles.errorAlertBanner, { marginHorizontal: 16, marginBottom: 12, marginTop: 0, backgroundColor: c.oscuro ? "#450a0a" : "#FEF2F2", borderColor: c.oscuro ? "#7f1d1d" : "#FCA5A5" }]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                      <Ionicons name="alert-circle" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
-                      <Text style={[styles.errorAlertText, { color: c.oscuro ? "#fca5a5" : "#B91C1C" }]}>{errorMsgModal}</Text>
-                    </View>
-                    <TouchableOpacity onPress={() => setErrorMsgModal("")}>
-                      <Ionicons name="close" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
-                    </TouchableOpacity>
-                  </View>
-                ) : null}
+
 
                 {cuponesDisponibles.length === 0 && (
                   <Text style={{ textAlign: "center", color: c.textMuted, marginTop: 20, fontSize: 12 }}>
