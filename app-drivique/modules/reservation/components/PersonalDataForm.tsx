@@ -160,6 +160,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const [procesandoPago, setProcesandoPago] = useState(false);
   const isSubmittingRef = useRef(false);
   const [reservaCreada, setReservaCreada] = useState<ReservaGuardada | null>(null);
+  const [errorServidor, setErrorServidor] = useState("");
   const [tipoErrorAlerta, setTipoErrorAlerta] = useState<"general" | "documento" | "documento_duplicado" | "reserva" | "vehiculo_ocupado">("general");
   const [modalInstruccionesEfectivoVisible, setModalInstruccionesEfectivoVisible] = useState(false);
   const [captchaVerificado, setCaptchaVerificado] = useState(false);
