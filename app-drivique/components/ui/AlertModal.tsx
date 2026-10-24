@@ -172,7 +172,9 @@ const s = StyleSheet.create({
   },
   alertCancelBtn: {
     flex: 1,
-    height: 42,
+    minHeight: 44,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
     borderRadius: 8,
     borderWidth: 1.5,
     backgroundColor: "#fff",
@@ -180,19 +182,23 @@ const s = StyleSheet.create({
     alignItems: "center",
   },
   alertCancelBtnText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "600",
+    textAlign: "center",
   },
   alertConfirmBtn: {
     flex: 1,
-    height: 42,
+    minHeight: 44,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
   },
   alertConfirmBtnText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "600",
     color: "#FFF",
+    textAlign: "center",
   },
 });

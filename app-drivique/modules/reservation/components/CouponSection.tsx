@@ -242,7 +242,7 @@ export default function CouponSection({ vehiculo }: Props) {
   return (
     <View style={[styles.cardForm, { backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF", borderColor: c.border }]}>
       <View style={styles.cardHeaderFila}>
-        <Text style={[styles.cardHeaderTitulo, { color: primaryAccent }]}>
+        <Text style={[styles.cardHeaderTitulo, { color: c.oscuro ? "#F8FAFC" : "#0F172A" }]}>
           {t("coupon.title", { defaultValue: "Cupón de descuento (Opcional)" })}
         </Text>
       </View>
@@ -252,19 +252,33 @@ export default function CouponSection({ vehiculo }: Props) {
           style={[
             styles.appliedContainer,
             {
-              backgroundColor: c.oscuro ? "#17255433" : "#EFF6FF",
-              borderColor: c.oscuro ? "#1D4ED8" : "#BFDBFE",
+              backgroundColor: c.oscuro ? "rgba(30, 64, 175, 0.12)" : "#F0F7FF",
+              borderColor: c.oscuro ? "rgba(59, 130, 246, 0.3)" : "#BFDBFE",
             },
           ]}
         >
           <View style={styles.appliedLeft}>
-            <Ionicons name="checkmark-circle" size={20} color={primaryAccent} />
+            <View
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 12,
+                backgroundColor: "#1D4ED8",
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 10,
+              }}
+            >
+              <Ionicons name="checkmark" size={15} color="#FFFFFF" />
+            </View>
             <View>
-              <Text style={[styles.appliedCode, { color: primaryAccent }]}>{cuponAplicado.codigo}</Text>
+              <Text style={[styles.appliedCode, { color: c.oscuro ? "#93C5FD" : "#1E40AF" }]}>
+                {cuponAplicado.codigo}
+              </Text>
               <Text style={[styles.appliedDesc, { color: c.textSecondary }]}>
                 {cuponAplicado.descuentoPorcentaje
                   ? `${cuponAplicado.descuentoPorcentaje}% ${t("coupon.offApplied", { defaultValue: "OFF aplicado" })}`
-                  : `-$${cuponAplicado.descuentoFijo} ${t("coupon.applied", { defaultValue: "aplicado" })}`}
+                  : `-$${Number(cuponAplicado.descuentoFijo).toLocaleString("es-CO")} ${t("coupon.applied", { defaultValue: "aplicado" })}`}
               </Text>
             </View>
           </View>
