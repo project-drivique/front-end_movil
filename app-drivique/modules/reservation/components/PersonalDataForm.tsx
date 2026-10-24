@@ -4,7 +4,7 @@ import { useReferenceStore } from "@/store/referenceStore";
 import { useReservaStore } from "@/store/reservationStore";
 import { useUsuarioStore } from "@/store/userStore";
 import { obtenerPerfil, actualizarPerfil } from "@/modules/profile/services/profileService";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Platform, StyleSheet, Text, TextInput, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -38,6 +38,7 @@ import { diasEntre } from "./BookingSummaryModal.pieces";
 import TarjetaTerminosCondiciones from "./TermsConditionsCard";
 import TarjetaVerificacionDocumental from "./DocumentVerificationCard";
 import CouponSection from "./CouponSection";
+import SecurityCaptcha from "./SecurityCaptcha";
 import { useServerQuote } from "../hooks/useServerQuote";
 import { COLOR_ACENTO, COLOR_ENLACE_OSCURO, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 import { Alert } from "@/utils/alerta";
@@ -157,9 +158,13 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const [alertaErrorPagoVisible, setAlertaErrorPagoVisible] = useState(false);
   const [alertaCancelarProcesoVisible, setAlertaCancelarProcesoVisible] = useState(false);
   const [procesandoPago, setProcesandoPago] = useState(false);
+  const isSubmittingRef = useRef(false);
   const [reservaCreada, setReservaCreada] = useState<ReservaGuardada | null>(null);
   const [errorServidor, setErrorServidor] = useState("");
+  const [tipoErrorAlerta, setTipoErrorAlerta] = useState<"general" | "documento" | "documento_duplicado" | "reserva" | "vehiculo_ocupado">("general");
   const [modalInstruccionesEfectivoVisible, setModalInstruccionesEfectivoVisible] = useState(false);
+  const [captchaVerificado, setCaptchaVerificado] = useState(false);
+  const [errorCaptcha, setErrorCaptcha] = useState(false);
 
   const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const brandBg = c.oscuro ? COLOR_MARCA_OSCURO : COLOR_MARCA;
@@ -308,31 +313,71 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   };
 
   const ejecutarCreacionReserva = async (fueraDeHorario = false) => {
+    if (isSubmittingRef.current) {
+      console.warn("[PersonalDataForm] Petición de reserva ya en curso, ignorando duplicado.");
+      return;
+    }
+
+    isSubmittingRef.current = true;
     setProcesandoPago(true);
+    setErrorServidor("");
+
     try {
       if (documentos.cedulaFrente || documentos.licenciaConduccion) {
-        const sucursales = useReferenceStore.getState().sucursales;
-        const sedeVehiculo = sucursales.find(
-          (b) =>
-            b.id === vehiculo.sucursalId ||
-            (vehiculo.sucursal && b.name.toLowerCase() === vehiculo.sucursal.toLowerCase())
-        );
-        const idSucursal =
-          (vehiculo as any).sucursalId ||
-          (vehiculo as any).branchId ||
-          (vehiculo as any).currentBranchId ||
-          sedeVehiculo?.id ||
-          sucursales[0]?.id ||
-          "";
+        try {
+          const sucursales = useReferenceStore.getState().sucursales;
+          const sedeVehiculo = sucursales.find(
+            (b) =>
+              b.id === vehiculo.sucursalId ||
+              (vehiculo.sucursal && b.name.toLowerCase() === vehiculo.sucursal.toLowerCase())
+          );
+          const idSucursal =
+            (vehiculo as any).sucursalId ||
+            (vehiculo as any).branchId ||
+            (vehiculo as any).currentBranchId ||
+            sedeVehiculo?.id ||
+            sucursales[0]?.id ||
+            "";
 
-        await documentosService.subir({
-          tipoDocumento: datosPersonales.tipoDocumento,
-          numeroDocumento: datosPersonales.numeroDocumento,
-          sucursalId: idSucursal,
-          identificacion: documentos.cedulaFrente,
-          identificacionReverso: documentos.cedulaReverso,
-          licencia: documentos.licenciaConduccion,
-        });
+          await documentosService.subir({
+            tipoDocumento: datosPersonales.tipoDocumento,
+            numeroDocumento: datosPersonales.numeroDocumento,
+            sucursalId: idSucursal,
+            identificacion: documentos.cedulaFrente,
+            identificacionReverso: documentos.cedulaReverso,
+            licencia: documentos.licenciaConduccion,
+          });
+        } catch (errDoc: any) {
+          const errDocMsg =
+            errDoc?.response?.data?.detail ||
+            errDoc?.response?.data?.message ||
+            errDoc?.message ||
+            "";
+          const errDocLower = String(errDocMsg).toLowerCase();
+          if (
+            errDoc?.response?.status === 409 ||
+            errDocLower.includes("registrado con otra cuenta") ||
+            errDocLower.includes("ya se encuentra registrado")
+          ) {
+            setTipoErrorAlerta("documento_duplicado");
+            setErrorServidor(
+              t("reserva.confirmacion.errorDocumentoDuplicado", {
+                defaultValue:
+                  "El número de documento ingresado ya se encuentra registrado con otra cuenta de usuario. Por favor verifica tus datos o inicia sesión con tu cuenta registrada.",
+              })
+            );
+          } else {
+            setTipoErrorAlerta("documento");
+            setErrorServidor(
+              errDocMsg ||
+                t("reserva.confirmacion.errorSubirDocs", {
+                  defaultValue:
+                    "No se pudieron subir los documentos de verificación. Por favor revisa los archivos e intenta nuevamente.",
+                })
+            );
+          }
+          return;
+        }
       }
 
       // Persistir cambios de datos personales en el perfil de usuario (BD y store)
@@ -351,8 +396,12 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         if (perfilActualizado) {
           actualizarUsuarioGlobal(perfilActualizado);
         }
-      } catch (errPerfil) {
-        console.warn("No se pudo actualizar el perfil en BD:", errPerfil);
+      } catch (errPerfil: any) {
+        if (errPerfil?.response?.status === 409) {
+          console.warn("[PersonalDataForm] Conflicto 409 al actualizar perfil, continuando con reserva.");
+        } else {
+          console.warn("No se pudo actualizar el perfil en BD:", errPerfil);
+        }
       }
 
       const fechasAUsar = fueraDeHorario
@@ -379,28 +428,93 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         router.replace(`/payment-response?ref=${encodeURIComponent(creada.id)}` as any);
       }
     } catch (error: any) {
-      const apiErrors = error?.response?.data?.errors;
-      const detailsErrors = Array.isArray(apiErrors) && apiErrors.length > 0
-        ? apiErrors.map((e: any) => e.message || `${e.field}: inválido`).join("\n")
-        : "";
-      const msg =
-        detailsErrors ||
+      const errorMsg =
         error?.response?.data?.detail ||
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
-        t("reserva.confirmacion.errorCrearMensaje", { defaultValue: "No se pudo registrar la reserva. Verifica que todos los datos y documentos sean válidos." });
-      setErrorServidor(msg);
+        "";
+      const errorMsgLower = String(errorMsg).toLowerCase();
+
+      const esErrorDocDuplicado =
+        error?.response?.status === 409 &&
+        (errorMsgLower.includes("document") ||
+          errorMsgLower.includes("cedula") ||
+          errorMsgLower.includes("cédula") ||
+          errorMsgLower.includes("duplicate") ||
+          errorMsgLower.includes("unique") ||
+          errorMsgLower.includes("registrado con otra") ||
+          errorMsgLower.includes("uq_users_document_number"));
+
+      const esErrorVehiculoOcupado =
+        error?.response?.status === 409 &&
+        (errorMsgLower.includes("debido a otra reserva") ||
+          errorMsgLower.includes("no se encuentra disponible en las fechas") ||
+          errorMsgLower.includes("overlapping") ||
+          errorMsgLower.includes("overlap"));
+
+      if (esErrorDocDuplicado) {
+        setTipoErrorAlerta("documento");
+        setErrorServidor(
+          t("reserva.confirmacion.errorDocumentoDuplicado", {
+            defaultValue: "El número de documento ingresado ya se encuentra registrado con otra cuenta de usuario. Por favor verifica tus datos o inicia sesión con tu cuenta registrada.",
+          })
+        );
+      } else if (esErrorVehiculoOcupado) {
+        setTipoErrorAlerta("vehiculo_ocupado");
+        setErrorServidor(
+          t("reserva.confirmacion.errorVehiculoOcupado", {
+            defaultValue: "Otro usuario acaba de apartar este vehículo para estas fechas mientras completabas el formulario. Si esa persona no completa su pago en 15 minutos, el vehículo quedará libre nuevamente. También puedes explorar otros vehículos disponibles en el catálogo.",
+          })
+        );
+      } else if (error?.response?.status === 409) {
+        if (errorMsgLower.includes("documento ya registrado") || errorMsgLower.includes("número de documento")) {
+          setTipoErrorAlerta("documento");
+          setErrorServidor(
+            t("reserva.confirmacion.errorDocumentoDuplicado", {
+              defaultValue: "El número de documento ingresado ya se encuentra registrado con otra cuenta de usuario. Por favor verifica tus datos o inicia sesión con tu cuenta registrada.",
+            })
+          );
+        } else {
+          setTipoErrorAlerta("reserva");
+          const safeMsg = (!errorMsg || errorMsgLower.includes("conflicto con el estado actual"))
+            ? t("reserva.confirmacion.error409", {
+                defaultValue: "Ya se está procesando una reserva para este vehículo o fechas. Por favor verifica en 'Mis reservas'.",
+              })
+            : errorMsg;
+          setErrorServidor(safeMsg);
+        }
+      } else {
+        setTipoErrorAlerta("general");
+        const apiErrors = error?.response?.data?.errors;
+        const detailsErrors = Array.isArray(apiErrors) && apiErrors.length > 0
+          ? apiErrors.map((e: any) => e.message || `${e.field}: inválido`).join("\n")
+          : "";
+        const msg =
+          detailsErrors ||
+          errorMsg ||
+          t("reserva.confirmacion.errorCrearMensaje", { defaultValue: "No se pudo registrar la reserva. Verifica que todos los datos y documentos sean válidos." });
+        setErrorServidor(msg);
+      }
     } finally {
       setProcesandoPago(false);
+      isSubmittingRef.current = false;
     }
   };
 
   const handleConfirmarReserva = async () => {
+    if (procesandoPago || isSubmittingRef.current) return;
+
     if (!datosCompletos) {
       setAlertaFaltantesVisible(true);
       return;
     }
+
+    if (!captchaVerificado) {
+      setErrorCaptcha(true);
+      return;
+    }
+    setErrorCaptcha(false);
 
     if (checkOutsideSchedule() && !fechasLugar.fueraDeHorarioAceptado) {
       setAlertaHorarioVisible(true);
@@ -749,6 +863,16 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
               </Text>
             </View>
 
+            <SecurityCaptcha
+              isVerified={captchaVerificado}
+              onVerified={(verified) => {
+                setCaptchaVerificado(verified);
+                if (verified) setErrorCaptcha(false);
+              }}
+              hasError={errorCaptcha}
+              style={{ marginTop: 10, marginBottom: 20 }}
+            />
+
             <BarraTotalConfirmar
               total={total}
               cargando={procesandoPago}
@@ -871,10 +995,46 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
       <AlertModal
         visible={!!errorServidor}
-        icono="close-circle-outline"
-        titulo={t("reserva.confirmacion.errorCrearTitulo", { defaultValue: "Error al registrar la reserva" })}
+        icono={tipoErrorAlerta === "reserva" || tipoErrorAlerta === "vehiculo_ocupado" ? "warning-outline" : "close-circle-outline"}
+        titulo={
+          tipoErrorAlerta === "documento_duplicado"
+            ? t("reserva.confirmacion.docDuplicadoTitulo", { defaultValue: "Documento ya registrado" })
+            : tipoErrorAlerta === "documento"
+            ? t("reserva.confirmacion.errorSubirDocsTitulo", { defaultValue: "Error al subir documentos" })
+            : tipoErrorAlerta === "vehiculo_ocupado"
+            ? t("reserva.confirmacion.vehiculoOcupadoTitulo", { defaultValue: "Vehículo no disponible" })
+            : tipoErrorAlerta === "reserva"
+            ? t("reserva.confirmacion.reservaEnProcesoTitulo", { defaultValue: "Reserva en proceso" })
+            : t("reserva.confirmacion.errorCrearTitulo", { defaultValue: "Error al registrar la reserva" })
+        }
         mensaje={errorServidor}
-        botones={[]}
+        botones={
+          tipoErrorAlerta === "vehiculo_ocupado"
+            ? [
+                {
+                  texto: t("reserva.confirmacion.verCatalogo", { defaultValue: "Ver otros vehículos" }),
+                  variante: "primario",
+                  onPress: () => {
+                    setErrorServidor("");
+                    limpiarReserva();
+                    router.replace("/(tabs)/catalog");
+                  },
+                },
+              ]
+            : tipoErrorAlerta === "reserva"
+            ? [
+                {
+                  texto: t("reserva.confirmacion.verMisReservas", { defaultValue: "Ver mis reservas" }),
+                  variante: "primario",
+                  onPress: () => {
+                    setErrorServidor("");
+                    limpiarReserva();
+                    router.replace("/(tabs)/my-bookings");
+                  },
+                },
+              ]
+            : undefined
+        }
         onCerrar={() => setErrorServidor("")}
       />
 
