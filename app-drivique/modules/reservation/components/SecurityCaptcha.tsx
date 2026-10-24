@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { COLOR_MARCA } from "../constants/reservation.constants";
+import { useBrandStore } from "@/store/brandStore";
 
 const CHARS = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 const CODE_LENGTH = 5;
@@ -83,7 +84,8 @@ export default function SecurityCaptcha({
     }
   };
 
-  const primaryAccent = c.oscuro ? "#3B82F6" : COLOR_MARCA;
+  const marca = useBrandStore((s) => s.marca);
+  const primaryAccent = marca?.primary || (c.oscuro ? "#3B82F6" : COLOR_MARCA);
 
   // Variaciones de rotación para cada uno de los caracteres del código para efecto anti-bot
   const rotations = ["-10deg", "8deg", "-6deg", "12deg", "-8deg"];
