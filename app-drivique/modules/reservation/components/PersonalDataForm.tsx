@@ -160,8 +160,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const [procesandoPago, setProcesandoPago] = useState(false);
   const isSubmittingRef = useRef(false);
   const [reservaCreada, setReservaCreada] = useState<ReservaGuardada | null>(null);
-  const [errorServidor, setErrorServidor] = useState("");
-  const [tipoErrorAlerta, setTipoErrorAlerta] = useState<"general" | "documento" | "reserva" | "vehiculo_ocupado">("general");
+  const [tipoErrorAlerta, setTipoErrorAlerta] = useState<"general" | "documento" | "documento_duplicado" | "reserva" | "vehiculo_ocupado">("general");
   const [modalInstruccionesEfectivoVisible, setModalInstruccionesEfectivoVisible] = useState(false);
   const [captchaVerificado, setCaptchaVerificado] = useState(false);
   const [errorCaptcha, setErrorCaptcha] = useState(false);
@@ -354,15 +353,12 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
             errDoc?.message ||
             "";
           const errDocLower = String(errDocMsg).toLowerCase();
-          setTipoErrorAlerta("documento");
           if (
             errDoc?.response?.status === 409 ||
-            errDocLower.includes("document") ||
-            errDocLower.includes("registrado") ||
-            errDocLower.includes("unique") ||
-            errDocLower.includes("cedula") ||
-            errDocLower.includes("cédula")
+            errDocLower.includes("registrado con otra cuenta") ||
+            errDocLower.includes("ya se encuentra registrado")
           ) {
+            setTipoErrorAlerta("documento_duplicado");
             setErrorServidor(
               t("reserva.confirmacion.errorDocumentoDuplicado", {
                 defaultValue:
@@ -370,6 +366,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
               })
             );
           } else {
+            setTipoErrorAlerta("documento");
             setErrorServidor(
               errDocMsg ||
                 t("reserva.confirmacion.errorSubirDocs", {
@@ -999,8 +996,10 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         visible={!!errorServidor}
         icono={tipoErrorAlerta === "reserva" || tipoErrorAlerta === "vehiculo_ocupado" ? "warning-outline" : "close-circle-outline"}
         titulo={
-          tipoErrorAlerta === "documento"
+          tipoErrorAlerta === "documento_duplicado"
             ? t("reserva.confirmacion.docDuplicadoTitulo", { defaultValue: "Documento ya registrado" })
+            : tipoErrorAlerta === "documento"
+            ? t("reserva.confirmacion.errorSubirDocsTitulo", { defaultValue: "Error al subir documentos" })
             : tipoErrorAlerta === "vehiculo_ocupado"
             ? t("reserva.confirmacion.vehiculoOcupadoTitulo", { defaultValue: "Vehículo no disponible" })
             : tipoErrorAlerta === "reserva"
