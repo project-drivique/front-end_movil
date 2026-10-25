@@ -31,8 +31,9 @@ function sanitizeName(name: string | undefined | null, fallback: string): string
   return name;
 }
 
-const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID?.trim();
-const FACEBOOK_APP_ID = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID?.trim();
+// IDs públicos (no son secretos). Respaldo para builds sin variables (p. ej. Docker en Hostinger), iguales a los del backend.
+const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID?.trim() || '18960724578-h53pr526uva5mtb9doup86f5hjei231c.apps.googleusercontent.com';
+const FACEBOOK_APP_ID = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID?.trim() || '1072551762252390';
 
 function cargarGoogleWebSDK(): Promise<any> {
   if (typeof window === 'undefined') return Promise.resolve();
