@@ -338,7 +338,13 @@ export default {
     "errores": {
       "correoInvalido": "Introduza um email válido",
       "contrasenaObligatoria": "A palavra-passe é obrigatória",
-      "cuentaNoExiste": "Não existe nenhuma conta registada com esse email.",
+      "contrasenaIncorrecta": "Palavra-passe incorreta. Verifique-a e tente novamente. Tentativas restantes: {{remaining}}.",
+      "contrasenaIncorrectaSimple": "Palavra-passe incorreta. Verifique-a e tente novamente.",
+      "contrasenaIncorrectaTitulo": "Palavra-passe incorreta",
+      "cuentaNoExiste": "Não existe nenhuma conta com este e-mail. Verifique se está bem escrito ou registe-se.",
+      "cuentaDesactivada": "A sua conta está desativada. Contacte o suporte para a reativar.",
+      "sinConexion": "Não foi possível ligar ao servidor. Verifique a sua ligação à internet e tente novamente.",
+      "cuentaBloqueada": "Por segurança bloqueámos a sua conta durante {{minutes}} minuto(s) devido a demasiadas tentativas falhadas. Pode recuperar a palavra-passe em «Esqueceu-se da palavra-passe?».",
       "cuentaNoEncontrada": "Conta não encontrada",
       "loginFallido": "Não foi possível iniciar sessão.",
       "passwordDebil": "A palavra-passe deve ter pelo menos 12 carateres, uma maiúscula, uma minúscula, um número e um símbolo.",
@@ -775,11 +781,12 @@ export default {
       "noCoinciden": "As palavras-passe não coincidem.",
       "debeSerDiferente": "A nova palavra-passe deve ser diferente da atual.",
       "exitoTitulo": "Palavra-passe atualizada",
-      "exitoMensaje": "A palavra-passe foi atualizada com sucesso.",
+      "exitoMensaje": "A sua palavra-passe foi atualizada. Por segurança, inicie sessão novamente com a nova palavra-passe.",
       "errorTitulo": "Não foi possível atualizar",
       "errorMensaje": "Verifique a palavra-passe atual e tente novamente.",
       "notificacionTitulo": "Palavra-passe atualizada",
-      "notificacionMensaje": "A palavra-passe da sua conta foi alterada com sucesso."
+      "notificacionMensaje": "A palavra-passe da sua conta foi alterada com sucesso.",
+      "actualIncorrectaIntentos": "A palavra-passe atual está incorreta. Tentativas restantes: {{remaining}}."
     },
     "tarjetas": "Os meus cartões de pagamento",
     "tarjetasSub": "Gerir os seus métodos de pagamento",
@@ -1006,7 +1013,18 @@ export default {
       "avisoPlazoPagoDinamico": "Tem aproximadamente {{horas}} para efetuar o pagamento digital e confirmar a sua reserva. Se não efetuar o pagamento dentro deste prazo, a reserva será cancelada automaticamente.",
       "codigoPagoEfectivo": "Código de pagamento em numerário",
       "errorCrearMensaje": "Não foi possível registar a reserva. Verifique se todos os dados e documentos são válidos.",
-      "errorCrearTitulo": "Erro ao registar a reserva"
+      "errorCrearTitulo": "Erro ao registar a reserva",
+      "errorDocumentoDuplicado": "O número de documento introduzido já está registado noutra conta de utilizador. Verifique os seus dados ou inicie sessão com a sua conta registada.",
+      "errorSubirDocs": "Não foi possível carregar os documentos de verificação. Verifique os ficheiros e tente novamente.",
+      "errorVehiculoOcupado": "Outro utilizador acabou de reservar este veículo para estas datas enquanto preenchia o formulário. Se essa pessoa não concluir o pagamento dentro do prazo, o veículo ficará novamente disponível. Pode também explorar outros veículos disponíveis no catálogo.",
+      "error409": "Já está a ser processada uma reserva para este veículo ou estas datas. Verifique em 'As minhas reservas'.",
+      "docDuplicadoTitulo": "Documento já registado",
+      "errorSubirDocsTitulo": "Erro ao carregar documentos",
+      "vehiculoOcupadoTitulo": "Veículo indisponível",
+      "reservaEnProcesoTitulo": "Reserva em processamento",
+      "verCatalogo": "Ver outros veículos",
+      "verMisReservas": "Ver as minhas reservas",
+      "confirmando": "A confirmar a reserva..."
     },
     "edicion": {
       "editarFechasYLugares": "Editar datas e locais",
@@ -1088,7 +1106,8 @@ export default {
       "horaEntregaRetiro": "Hora de Entrega (Levantamento):",
       "horaRecogidaDevolucion": "Hora de Recolha (Devolução):",
       "efectivoNoDisponibleTitulo": "Pagamento em numerário não disponível",
-      "efectivoNoDisponibleMensaje": "A agência {{sucursal}} não aceita pagamentos em numerário. Escolha pagamento online ou um veículo de outra agência."
+      "efectivoNoDisponibleMensaje": "A agência {{sucursal}} não aceita pagamentos em numerário. Escolha pagamento online ou um veículo de outra agência.",
+      "infoDomicilio": "Informação de entrega e devolução ao domicílio"
     },
     "planes": {
       "metodosPago": {
@@ -1609,6 +1628,7 @@ export default {
     },
     "conditions": "Condições",
     "offApplied": "OFF aplicado",
+    "discountLabel": "Desconto",
     "applied": "aplicado",
     "todosLosVehiculos": "Todos os veículos",
     "appliedCheck": "✓ Aplicado",
@@ -2176,6 +2196,8 @@ export default {
     "verifyHuman": "Confirmar que sou um humano",
     "verifying": "A verificar segurança...",
     "clickToVerify": "Toque na caixa para verificar a segurança",
+    "completeVerification": "Conclua a verificação de segurança",
+    "loadError": "Não foi possível carregar a verificação. Verifique a sua ligação e tente novamente.",
     "privacy": "Segurança",
     "reset": "Alterar",
     "placeholder": "Introduza o código",
@@ -2184,5 +2206,21 @@ export default {
     "emptyCode": "Por favor introduza o código de segurança.",
     "invalidCode": "Código incorreto. Gerámos um novo.",
     "mustVerify": "Deve concluir a verificação de segurança antes de confirmar a reserva."
+  },
+  "reservas": {
+    "vehicle": "Veículo",
+    "pickupDate": "Data de levantamento",
+    "pickupTime": "Hora de levantamento",
+    "returnDate": "Data de devolução",
+    "returnTime": "Hora de devolução",
+    "pickupLocation": "Local de levantamento",
+    "returnLocation": "Local de devolução",
+    "paymentMethod": "Meio de pagamento",
+    "protection": "Proteção",
+    "status": "Estado",
+    "esperaAperturaTitulo": "À espera da abertura da filial",
+    "esperaAperturaDesc": "A sua reserva foi registada fora do horário de atendimento da filial {{sucursal}}. Assim que a filial iniciar o atendimento, receberá uma notificação automática por e-mail, web e push para proceder ao pagamento e à confirmação da reserva.",
+    "esperaAperturaEstado": "Estado: à espera da abertura da filial",
+    "docsEnRevisionEstado": "Estado: em revisão pelo responsável da filial"
   }
 };

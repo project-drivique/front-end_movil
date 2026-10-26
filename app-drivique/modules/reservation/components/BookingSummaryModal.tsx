@@ -554,7 +554,7 @@ export default function ResumenReservaModal({
               {desglose.descuentoCupon > 0 && cuponAplicado && (
                 <View style={styles.filaDesglose}>
                   <Text style={[styles.filaDesgloseLabel, { color: "#16A34A" }]}>
-                    {`Descuento (${cuponAplicado.codigo})`}
+                    {`${t("coupon.discountLabel", { defaultValue: "Descuento" })} (${cuponAplicado.codigo})`}
                   </Text>
                   <Text style={[styles.filaDesgloseValor, { color: "#16A34A" }]}>
                     {`-${fmt(desglose.descuentoCupon)}`}
