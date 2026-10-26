@@ -1,3 +1,4 @@
+import { captchaTokenStore } from "./captchaTokenStore";
 import { apiClient } from "@/services/http/apiClient";
 import { useReferenceStore } from "@/store/referenceStore";
 import { catalogoService } from "@/modules/catalog/services/catalogService";
@@ -235,7 +236,11 @@ export const reservaPersistService = {
       cashPaymentBranchId: fechasLugar.metodoPago === "efectivo" ? targetBranchId : null,
       outsideScheduleAccepted: Boolean(fechasLugar.fueraDeHorarioAceptado),
     };
-    const { data } = await apiClient.post("/reservations/checkout/initiate", body);
+    // El captcha se valida en el servidor: el token es de un solo uso
+    const captchaToken = captchaTokenStore.consume();
+    const { data } = await apiClient.post("/reservations/checkout/initiate", body, {
+      headers: captchaToken ? { "X-Captcha-Token": captchaToken } : undefined,
+    });
 
     // Entrega/devolución a domicilio: el servidor las guarda aparte; sin esto la sucursal nunca ve el domicilio
     const retiroDomicilio = fechasLugar.lugarRetiro === "domicilio";
