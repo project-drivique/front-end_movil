@@ -1016,7 +1016,7 @@ export default {
       "errorCrearTitulo": "Erro ao registar a reserva",
       "errorDocumentoDuplicado": "O número de documento introduzido já está registado noutra conta de utilizador. Verifique os seus dados ou inicie sessão com a sua conta registada.",
       "errorSubirDocs": "Não foi possível carregar os documentos de verificação. Verifique os ficheiros e tente novamente.",
-      "errorVehiculoOcupado": "Outro utilizador acabou de reservar este veículo para estas datas enquanto preenchia o formulário. Se essa pessoa não concluir o pagamento em 15 minutos, o veículo ficará novamente disponível. Pode também explorar outros veículos disponíveis no catálogo.",
+      "errorVehiculoOcupado": "Outro utilizador acabou de reservar este veículo para estas datas enquanto preenchia o formulário. Se essa pessoa não concluir o pagamento dentro do prazo, o veículo ficará novamente disponível. Pode também explorar outros veículos disponíveis no catálogo.",
       "error409": "Já está a ser processada uma reserva para este veículo ou estas datas. Verifique em 'As minhas reservas'.",
       "docDuplicadoTitulo": "Documento já registado",
       "errorSubirDocsTitulo": "Erro ao carregar documentos",

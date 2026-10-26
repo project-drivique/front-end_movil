@@ -1016,7 +1016,7 @@ export default {
       "errorCrearTitulo": "Error registering the reservation",
       "errorDocumentoDuplicado": "The document number you entered is already registered to another user account. Please check your details or sign in with your registered account.",
       "errorSubirDocs": "The verification documents could not be uploaded. Please check the files and try again.",
-      "errorVehiculoOcupado": "Another user has just reserved this vehicle for these dates while you were filling in the form. If that person does not complete the payment within 15 minutes, the vehicle will be available again. You can also explore other available vehicles in the catalog.",
+      "errorVehiculoOcupado": "Another user has just reserved this vehicle for these dates while you were filling in the form. If that person does not complete the payment within the allowed time, the vehicle will be available again. You can also explore other available vehicles in the catalog.",
       "error409": "A booking is already being processed for this vehicle or these dates. Please check 'My bookings'.",
       "docDuplicadoTitulo": "Document already registered",
       "errorSubirDocsTitulo": "Error uploading documents",

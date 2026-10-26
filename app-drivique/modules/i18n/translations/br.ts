@@ -1016,7 +1016,7 @@ export default {
       "errorCrearTitulo": "Erro ao registrar a reserva",
       "errorDocumentoDuplicado": "O número de documento informado já está cadastrado em outra conta de usuário. Confira seus dados ou entre com a sua conta cadastrada.",
       "errorSubirDocs": "Não foi possível enviar os documentos de verificação. Confira os arquivos e tente novamente.",
-      "errorVehiculoOcupado": "Outro usuário acabou de reservar este veículo para estas datas enquanto você preenchia o formulário. Se essa pessoa não concluir o pagamento em 15 minutos, o veículo ficará disponível novamente. Você também pode ver outros veículos disponíveis no catálogo.",
+      "errorVehiculoOcupado": "Outro usuário acabou de reservar este veículo para estas datas enquanto você preenchia o formulário. Se essa pessoa não concluir o pagamento dentro do prazo, o veículo ficará disponível novamente. Você também pode ver outros veículos disponíveis no catálogo.",
       "error409": "Já há uma reserva em processamento para este veículo ou estas datas. Confira em 'Minhas reservas'.",
       "docDuplicadoTitulo": "Documento já cadastrado",
       "errorSubirDocsTitulo": "Erro ao enviar documentos",

@@ -1016,7 +1016,7 @@ export default {
       "errorCrearTitulo": "Erreur lors de l’enregistrement de la réservation",
       "errorDocumentoDuplicado": "Le numéro de document saisi est déjà enregistré avec un autre compte utilisateur. Vérifiez vos données ou connectez-vous avec votre compte.",
       "errorSubirDocs": "Les documents de vérification n’ont pas pu être envoyés. Vérifiez les fichiers et réessayez.",
-      "errorVehiculoOcupado": "Un autre utilisateur vient de réserver ce véhicule pour ces dates pendant que vous remplissiez le formulaire. Si cette personne ne finalise pas son paiement dans les 15 minutes, le véhicule sera de nouveau disponible. Vous pouvez aussi consulter d’autres véhicules disponibles dans le catalogue.",
+      "errorVehiculoOcupado": "Un autre utilisateur vient de réserver ce véhicule pour ces dates pendant que vous remplissiez le formulaire. Si cette personne ne finalise pas son paiement dans le délai imparti, le véhicule sera de nouveau disponible. Vous pouvez aussi consulter d’autres véhicules disponibles dans le catalogue.",
       "error409": "Une réservation est déjà en cours de traitement pour ce véhicule ou ces dates. Veuillez vérifier dans « Mes réservations ».",
       "docDuplicadoTitulo": "Document déjà enregistré",
       "errorSubirDocsTitulo": "Erreur lors de l’envoi des documents",

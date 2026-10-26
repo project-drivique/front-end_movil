@@ -466,7 +466,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         setTipoErrorAlerta("vehiculo_ocupado");
         setErrorServidor(
           t("reserva.confirmacion.errorVehiculoOcupado", {
-            defaultValue: "Otro usuario acaba de apartar este vehículo para estas fechas mientras completabas el formulario. Si esa persona no completa su pago en 15 minutos, el vehículo quedará libre nuevamente. También puedes explorar otros vehículos disponibles en el catálogo.",
+            defaultValue: "Otro usuario acaba de apartar este vehículo para estas fechas mientras completabas el formulario. Si esa persona no completa su pago dentro del plazo, el vehículo quedará libre nuevamente. También puedes explorar otros vehículos disponibles en el catálogo.",
           })
         );
       } else if (error?.response?.status === 409) {
