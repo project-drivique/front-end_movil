@@ -89,7 +89,7 @@ export default function PagoRespuestaScreen() {
       procesado.current = true;
       try {
         if (tx.status === "APPROVED" && encontrada.estadoApi === "PENDING_PAYMENT") {
-          await reservaPersistService.confirmarPago(encontrada.id);
+          await reservaPersistService.confirmarPago(encontrada.id, id);
         } else if ((tx.status === "DECLINED" || tx.status === "ERROR") && encontrada.estadoApi === "PENDING_PAYMENT") {
           await reservaPersistService.reportarPagoFallido(encontrada.id);
           setAviso(t("reserva.confirmacion.errorPagoMensaje"));
@@ -399,7 +399,8 @@ export default function PagoRespuestaScreen() {
             </View>
             <Text style={[s.tarjetaInfoTexto, { color: c.oscuro ? "#DBEAFE" : "#1E3A8A" }]}>
               {t("reservas.esperaAperturaDesc", {
-                defaultValue: `Tu reserva fue registrada fuera del horario de atención de la sucursal ${vehiculo?.sucursal || sucursalEfectivo || "Drivique"}. En cuanto la sede inicie su jornada de atención, recibirás una notificación automática por correo, web y push para proceder con el pago y confirmación de tu reserva.`,
+                sucursal: vehiculo?.sucursal || sucursalEfectivo || "Drivique",
+                defaultValue: "Tu reserva fue registrada fuera del horario de atención de la sucursal {{sucursal}}. En cuanto la sede inicie su jornada de atención, recibirás una notificación automática por correo, web y push para proceder con el pago y confirmación de tu reserva.",
               })}
             </Text>
             <View
