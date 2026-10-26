@@ -451,7 +451,7 @@ export default function LoginScreen() {
       <AlertModal
         visible={alertaErrorVisible}
         icono="alert-circle-outline"
-        titulo={t("auth.login.errorTitulo")}
+        titulo={errores.find((e) => !e.campo)?.titulo ?? t("auth.login.errorTitulo")}
         mensaje={errorGlobal ?? t("auth.login.errorMensajeDefault")}
         botones={[
           {

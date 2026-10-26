@@ -47,9 +47,24 @@ export function ChangePasswordModal({ visible, correo, token, onCerrar, onExito,
     setGuardando(true);
     try {
       const resultado = await cambiarContrasena({ correo, token, contrasenaActual: actual, nuevaContrasena: nueva });
-      if (resultado === "incorrecta") {
-        setErrores({ actual: t("perfil.cambiarContrasena.actualIncorrecta") });
-        onError();
+      if (resultado.estado === "incorrecta") {
+        setErrores({
+          actual: resultado.intentosRestantes !== undefined
+            ? t("perfil.cambiarContrasena.actualIncorrectaIntentos", { remaining: resultado.intentosRestantes })
+            : t("perfil.cambiarContrasena.actualIncorrecta"),
+        });
+        return;
+      }
+      if (resultado.estado === "debil") {
+        setErrores({ nueva: t("perfil.cambiarContrasena.nuevaInsegura") });
+        return;
+      }
+      if (resultado.estado === "igual") {
+        setErrores({ nueva: t("perfil.cambiarContrasena.debeSerDiferente") });
+        return;
+      }
+      if (resultado.estado === "bloqueada") {
+        setErrores({ actual: t("auth.errores.cuentaBloqueada", { minutes: resultado.minutosBloqueo }) });
         return;
       }
       limpiar();

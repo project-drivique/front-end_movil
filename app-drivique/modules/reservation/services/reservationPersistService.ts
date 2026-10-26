@@ -1,3 +1,5 @@
+import { captchaTokenStore } from "./captchaTokenStore";
+import { withIdempotency } from "@/services/http/idempotency";
 import { apiClient } from "@/services/http/apiClient";
 import { useReferenceStore } from "@/store/referenceStore";
 import { catalogoService } from "@/modules/catalog/services/catalogService";
@@ -235,7 +237,13 @@ export const reservaPersistService = {
       cashPaymentBranchId: fechasLugar.metodoPago === "efectivo" ? targetBranchId : null,
       outsideScheduleAccepted: Boolean(fechasLugar.fueraDeHorarioAceptado),
     };
-    const { data } = await apiClient.post("/reservations/checkout/initiate", body);
+    // El captcha se valida en el servidor: el token es de un solo uso
+    const captchaToken = captchaTokenStore.consume();
+    const { data } = await withIdempotency(`initiate:${JSON.stringify(body)}`, (key) =>
+      apiClient.post("/reservations/checkout/initiate", body, {
+        headers: { "Idempotency-Key": key, ...(captchaToken ? { "X-Captcha-Token": captchaToken } : {}) },
+      }),
+    );
 
     // Entrega/devolución a domicilio: el servidor las guarda aparte; sin esto la sucursal nunca ve el domicilio
     const retiroDomicilio = fechasLugar.lugarRetiro === "domicilio";
@@ -269,12 +277,16 @@ export const reservaPersistService = {
 
   confirmarPago: async (id: string, transactionId?: string) => {
     const params = transactionId ? { transactionId } : undefined;
-    const { data } = await apiClient.post(`/reservations/checkout/confirm/${id}`, null, { params });
+    const { data } = await withIdempotency(`confirm:${id}:${transactionId ?? ""}`, (key) =>
+      apiClient.post(`/reservations/checkout/confirm/${id}`, null, { params, headers: { "Idempotency-Key": key } }),
+    );
     return mapReserva(data);
   },
 
   reportarPagoFallido: async (id: string) => {
-    await apiClient.post(`/reservations/checkout/payment-failed/${id}`);
+    await withIdempotency(`payment-failed:${id}`, (key) =>
+      apiClient.post(`/reservations/checkout/payment-failed/${id}`, null, { headers: { "Idempotency-Key": key } }),
+    );
   },
 
   cancelar: async (id: string) => {
