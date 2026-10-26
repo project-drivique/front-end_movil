@@ -340,6 +340,7 @@ export default {
       "contrasenaObligatoria": "A palavra-passe é obrigatória",
       "contrasenaIncorrecta": "Palavra-passe incorreta. Verifique-a e tente novamente. Tentativas restantes: {{remaining}}.",
       "contrasenaIncorrectaSimple": "Palavra-passe incorreta. Verifique-a e tente novamente.",
+      "contrasenaIncorrectaTitulo": "Palavra-passe incorreta",
       "cuentaNoExiste": "Não existe nenhuma conta com este e-mail. Verifique se está bem escrito ou registe-se.",
       "cuentaDesactivada": "A sua conta está desativada. Contacte o suporte para a reativar.",
       "sinConexion": "Não foi possível ligar ao servidor. Verifique a sua ligação à internet e tente novamente.",

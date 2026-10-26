@@ -340,6 +340,7 @@ export default {
       "contrasenaObligatoria": "The password is required",
       "contrasenaIncorrecta": "Incorrect password. Check it and try again. Attempts left: {{remaining}}.",
       "contrasenaIncorrectaSimple": "Incorrect password. Check it and try again.",
+      "contrasenaIncorrectaTitulo": "Incorrect password",
       "cuentaNoExiste": "There is no account with this email. Check the spelling or sign up.",
       "cuentaDesactivada": "Your account is disabled. Contact support to reactivate it.",
       "sinConexion": "We could not reach the server. Check your internet connection and try again.",

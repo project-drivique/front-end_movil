@@ -66,7 +66,7 @@ export function useLogin() {
       }
       if (serverCode === 'ACCOUNT_NOT_FOUND' || status === 404) {
         // Aviso bajo el campo y además el modal de error
-        setErrores([{ campo: 'correo', mensaje: i18n.t('auth.errores.cuentaNoExiste') }, { mensaje: i18n.t('auth.errores.cuentaNoExiste') }]);
+        setErrores([{ campo: 'correo', mensaje: i18n.t('auth.errores.cuentaNoExiste') }, { mensaje: i18n.t('auth.errores.cuentaNoExiste'), titulo: i18n.t('auth.errores.cuentaNoEncontrada') }]);
         return;
       }
       if (serverCode === 'INVALID_PASSWORD') {
@@ -74,7 +74,7 @@ export function useLogin() {
           ? i18n.t('auth.errores.contrasenaIncorrecta', { remaining: meta.remainingAttempts })
           : i18n.t('auth.errores.contrasenaIncorrectaSimple');
         // Aviso bajo el campo y además el modal de error
-        setErrores([{ campo: 'contrasena', mensaje }, { mensaje }]);
+        setErrores([{ campo: 'contrasena', mensaje }, { mensaje, titulo: i18n.t('auth.errores.contrasenaIncorrectaTitulo') }]);
         return;
       }
       if (serverCode === 'ACCOUNT_LOCKED' || status === 423 || status === 429) {

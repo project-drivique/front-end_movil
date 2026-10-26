@@ -340,6 +340,7 @@ export default {
       "contrasenaObligatoria": "La contraseña es obligatoria",
       "contrasenaIncorrecta": "Contraseña incorrecta. Revísala e inténtalo de nuevo. Intentos restantes: {{remaining}}.",
       "contrasenaIncorrectaSimple": "Contraseña incorrecta. Revísala e inténtalo de nuevo.",
+      "contrasenaIncorrectaTitulo": "Contraseña incorrecta",
       "cuentaNoExiste": "No existe una cuenta con este correo. Revisa que esté bien escrito o regístrate.",
       "cuentaDesactivada": "Tu cuenta está desactivada. Contacta a soporte para reactivarla.",
       "sinConexion": "No pudimos conectar con el servidor. Revisa tu conexión a internet e inténtalo de nuevo.",

@@ -340,6 +340,7 @@ export default {
       "contrasenaObligatoria": "Le mot de passe est obligatoire",
       "contrasenaIncorrecta": "Mot de passe incorrect. Vérifiez-le et réessayez. Tentatives restantes : {{remaining}}.",
       "contrasenaIncorrectaSimple": "Mot de passe incorrect. Vérifiez-le et réessayez.",
+      "contrasenaIncorrectaTitulo": "Mot de passe incorrect",
       "cuentaNoExiste": "Aucun compte n’existe avec cet e-mail. Vérifiez l’orthographe ou inscrivez-vous.",
       "cuentaDesactivada": "Votre compte est désactivé. Contactez le support pour le réactiver.",
       "sinConexion": "Impossible de joindre le serveur. Vérifiez votre connexion internet et réessayez.",

@@ -20,4 +20,5 @@ export interface OlvideContrasenaForm {
 export interface AuthError {
   campo?: string;
   mensaje: string;
+  titulo?: string;
 }
