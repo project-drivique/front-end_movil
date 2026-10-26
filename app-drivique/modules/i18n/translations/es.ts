@@ -783,11 +783,12 @@ export default {
       "noCoinciden": "Las contraseñas no coinciden.",
       "debeSerDiferente": "La nueva contraseña debe ser diferente a la actual.",
       "exitoTitulo": "Contraseña actualizada",
-      "exitoMensaje": "Tu contraseña se actualizó correctamente.",
+      "exitoMensaje": "Tu contraseña se actualizó correctamente. Por seguridad, inicia sesión de nuevo con la nueva contraseña.",
       "errorTitulo": "No se pudo actualizar",
       "errorMensaje": "Verifica la contraseña actual e inténtalo nuevamente.",
       "notificacionTitulo": "Contraseña actualizada",
-      "notificacionMensaje": "La contraseña de tu cuenta fue modificada correctamente."
+      "notificacionMensaje": "La contraseña de tu cuenta fue modificada correctamente.",
+      "actualIncorrectaIntentos": "La contraseña actual es incorrecta. Intentos restantes: {{remaining}}."
     },
     "tarjetas": "Mis tarjetas de pago",
     "tarjetasSub": "Gestiona tus métodos de pago",

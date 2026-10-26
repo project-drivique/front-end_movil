@@ -781,11 +781,12 @@ export default {
       "noCoinciden": "Passwords do not match.",
       "debeSerDiferente": "The new password must be different from the current one.",
       "exitoTitulo": "Password updated",
-      "exitoMensaje": "Your password was updated successfully.",
+      "exitoMensaje": "Your password was updated. For security, please sign in again with your new password.",
       "errorTitulo": "Update failed",
       "errorMensaje": "Check your current password and try again.",
       "notificacionTitulo": "Password updated",
-      "notificacionMensaje": "Your account password was changed successfully."
+      "notificacionMensaje": "Your account password was changed successfully.",
+      "actualIncorrectaIntentos": "The current password is incorrect. Attempts left: {{remaining}}."
     },
     "tarjetas": "My payment cards",
     "tarjetasSub": "Manage your payment methods",

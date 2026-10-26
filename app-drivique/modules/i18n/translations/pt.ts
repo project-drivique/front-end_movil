@@ -781,11 +781,12 @@ export default {
       "noCoinciden": "As palavras-passe não coincidem.",
       "debeSerDiferente": "A nova palavra-passe deve ser diferente da atual.",
       "exitoTitulo": "Palavra-passe atualizada",
-      "exitoMensaje": "A palavra-passe foi atualizada com sucesso.",
+      "exitoMensaje": "A sua palavra-passe foi atualizada. Por segurança, inicie sessão novamente com a nova palavra-passe.",
       "errorTitulo": "Não foi possível atualizar",
       "errorMensaje": "Verifique a palavra-passe atual e tente novamente.",
       "notificacionTitulo": "Palavra-passe atualizada",
-      "notificacionMensaje": "A palavra-passe da sua conta foi alterada com sucesso."
+      "notificacionMensaje": "A palavra-passe da sua conta foi alterada com sucesso.",
+      "actualIncorrectaIntentos": "A palavra-passe atual está incorreta. Tentativas restantes: {{remaining}}."
     },
     "tarjetas": "Os meus cartões de pagamento",
     "tarjetasSub": "Gerir os seus métodos de pagamento",

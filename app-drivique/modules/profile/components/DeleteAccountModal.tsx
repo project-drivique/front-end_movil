@@ -37,9 +37,17 @@ export function DeleteAccountModal({ visible, onCerrar, onEliminada }: Props) {
       await onEliminada()
     } catch (err: any) {
       const data = err?.response?.data
-      setError(err?.response?.status === 401
-        ? t('perfil.cambiarContrasena.actualIncorrecta', { defaultValue: 'La contraseña actual es incorrecta.' })
-        : data?.detail || data?.message || t('perfil.errorMsg', { defaultValue: 'No fue posible eliminar la cuenta.' }))
+      const code = data?.errors?.[0]?.code
+      if (!err?.response) setError(t('auth.errores.sinConexion'))
+      else if (code === 'INVALID_PASSWORD' || err.response.status === 401) {
+        setError(data?.meta?.remainingAttempts !== undefined
+          ? t('perfil.cambiarContrasena.actualIncorrectaIntentos', { remaining: data.meta.remainingAttempts })
+          : t('perfil.cambiarContrasena.actualIncorrecta', { defaultValue: 'La contraseña actual es incorrecta.' }))
+      } else if (code === 'ACCOUNT_LOCKED' || err.response.status === 423) {
+        setError(t('auth.errores.cuentaBloqueada', { minutes: Number(data?.meta?.lockedMinutes) || 30 }))
+      } else {
+        setError(data?.detail || data?.message || t('perfil.errorMsg', { defaultValue: 'No fue posible eliminar la cuenta.' }))
+      }
     } finally {
       setEliminando(false)
     }

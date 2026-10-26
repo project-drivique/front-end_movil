@@ -781,11 +781,12 @@ export default {
       "noCoinciden": "As senhas não coincidem.",
       "debeSerDiferente": "A nova senha deve ser diferente da atual.",
       "exitoTitulo": "Senha atualizada",
-      "exitoMensaje": "Sua senha foi atualizada com sucesso.",
+      "exitoMensaje": "Sua senha foi atualizada. Por segurança, entre novamente com a nova senha.",
       "errorTitulo": "Não foi possível atualizar",
       "errorMensaje": "Verifique a senha atual e tente novamente.",
       "notificacionTitulo": "Senha atualizada",
-      "notificacionMensaje": "A senha da sua conta foi alterada com sucesso."
+      "notificacionMensaje": "A senha da sua conta foi alterada com sucesso.",
+      "actualIncorrectaIntentos": "A senha atual está incorreta. Tentativas restantes: {{remaining}}."
     },
     "tarjetas": "Meus cartões de pagamento",
     "tarjetasSub": "Gerencie seus métodos de pagamento",

@@ -781,11 +781,12 @@ export default {
       "noCoinciden": "Les mots de passe ne correspondent pas.",
       "debeSerDiferente": "Le nouveau mot de passe doit être différent de l’actuel.",
       "exitoTitulo": "Mot de passe mis à jour",
-      "exitoMensaje": "Votre mot de passe a été mis à jour.",
+      "exitoMensaje": "Votre mot de passe a été mis à jour. Par sécurité, reconnectez-vous avec le nouveau mot de passe.",
       "errorTitulo": "Échec de la mise à jour",
       "errorMensaje": "Vérifiez votre mot de passe actuel et réessayez.",
       "notificacionTitulo": "Mot de passe mis à jour",
-      "notificacionMensaje": "Le mot de passe de votre compte a été modifié."
+      "notificacionMensaje": "Le mot de passe de votre compte a été modifié.",
+      "actualIncorrectaIntentos": "Le mot de passe actuel est incorrect. Tentatives restantes : {{remaining}}."
     },
     "tarjetas": "Mes cartes de paiement",
     "tarjetasSub": "Gérez vos moyens de paiement",

@@ -378,6 +378,15 @@ export default function PerfilScreen() {
 
   const handleEliminarCuenta = () => setMostrarEliminarCuenta(true);
 
+  // El servidor cierra todas las sesiones al cambiar la contraseña: se vuelve a iniciar con la nueva
+  const cerrarTrasCambioContrasena = async () => {
+    setResultadoContrasena(null);
+    await sessionTokens.clearRefreshToken();
+    cerrarSesionAuth();
+    limpiarUsuario();
+    router.replace("/(auth)/login");
+  };
+
   const cuentaEliminada = async () => {
     await sessionTokens.clearRefreshToken();
     setMostrarEliminarCuenta(false);
@@ -841,7 +850,7 @@ export default function PerfilScreen() {
         icono="checkmark-circle-outline"
         titulo={t("perfil.cambiarContrasena.exitoTitulo")}
         mensaje={t("perfil.cambiarContrasena.exitoMensaje")}
-        onCerrar={() => setResultadoContrasena(null)}
+        onCerrar={cerrarTrasCambioContrasena}
       />
       <AlertModal
         visible={resultadoContrasena === "error"}
