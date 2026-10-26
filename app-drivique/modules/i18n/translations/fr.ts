@@ -338,7 +338,13 @@ export default {
     "errores": {
       "correoInvalido": "Saisissez une adresse e-mail valide",
       "contrasenaObligatoria": "Le mot de passe est obligatoire",
-      "cuentaNoExiste": "Aucun compte n’est enregistré avec cette adresse e-mail.",
+      "contrasenaIncorrecta": "Mot de passe incorrect. Vérifiez-le et réessayez. Tentatives restantes : {{remaining}}.",
+      "contrasenaIncorrectaSimple": "Mot de passe incorrect. Vérifiez-le et réessayez.",
+      "contrasenaIncorrectaTitulo": "Mot de passe incorrect",
+      "cuentaNoExiste": "Aucun compte n’existe avec cet e-mail. Vérifiez l’orthographe ou inscrivez-vous.",
+      "cuentaDesactivada": "Votre compte est désactivé. Contactez le support pour le réactiver.",
+      "sinConexion": "Impossible de joindre le serveur. Vérifiez votre connexion internet et réessayez.",
+      "cuentaBloqueada": "Par sécurité, votre compte est bloqué pendant {{minutes}} minute(s) après trop de tentatives échouées. Vous pouvez réinitialiser votre mot de passe via « Mot de passe oublié ? ».",
       "cuentaNoEncontrada": "Compte introuvable",
       "loginFallido": "Impossible de se connecter.",
       "passwordDebil": "Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un symbole.",
@@ -775,11 +781,12 @@ export default {
       "noCoinciden": "Les mots de passe ne correspondent pas.",
       "debeSerDiferente": "Le nouveau mot de passe doit être différent de l’actuel.",
       "exitoTitulo": "Mot de passe mis à jour",
-      "exitoMensaje": "Votre mot de passe a été mis à jour.",
+      "exitoMensaje": "Votre mot de passe a été mis à jour. Par sécurité, reconnectez-vous avec le nouveau mot de passe.",
       "errorTitulo": "Échec de la mise à jour",
       "errorMensaje": "Vérifiez votre mot de passe actuel et réessayez.",
       "notificacionTitulo": "Mot de passe mis à jour",
-      "notificacionMensaje": "Le mot de passe de votre compte a été modifié."
+      "notificacionMensaje": "Le mot de passe de votre compte a été modifié.",
+      "actualIncorrectaIntentos": "Le mot de passe actuel est incorrect. Tentatives restantes : {{remaining}}."
     },
     "tarjetas": "Mes cartes de paiement",
     "tarjetasSub": "Gérez vos moyens de paiement",
@@ -1006,7 +1013,18 @@ export default {
       "avisoPlazoPagoDinamico": "Vous disposez d'environ {{horas}} pour effectuer le paiement en ligne et confirmer votre réservation. Si vous n'effectuez pas le paiement dans ce délai, la réservation sera automatiquement annulée.",
       "codigoPagoEfectivo": "Code de paiement en espèces",
       "errorCrearMensaje": "La réservation n’a pas pu être enregistrée. Vérifiez que toutes les données et tous les documents sont valides.",
-      "errorCrearTitulo": "Erreur lors de l’enregistrement de la réservation"
+      "errorCrearTitulo": "Erreur lors de l’enregistrement de la réservation",
+      "errorDocumentoDuplicado": "Le numéro de document saisi est déjà enregistré avec un autre compte utilisateur. Vérifiez vos données ou connectez-vous avec votre compte.",
+      "errorSubirDocs": "Les documents de vérification n’ont pas pu être envoyés. Vérifiez les fichiers et réessayez.",
+      "errorVehiculoOcupado": "Un autre utilisateur vient de réserver ce véhicule pour ces dates pendant que vous remplissiez le formulaire. Si cette personne ne finalise pas son paiement dans le délai imparti, le véhicule sera de nouveau disponible. Vous pouvez aussi consulter d’autres véhicules disponibles dans le catalogue.",
+      "error409": "Une réservation est déjà en cours de traitement pour ce véhicule ou ces dates. Veuillez vérifier dans « Mes réservations ».",
+      "docDuplicadoTitulo": "Document déjà enregistré",
+      "errorSubirDocsTitulo": "Erreur lors de l’envoi des documents",
+      "vehiculoOcupadoTitulo": "Véhicule indisponible",
+      "reservaEnProcesoTitulo": "Réservation en cours",
+      "verCatalogo": "Voir d’autres véhicules",
+      "verMisReservas": "Voir mes réservations",
+      "confirmando": "Confirmation de la réservation..."
     },
     "edicion": {
       "editarFechasYLugares": "Modifier dates et lieux",
@@ -1088,7 +1106,8 @@ export default {
       "horaEntregaRetiro": "Heure de livraison (prise en charge) :",
       "horaRecogidaDevolucion": "Heure de récupération (restitution) :",
       "efectivoNoDisponibleTitulo": "Paiement en espèces indisponible",
-      "efectivoNoDisponibleMensaje": "L’agence {{sucursal}} n’accepte pas les paiements en espèces. Choisissez le paiement en ligne ou un véhicule d’une autre agence."
+      "efectivoNoDisponibleMensaje": "L’agence {{sucursal}} n’accepte pas les paiements en espèces. Choisissez le paiement en ligne ou un véhicule d’une autre agence.",
+      "infoDomicilio": "Informations sur la livraison et le retour à domicile"
     },
     "planes": {
       "metodosPago": {
@@ -1609,6 +1628,7 @@ export default {
     },
     "conditions": "Conditions",
     "offApplied": "OFF appliqué",
+    "discountLabel": "Réduction",
     "applied": "appliqué",
     "todosLosVehiculos": "Tous les véhicules",
     "appliedCheck": "✓ Appliqué",
@@ -2176,6 +2196,8 @@ export default {
     "verifyHuman": "Confirmer que je suis un humain",
     "verifying": "Vérification de sécurité...",
     "clickToVerify": "Touchez la case pour vérifier la sécurité",
+    "completeVerification": "Terminez la vérification de sécurité",
+    "loadError": "La vérification n’a pas pu être chargée. Vérifiez votre connexion et réessayez.",
     "privacy": "Sécurité",
     "reset": "Changer",
     "placeholder": "Entrez le code",
@@ -2184,5 +2206,21 @@ export default {
     "emptyCode": "Veuillez entrer le code de sécurité.",
     "invalidCode": "Code incorrect. Nous en avons généré un nouveau.",
     "mustVerify": "Vous devez effectuer la vérification de sécurité avant de confirmer la réservation."
+  },
+  "reservas": {
+    "vehicle": "Véhicule",
+    "pickupDate": "Date de retrait",
+    "pickupTime": "Heure de retrait",
+    "returnDate": "Date de retour",
+    "returnTime": "Heure de retour",
+    "pickupLocation": "Lieu de retrait",
+    "returnLocation": "Lieu de retour",
+    "paymentMethod": "Moyen de paiement",
+    "protection": "Protection",
+    "status": "Statut",
+    "esperaAperturaTitulo": "En attente de l’ouverture de l’agence",
+    "esperaAperturaDesc": "Votre réservation a été enregistrée en dehors des horaires d’ouverture de l’agence {{sucursal}}. Dès l’ouverture, vous recevrez une notification automatique par e-mail, web et push pour procéder au paiement et confirmer votre réservation.",
+    "esperaAperturaEstado": "Statut : en attente de l’ouverture de l’agence",
+    "docsEnRevisionEstado": "Statut : en cours de vérification par le responsable de l’agence"
   }
 };
