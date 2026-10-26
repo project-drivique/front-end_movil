@@ -1012,7 +1012,18 @@ export default {
       "avisoPlazoPagoDinamico": "Tem aproximadamente {{horas}} para efetuar o pagamento digital e confirmar a sua reserva. Se não efetuar o pagamento dentro deste prazo, a reserva será cancelada automaticamente.",
       "codigoPagoEfectivo": "Código de pagamento em numerário",
       "errorCrearMensaje": "Não foi possível registar a reserva. Verifique se todos os dados e documentos são válidos.",
-      "errorCrearTitulo": "Erro ao registar a reserva"
+      "errorCrearTitulo": "Erro ao registar a reserva",
+      "errorDocumentoDuplicado": "O número de documento introduzido já está registado noutra conta de utilizador. Verifique os seus dados ou inicie sessão com a sua conta registada.",
+      "errorSubirDocs": "Não foi possível carregar os documentos de verificação. Verifique os ficheiros e tente novamente.",
+      "errorVehiculoOcupado": "Outro utilizador acabou de reservar este veículo para estas datas enquanto preenchia o formulário. Se essa pessoa não concluir o pagamento em 15 minutos, o veículo ficará novamente disponível. Pode também explorar outros veículos disponíveis no catálogo.",
+      "error409": "Já está a ser processada uma reserva para este veículo ou estas datas. Verifique em 'As minhas reservas'.",
+      "docDuplicadoTitulo": "Documento já registado",
+      "errorSubirDocsTitulo": "Erro ao carregar documentos",
+      "vehiculoOcupadoTitulo": "Veículo indisponível",
+      "reservaEnProcesoTitulo": "Reserva em processamento",
+      "verCatalogo": "Ver outros veículos",
+      "verMisReservas": "Ver as minhas reservas",
+      "confirmando": "A confirmar a reserva..."
     },
     "edicion": {
       "editarFechasYLugares": "Editar datas e locais",
@@ -1094,7 +1105,8 @@ export default {
       "horaEntregaRetiro": "Hora de Entrega (Levantamento):",
       "horaRecogidaDevolucion": "Hora de Recolha (Devolução):",
       "efectivoNoDisponibleTitulo": "Pagamento em numerário não disponível",
-      "efectivoNoDisponibleMensaje": "A agência {{sucursal}} não aceita pagamentos em numerário. Escolha pagamento online ou um veículo de outra agência."
+      "efectivoNoDisponibleMensaje": "A agência {{sucursal}} não aceita pagamentos em numerário. Escolha pagamento online ou um veículo de outra agência.",
+      "infoDomicilio": "Informação de entrega e devolução ao domicílio"
     },
     "planes": {
       "metodosPago": {
@@ -2193,5 +2205,21 @@ export default {
     "emptyCode": "Por favor introduza o código de segurança.",
     "invalidCode": "Código incorreto. Gerámos um novo.",
     "mustVerify": "Deve concluir a verificação de segurança antes de confirmar a reserva."
+  },
+  "reservas": {
+    "vehicle": "Veículo",
+    "pickupDate": "Data de levantamento",
+    "pickupTime": "Hora de levantamento",
+    "returnDate": "Data de devolução",
+    "returnTime": "Hora de devolução",
+    "pickupLocation": "Local de levantamento",
+    "returnLocation": "Local de devolução",
+    "paymentMethod": "Meio de pagamento",
+    "protection": "Proteção",
+    "status": "Estado",
+    "esperaAperturaTitulo": "À espera da abertura da filial",
+    "esperaAperturaDesc": "A sua reserva foi registada fora do horário de atendimento da filial {{sucursal}}. Assim que a filial iniciar o atendimento, receberá uma notificação automática por e-mail, web e push para proceder ao pagamento e à confirmação da reserva.",
+    "esperaAperturaEstado": "Estado: à espera da abertura da filial",
+    "docsEnRevisionEstado": "Estado: em revisão pelo responsável da filial"
   }
 };

@@ -1012,7 +1012,18 @@ export default {
       "avisoPlazoPagoDinamico": "You have approximately {{horas}} to make the digital payment and confirm your reservation. If you do not make the payment within this deadline, the reservation will be automatically cancelled.",
       "codigoPagoEfectivo": "Cash payment code",
       "errorCrearMensaje": "The reservation could not be registered. Check that all data and documents are valid.",
-      "errorCrearTitulo": "Error registering the reservation"
+      "errorCrearTitulo": "Error registering the reservation",
+      "errorDocumentoDuplicado": "The document number you entered is already registered to another user account. Please check your details or sign in with your registered account.",
+      "errorSubirDocs": "The verification documents could not be uploaded. Please check the files and try again.",
+      "errorVehiculoOcupado": "Another user has just reserved this vehicle for these dates while you were filling in the form. If that person does not complete the payment within 15 minutes, the vehicle will be available again. You can also explore other available vehicles in the catalog.",
+      "error409": "A booking is already being processed for this vehicle or these dates. Please check 'My bookings'.",
+      "docDuplicadoTitulo": "Document already registered",
+      "errorSubirDocsTitulo": "Error uploading documents",
+      "vehiculoOcupadoTitulo": "Vehicle not available",
+      "reservaEnProcesoTitulo": "Booking in progress",
+      "verCatalogo": "See other vehicles",
+      "verMisReservas": "View my bookings",
+      "confirmando": "Confirming booking..."
     },
     "edicion": {
       "editarFechasYLugares": "Edit Dates and Locations",
@@ -1094,7 +1105,8 @@ export default {
       "horaEntregaRetiro": "Delivery / Pickup Time:",
       "horaRecogidaDevolucion": "Collection / Return Time:",
       "efectivoNoDisponibleTitulo": "Cash payment not available",
-      "efectivoNoDisponibleMensaje": "The branch {{sucursal}} does not accept cash payments. Choose online payment or a vehicle from another branch."
+      "efectivoNoDisponibleMensaje": "The branch {{sucursal}} does not accept cash payments. Choose online payment or a vehicle from another branch.",
+      "infoDomicilio": "Home delivery and return information"
     },
     "planes": {
       "metodosPago": {
@@ -2193,5 +2205,21 @@ export default {
     "emptyCode": "Please enter the security code.",
     "invalidCode": "Incorrect code. A new code was generated.",
     "mustVerify": "You must complete the security verification before confirming the reservation."
+  },
+  "reservas": {
+    "vehicle": "Vehicle",
+    "pickupDate": "Pickup date",
+    "pickupTime": "Pickup time",
+    "returnDate": "Return date",
+    "returnTime": "Return time",
+    "pickupLocation": "Pickup location",
+    "returnLocation": "Return location",
+    "paymentMethod": "Payment method",
+    "protection": "Protection",
+    "status": "Status",
+    "esperaAperturaTitulo": "Waiting for the branch to open",
+    "esperaAperturaDesc": "Your booking was registered outside the opening hours of the {{sucursal}} branch. As soon as the branch opens, you will receive an automatic email, web and push notification so you can pay and confirm your booking.",
+    "esperaAperturaEstado": "Status: waiting for the branch to open",
+    "docsEnRevisionEstado": "Status: under review by the branch manager"
   }
 };

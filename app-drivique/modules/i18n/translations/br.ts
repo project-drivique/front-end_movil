@@ -1012,7 +1012,18 @@ export default {
       "avisoPlazoPagoDinamico": "Você tem aproximadamente {{horas}} para realizar o pagamento digital e confirmar sua reserva. Se não realizar o pagamento dentro deste prazo, a reserva será cancelada automaticamente.",
       "codigoPagoEfectivo": "Código de pagamento em dinheiro",
       "errorCrearMensaje": "Não foi possível registrar a reserva. Verifique se todos os dados e documentos são válidos.",
-      "errorCrearTitulo": "Erro ao registrar a reserva"
+      "errorCrearTitulo": "Erro ao registrar a reserva",
+      "errorDocumentoDuplicado": "O número de documento informado já está cadastrado em outra conta de usuário. Confira seus dados ou entre com a sua conta cadastrada.",
+      "errorSubirDocs": "Não foi possível enviar os documentos de verificação. Confira os arquivos e tente novamente.",
+      "errorVehiculoOcupado": "Outro usuário acabou de reservar este veículo para estas datas enquanto você preenchia o formulário. Se essa pessoa não concluir o pagamento em 15 minutos, o veículo ficará disponível novamente. Você também pode ver outros veículos disponíveis no catálogo.",
+      "error409": "Já há uma reserva em processamento para este veículo ou estas datas. Confira em 'Minhas reservas'.",
+      "docDuplicadoTitulo": "Documento já cadastrado",
+      "errorSubirDocsTitulo": "Erro ao enviar documentos",
+      "vehiculoOcupadoTitulo": "Veículo indisponível",
+      "reservaEnProcesoTitulo": "Reserva em processamento",
+      "verCatalogo": "Ver outros veículos",
+      "verMisReservas": "Ver minhas reservas",
+      "confirmando": "Confirmando a reserva..."
     },
     "edicion": {
       "editarFechasYLugares": "Editar datas e locais",
@@ -1094,7 +1105,8 @@ export default {
       "horaEntregaRetiro": "Horário de Entrega (Retirada):",
       "horaRecogidaDevolucion": "Horário de Coleta (Devolução):",
       "efectivoNoDisponibleTitulo": "Pagamento em dinheiro indisponível",
-      "efectivoNoDisponibleMensaje": "A filial {{sucursal}} não aceita pagamentos em dinheiro. Escolha pagamento on-line ou um veículo de outra filial."
+      "efectivoNoDisponibleMensaje": "A filial {{sucursal}} não aceita pagamentos em dinheiro. Escolha pagamento on-line ou um veículo de outra filial.",
+      "infoDomicilio": "Informações de entrega e devolução em domicílio"
     },
     "planes": {
       "metodosPago": {
@@ -2193,5 +2205,21 @@ export default {
     "emptyCode": "Por favor digite o código de segurança.",
     "invalidCode": "Código incorreto. Geramos um novo.",
     "mustVerify": "Você deve concluir a verificação de segurança antes de confirmar a reserva."
+  },
+  "reservas": {
+    "vehicle": "Veículo",
+    "pickupDate": "Data de retirada",
+    "pickupTime": "Horário de retirada",
+    "returnDate": "Data de devolução",
+    "returnTime": "Horário de devolução",
+    "pickupLocation": "Local de retirada",
+    "returnLocation": "Local de devolução",
+    "paymentMethod": "Forma de pagamento",
+    "protection": "Proteção",
+    "status": "Status",
+    "esperaAperturaTitulo": "Aguardando a abertura da filial",
+    "esperaAperturaDesc": "Sua reserva foi registrada fora do horário de atendimento da filial {{sucursal}}. Assim que a filial iniciar o atendimento, você receberá uma notificação automática por e-mail, web e push para efetuar o pagamento e confirmar a reserva.",
+    "esperaAperturaEstado": "Status: aguardando a abertura da filial",
+    "docsEnRevisionEstado": "Status: em revisão pelo responsável da filial"
   }
 };

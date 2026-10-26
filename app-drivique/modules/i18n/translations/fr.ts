@@ -1012,7 +1012,18 @@ export default {
       "avisoPlazoPagoDinamico": "Vous disposez d'environ {{horas}} pour effectuer le paiement en ligne et confirmer votre réservation. Si vous n'effectuez pas le paiement dans ce délai, la réservation sera automatiquement annulée.",
       "codigoPagoEfectivo": "Code de paiement en espèces",
       "errorCrearMensaje": "La réservation n’a pas pu être enregistrée. Vérifiez que toutes les données et tous les documents sont valides.",
-      "errorCrearTitulo": "Erreur lors de l’enregistrement de la réservation"
+      "errorCrearTitulo": "Erreur lors de l’enregistrement de la réservation",
+      "errorDocumentoDuplicado": "Le numéro de document saisi est déjà enregistré avec un autre compte utilisateur. Vérifiez vos données ou connectez-vous avec votre compte.",
+      "errorSubirDocs": "Les documents de vérification n’ont pas pu être envoyés. Vérifiez les fichiers et réessayez.",
+      "errorVehiculoOcupado": "Un autre utilisateur vient de réserver ce véhicule pour ces dates pendant que vous remplissiez le formulaire. Si cette personne ne finalise pas son paiement dans les 15 minutes, le véhicule sera de nouveau disponible. Vous pouvez aussi consulter d’autres véhicules disponibles dans le catalogue.",
+      "error409": "Une réservation est déjà en cours de traitement pour ce véhicule ou ces dates. Veuillez vérifier dans « Mes réservations ».",
+      "docDuplicadoTitulo": "Document déjà enregistré",
+      "errorSubirDocsTitulo": "Erreur lors de l’envoi des documents",
+      "vehiculoOcupadoTitulo": "Véhicule indisponible",
+      "reservaEnProcesoTitulo": "Réservation en cours",
+      "verCatalogo": "Voir d’autres véhicules",
+      "verMisReservas": "Voir mes réservations",
+      "confirmando": "Confirmation de la réservation..."
     },
     "edicion": {
       "editarFechasYLugares": "Modifier dates et lieux",
@@ -1094,7 +1105,8 @@ export default {
       "horaEntregaRetiro": "Heure de livraison (prise en charge) :",
       "horaRecogidaDevolucion": "Heure de récupération (restitution) :",
       "efectivoNoDisponibleTitulo": "Paiement en espèces indisponible",
-      "efectivoNoDisponibleMensaje": "L’agence {{sucursal}} n’accepte pas les paiements en espèces. Choisissez le paiement en ligne ou un véhicule d’une autre agence."
+      "efectivoNoDisponibleMensaje": "L’agence {{sucursal}} n’accepte pas les paiements en espèces. Choisissez le paiement en ligne ou un véhicule d’une autre agence.",
+      "infoDomicilio": "Informations sur la livraison et le retour à domicile"
     },
     "planes": {
       "metodosPago": {
@@ -2193,5 +2205,21 @@ export default {
     "emptyCode": "Veuillez entrer le code de sécurité.",
     "invalidCode": "Code incorrect. Nous en avons généré un nouveau.",
     "mustVerify": "Vous devez effectuer la vérification de sécurité avant de confirmer la réservation."
+  },
+  "reservas": {
+    "vehicle": "Véhicule",
+    "pickupDate": "Date de retrait",
+    "pickupTime": "Heure de retrait",
+    "returnDate": "Date de retour",
+    "returnTime": "Heure de retour",
+    "pickupLocation": "Lieu de retrait",
+    "returnLocation": "Lieu de retour",
+    "paymentMethod": "Moyen de paiement",
+    "protection": "Protection",
+    "status": "Statut",
+    "esperaAperturaTitulo": "En attente de l’ouverture de l’agence",
+    "esperaAperturaDesc": "Votre réservation a été enregistrée en dehors des horaires d’ouverture de l’agence {{sucursal}}. Dès l’ouverture, vous recevrez une notification automatique par e-mail, web et push pour procéder au paiement et confirmer votre réservation.",
+    "esperaAperturaEstado": "Statut : en attente de l’ouverture de l’agence",
+    "docsEnRevisionEstado": "Statut : en cours de vérification par le responsable de l’agence"
   }
 };

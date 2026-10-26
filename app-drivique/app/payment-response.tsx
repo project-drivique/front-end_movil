@@ -399,7 +399,8 @@ export default function PagoRespuestaScreen() {
             </View>
             <Text style={[s.tarjetaInfoTexto, { color: c.oscuro ? "#DBEAFE" : "#1E3A8A" }]}>
               {t("reservas.esperaAperturaDesc", {
-                defaultValue: `Tu reserva fue registrada fuera del horario de atención de la sucursal ${vehiculo?.sucursal || sucursalEfectivo || "Drivique"}. En cuanto la sede inicie su jornada de atención, recibirás una notificación automática por correo, web y push para proceder con el pago y confirmación de tu reserva.`,
+                sucursal: vehiculo?.sucursal || sucursalEfectivo || "Drivique",
+                defaultValue: "Tu reserva fue registrada fuera del horario de atención de la sucursal {{sucursal}}. En cuanto la sede inicie su jornada de atención, recibirás una notificación automática por correo, web y push para proceder con el pago y confirmación de tu reserva.",
               })}
             </Text>
             <View
