@@ -208,8 +208,9 @@ export const authService = {
   },
 
   async cambiarContrasena(token: string, datos: { contrasenaActual: string; nuevaContrasena: string }) {
-    return apiClient.put(
-      '/users/me',
+    // Endpoint propio del cambio de contraseña: valida la actual, aplica la política y cierra las sesiones
+    return apiClient.post(
+      '/auth/change-password',
       { currentPassword: datos.contrasenaActual, newPassword: datos.nuevaContrasena },
       { headers: { Authorization: `Bearer ${token}` } }
     ).then(({ data }) => data);

@@ -54,13 +54,39 @@ export function useLogin() {
       onExito(mapearUsuarioSesion(session.userProfile), session.accessToken);
     } catch (error: any) {
       const status = error?.response?.status;
-      const code = error?.response?.data?.code || error?.response?.data?.errorCode;
+      const data = error?.response?.data || {};
+      // El servidor entrega un código estable por cada caso: el mensaje se arma aquí, en el idioma de la persona
+      const serverCode = data.errors?.[0]?.code || '';
+      const meta = data.meta || {};
+      const code = data.code || data.errorCode || serverCode;
       const msg = errorMessage(error, '');
-      if (status === 404) {
-        Alert.alert(i18n.t('auth.errores.cuentaNoEncontrada'), errorMessage(error, i18n.t('auth.errores.cuentaNoExiste')));
+      if (!error?.response) {
+        setErrores([{ mensaje: i18n.t('auth.errores.sinConexion') }]);
+        return;
+      }
+      if (serverCode === 'ACCOUNT_NOT_FOUND' || status === 404) {
+        // Aviso bajo el campo y además el modal de error
+        setErrores([{ campo: 'correo', mensaje: i18n.t('auth.errores.cuentaNoExiste') }, { mensaje: i18n.t('auth.errores.cuentaNoExiste'), titulo: i18n.t('auth.errores.cuentaNoEncontrada') }]);
+        return;
+      }
+      if (serverCode === 'INVALID_PASSWORD') {
+        const mensaje = meta.remainingAttempts !== undefined
+          ? i18n.t('auth.errores.contrasenaIncorrecta', { remaining: meta.remainingAttempts })
+          : i18n.t('auth.errores.contrasenaIncorrectaSimple');
+        // Aviso bajo el campo y además el modal de error
+        setErrores([{ campo: 'contrasena', mensaje }, { mensaje, titulo: i18n.t('auth.errores.contrasenaIncorrectaTitulo') }]);
+        return;
+      }
+      if (serverCode === 'ACCOUNT_LOCKED' || status === 423 || status === 429) {
+        setErrores([{ mensaje: i18n.t('auth.errores.cuentaBloqueada', { minutes: Number(meta.lockedMinutes) || 30 }) }]);
+        return;
+      }
+      if (serverCode === 'ACCOUNT_DISABLED') {
+        setErrores([{ mensaje: i18n.t('auth.errores.cuentaDesactivada') }]);
         return;
       }
       const isNotVerified =
+        code === 'EMAIL_NOT_VERIFIED' ||
         code === 'USER_NOT_VERIFIED' ||
         code === 'PENDING_VERIFICATION' ||
         code === 'UNVERIFIED_ACCOUNT' ||

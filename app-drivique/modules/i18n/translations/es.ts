@@ -338,7 +338,13 @@ export default {
     "errores": {
       "correoInvalido": "Ingresa un correo válido",
       "contrasenaObligatoria": "La contraseña es obligatoria",
-      "cuentaNoExiste": "No existe una cuenta registrada con ese correo.",
+      "contrasenaIncorrecta": "Contraseña incorrecta. Revísala e inténtalo de nuevo. Intentos restantes: {{remaining}}.",
+      "contrasenaIncorrectaSimple": "Contraseña incorrecta. Revísala e inténtalo de nuevo.",
+      "contrasenaIncorrectaTitulo": "Contraseña incorrecta",
+      "cuentaNoExiste": "No existe una cuenta con este correo. Revisa que esté bien escrito o regístrate.",
+      "cuentaDesactivada": "Tu cuenta está desactivada. Contacta a soporte para reactivarla.",
+      "sinConexion": "No pudimos conectar con el servidor. Revisa tu conexión a internet e inténtalo de nuevo.",
+      "cuentaBloqueada": "Por seguridad bloqueamos tu cuenta durante {{minutes}} minuto(s) por demasiados intentos fallidos. Puedes recuperar tu contraseña con «¿Olvidaste tu contraseña?».",
       "cuentaNoEncontrada": "Cuenta no encontrada",
       "loginFallido": "No fue posible iniciar sesión.",
       "passwordDebil": "La contraseña debe tener al menos 12 caracteres, mayúscula, minúscula, número y símbolo.",
@@ -777,11 +783,12 @@ export default {
       "noCoinciden": "Las contraseñas no coinciden.",
       "debeSerDiferente": "La nueva contraseña debe ser diferente a la actual.",
       "exitoTitulo": "Contraseña actualizada",
-      "exitoMensaje": "Tu contraseña se actualizó correctamente.",
+      "exitoMensaje": "Tu contraseña se actualizó correctamente. Por seguridad, inicia sesión de nuevo con la nueva contraseña.",
       "errorTitulo": "No se pudo actualizar",
       "errorMensaje": "Verifica la contraseña actual e inténtalo nuevamente.",
       "notificacionTitulo": "Contraseña actualizada",
-      "notificacionMensaje": "La contraseña de tu cuenta fue modificada correctamente."
+      "notificacionMensaje": "La contraseña de tu cuenta fue modificada correctamente.",
+      "actualIncorrectaIntentos": "La contraseña actual es incorrecta. Intentos restantes: {{remaining}}."
     },
     "tarjetas": "Mis tarjetas de pago",
     "tarjetasSub": "Gestiona tus métodos de pago",
@@ -1006,7 +1013,18 @@ export default {
       "avisoPlazoPagoDinamico": "Tienes aproximadamente {{horas}} para realizar el pago digital y confirmar tu reserva. Si no realizas el pago dentro de este plazo, la reserva se cancelará automáticamente.",
       "codigoPagoEfectivo": "Código de pago en efectivo",
       "errorCrearMensaje": "No se pudo registrar la reserva. Verifica que todos los datos y documentos sean válidos.",
-      "errorCrearTitulo": "Error al registrar la reserva"
+      "errorCrearTitulo": "Error al registrar la reserva",
+      "errorDocumentoDuplicado": "El número de documento ingresado ya se encuentra registrado con otra cuenta de usuario. Por favor verifica tus datos o inicia sesión con tu cuenta registrada.",
+      "errorSubirDocs": "No se pudieron subir los documentos de verificación. Por favor revisa los archivos e intenta nuevamente.",
+      "errorVehiculoOcupado": "Otro usuario acaba de apartar este vehículo para estas fechas mientras completabas el formulario. Si esa persona no completa su pago dentro del plazo, el vehículo quedará libre nuevamente. También puedes explorar otros vehículos disponibles en el catálogo.",
+      "error409": "Ya se está procesando una reserva para este vehículo o fechas. Por favor verifica en 'Mis reservas'.",
+      "docDuplicadoTitulo": "Documento ya registrado",
+      "errorSubirDocsTitulo": "Error al subir documentos",
+      "vehiculoOcupadoTitulo": "Vehículo no disponible",
+      "reservaEnProcesoTitulo": "Reserva en proceso",
+      "verCatalogo": "Ver otros vehículos",
+      "verMisReservas": "Ver mis reservas",
+      "confirmando": "Confirmando reserva..."
     },
     "edicion": {
       "editarFechasYLugares": "Editar Fechas y Ubicación",
@@ -1088,7 +1106,8 @@ export default {
       "horaEntregaRetiro": "Hora de Entrega (Retiro):",
       "horaRecogidaDevolucion": "Hora de Recogida (Devolución):",
       "efectivoNoDisponibleTitulo": "Pago en efectivo no disponible",
-      "efectivoNoDisponibleMensaje": "La sucursal {{sucursal}} no recibe pagos en efectivo. Elige pago en línea o un vehículo de otra sucursal."
+      "efectivoNoDisponibleMensaje": "La sucursal {{sucursal}} no recibe pagos en efectivo. Elige pago en línea o un vehículo de otra sucursal.",
+      "infoDomicilio": "Información de entrega y devolución a domicilio"
     },
     "planes": {
       "metodosPago": {
@@ -1609,6 +1628,7 @@ export default {
     },
     "conditions": "Condiciones",
     "offApplied": "OFF aplicado",
+    "discountLabel": "Descuento",
     "applied": "aplicado",
     "todosLosVehiculos": "Todos los vehículos",
     "appliedCheck": "✓ Aplicado",
@@ -2176,6 +2196,8 @@ export default {
     "verifyHuman": "Confirmar que soy una persona",
     "verifying": "Verificando seguridad...",
     "clickToVerify": "Toca la casilla para verificar seguridad",
+    "completeVerification": "Completa la verificación de seguridad",
+    "loadError": "No se pudo cargar la verificación. Revisa tu conexión e inténtalo de nuevo.",
     "privacy": "Seguridad",
     "reset": "Cambiar",
     "placeholder": "Ingresa el código",
@@ -2184,5 +2206,21 @@ export default {
     "emptyCode": "Por favor ingresa el código de seguridad.",
     "invalidCode": "Código incorrecto. Generamos uno nuevo.",
     "mustVerify": "Debes completar la verificación de seguridad antes de confirmar la reserva."
+  },
+  "reservas": {
+    "vehicle": "Vehículo",
+    "pickupDate": "Fecha de retiro",
+    "pickupTime": "Hora de retiro",
+    "returnDate": "Fecha de devolución",
+    "returnTime": "Hora de devolución",
+    "pickupLocation": "Lugar de retiro",
+    "returnLocation": "Lugar de devolución",
+    "paymentMethod": "Medio de pago",
+    "protection": "Protección",
+    "status": "Estado",
+    "esperaAperturaTitulo": "En espera de apertura de sucursal",
+    "esperaAperturaDesc": "Tu reserva fue registrada fuera del horario de atención de la sucursal {{sucursal}}. En cuanto la sede inicie su jornada de atención, recibirás una notificación automática por correo, web y push para proceder con el pago y confirmación de tu reserva.",
+    "esperaAperturaEstado": "Estado: esperando apertura de sucursal",
+    "docsEnRevisionEstado": "Estado: en revisión por el encargado de la sucursal"
   }
 };

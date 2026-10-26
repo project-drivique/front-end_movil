@@ -48,13 +48,18 @@ export default function CouponSection({ vehiculo }: Props) {
       .getPublishedPromotions()
       .then((lista) => {
         if (!activo) return;
-        // Filtrar cupones activos que aplican al vehículo o universales
+        // Solo cupones vigentes que aplican a este vehículo o categoría (o a todos). La validación final la hace el servidor.
+        const hoy = new Date().toISOString().slice(0, 10);
         const filtrados = lista.filter((p: any) => {
           if (!p.active) return false;
+          if (p.startDate && String(p.startDate).slice(0, 10) > hoy) return false;
+          if (p.endDate && String(p.endDate).slice(0, 10) < hoy) return false;
+          if (p.maxUsesLimit != null && Number(p.currentUsesCount ?? 0) >= Number(p.maxUsesLimit)) return false;
           if (p.vehicleId && vehiculo?.uuid && p.vehicleId !== vehiculo.uuid && p.vehicleId !== vehiculo.id) {
             return false;
           }
-          if (p.categoryId && vehiculo?.categoriaId && p.categoryId !== vehiculo.categoriaId) {
+          const categoriaCupon = p.vehicleCategoryId ?? p.categoryId;
+          if (categoriaCupon && vehiculo?.categoriaId && categoriaCupon !== vehiculo.categoriaId) {
             return false;
           }
           return true;
@@ -73,7 +78,7 @@ export default function CouponSection({ vehiculo }: Props) {
             reglas: {
               minimoDias: p.minimumRentalDays,
               montoMinimo: p.minimumAmount,
-              categoriasValidas: p.categoryName ? [p.categoryName] : [],
+              categoriasValidas: p.vehicleCategoryName ?? p.categoryName ? [p.vehicleCategoryName ?? p.categoryName] : [],
             },
           })),
         );
@@ -289,7 +294,7 @@ export default function CouponSection({ vehiculo }: Props) {
               <Text style={[styles.appliedDesc, { color: c.textSecondary }]}>
                 {cuponAplicado.descuentoPorcentaje
                   ? `${cuponAplicado.descuentoPorcentaje}% ${t("coupon.offApplied", { defaultValue: "OFF aplicado" })}`
-                  : `-$${Number(cuponAplicado.descuentoFijo).toLocaleString("es-CO")} ${t("coupon.applied", { defaultValue: "aplicado" })}`}
+                  : `-${formatCurrency(Number(cuponAplicado.descuentoFijo), monedaActual, tasaUSD)} ${t("coupon.applied", { defaultValue: "aplicado" })}`}
               </Text>
             </View>
           </View>

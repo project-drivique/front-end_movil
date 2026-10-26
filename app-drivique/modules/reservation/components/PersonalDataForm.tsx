@@ -39,6 +39,7 @@ import TarjetaTerminosCondiciones from "./TermsConditionsCard";
 import TarjetaVerificacionDocumental from "./DocumentVerificationCard";
 import CouponSection from "./CouponSection";
 import SecurityCaptcha from "./SecurityCaptcha";
+import { captchaTokenStore } from "../services/captchaTokenStore";
 import { useServerQuote } from "../hooks/useServerQuote";
 import { COLOR_ACENTO, COLOR_ENLACE_OSCURO, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
 import { Alert } from "@/utils/alerta";
@@ -165,6 +166,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
   const [modalInstruccionesEfectivoVisible, setModalInstruccionesEfectivoVisible] = useState(false);
   const [captchaVerificado, setCaptchaVerificado] = useState(false);
   const [errorCaptcha, setErrorCaptcha] = useState(false);
+  const captchaDesactivadoRef = useRef(false);
 
   const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
   const brandBg = c.oscuro ? COLOR_MARCA_OSCURO : COLOR_MARCA;
@@ -464,7 +466,7 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
         setTipoErrorAlerta("vehiculo_ocupado");
         setErrorServidor(
           t("reserva.confirmacion.errorVehiculoOcupado", {
-            defaultValue: "Otro usuario acaba de apartar este vehículo para estas fechas mientras completabas el formulario. Si esa persona no completa su pago en 15 minutos, el vehículo quedará libre nuevamente. También puedes explorar otros vehículos disponibles en el catálogo.",
+            defaultValue: "Otro usuario acaba de apartar este vehículo para estas fechas mientras completabas el formulario. Si esa persona no completa su pago dentro del plazo, el vehículo quedará libre nuevamente. También puedes explorar otros vehículos disponibles en el catálogo.",
           })
         );
       } else if (error?.response?.status === 409) {
@@ -510,7 +512,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
       return;
     }
 
-    if (!captchaVerificado) {
+    // Se exige un token vigente del captcha (no solo la marca visual): el servidor lo valida
+    if (!captchaVerificado || (!captchaTokenStore.get() && !captchaDesactivadoRef.current)) {
       setErrorCaptcha(true);
       return;
     }
@@ -865,7 +868,8 @@ export default function FormDatosPersonales({ vehiculo }: Props) {
 
             <SecurityCaptcha
               isVerified={captchaVerificado}
-              onVerified={(verified) => {
+              onVerified={(verified, token) => {
+                captchaDesactivadoRef.current = Boolean(verified && !token);
                 setCaptchaVerificado(verified);
                 if (verified) setErrorCaptcha(false);
               }}
