@@ -89,7 +89,7 @@ export default function PagoRespuestaScreen() {
       procesado.current = true;
       try {
         if (tx.status === "APPROVED" && encontrada.estadoApi === "PENDING_PAYMENT") {
-          await reservaPersistService.confirmarPago(encontrada.id);
+          await reservaPersistService.confirmarPago(encontrada.id, id);
         } else if ((tx.status === "DECLINED" || tx.status === "ERROR") && encontrada.estadoApi === "PENDING_PAYMENT") {
           await reservaPersistService.reportarPagoFallido(encontrada.id);
           setAviso(t("reserva.confirmacion.errorPagoMensaje"));
