@@ -12,7 +12,7 @@ import { captchaTokenStore } from "../services/captchaTokenStore";
 const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
 interface Props {
-  isVerified: boolean;
+  isVerified?: boolean;
   onVerified: (verified: boolean, token?: string | null) => void;
   hasError?: boolean;
   style?: ViewStyle;
@@ -99,7 +99,7 @@ function WebTurnstile({ siteKey, dark, onToken, onFail }: { siteKey: string; dar
   return React.createElement("div", { ref: hostRef, style: { minHeight: 65 } });
 }
 
-export default function SecurityCaptcha({ isVerified, onVerified, hasError = false, style }: Props) {
+export default function SecurityCaptcha({ onVerified, hasError = false, style }: Props) {
   const c = useTemaColores();
   const { t } = useTranslation();
   const marca = useBrandStore((s) => s.marca);
@@ -108,11 +108,14 @@ export default function SecurityCaptcha({ isVerified, onVerified, hasError = fal
   const [status, setStatus] = useState<"loading" | "ready" | "failed" | "off">("loading");
   const [config, setConfig] = useState<CaptchaConfig | null>(null);
   const [resetKey, setResetKey] = useState(0);
+  // Verificado = existe un token vigente (no lo que crea el padre): así nunca queda la marca verde sin token
+  const [isVerified, setIsVerified] = useState(false);
   const onVerifiedRef = useRef(onVerified);
   onVerifiedRef.current = onVerified;
 
   const notify = (verified: boolean, token?: string | null) => {
     captchaTokenStore.set(verified ? token : null);
+    setIsVerified(Boolean(verified && token));
     onVerifiedRef.current(verified, token);
   };
 
@@ -135,12 +138,15 @@ export default function SecurityCaptcha({ isVerified, onVerified, hasError = fal
     // Cuando el servidor consume el token (reserva creada o con error) el widget se reinicia
     const unsubscribe = captchaTokenStore.subscribe(() => {
       setResetKey((k) => k + 1);
+      setIsVerified(false);
       onVerifiedRef.current(false);
     });
     return () => {
       activo = false;
       unsubscribe();
       captchaTokenStore.set(null);
+      // El padre no debe seguir creyendo que está verificado cuando el widget ya no existe
+      onVerifiedRef.current(false);
     };
   }, []);
 
@@ -189,7 +195,7 @@ export default function SecurityCaptcha({ isVerified, onVerified, hasError = fal
           </View>
         </View>
 
-        {status === "ready" && config && !isVerified && (
+        {status === "ready" && config && (
           <View style={styles.widgetBox}>
             {Platform.OS === "web" ? (
               <WebTurnstile
