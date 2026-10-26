@@ -338,7 +338,12 @@ export default {
     "errores": {
       "correoInvalido": "Informe um e-mail válido",
       "contrasenaObligatoria": "A senha é obrigatória",
-      "cuentaNoExiste": "Não existe nenhuma conta cadastrada com esse e-mail.",
+      "contrasenaIncorrecta": "Senha incorreta. Confira e tente novamente. Tentativas restantes: {{remaining}}.",
+      "contrasenaIncorrectaSimple": "Senha incorreta. Confira e tente novamente.",
+      "cuentaNoExiste": "Não existe uma conta com este e-mail. Confira se está escrito corretamente ou cadastre-se.",
+      "cuentaDesactivada": "Sua conta está desativada. Entre em contato com o suporte para reativá-la.",
+      "sinConexion": "Não foi possível conectar ao servidor. Verifique sua conexão com a internet e tente novamente.",
+      "cuentaBloqueada": "Por segurança bloqueamos sua conta por {{minutes}} minuto(s) após muitas tentativas falhas. Você pode recuperar a senha em «Esqueceu sua senha?».",
       "cuentaNoEncontrada": "Conta não encontrada",
       "loginFallido": "Não foi possível entrar.",
       "passwordDebil": "A senha deve ter pelo menos 12 caracteres, maiúscula, minúscula, número e símbolo.",

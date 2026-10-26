@@ -338,7 +338,12 @@ export default {
     "errores": {
       "correoInvalido": "Introduza um email válido",
       "contrasenaObligatoria": "A palavra-passe é obrigatória",
-      "cuentaNoExiste": "Não existe nenhuma conta registada com esse email.",
+      "contrasenaIncorrecta": "Palavra-passe incorreta. Verifique-a e tente novamente. Tentativas restantes: {{remaining}}.",
+      "contrasenaIncorrectaSimple": "Palavra-passe incorreta. Verifique-a e tente novamente.",
+      "cuentaNoExiste": "Não existe nenhuma conta com este e-mail. Verifique se está bem escrito ou registe-se.",
+      "cuentaDesactivada": "A sua conta está desativada. Contacte o suporte para a reativar.",
+      "sinConexion": "Não foi possível ligar ao servidor. Verifique a sua ligação à internet e tente novamente.",
+      "cuentaBloqueada": "Por segurança bloqueámos a sua conta durante {{minutes}} minuto(s) devido a demasiadas tentativas falhadas. Pode recuperar a palavra-passe em «Esqueceu-se da palavra-passe?».",
       "cuentaNoEncontrada": "Conta não encontrada",
       "loginFallido": "Não foi possível iniciar sessão.",
       "passwordDebil": "A palavra-passe deve ter pelo menos 12 carateres, uma maiúscula, uma minúscula, um número e um símbolo.",

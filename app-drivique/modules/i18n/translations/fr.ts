@@ -338,7 +338,12 @@ export default {
     "errores": {
       "correoInvalido": "Saisissez une adresse e-mail valide",
       "contrasenaObligatoria": "Le mot de passe est obligatoire",
-      "cuentaNoExiste": "Aucun compte n’est enregistré avec cette adresse e-mail.",
+      "contrasenaIncorrecta": "Mot de passe incorrect. Vérifiez-le et réessayez. Tentatives restantes : {{remaining}}.",
+      "contrasenaIncorrectaSimple": "Mot de passe incorrect. Vérifiez-le et réessayez.",
+      "cuentaNoExiste": "Aucun compte n’existe avec cet e-mail. Vérifiez l’orthographe ou inscrivez-vous.",
+      "cuentaDesactivada": "Votre compte est désactivé. Contactez le support pour le réactiver.",
+      "sinConexion": "Impossible de joindre le serveur. Vérifiez votre connexion internet et réessayez.",
+      "cuentaBloqueada": "Par sécurité, votre compte est bloqué pendant {{minutes}} minute(s) après trop de tentatives échouées. Vous pouvez réinitialiser votre mot de passe via « Mot de passe oublié ? ».",
       "cuentaNoEncontrada": "Compte introuvable",
       "loginFallido": "Impossible de se connecter.",
       "passwordDebil": "Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un symbole.",

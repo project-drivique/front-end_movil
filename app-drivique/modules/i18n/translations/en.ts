@@ -338,7 +338,12 @@ export default {
     "errores": {
       "correoInvalido": "Enter a valid email address",
       "contrasenaObligatoria": "The password is required",
-      "cuentaNoExiste": "There is no account registered with that email.",
+      "contrasenaIncorrecta": "Incorrect password. Check it and try again. Attempts left: {{remaining}}.",
+      "contrasenaIncorrectaSimple": "Incorrect password. Check it and try again.",
+      "cuentaNoExiste": "There is no account with this email. Check the spelling or sign up.",
+      "cuentaDesactivada": "Your account is disabled. Contact support to reactivate it.",
+      "sinConexion": "We could not reach the server. Check your internet connection and try again.",
+      "cuentaBloqueada": "For security we locked your account for {{minutes}} minute(s) after too many failed attempts. You can reset your password with \"Forgot your password?\".",
       "cuentaNoEncontrada": "Account not found",
       "loginFallido": "Could not sign in.",
       "passwordDebil": "The password must have at least 12 characters, an uppercase letter, a lowercase letter, a number and a symbol.",
