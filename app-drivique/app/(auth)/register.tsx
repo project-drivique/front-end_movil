@@ -16,6 +16,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTemaColores } from '@/modules/i18n/hooks/useLanguage';
+import { useBrandStore } from '@/store/brandStore';
 import { useRegistro } from '@/modules/auth/hooks/useAuth';
 import { useSocialAuth } from '@/modules/auth/hooks/useSocialAuth';
 import { useAuthStore } from '@/store/authStore';
@@ -33,6 +34,7 @@ import { Alert } from "@/utils/alerta";
 export default function RegistroScreen() {
   const { t } = useTranslation();
   const c = useTemaColores();
+  const nombreMarca = useBrandStore((s) => s.marca.nombre);
   const insets = useSafeAreaInsets();
   const setUsuario = useAuthStore((s) => s.setUsuario);
   const actualizarUsuarioGlobal = useUsuarioStore((s) => s.actualizarUsuario);
@@ -108,7 +110,7 @@ export default function RegistroScreen() {
       {/* ── TOP BAR (Como en login/catálogo) ── */}
       <View style={[styles.topBar, { backgroundColor: c.bgHeader, borderBottomColor: c.border }]}>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitleText}>Drivique</Text>
+          <Text style={styles.headerTitleText}>{nombreMarca}</Text>
         </View>
         <TouchableOpacity
           style={styles.guestBtn}

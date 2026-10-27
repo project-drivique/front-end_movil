@@ -41,7 +41,16 @@ export interface ReservaGuardada {
   codigoPagoEfectivo?: string | null;
   fechaLimitePago?: string | null;
   sucursalPagoEfectivoId?: string | null;
+  /** Dónde se entrega y dónde se recibe el vehículo, tal como los guardó el servidor (sucursal o domicilio). */
+  puntosEntrega?: PuntoEntrega[];
   vehiculoSnapshot?: Vehiculo;
+}
+
+export interface PuntoEntrega {
+  tipo: "PICKUP" | "RETURN";
+  domicilio: boolean;
+  /** Dirección del domicilio, o nombre de la sucursal cuando es en sucursal. */
+  lugar: string;
 }
 
 export type GrupoReserva = "pendiente" | "confirmada" | "en_curso" | "finalizada" | "cancelada";
@@ -112,6 +121,15 @@ export function mapReserva(dto: any): ReservaGuardada {
     codigoPagoEfectivo: dto.cashPaymentCode ?? null,
     fechaLimitePago: dto.cashPaymentExpiresAt ?? null,
     sucursalPagoEfectivoId: dto.cashPaymentBranchId ?? null,
+    puntosEntrega: (dto.deliveryPoints ?? []).map((p: any): PuntoEntrega => {
+      const domicilio = p.modality === "HOME_DELIVERY";
+      const direccion = [p.address, p.neighborhood, p.cityName].filter(Boolean).join(", ");
+      return {
+        tipo: String(p.pointType).toUpperCase() === "RETURN" ? "RETURN" : "PICKUP",
+        domicilio,
+        lugar: domicilio ? direccion : String(p.branchName ?? ""),
+      };
+    }),
   };
 }
 
