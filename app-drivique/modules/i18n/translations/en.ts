@@ -2215,6 +2215,8 @@ export default {
     "returnTime": "Return time",
     "pickupLocation": "Pickup location",
     "returnLocation": "Return location",
+    "homePickupLocation": "Home delivery",
+    "homeReturnLocation": "Home pickup",
     "paymentMethod": "Payment method",
     "protection": "Protection",
     "status": "Status",

@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from "
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { useBrandStore } from "@/store/brandStore";
 import { useAuthStore } from "@/store/authStore";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,6 +15,7 @@ import { useNotificationStore } from "@/store/notificationStore";
 export default function MasMenuScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
+  const nombreMarca = useBrandStore((s) => s.marca.nombre);
   const { t } = useTranslation();
   const usuario = useAuthStore((s) => s.usuario);
   const [configVisible, setConfigVisible] = useState(false);
@@ -65,7 +67,7 @@ export default function MasMenuScreen() {
         end={{ x: 1, y: 0 }}
         style={[styles.header, { paddingTop: insets.top + 12 }]}
       >
-        <Text style={styles.logoText}>Drivique</Text>
+        <Text style={styles.logoText}>{nombreMarca}</Text>
 
         {/* Welcome message & User Icon */}
         <TouchableOpacity
