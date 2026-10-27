@@ -214,7 +214,8 @@ export default function PagoRespuestaScreen() {
     (reserva.estado === "PENDIENTE" || reserva.estadoApi === "PENDING_PAYMENT") &&
     reserva.metodoPago === "wompi";
   const esperaPagoEfectivo = reserva.estado === "PENDIENTE_EFECTIVO";
-  const puedeCancelar = grupo === "pendiente" || reserva.estado === "CONFIRMADA";
+  // En la revisión documental estándar no se cancela: solo se ofrece cuando la reserva espera por estar fuera de horario
+  const puedeCancelar = !enRevision && (grupo === "pendiente" || reserva.estado === "CONFIRMADA");
   const tieneContrato = ["CONFIRMADA", "EN_CURSO", "FINALIZADA", "PENDIENTE_FIRMA"].includes(reserva.estado) || pendienteFirma;
 
   // El contrato se abre en el mismo detalle: se pide el documento de la reserva y luego se muestra el contrato
@@ -244,6 +245,8 @@ export default function PagoRespuestaScreen() {
   const vehiculo = reserva.vehiculoSnapshot;
   const foto = vehiculo?.imagenes?.[0];
   const sucursalEfectivo = nombreSucursalEfectivo(reserva);
+  const puntoRetiro = reserva.puntosEntrega?.find((p) => p.tipo === "PICKUP");
+  const puntoDevolucion = reserva.puntosEntrega?.find((p) => p.tipo === "RETURN");
 
   const tituloEstado = enRevision
     ? t("misReservas.detalle.enRevisionDocumentos", { defaultValue: "En revisión de documentos" })
@@ -325,16 +328,20 @@ export default function PagoRespuestaScreen() {
           <CeldaDato
             c={c}
             icono="location-outline"
-            label={t("reservas.pickupLocation", { defaultValue: "Lugar de retiro" })}
-            valor={vehiculo?.sucursal || sucursalEfectivo || "Drivique Principal"}
+            label={puntoRetiro?.domicilio
+              ? t("reservas.homePickupLocation", { defaultValue: "Entrega a domicilio" })
+              : t("reservas.pickupLocation", { defaultValue: "Lugar de retiro" })}
+            valor={puntoRetiro?.lugar || vehiculo?.sucursal || sucursalEfectivo || "Drivique Principal"}
           />
 
           {/* Lugar de devolución */}
           <CeldaDato
             c={c}
             icono="location-outline"
-            label={t("reservas.returnLocation", { defaultValue: "Lugar de devolución" })}
-            valor={vehiculo?.sucursal || sucursalEfectivo || "Drivique Principal"}
+            label={puntoDevolucion?.domicilio
+              ? t("reservas.homeReturnLocation", { defaultValue: "Recogida a domicilio" })
+              : t("reservas.returnLocation", { defaultValue: "Lugar de devolución" })}
+            valor={puntoDevolucion?.lugar || vehiculo?.sucursal || sucursalEfectivo || "Drivique Principal"}
           />
 
           {/* Medio de pago */}

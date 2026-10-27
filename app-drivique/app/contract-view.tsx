@@ -26,6 +26,7 @@ import { GRADIENTES } from "@/constants/gradients";
 import { AlertModal } from "@/components/ui/AlertModal";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { useBrandStore } from "@/store/brandStore";
 import FirmaCanvas, { FirmaCanvasHandle } from "@/modules/reservation/components/SignatureCanvas";
 import { ContratoDTO, contratoService } from "@/modules/reservation/services/contractService";
 import { mensajeDeError } from "@/modules/reservation/services/reservationPersistService";
@@ -42,6 +43,7 @@ function formatearFecha(iso?: string | null): string {
 export default function ContratoScreen() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
+  const nombreMarca = useBrandStore((s) => s.marca.nombre);
   const { t } = useTranslation();
   const { ref, ok } = useLocalSearchParams<{ ref?: string; ok?: string }>();
   const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
@@ -392,7 +394,7 @@ export default function ContratoScreen() {
             </Text>
 
             <Text style={[s.subTitulo, { color: c.textPrimary }]}>{t("contratoFirma.platformSignature")}</Text>
-            <Text style={[s.plataforma, { color: primaryAccent }]}>Drivique</Text>
+            <Text style={[s.plataforma, { color: primaryAccent }]}>{nombreMarca}</Text>
             <Text style={[s.nota, { color: c.textSecondary }]}>
               {t("contratoFirma.responsible")}: {t("contratoFirma.platformResponsible")}
             </Text>
