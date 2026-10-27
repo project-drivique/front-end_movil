@@ -51,6 +51,16 @@ export interface PuntoEntrega {
   domicilio: boolean;
   /** Dirección del domicilio, o nombre de la sucursal cuando es en sucursal. */
   lugar: string;
+  direccion: string;
+  barrio: string;
+  referencias: string;
+  ciudad: string;
+  /** PENDING | ASSIGNED | COMPLETED, tal como lo lleva el servidor. */
+  estado: string;
+  conductor: string;
+  telefonoConductor: string;
+  /** Código de 6 caracteres que el cliente le da al conductor; el servidor solo lo envía al dueño de la reserva. */
+  codigo: string;
 }
 
 export type GrupoReserva = "pendiente" | "confirmada" | "en_curso" | "finalizada" | "cancelada";
@@ -128,6 +138,14 @@ export function mapReserva(dto: any): ReservaGuardada {
         tipo: String(p.pointType).toUpperCase() === "RETURN" ? "RETURN" : "PICKUP",
         domicilio,
         lugar: domicilio ? direccion : String(p.branchName ?? ""),
+        direccion: String(p.address ?? ""),
+        barrio: String(p.neighborhood ?? ""),
+        referencias: String(p.referenceDetails ?? ""),
+        ciudad: String(p.cityName ?? ""),
+        estado: String(p.deliveryStatus ?? "PENDING").toUpperCase(),
+        conductor: String(p.driverName ?? ""),
+        telefonoConductor: String(p.driverPhone ?? ""),
+        codigo: String(p.deliveryPin ?? ""),
       };
     }),
   };

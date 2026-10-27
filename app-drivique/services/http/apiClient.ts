@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/store/authStore'
+import i18n from '@/modules/i18n'
 import { sessionTokens } from './sessionTokens'
 
 const baseURL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080/api/v1').trim().replace(/\/$/, '')
@@ -15,6 +16,9 @@ let refreshRequest: Promise<string> | null = null
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = useAuthStore.getState().token
   if (token) config.headers.Authorization = `Bearer ${token}`
+  // El servidor escribe los correos en el idioma que la persona está usando en la app
+  const language = i18n.resolvedLanguage || i18n.language
+  if (language) config.headers['X-App-Language'] = language
   return config
 })
 
