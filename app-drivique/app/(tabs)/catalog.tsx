@@ -6,6 +6,7 @@ import { useCatalogo } from "@/modules/catalog/hooks/useCatalog";
 import { useFavoritos } from "@/modules/catalog/hooks/useFavorites";
 import { useAuthStore } from "@/store/authStore";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { useBrandStore } from "@/store/brandStore";
 import { ConfiguracionModal } from "@/modules/i18n/components/ConfiguracionModal";
 import { useAuditoria } from "@/store/auditStore";
 import { Ionicons } from "@expo/vector-icons";
@@ -132,6 +133,7 @@ function ListFooter({
 export default function Catalogo() {
   const insets = useSafeAreaInsets();
   const c = useTemaColores();
+  const nombreMarca = useBrandStore((s) => s.marca.nombre);
   const { t } = useTranslation();
   const usuario = useAuthStore((state) => state.usuario);
   const getInitials = () => {
@@ -323,7 +325,7 @@ export default function Catalogo() {
 
       <View style={[styles.header, { backgroundColor: c.bgHeader, borderBottomColor: c.border }]}>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Drivique</Text>
+          <Text style={styles.headerTitle}>{nombreMarca}</Text>
         </View>
         {usuario ? (
           <TouchableOpacity
