@@ -35,6 +35,7 @@ import {
   consultarTransaccionWompi,
 } from "@/modules/reservation/services/wompiService";
 import { ModalCalificar } from "@/modules/reservation/components/ModalCalificar";
+import DomicilioCard from "@/modules/reservation/components/DomicilioCard";
 import { ElegibilidadResena, ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { contratoService } from "@/modules/reservation/services/contractService";
@@ -397,6 +398,9 @@ export default function PagoRespuestaScreen() {
           />
         </View>
 
+        {/* Domicilio: código de entrega, estado y conductor (igual que la web) */}
+        <DomicilioCard reserva={reserva} />
+
         {/* Tarjeta de Reserva en Espera de Horario de Atención (Idéntica a la Web) */}
         {enHorario ? (
           <View
@@ -506,21 +510,40 @@ export default function PagoRespuestaScreen() {
           <Boton texto={t("reserva.confirmacion.pagarConWompi")} onPress={pagarConWompi} />
         ) : null}
 
+        {/* Igual que la web: con el contrato sin firmar se ofrece firmarlo directamente */}
         {pendienteFirma ? (
-          <View style={[s.aviso, { borderColor: primaryAccent, backgroundColor: c.primaryBg }]}>
-            <Text style={[s.avisoTitulo, { color: primaryAccent }]}>
-              {t("misReservas.detalle.pendienteFirmaTitulo", { defaultValue: "Firma de Contrato Digital Pendiente" })}
+          <View style={[s.firmaCard, { borderColor: primaryAccent, backgroundColor: c.primaryBg }]}>
+            <View style={[s.firmaIcono, { backgroundColor: c.oscuro ? "rgba(255,255,255,0.08)" : "#DBEAFE" }]}>
+              <Ionicons name="create-outline" size={24} color={primaryAccent} />
+            </View>
+            <Text style={[s.firmaTitulo, { color: primaryAccent }]}>
+              {t("reservas.signCardTitle", { defaultValue: "Firma de Contrato Digital Pendiente" })}
             </Text>
-            <Text style={[s.avisoTexto, { color: c.textSecondary }]}>
-              {t("misReservas.detalle.pendienteFirmaTexto", {
+            <Text style={[s.firmaTexto, { color: c.textSecondary }]}>
+              {t("reservas.signCardDesc", {
                 defaultValue:
-                  "Tu pago ha sido registrado exitosamente. Para confirmar tu reserva, debes firmar digitalmente el contrato de alquiler.",
+                  "Tu pago ha sido confirmado con éxito. Procede a firmar digitalmente tu contrato para completar la reserva y acceder al documento protegido.",
               })}
             </Text>
+            <TouchableOpacity
+              style={{ width: "100%" }}
+              activeOpacity={0.85}
+              onPress={() => router.push(`/contract-view?ref=${encodeURIComponent(reserva.id)}&ok=1` as any)}
+            >
+              <LinearGradient
+                colors={GRADIENTES.boton.colors}
+                start={GRADIENTES.boton.start}
+                end={GRADIENTES.boton.end}
+                style={[s.contratoBtn, { flexDirection: "row", justifyContent: "center" }]}
+              >
+                <Ionicons name="create-outline" size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <Text style={s.contratoBtnTexto}>{t("reservas.signCardButton", { defaultValue: "Proceder a Firmar Contrato" })}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
         ) : null}
 
-        {tieneContrato ? (
+        {tieneContrato && !pendienteFirma ? (
           <View style={[s.contratoCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
             <View style={[s.contratoIcono, { backgroundColor: c.primaryBg }]}>
               <Ionicons name="lock-closed-outline" size={30} color={primaryAccent} />
@@ -749,6 +772,10 @@ function Boton({ texto, onPress, secundario }: { texto: string; onPress: () => v
 }
 
 const s = StyleSheet.create({
+  firmaCard: { borderWidth: 1.5, borderRadius: 16, padding: 18, alignItems: "center", marginTop: 16 },
+  firmaIcono: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center", marginBottom: 12 },
+  firmaTitulo: { fontSize: 16, fontWeight: "800", textAlign: "center", marginBottom: 6 },
+  firmaTexto: { fontSize: 13, textAlign: "center", lineHeight: 19, marginBottom: 16 },
   contratoCard: { borderWidth: 1, borderRadius: 18, padding: 20, alignItems: "center", marginTop: 8 },
   contratoIcono: { width: 64, height: 64, borderRadius: 32, alignItems: "center", justifyContent: "center", marginBottom: 12 },
   contratoTitulo: { fontSize: 18, fontWeight: "800", textAlign: "center" },
