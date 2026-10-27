@@ -714,6 +714,7 @@ export default {
     "errorCarga": "Não foi possível carregar suas reservas.",
     "hacerResena": "Fazer avaliação",
     "cancelarTitulo": "Cancelar reserva",
+    "cancelarError": "Não foi possível cancelar sua reserva neste momento. Tente novamente em alguns minutos.",
     "cancelarMensaje": "Esta ação não pode ser desfeita.",
     "cancelarConfirmar": "Sim, cancelar",
     "firmarContrato": "Prosseguir para assinar o contrato",

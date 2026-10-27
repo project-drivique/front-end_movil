@@ -714,6 +714,7 @@ export default {
     "errorCarga": "Impossible de charger vos réservations.",
     "hacerResena": "Écrire un avis",
     "cancelarTitulo": "Annuler la réservation",
+    "cancelarError": "Nous n'avons pas pu annuler votre réservation pour le moment. Réessayez dans quelques minutes.",
     "cancelarMensaje": "Cette action est irréversible.",
     "cancelarConfirmar": "Oui, annuler",
     "firmarContrato": "Procéder à la signature du contrat",

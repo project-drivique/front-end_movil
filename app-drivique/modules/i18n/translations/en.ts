@@ -714,6 +714,7 @@ export default {
     "errorCarga": "Your reservations could not be loaded.",
     "hacerResena": "Write a review",
     "cancelarTitulo": "Cancel reservation",
+    "cancelarError": "We could not cancel your reservation right now. Please try again in a few minutes.",
     "cancelarMensaje": "This action cannot be undone.",
     "cancelarConfirmar": "Yes, cancel",
     "firmarContrato": "Proceed to sign contract",
