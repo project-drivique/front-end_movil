@@ -214,8 +214,9 @@ export default function PagoRespuestaScreen() {
     (reserva.estado === "PENDIENTE" || reserva.estadoApi === "PENDING_PAYMENT") &&
     reserva.metodoPago === "wompi";
   const esperaPagoEfectivo = reserva.estado === "PENDIENTE_EFECTIVO";
-  // En la revisión documental estándar no se cancela: solo se ofrece cuando la reserva espera por estar fuera de horario
-  const puedeCancelar = !enRevision && (grupo === "pendiente" || reserva.estado === "CONFIRMADA");
+  // Solo se cancela mientras no hay pago: pendiente de pago, o en espera por haberse hecho fuera del horario de la sucursal.
+  // En la revisión documental estándar y con la reserva ya pagada o confirmada el botón no se ofrece.
+  const puedeCancelar = ["PENDIENTE", "PENDIENTE_EFECTIVO", "PENDIENTE_HORARIO"].includes(reserva.estado);
   const tieneContrato = ["CONFIRMADA", "EN_CURSO", "FINALIZADA", "PENDIENTE_FIRMA"].includes(reserva.estado) || pendienteFirma;
 
   // El contrato se abre en el mismo detalle: se pide el documento de la reserva y luego se muestra el contrato
