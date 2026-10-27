@@ -12,6 +12,7 @@ import { loginStyles as styles } from "@/modules/auth/styles/login.styles";
 import { useAuthStore } from "@/store/authStore";
 import { useUsuarioStore } from "@/store/userStore";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
+import { useBrandStore } from "@/store/brandStore";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -40,6 +41,7 @@ const ICONOS_ACCESOS: { icono: string }[] = [
 export default function LoginScreen() {
   const { t } = useTranslation();
   const c = useTemaColores();
+  const nombreMarca = useBrandStore((s) => s.marca.nombre);
   const ACCESOS = [
     { icono: ICONOS_ACCESOS[0].icono, texto: t("auth.login.accesoMisReservas") },
     { icono: ICONOS_ACCESOS[1].icono, texto: t("auth.login.accesoMisPagos") },
@@ -206,7 +208,7 @@ export default function LoginScreen() {
       {/* ── TOP BAR (Como en catálogo) ── */}
       <View style={[styles.topBar, { backgroundColor: c.bgHeader, borderBottomColor: c.border }]}>
         <View style={styles.headerTitleContainer}>
-          <Text style={[styles.headerTitle, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE_OSCURO }]}>Drivique</Text>
+          <Text style={[styles.headerTitle, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE_OSCURO }]}>{nombreMarca}</Text>
         </View>
         <TouchableOpacity
           style={[
