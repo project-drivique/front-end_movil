@@ -174,8 +174,17 @@ export default function PagoRespuestaScreen() {
             try {
               await reservaPersistService.cancelar(reserva.id);
               setReserva((await reservaPersistService.obtenerPorReferencia(reserva.id)) ?? null);
-            } catch (e) {
-              Alert.alert(t("comun.error"), mensajeDeError(e, ""));
+            } catch (e: any) {
+              // Nunca se muestra "Request failed with status code ...": solo el mensaje de negocio del servidor o uno claro
+              const estado = e?.response?.status;
+              const detalle = e?.response?.data?.detail;
+              const deNegocio = [403, 404, 409].includes(estado) && typeof detalle === "string" && detalle.trim();
+              Alert.alert(
+                t("comun.error"),
+                deNegocio
+                  ? detalle
+                  : t("misReservas.cancelarError", { defaultValue: "No pudimos cancelar tu reserva en este momento. Inténtalo de nuevo en unos minutos." })
+              );
             } finally {
               setOcupado(false);
             }
@@ -214,8 +223,9 @@ export default function PagoRespuestaScreen() {
     (reserva.estado === "PENDIENTE" || reserva.estadoApi === "PENDING_PAYMENT") &&
     reserva.metodoPago === "wompi";
   const esperaPagoEfectivo = reserva.estado === "PENDIENTE_EFECTIVO";
-  // En la revisión documental estándar no se cancela: solo se ofrece cuando la reserva espera por estar fuera de horario
-  const puedeCancelar = !enRevision && (grupo === "pendiente" || reserva.estado === "CONFIRMADA");
+  // Solo se cancela mientras no hay pago: pendiente de pago, en revisión de documentos o en espera del horario de la sucursal.
+  // Con la reserva ya pagada, confirmada, en curso o finalizada el botón no se ofrece.
+  const puedeCancelar = ["PENDIENTE", "PENDIENTE_EFECTIVO", "PENDIENTE_VALIDACION", "PENDIENTE_HORARIO"].includes(reserva.estado);
   const tieneContrato = ["CONFIRMADA", "EN_CURSO", "FINALIZADA", "PENDIENTE_FIRMA"].includes(reserva.estado) || pendienteFirma;
 
   // El contrato se abre en el mismo detalle: se pide el documento de la reserva y luego se muestra el contrato
