@@ -2215,6 +2215,8 @@ export default {
     "returnTime": "Hora de devolução",
     "pickupLocation": "Local de levantamento",
     "returnLocation": "Local de devolução",
+    "homePickupLocation": "Entrega ao domicílio",
+    "homeReturnLocation": "Recolha ao domicílio",
     "paymentMethod": "Meio de pagamento",
     "protection": "Proteção",
     "status": "Estado",
