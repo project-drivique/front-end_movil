@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store/authStore'
 import i18n from '@/modules/i18n'
 import { sessionTokens } from './sessionTokens'
 
-const baseURL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080/api/v1').trim().replace(/\/$/, '')
+const baseURL = (process.env.EXPO_PUBLIC_API_URL || 'https://drivique.tech/api/v1').trim().replace(/\/$/, '')
 
 export const apiClient = axios.create({
   baseURL,
