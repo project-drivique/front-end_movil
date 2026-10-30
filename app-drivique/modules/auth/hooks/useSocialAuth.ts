@@ -2,6 +2,7 @@ import { useState } from 'react';
 import i18n from '@/modules/i18n';
 import { decodeJwtPayload } from '@/utils/jwt';
 import { Platform } from 'react-native';
+import * as Linking from 'expo-linking';
 import { useTranslation } from 'react-i18next';
 import * as WebBrowser from 'expo-web-browser';
 import Constants from 'expo-constants';
@@ -59,7 +60,11 @@ function getRedirectUri() {
   if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin;
   }
-  return 'http://localhost:5173';
+  try {
+    const nativeUri = Linking.createURL('/oauth-callback');
+    if (nativeUri) return nativeUri;
+  } catch {}
+  return 'app-drivique://oauth-callback';
 }
 
 export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token: string) => void } = {}) {
