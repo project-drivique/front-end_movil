@@ -61,7 +61,7 @@ export const authService = {
     } catch (e: any) {
       // Si el backend respondió (401/403/409...), se propaga el error real.
       if (e?.response) throw e;
-      const rawApi = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+      const rawApi = process.env.EXPO_PUBLIC_API_URL ?? 'https://drivique.tech/api/v1';
       const base = rawApi.replace(/\/$/, '');
       const url = base.endsWith('/v1') ? `${base}/auth/login` : `${base}/v1/auth/login`;
       const response = await fetch(url, {
@@ -103,7 +103,7 @@ export const authService = {
     } catch (primaryError: any) {
       if (primaryError?.response) throw primaryError;
       try {
-        const rawApi = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+        const rawApi = process.env.EXPO_PUBLIC_API_URL ?? 'https://drivique.tech/api/v1';
         const base = rawApi.replace(/\/$/, '');
         const url = base.endsWith('/v1') ? `${base}/auth/register` : `${base}/v1/auth/register`;
         const response = await fetch(url, {
@@ -146,7 +146,7 @@ export const authService = {
       return data;
     } catch (primaryError) {
       try {
-        const rawApi = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1';
+        const rawApi = process.env.EXPO_PUBLIC_API_URL ?? 'https://drivique.tech/api/v1';
         const base = rawApi.replace(/\/$/, '');
         const endpoint = requestPayload.provider === 'FACEBOOK' ? '/auth/facebook' : '/auth/google';
         const url = base.endsWith('/v1') ? `${base}${endpoint}` : `${base}/v1${endpoint}`;
