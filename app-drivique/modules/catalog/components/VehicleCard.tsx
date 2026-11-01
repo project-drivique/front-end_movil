@@ -332,6 +332,9 @@ function VehiculoCard({
             styles.reservarBtnWrap,
             !estadoDisponible && [styles.reservarBtnDisabled, { backgroundColor: c.bgInput }],
           ]}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`Reservar vehículo ${vehiculo.brand} ${vehiculo.model}`}
           onPress={handleReservar}
           disabled={!estadoDisponible}
           activeOpacity={0.85}
@@ -355,6 +358,9 @@ function VehiculoCard({
         </TouchableOpacity>
 
         <TouchableOpacity
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`Ver detalles de ${vehiculo.brand} ${vehiculo.model}`}
           style={styles.detallesBtn}
           onPress={() =>
             router.push({
