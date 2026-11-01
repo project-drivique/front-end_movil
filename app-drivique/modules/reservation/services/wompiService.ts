@@ -1,52 +1,19 @@
-import { sha256Hex, utf8ToBinaryString } from "./sha256";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { Platform } from "react-native";
+import { apiClient } from "@/services/http/apiClient";
 
 /**
- * Llaves de Sandbox (pub_test_ / test_integrity_) — son las mismas que usa
- * la web, exactamente como pidió el negocio ("las llaves y todo es igual").
- * Al ser llaves de PRUEBA públicas de Wompi no hay problema en que vivan en
- * el cliente; en producción esto se movería a variables de entorno / backend.
+ * Configuración pública de Wompi (sin llaves de integridad en el cliente).
  */
 export const wompiConfig = {
   ambiente: "sandbox" as const,
   publicKey: "pub_test_Xq9JLHZllsreCdWcFQoubBvUZUQ61sFC",
-  integrityKey: "test_integrity_atd8mLC87VadjQvpBEZASMdr9HfUTyP7",
   currency: "COP" as const,
 };
 
 /**
- * TODO: MIGRAR A BACKEND
- * La firma de integridad nunca debe generarse en el cliente ni exponer el
- * integrityKey en producción. Esto es exclusivamente para el entorno
- * Sandbox de pruebas (igual que en la web). En producción este cálculo
- * debe vivir en un endpoint propio que devuelva solo el hash.
- *
- * Formato verificado contra el ejemplo oficial de Wompi (docs.wompi.co,
- * "Generate an integrity signature"): el orden es SIEMPRE
- *   referencia + monto_en_centavos + moneda + secreto_de_integridad
- * concatenados sin separadores.
- */
-export async function generarFirmaIntegridad(
-  referencia: string,
-  montoCentavos: number,
-  moneda: string
-): Promise<string> {
-  if (!Number.isInteger(montoCentavos)) {
-    console.warn(
-      "[Wompi] montoCentavos no es un entero exacto, esto puede invalidar la firma:",
-      montoCentavos
-    );
-  }
-  const cadena = `${referencia}${montoCentavos}${moneda}${wompiConfig.integrityKey}`;
-  return sha256Hex(utf8ToBinaryString(cadena));
-}
-
-/**
- * Referencia alfanumérica única para la transacción. Solo usa letras,
- * números, guiones y guiones bajos (evita espacios, acentos, "+", "/" que
- * podrían romper la URL o la validación de Wompi).
+ * Referencia alfanumérica única para la transacción local.
  */
 export function generarReferenciaUnica(): string {
   return (
@@ -59,18 +26,57 @@ export function generarReferenciaUnica(): string {
 
 /**
  * Convierte el total en pesos (COP) al entero en centavos que exige Wompi.
- * Es el único lugar donde se hace esta conversión; el mismo valor se
- * reutiliza tal cual tanto para firmar como para el parámetro de la URL,
- * para que nunca puedan desincronizarse.
  */
 export function aCentavos(totalCop: number): number {
   return Math.round(Number(totalCop) * 100);
 }
 
-interface ConstruirUrlCheckoutParams {
+export interface WompiInitiateResponse {
+  paymentId: string;
   reference: string;
   amountInCents: number;
+  currency: string;
+  publicKey: string;
+  integritySignature: string;
+}
+
+/**
+ * Solicita al backend iniciar la transacción Wompi oficial (`POST /v1/payments/wompi/initiate`).
+ * El servidor crea la fila PENDING en `billing.payments`, asegura el RentalContract si aplica
+ * y calcula la firma de integridad SHA-256 en el servidor.
+ */
+export async function iniciarPagoWompi({
+  contractId,
+  reservationReference,
+  paymentMethodCode = "CREDIT_CARD",
+}: {
+  contractId?: string | null;
+  reservationReference?: string | null;
+  paymentMethodCode?: string;
+}): Promise<WompiInitiateResponse> {
+  const payload: any = {
+    paymentMethodCode: paymentMethodCode || "CREDIT_CARD",
+  };
+  if (contractId) {
+    payload.contractId = contractId;
+  }
+  if (reservationReference) {
+    const clean = String(reservationReference).trim();
+    payload.reservationReference = clean.includes("_TX")
+      ? clean.split("_TX")[0]
+      : (clean.includes("_") ? clean.split("_")[0] : clean);
+  }
+
+  const { data } = await apiClient.post<WompiInitiateResponse>("/payments/wompi/initiate", payload);
+  return data;
+}
+
+interface ConstruirUrlCheckoutParams {
+  reference: string;
+  contractId?: string | null;
+  amountInCents: number;
   redirectUrl?: string;
+  paymentMethodCode?: string;
 }
 
 export function obtenerDefaultRedirectUrl(): string {
@@ -82,44 +88,51 @@ export function obtenerDefaultRedirectUrl(): string {
     if (linkingUrl && (linkingUrl.startsWith("http://") || linkingUrl.startsWith("https://"))) {
       return linkingUrl;
     }
-  } catch {}
+  } catch (err) {
+    console.warn("[wompiService] Error creando URL con Linking:", err);
+  }
   return "https://drivique.app/payment-response";
 }
 
 /**
  * Construye la URL del Web Checkout de Wompi (redirección directa a /p/)
- * con todos los parámetros requeridos, incluida la firma de integridad
- * y el manejo seguro de redirección sin romper servidores de desarrollo locales.
+ * obteniendo la firma oficial generada por el backend en `POST /v1/payments/wompi/initiate`.
  */
 export async function construirUrlCheckout({
   reference,
+  contractId = null,
   amountInCents,
   redirectUrl,
+  paymentMethodCode = "CREDIT_CARD",
 }: ConstruirUrlCheckoutParams): Promise<string> {
-  const currency = wompiConfig.currency;
-  const montoEntero = Math.round(Number(amountInCents));
-  
-  // Limpiar referencia base y garantizar que cada intento de pago tenga un identificador
-  // único para Wompi (_TX<timestamp>), evitando el error de Wompi "La referencia ya ha sido usada"
-  const cleanRef = reference.trim().replace(/\s+/g, "_");
-  const baseRef = cleanRef.includes("_TX") ? cleanRef.split("_TX")[0] : (cleanRef.includes("_") ? cleanRef.split("_")[0] : cleanRef);
-  const uniqueWompiRef = `${baseRef}_TX${Date.now()}`;
-  
-  const firma = await generarFirmaIntegridad(uniqueWompiRef, montoEntero, currency);
-
-  const params = new URLSearchParams({
-    "public-key": wompiConfig.publicKey,
-    currency,
-    "amount-in-cents": String(montoEntero),
-    reference: uniqueWompiRef,
-    "signature:integrity": firma,
+  const checkout = await iniciarPagoWompi({
+    contractId,
+    reservationReference: reference,
+    paymentMethodCode,
   });
 
-  // URL de redirección compatible con Web local y Móvil
+  const resolvedPubKey = checkout?.publicKey || wompiConfig.publicKey;
+  const resolvedCurrency = checkout?.currency || wompiConfig.currency || "COP";
+  const resolvedAmount = checkout?.amountInCents ?? Math.round(Number(amountInCents));
+  const resolvedRef = checkout?.reference || reference;
+  const resolvedSignature = checkout?.integritySignature;
+
+  if (!resolvedSignature) {
+    throw new Error("[Wompi] El servidor no devolvió la firma de integridad del pago.");
+  }
+
+  const params = new URLSearchParams({
+    "public-key": resolvedPubKey,
+    currency: resolvedCurrency,
+    "amount-in-cents": String(resolvedAmount),
+    reference: resolvedRef,
+    "signature:integrity": resolvedSignature,
+  });
+
   let targetRedirect = redirectUrl || obtenerDefaultRedirectUrl();
 
   if (targetRedirect && typeof targetRedirect === "string" && targetRedirect.trim() !== "") {
-    let clean = targetRedirect.trim();
+    const clean = targetRedirect.trim();
     if (clean.startsWith("http://") || clean.startsWith("https://")) {
       targetRedirect = clean;
     } else {
@@ -184,20 +197,22 @@ export async function consultarTransaccionWompi(transactionId: string): Promise<
 }
 
 /**
- * Abre el flujo de Web Checkout de Wompi de forma robusta con WebBrowser (Chrome Custom Tabs / Safari).
- * Evita bloqueos de Modal en React Native, soporta pasarelas bancarias PSE y retorna el resultado.
+ * Abre el flujo de Web Checkout de Wompi con WebBrowser (Chrome Custom Tabs / Safari).
  */
 export async function iniciarFlujoWompi({
   reference,
+  contractId,
   amountInCents,
   redirectUrl,
 }: {
   reference: string;
+  contractId?: string | null;
   amountInCents: number;
   redirectUrl?: string;
 }): Promise<{ transactionId?: string | null; reference: string; cancelado?: boolean }> {
   const url = await construirUrlCheckout({
     reference,
+    contractId,
     amountInCents,
     redirectUrl,
   });

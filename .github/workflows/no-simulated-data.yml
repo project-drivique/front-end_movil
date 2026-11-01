@@ -1,12 +1,12 @@
-name: Sin datos simulados
+name: CI Móvil - Calidad y Pruebas
 
 on:
   pull_request:
   push:
-    branches: [develop, qa, main]
+    branches: [develop, qa, main, HU-INT-22-dev]
 
 jobs:
-  escaneo:
+  escaneo-y-pruebas:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,3 +16,9 @@ jobs:
       - name: Buscar datos simulados en código productivo
         working-directory: app-drivique
         run: node scripts/check-no-simulated-data.mjs
+      - name: Instalar dependencias
+        working-directory: app-drivique
+        run: npm ci || npm install --legacy-peer-deps
+      - name: Ejecutar pruebas automatizadas
+        working-directory: app-drivique
+        run: npm test

@@ -79,7 +79,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
   const iniciarGoogle = async () => {
     setErrorSocial(null);
     setCargandoGoogle(true);
-    const ipSimulada = `192.168.1.${Math.floor(10 + Math.random() * 80)}`;
+    const ipSimulada = '127.0.0.1';
 
     try {
       const { codeVerifier, nonce, state } = await createPkceChallenge();
@@ -197,7 +197,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       if (!token) throw new Error('El servidor no entregó la sesión.');
       const userProfile = res.userProfile || res.user || res.usuario || {};
 
-      const d = deriveNamesFromEmail(email || userProfile.email || 'sharith.amezquita@drivique.com');
+      const d = deriveNamesFromEmail(email || userProfile.email || userProfile.email || 'usuario@drivique.com');
       const cleanFirst = sanitizeName(userProfile.firstName || primerNombre || userProfile.nombres, d.firstName);
       const cleanLast = sanitizeName(userProfile.lastName || primerApellido || userProfile.apellidos, d.lastName);
 
@@ -205,7 +205,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
         id: userProfile.id || `social-google-${Date.now()}`,
         nombres: cleanFirst,
         apellidos: cleanLast,
-        correo: email || userProfile.email || userProfile.correo || 'sharith.amezquita@drivique.com',
+        correo: email || userProfile.email || userProfile.correo || userProfile.email || 'usuario@drivique.com',
         rol: 'cliente',
         activo: userProfile.accountStatus === 'ACTIVE' || true,
         permisosValidos: true,
@@ -233,7 +233,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
   const iniciarFacebook = async () => {
     setErrorSocial(null);
     setCargandoFacebook(true);
-    const ipSimulada = `192.168.1.${Math.floor(10 + Math.random() * 80)}`;
+    const ipSimulada = '127.0.0.1';
 
     try {
       const { codeVerifier, nonce, state } = await createPkceChallenge();
@@ -340,7 +340,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       const token = res.accessToken || res.token || `token_fb_${Date.now()}`;
       const userProfile = res.userProfile || res.user || res.usuario || {};
 
-      const d = deriveNamesFromEmail(emailCalculado || userProfile.email || 'sharith.amezquita@drivique.com');
+      const d = deriveNamesFromEmail(emailCalculado || userProfile.email || userProfile.email || 'usuario@drivique.com');
       const cleanFirst = sanitizeName(userProfile.firstName || primerNombre || userProfile.nombres, d.firstName);
       const cleanLast = sanitizeName(userProfile.lastName || primerApellido || userProfile.apellidos, d.lastName);
 
@@ -348,7 +348,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
         id: userProfile.id || `social-facebook-${Date.now()}`,
         nombres: cleanFirst,
         apellidos: cleanLast,
-        correo: emailCalculado || userProfile.email || userProfile.correo || 'sharith.amezquita@drivique.com',
+        correo: emailCalculado || userProfile.email || userProfile.correo || userProfile.email || 'usuario@drivique.com',
         rol: 'cliente',
         activo: userProfile.accountStatus === 'ACTIVE' || true,
         permisosValidos: true,
