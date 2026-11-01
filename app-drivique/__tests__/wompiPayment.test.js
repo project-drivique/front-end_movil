@@ -28,3 +28,4 @@ describe('Mobile Wompi Payment Architecture Tests', () => {
     assert.ok(responseCode.includes('!tx.reference.startsWith("PAY-")'));
   });
 });
+

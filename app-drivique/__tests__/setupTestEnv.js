@@ -25,3 +25,4 @@ if (typeof globalThis.localStorage === 'undefined') {
 if (!globalThis.process.env.EXPO_PUBLIC_API_URL) {
   globalThis.process.env.EXPO_PUBLIC_API_URL = 'https://drivique.tech/api/v1';
 }
+

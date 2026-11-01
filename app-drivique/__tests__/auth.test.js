@@ -26,3 +26,4 @@ describe('Mobile Auth Service & Registration Sanity Tests', () => {
     assert.ok(baseURL.includes('/api/v1'));
   });
 });
+
