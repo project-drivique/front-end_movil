@@ -100,6 +100,7 @@ export default function TabLayout() {
           name="catalog"
           options={{
             title: t("tabs.inicio"),
+            tabBarAccessibilityLabel: "Catálogo de vehículos",
             tabBarIcon: ({ focused }) => <TabIcon name="car" focused={focused} c={c} />,
           }}
         />
@@ -112,6 +113,7 @@ export default function TabLayout() {
           name="my-bookings"
           options={{
             title: t("tabs.misReservas"),
+            tabBarAccessibilityLabel: "Mis reservas",
             tabBarIcon: ({ focused }) => (
               <TabIcon name="receipt" focused={focused} c={c} />
             ),
@@ -130,6 +132,7 @@ export default function TabLayout() {
           name="profile"
           options={{
             title: t("tabs.perfil"),
+            tabBarAccessibilityLabel: "Perfil de usuario",
             tabBarIcon: ({ focused }) => (
               <TabIcon name="person" focused={focused} c={c} />
             ),
@@ -145,6 +148,7 @@ export default function TabLayout() {
               <TabIcon name={isMgmt ? "business" : "menu"} focused={focused} c={c} />
             ),
             tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+            tabBarAccessibilityLabel: "Menú y opciones",
           }}
         />
 
