@@ -77,7 +77,7 @@ export default function PagoRespuestaScreen() {
     let tx = null as Awaited<ReturnType<typeof consultarTransaccionWompi>>;
     if (id) {
       tx = await consultarTransaccionWompi(id);
-      if (tx?.reference) referencia = tx.reference;
+      if (tx?.reference && !tx.reference.startsWith("PAY-")) { referencia = tx.reference; }
     }
     const base = referencia ? (referencia.includes("_") ? referencia.split("_")[0] : referencia) : "";
     if (!base) {

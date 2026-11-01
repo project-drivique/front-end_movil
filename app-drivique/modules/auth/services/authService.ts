@@ -88,7 +88,7 @@ export const authService = {
     const parts = emailPrefix.split(/[._\-\s]+/).filter(Boolean);
     const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '');
     const derivedFirst = parts.length > 0 ? cap(parts[0]) : i18n.t("extra.comun.usuario");
-    const derivedLast = parts.length > 1 ? parts.slice(1).map(cap).join(' ') : 'Drivique';
+    const derivedLast = parts.length > 1 ? parts.slice(1).map(cap).join(' ') : '';
 
     const payload = {
       firstName: rawData.firstName || derivedFirst,

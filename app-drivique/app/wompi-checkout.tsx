@@ -334,7 +334,7 @@ export default function WompiCheckoutScreen() {
                   if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
                     window.ReactNativeWebView.postMessage(typeof data === 'string' ? data : JSON.stringify(data));
                   }
-                } catch (e) {}
+                } catch (e) { console.warn('Error interno en WebView:', e); }
               }
 
               function extractCollectData(isClickFinalizar) {
@@ -372,7 +372,7 @@ export default function WompiCheckoutScreen() {
                       referenciaPago: refPago
                     });
                   }
-                } catch (err) {}
+                } catch (err) { console.warn('Error interno en WebView:', err); }
               }
 
               setInterval(function() {

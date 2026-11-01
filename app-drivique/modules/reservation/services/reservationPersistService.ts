@@ -259,7 +259,7 @@ export const reservaPersistService = {
       }
     }
     if (dDevolucion.getTime() <= dRetiro.getTime()) {
-      dDevolucion = new Date(dRetiro.getTime() + 24 * 60 * 60 * 1000);
+      throw new Error("La fecha de devolución debe ser posterior a la fecha de retiro.");
     }
 
     const body = {
