@@ -3,6 +3,16 @@
 # dependencies
 node_modules/
 
+# IDE and caches
+.idea/
+.vscode/
+*.iml
+
+# Binaries and packages
+*.apk
+*.aab
+*.zip
+
 # Expo
 .expo/
 dist/
@@ -26,8 +36,9 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-# macOS
+# macOS / Windows
 .DS_Store
+Thumbs.db
 *.pem
 
 # local env files

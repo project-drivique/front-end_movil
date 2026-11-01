@@ -1,0 +1,17 @@
+node_modules/
+**/node_modules/
+.idea/
+**/.idea/
+.vscode/
+**/.vscode/
+*.apk
+*.aab
+*.zip
+.expo/
+dist/
+web-build/
+.env
+.env*.local
+.DS_Store
+Thumbs.db
+
