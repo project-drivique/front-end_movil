@@ -63,7 +63,9 @@ function getRedirectUri() {
   try {
     const nativeUri = Linking.createURL('/oauth-callback');
     if (nativeUri) return nativeUri;
-  } catch {}
+  } catch (err) {
+    console.warn('Error resolviendo URI de redirección:', err);
+  }
   return 'app-drivique://oauth-callback';
 }
 
@@ -160,7 +162,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
                 if (uData.family_name) apellido = uData.family_name;
                 else if (uData.name && uData.name.split(' ').length > 1) apellido = uData.name.split(' ')[1];
               }
-            } catch {}
+            } catch (err) { console.warn('Error en flujo de autenticación social:', err); }
           } else if (idToken) {
             try {
               const parsed = decodeJwtPayload(idToken) || {};
@@ -169,7 +171,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
               else if (parsed.name) nombre = parsed.name.split(' ')[0];
               if (parsed.family_name) apellido = parsed.family_name;
               else if (parsed.name && parsed.name.split(' ').length > 1) apellido = parsed.name.split(' ')[1];
-            } catch {}
+            } catch (err) { console.warn('Error en flujo de autenticación social:', err); }
           }
         }
       }
@@ -292,7 +294,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
                 else if (fbData.name) rawFirst = fbData.name.split(' ')[0];
                 if (fbData.last_name) rawLast = fbData.last_name;
               }
-            } catch {}
+            } catch (err) { console.warn('Error en flujo de autenticación social:', err); }
           }
         }
       } else if (FACEBOOK_APP_ID) {
@@ -312,7 +314,7 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
                 else if (fbData.name) rawFirst = fbData.name.split(' ')[0];
                 if (fbData.last_name) rawLast = fbData.last_name;
               }
-            } catch {}
+            } catch (err) { console.warn('Error en flujo de autenticación social:', err); }
           }
         }
       }
