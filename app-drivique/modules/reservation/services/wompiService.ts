@@ -2,6 +2,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { Platform } from "react-native";
 import { apiClient } from "@/services/http/apiClient";
+import { contratoService } from "./contractService";
 
 /**
  * Configuración pública de Wompi (sin llaves de integridad en el cliente).
@@ -54,11 +55,26 @@ export async function iniciarPagoWompi({
   reservationReference?: string | null;
   paymentMethodCode?: string;
 }): Promise<WompiInitiateResponse> {
+  let resolvedContractId = contractId;
+  const cleanRef = reservationReference ? String(reservationReference).trim() : "";
+  const refFinal = cleanRef.includes("_TX")
+    ? cleanRef.split("_TX")[0]
+    : (cleanRef.includes("_") ? cleanRef.split("_")[0] : cleanRef);
+
+  if (!resolvedContractId && refFinal) {
+    try {
+      const contrato = await contratoService.obtenerPorReserva(refFinal);
+      if (contrato?.id) resolvedContractId = contrato.id;
+    } catch {
+      // Si el backend no tiene contrato previo, continuar con referencia
+    }
+  }
+
   const payload: any = {
     paymentMethodCode: paymentMethodCode || "CREDIT_CARD",
   };
-  if (contractId) {
-    payload.contractId = contractId;
+  if (resolvedContractId) {
+    payload.contractId = resolvedContractId;
   }
   if (reservationReference) {
     const clean = String(reservationReference).trim();
