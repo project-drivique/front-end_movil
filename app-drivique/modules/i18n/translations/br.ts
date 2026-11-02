@@ -2250,5 +2250,15 @@ export default {
     "esperaAperturaDesc": "Sua reserva foi registrada fora do horário de atendimento da filial {{sucursal}}. Assim que a filial iniciar o atendimento, você receberá uma notificação automática por e-mail, web e push para efetuar o pagamento e confirmar a reserva.",
     "esperaAperturaEstado": "Status: aguardando a abertura da filial",
     "docsEnRevisionEstado": "Status: em revisão pelo responsável da filial"
+  },
+  "a11y": {
+    "cerrar": "Fechar",
+    "volver": "Voltar",
+    "contactar": "Contatar",
+    "chat": "Chat de suporte",
+    "eliminar": "Excluir",
+    "enviar": "Enviar",
+    "siguiente": "Próximo",
+    "ajustes": "Configurações"
   }
 };

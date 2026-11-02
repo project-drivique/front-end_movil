@@ -96,7 +96,7 @@ export default function DomicilioCard({ reserva }: { reserva: ReservaGuardada })
               </View>
             ))}
           </View>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             onPress={() => setVerCodigo((v) => !v)}
             hitSlop={10}
             accessibilityLabel={
@@ -133,7 +133,7 @@ export default function DomicilioCard({ reserva }: { reserva: ReservaGuardada })
               {conductor || t("reservas.homeStatusPreparing", { defaultValue: "En proceso" })}
             </Text>
             {telefono ? (
-              <TouchableOpacity style={s.whatsapp} activeOpacity={0.85} onPress={() => Linking.openURL(`https://wa.me/${telefono}`)}>
+              <TouchableOpacity accessibilityRole="button" style={s.whatsapp} activeOpacity={0.85} onPress={() => Linking.openURL(`https://wa.me/${telefono}`)}>
                 <Ionicons name="logo-whatsapp" size={15} color="#FFFFFF" />
                 <Text style={s.whatsappTexto}>WhatsApp</Text>
               </TouchableOpacity>
@@ -161,7 +161,7 @@ export default function DomicilioCard({ reserva }: { reserva: ReservaGuardada })
         ) : null}
 
         <View style={[s.separador, { backgroundColor: c.border }]} />
-        <TouchableOpacity style={s.verMas} onPress={() => setVerDetalles((v) => !v)} activeOpacity={0.7}>
+        <TouchableOpacity accessibilityRole="button" style={s.verMas} onPress={() => setVerDetalles((v) => !v)} activeOpacity={0.7}>
           <Text style={[s.verMasTexto, { color: acento }]}>
             {verDetalles
               ? t("reservas.homeLessDetails", { defaultValue: "Ocultar detalles" })

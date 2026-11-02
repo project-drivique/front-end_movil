@@ -97,7 +97,7 @@ export default function ModalReservaRegistrada({
           </View>
 
           {/* Botón Principal: Pagar con Wompi */}
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("comun.procesando", { defaultValue: "Abriendo Wompi..." })}
             style={styles.botonWompiWrap}
             onPress={onPagarWompi}
             activeOpacity={0.88}
@@ -125,7 +125,7 @@ export default function ModalReservaRegistrada({
           </TouchableOpacity>
 
           {/* Botón Secundario: Pagar más tarde */}
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.confirmacion.pagarMasTarde", { defaultValue: "Pagar más tarde" })}
             style={[styles.botonCancelar, { borderColor: c.border, backgroundColor: "transparent" }]}
             onPress={onCerrar}
             activeOpacity={0.8}

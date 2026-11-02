@@ -102,7 +102,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
 
       {/* Nacionalidad (primero, para poder derivar el prefijo del teléfono) */}
       <Text style={[s.label, { color: c.textSecondary }]}>{t("perfil.nacionalidad")}</Text>
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         style={[s.selector, { borderColor: errores.nacionalidad ? "#EF4444" : c.border, backgroundColor: c.bgInput }]}
         onPress={() => setShowNacionalidad(v => !v)}
         activeOpacity={0.7}
@@ -117,7 +117,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
       {showNacionalidad && (
         <View style={[s.dropdown, { borderColor: c.border, backgroundColor: c.bgCard }]}>
           {NACIONALIDADES.map(({ id: valor, nombre }) => (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               key={valor}
               style={[s.dropdownItem, form.nacionalidad === valor && { backgroundColor: c.primaryBg }]}
               onPress={() => {
@@ -164,7 +164,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
             </Text>
           </View>
           <View style={{ flex: 1 }}>
-            <TextInput
+            <TextInput accessibilityLabel={t("perfil.placeholders.telefono", { defaultValue: "Ej. 3144214909" })}
               style={[
                 inputFieldStyles.input,
                 { borderColor: c.border, backgroundColor: c.bgInput, color: c.textPrimary },
@@ -182,7 +182,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
         </View>
       ) : (
         <View>
-          <TextInput
+          <TextInput accessibilityLabel={"3144214909"}
             style={[
               inputFieldStyles.input,
               { borderColor: c.border, backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", color: c.textMuted },
@@ -210,7 +210,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
 
       {/* Tipo de documento */}
       <Text style={[s.label, { color: c.textSecondary }]}>{t("perfil.tipoDocumento")}</Text>
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         style={[s.selector, { borderColor: errores.tipoDocumento ? "#EF4444" : c.border, backgroundColor: c.bgInput }]}
         onPress={() => setShowTipoDoc(v => !v)}
         activeOpacity={0.7}
@@ -225,7 +225,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
       {showTipoDoc && (
         <View style={[s.dropdown, { borderColor: c.border, backgroundColor: c.bgCard }]}>
           {tiposDocumentoFiltrados.map(tipo => (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(`reserva.datosPersonales.tiposDocumento.${tipo === "Doc. Extranjero" ? "DocExtranjero" : tipo}`, { defaultValue: tipo })}
               key={tipo}
               style={[s.dropdownItem, form.tipoDocumento === tipo && { backgroundColor: c.primaryBg }]}
               onPress={() => { actualizarCampo("tipoDocumento", tipo); setShowTipoDoc(false); }}
@@ -256,7 +256,9 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
             </Text>
           </View>
           <View style={{ flex: 1 }}>
-            <TextInput
+            <TextInput accessibilityLabel={form.tipoDocumento === "Pasaporte"
+                  ? "Ej. P12345678"
+                  : "Ej. 1075228306"}
               style={[
                 inputFieldStyles.input,
                 { borderColor: c.border, backgroundColor: c.bgInput, color: c.textPrimary },
@@ -282,7 +284,7 @@ export function FormCompletarPerfil({ onGuardado }: Props) {
         </View>
       ) : (
         <View>
-          <TextInput
+          <TextInput accessibilityLabel={"1075228306"}
             style={[
               inputFieldStyles.input,
               { borderColor: c.border, backgroundColor: c.oscuro ? "#1F2937" : "#F3F4F6", color: c.textMuted },

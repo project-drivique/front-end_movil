@@ -15,6 +15,8 @@ import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { Comentario } from "../types/catalog.types";
 import { useUsuarioStore } from "@/store/userStore";
 import { apiClient } from "@/services/http/apiClient";
+import VehicleReviewsPart2 from './VehicleReviews/VehicleReviewsPart2'
+import VehicleReviewsPart from './VehicleReviews/VehicleReviewsPart'
 
 interface Props {
   comentarios: Comentario[];
@@ -24,29 +26,6 @@ interface Props {
 }
 
 const COLOR_BORDE_CARD = "#E2E8F0";
-
-function Estrellas({ valor, tamano = 14 }: { valor: number; tamano?: number }) {
-  return (
-    <View style={{ flexDirection: "row", gap: 2 }}>
-      {Array.from({ length: 5 }, (_, i) => {
-        const lleno = i < Math.round(valor);
-        return (
-          <Ionicons
-            key={i}
-            name={lleno ? "star" : "star-outline"}
-            size={tamano}
-            color={lleno ? "#F59E0B" : "#CBD5E1"}
-          />
-        );
-      })}
-    </View>
-  );
-}
-
-function inicialesDe(nombre: string): string {
-  const partes = nombre.trim().split(/\s+/);
-  return partes.slice(0, 2).map((p) => p.charAt(0).toUpperCase()).join("");
-}
 
 export function VehicleReviews({ vehiculoId }: Props) {
   const c = useTemaColores();
@@ -159,121 +138,19 @@ export function VehicleReviews({ vehiculoId }: Props) {
       </Text>
 
       {/* Bloque Resumen: Calificación + Barras */}
-      <View style={s.resumenContenedor}>
-        {/* Columna Izquierda: Número grande + Estrellas + Total */}
-        <View style={s.columnaPuntaje}>
-          <Text style={[s.puntajeGrande, { color: colorScore }]}>{promedio.toFixed(1)}</Text>
-          <Estrellas valor={promedio} tamano={15} />
-          <Text style={[s.conteoTexto, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
-            {total} {total === 1 ? t("extra.comun.resena") : t("extra.comun.resenas")}
-          </Text>
-        </View>
-
-        {/* Columna Derecha: Barras de 5 a 1 estrella */}
-        <View style={s.columnaBarras}>
-          {counts.map(({ estrella, count }) => {
-            const porcentaje = total > 0 ? (count / total) * 100 : 0;
-            return (
-              <View key={estrella} style={s.filaBarra}>
-                <Text style={[s.barraEstrellaNum, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
-                  {estrella}
-                </Text>
-                <Ionicons name="star" size={11} color="#F59E0B" style={{ marginRight: 6 }} />
-                <View style={[s.barraTrack, { backgroundColor: c.oscuro ? "#334155" : "#EEF2F6" }]}>
-                  <View
-                    style={[
-                      s.barraFill,
-                      {
-                        width: `${porcentaje}%`,
-                        backgroundColor: porcentaje > 0 ? "#2563EB" : "transparent",
-                      },
-                    ]}
-                  />
-                </View>
-                <Text style={[s.barraConteoNum, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
-                  {count}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-      </View>
+      <VehicleReviewsPart c={c} colorScore={colorScore} counts={counts} promedio={promedio} t={t} total={total} />
 
       {/* Divisor */}
       {total > 0 && <View style={[s.divisor, { backgroundColor: colorBorde }]} />}
 
       {/* Lista de Reseñas */}
-      <View style={s.listaComentarios}>
-        {listaComentarios.slice(0, visibles).map((r, i) => (
-          <View
-            key={i}
-            style={[
-              s.comentarioItem,
-              i > 0 && { borderTopWidth: 1, borderTopColor: colorBorde, paddingTop: 14 },
-            ]}
-          >
-            {/* Avatar circular con iniciales */}
-            <View style={[s.avatarWrap, { backgroundColor: c.oscuro ? "#334155" : "#F1F5F9" }]}>
-              <Text style={[s.avatarTexto, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
-                {inicialesDe(r.autor)}
-              </Text>
-            </View>
-
-            {/* Contenido de la reseña */}
-            <View style={s.comentarioCuerpo}>
-              <View style={s.comentarioHeaderRow}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                  <Text style={[s.autorNombre, { color: c.oscuro ? "#F8FAFC" : "#0F172A" }]}>
-                    {r.autor}
-                  </Text>
-                  {(Boolean(usuarioNombreActual && r.autor?.trim().toLowerCase() === usuarioNombreActual) || (r as any).esPropia) && (
-                    <View style={{ backgroundColor: c.primaryBg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-                      <Text style={{ fontSize: 10, fontWeight: "700", color: c.primary }}>
-                        {t("vehiculo.resenas.tuResena", { defaultValue: "Tu reseña" })}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <Estrellas valor={r.calificacion} tamano={13} />
-              </View>
-
-              {!!r.fecha && (
-                <Text style={[s.fechaTexto, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
-                  {r.fecha}
-                </Text>
-              )}
-
-              {!!r.texto && (
-                <Text style={[s.comentarioTexto, { color: c.oscuro ? "#F8FAFC" : "#0F172A" }]}>
-                  {r.texto}
-                </Text>
-              )}
-
-              {/* Galería de fotos si la reseña tiene imágenes */}
-              {r.fotos && r.fotos.length > 0 && (
-                <View style={s.fotosResenaFila}>
-                  {r.fotos.map((fotoUri, fIdx) => (
-                    <TouchableOpacity
-                      key={fIdx}
-                      activeOpacity={0.8}
-                      onPress={() => setFotoModalUri(fotoUri)}
-                      style={s.fotoResenaThumbWrap}
-                    >
-                      <Image source={{ uri: fotoUri }} style={s.fotoResenaThumb} />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
-        ))}
-      </View>
+      <VehicleReviewsPart2 c={c} colorBorde={colorBorde} listaComentarios={listaComentarios} setFotoModalUri={setFotoModalUri} t={t} usuarioNombreActual={usuarioNombreActual} visibles={visibles} />
 
       {/* Botón Ver más / Ocultar */}
       {total > 4 && (
         <>
           <View style={[s.divisor, { backgroundColor: colorBorde }]} />
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             style={s.verMasBtn}
             onPress={() => setVisibles((v) => (v >= total ? 4 : total))}
             activeOpacity={0.7}
@@ -294,12 +171,12 @@ export function VehicleReviews({ vehiculoId }: Props) {
         animationType="fade"
         onRequestClose={() => setFotoModalUri(null)}
       >
-        <Pressable style={s.modalFotoOverlay} onPress={() => setFotoModalUri(null)}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} style={s.modalFotoOverlay} onPress={() => setFotoModalUri(null)}>
           <View style={s.modalFotoContenedor}>
             {!!fotoModalUri && (
               <Image source={{ uri: fotoModalUri }} style={s.modalFotoImg} resizeMode="contain" />
             )}
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
               style={s.modalFotoCerrarBtn}
               onPress={() => setFotoModalUri(null)}
               activeOpacity={0.8}

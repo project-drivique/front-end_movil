@@ -2,24 +2,14 @@ import { Ionicons } from "@expo/vector-icons";
 import i18n from "@/modules/i18n";
 import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Image,
-  Modal,
-  Pressable,
-  SectionList,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import * as Linking from "expo-linking";
-import * as WebBrowser from "expo-web-browser";
+import { useCallback, useMemo, useState } from 'react'
+import { Image, SectionList, StatusBar, Text, TouchableOpacity, View } from 'react-native'
+
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { GRADIENTES } from "@/constants/gradients";
-import { COLOR_MARCA, getDireccionSucursal } from "@/modules/catalog/constants/catalog.constants";
+import { COLOR_MARCA } from '@/modules/catalog/constants/catalog.constants'
 import { IdiomaKey } from "@/modules/i18n";
 import { useIdioma, useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import {
@@ -36,6 +26,8 @@ import { useAuthStore } from "@/store/authStore";
 import { aCentavos, construirUrlCheckout } from "@/modules/reservation/services/wompiService";
 import { Platform } from "react-native";
 import { Alert } from "@/utils/alerta";
+import { styles } from '../../modules/reservation/screens/my-bookings.styles'
+import Cargando from '../../modules/reservation/screens/MyBookingsScreen/Cargando'
 
 const COLOR_GRUPO: Record<GrupoReserva, string> = {
   pendiente: "#f59e0b",
@@ -45,7 +37,7 @@ const COLOR_GRUPO: Record<GrupoReserva, string> = {
   cancelada: "#dc2626",
 };
 
-const ORDEN_GRUPOS: GrupoReserva[] = ["pendiente", "confirmada", "en_curso", "finalizada", "cancelada"];
+
 
 // Mapa de idioma de la app -> locale BCP-47 para nombres de mes localizados
 const LOCALE_POR_IDIOMA: Record<IdiomaKey, string> = {
@@ -87,32 +79,9 @@ function formatFechaReserva(fechaStr?: string | null): string {
   return fechaCorta(clean);
 }
 
-function formatHora12(horaStr?: string | null): string {
-  if (!horaStr) return "";
-  const partes = String(horaStr).trim().split(":");
-  if (partes.length < 2) return String(horaStr);
-  let h = parseInt(partes[0], 10);
-  const m = partes[1].slice(0, 2);
-  if (isNaN(h)) return String(horaStr);
-  const ampm = h >= 12 ? "PM" : "AM";
-  h = h % 12;
-  if (h === 0) h = 12;
-  return `${h}:${m} ${ampm}`;
-}
 
-function formatFechaCompleta(fechaStr?: string | null, locale: string = "es-CO"): string {
-  if (!fechaStr) return "";
-  const clean = String(fechaStr).split("T")[0];
-  const d = new Date(`${clean}T00:00:00`);
-  if (isNaN(d.getTime())) return String(fechaStr);
-  const texto = d.toLocaleDateString(locale, {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-  return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
+
+
 
 function obtenerTituloSeccionFecha(fechaIsoStr?: string | null, locale: string = "es-CO"): string {
   if (!fechaIsoStr) return i18n.t("extra.misReservas.otras");
@@ -326,101 +295,7 @@ export default function MisReservasScreen() {
       </LinearGradient>
 
       {!cargando && reservas.length > 0 && (
-        <View style={[styles.filtrosWrap, { borderColor: c.border, backgroundColor: c.bgCard }]}>
-          <View style={styles.filtrosCabecera}>
-            <View style={[styles.filtrosIcono, { backgroundColor: c.primaryBg }]}>
-              <Ionicons name="options-outline" size={18} color={c.primary} />
-            </View>
-            <Text style={[styles.filtrosTitulo, { color: c.textPrimary }]}>{t("misReservas.filtros")}</Text>
-            {hayFiltrosActivos && (
-              <TouchableOpacity onPress={limpiarFiltros} activeOpacity={0.7}>
-                <Text style={[styles.limpiarBtnTexto, { color: c.primary }]}>{t("misReservas.limpiarFiltros")}</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View style={styles.selectoresFila}>
-            <SelectorFiltro
-              icono="flag-outline"
-              etiqueta={t("misReservas.filtrarPorEstado")}
-              valor={filtroGrupo === "todas" ? t("misReservas.todas") : t(`misReservas.grupos.${filtroGrupo}`)}
-              activo={filtroGrupo !== "todas"}
-              onPress={() => setModalEstadoVisible(true)}
-              c={c}
-            />
-            <SelectorFiltro
-              icono="calendar-outline"
-              etiqueta={t("misReservas.filtrarPorMes")}
-              valor={filtroMes ? etiquetaMes(filtroMes, locale) : t("misReservas.todosLosMeses")}
-              activo={!!filtroMes}
-              onPress={() => setModalMesVisible(true)}
-              c={c}
-            />
-          </View>
-
-          <Modal visible={modalEstadoVisible} transparent animationType="fade" onRequestClose={() => setModalEstadoVisible(false)}>
-            <Pressable style={styles.modalOverlay} onPress={() => setModalEstadoVisible(false)}>
-              <Pressable style={[styles.modalCard, { backgroundColor: c.bgCard }]} onPress={() => {}}>
-                <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>{t("misReservas.filtrarPorEstado")}</Text>
-                {(["todas", ...ORDEN_GRUPOS] as const).map((grupo) => {
-                  const activo = filtroGrupo === grupo;
-                  return (
-                    <TouchableOpacity
-                      key={grupo}
-                      style={[styles.opcionEstado, { borderBottomColor: c.border }]}
-                      onPress={() => { setFiltroGrupo(grupo); setModalEstadoVisible(false); }}
-                    >
-                      <Text style={[styles.opcionEstadoTexto, { color: activo ? c.primary : c.textPrimary }]}>
-                        {grupo === "todas" ? t("misReservas.todas") : t(`misReservas.grupos.${grupo}`)}
-                      </Text>
-                      {activo && <Ionicons name="checkmark-circle" size={20} color={c.primary} />}
-                    </TouchableOpacity>
-                  );
-                })}
-              </Pressable>
-            </Pressable>
-          </Modal>
-
-          <Modal
-            visible={modalMesVisible}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setModalMesVisible(false)}
-          >
-            <Pressable style={styles.modalOverlay} onPress={() => setModalMesVisible(false)}>
-              <Pressable style={[styles.modalCard, { backgroundColor: c.bgCard }]} onPress={() => {}}>
-                <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>{t("misReservas.filtrarPorMes")}</Text>
-
-                <View style={styles.mesesGrid}>
-                  {mesesDelAnio.map((m) => (
-                    <TouchableOpacity
-                      key={m.clave}
-                      style={[styles.celdaMes, { backgroundColor: filtroMes === m.clave ? COLOR_MARCA : c.bgInput }]}
-                      onPress={() => seleccionarMes(m.clave)}
-                      activeOpacity={0.75}
-                    >
-                      <Text style={[styles.celdaMesTexto, { color: filtroMes === m.clave ? "#fff" : c.textPrimary }]}>
-                        {m.etiqueta}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                <TouchableOpacity style={styles.todosMesesBtn} onPress={() => seleccionarMes(null)} activeOpacity={0.7}>
-                  <Text
-                    style={[
-                      styles.todosMesesTexto,
-                      { color: !filtroMes ? c.primary : c.textSecondary, fontWeight: !filtroMes ? "800" : "600" },
-                    ]}
-                  >
-                    {t("misReservas.todosLosMeses")}
-                  </Text>
-                  {!filtroMes && <Ionicons name="checkmark" size={16} color={c.primary} />}
-                </TouchableOpacity>
-              </Pressable>
-            </Pressable>
-          </Modal>
-        </View>
+        <Cargando c={c} filtroGrupo={filtroGrupo} filtroMes={filtroMes} hayFiltrosActivos={hayFiltrosActivos} limpiarFiltros={limpiarFiltros} locale={locale} mesesDelAnio={mesesDelAnio} modalEstadoVisible={modalEstadoVisible} modalMesVisible={modalMesVisible} seleccionarMes={seleccionarMes} setFiltroGrupo={setFiltroGrupo} setModalEstadoVisible={setModalEstadoVisible} setModalMesVisible={setModalMesVisible} t={t} />
       )}
 
       {!cargando && reservas.length > 0 && reservasFiltradas.length > 0 && (
@@ -454,7 +329,7 @@ export default function MisReservasScreen() {
           <Ionicons name="search-outline" size={40} color={c.textMuted} />
           <Text style={[styles.vacioTitulo, { color: c.textPrimary }]}>{t("misReservas.sinResultadosFiltroTitulo")}</Text>
           <Text style={[styles.vacioTexto, { color: c.textMuted }]}>{t("misReservas.sinResultadosFiltro")}</Text>
-          <TouchableOpacity onPress={limpiarFiltros}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("misReservas.limpiarFiltros")} onPress={limpiarFiltros}>
             <Text style={[styles.limpiarBtnTexto, { color: c.primary, fontSize: 13 }]}>{t("misReservas.limpiarFiltros")}</Text>
           </TouchableOpacity>
         </View>
@@ -469,7 +344,7 @@ export default function MisReservasScreen() {
           <Text style={[styles.vacioTexto, { color: c.textMuted }]}>
             {errorCarga || t("misReservas.vacioTexto")}
           </Text>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("misReservas.explorarVehiculos")}
             style={styles.vacioBtnWrap}
             onPress={() => router.push("/(tabs)/catalog")}
             activeOpacity={0.85}
@@ -490,44 +365,7 @@ export default function MisReservasScreen() {
   );
 }
 
-function SelectorFiltro({
-  icono,
-  etiqueta,
-  valor,
-  activo,
-  onPress,
-  c,
-}: {
-  icono: React.ComponentProps<typeof Ionicons>["name"];
-  etiqueta: string;
-  valor: string;
-  activo: boolean;
-  onPress: () => void;
-  c: ReturnType<typeof useTemaColores>;
-}) {
-  return (
-    <TouchableOpacity
-      style={[
-        styles.selectorFiltro,
-        {
-          backgroundColor: activo ? c.primaryBg : c.bgInput,
-          borderColor: activo ? c.primary : c.border,
-        },
-      ]}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <View style={styles.selectorFiltroSuperior}>
-        <Ionicons name={icono} size={14} color={activo ? c.primary : c.textMuted} />
-        <Text style={[styles.selectorFiltroEtiqueta, { color: c.textMuted }]} numberOfLines={1}>{etiqueta}</Text>
-      </View>
-      <View style={styles.selectorFiltroInferior}>
-        <Text style={[styles.selectorFiltroValor, { color: activo ? c.primary : c.textPrimary }]} numberOfLines={1}>{valor}</Text>
-        <Ionicons name="chevron-down" size={14} color={activo ? c.primary : c.textMuted} />
-      </View>
-    </TouchableOpacity>
-  );
-}
+
 
 function TarjetaReserva({
   reserva,
@@ -549,7 +387,7 @@ function TarjetaReserva({
   const foto = vehiculoSnap?.imagenes?.[0];
 
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.confirmacion.respuesta.total", { defaultValue: "Total" })}
       activeOpacity={0.85}
       style={[styles.tarjeta, { backgroundColor: c.bgCard, borderColor: c.border }]}
       onPress={onPress}
@@ -603,7 +441,7 @@ function TarjetaReserva({
           </View>
 
           {grupo === "en_curso" && (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.hacerReporte", { defaultValue: "Soporte de incidencias" })}
               style={[styles.reportarBtn, { backgroundColor: c.primaryBg, borderColor: c.primary }]}
               onPress={(e) => {
                 e.stopPropagation();
@@ -629,206 +467,5 @@ function TarjetaReserva({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-  },
-  headerTitulo: { fontSize: 20, fontWeight: "800" },
-  headerSubtitulo: { fontSize: 13, marginTop: 4 },
 
-  filtrosWrap: {
-    marginHorizontal: 16,
-    marginTop: 14,
-    marginBottom: 2,
-    padding: 14,
-    borderWidth: 1,
-    borderRadius: 16,
-  },
-  filtrosCabecera: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  filtrosIcono: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  filtrosTitulo: { flex: 1, marginLeft: 9, fontSize: 14, fontWeight: "800" },
-  limpiarBtnTexto: { fontSize: 12, fontWeight: "700" },
-  selectoresFila: { flexDirection: "row", gap: 10 },
-  selectorFiltro: { flex: 1, minWidth: 0, borderWidth: 1, borderRadius: 12, padding: 10 },
-  selectorFiltroSuperior: { flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 5 },
-  selectorFiltroInferior: { flexDirection: "row", alignItems: "center", gap: 4 },
-  selectorFiltroEtiqueta: { flex: 1, fontSize: 10, fontWeight: "600" },
-  selectorFiltroValor: { flex: 1, fontSize: 12, fontWeight: "800" },
-  opcionEstado: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    minHeight: 46,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  opcionEstadoTexto: { fontSize: 14, fontWeight: "700" },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 24,
-  },
-  modalCard: {
-    width: "100%",
-    maxWidth: 340,
-    borderRadius: 16,
-    padding: 20,
-  },
-  modalTitulo: { fontSize: 16, fontWeight: "800", marginBottom: 14 },
-  mesesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  celdaMes: {
-    width: "31%",
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  celdaMesTexto: { fontSize: 13, fontWeight: "700" },
-  todosMesesBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    marginTop: 16,
-    paddingVertical: 10,
-  },
-  todosMesesTexto: { fontSize: 13.5 },
-
-  seccionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 14,
-    marginBottom: 8,
-    paddingHorizontal: 4,
-  },
-  seccionPunto: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-  },
-  seccionTitulo: {
-    fontSize: 13,
-    fontWeight: "800",
-    letterSpacing: -0.2,
-  },
-  lista: { padding: 16, paddingBottom: 40 },
-  tarjeta: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 12,
-    marginBottom: 12,
-  },
-  tarjetaFechas: {
-    fontSize: 11.5,
-    fontWeight: "600",
-    marginTop: 3,
-  },
-  tarjetaFila: { flexDirection: "row", gap: 12 },
-  tarjetaFoto: { width: 72, height: 72, borderRadius: 10, resizeMode: "cover" },
-  tarjetaFotoVacia: {
-    width: 72,
-    height: 72,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tarjetaInfo: { flex: 1, justifyContent: "space-between" },
-  tarjetaHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 8,
-  },
-  tarjetaVehiculo: { fontSize: 14, fontWeight: "800", flexShrink: 1 },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 7,
-    maxWidth: 120,
-  },
-  badgeDot: { width: 5, height: 5, borderRadius: 2.5 },
-  badgeTexto: { fontSize: 9.5, fontWeight: "700" },
-  tarjetaDetallesFila: { marginTop: 3 },
-  tarjetaDetallesTexto: { fontSize: 11.5, fontWeight: "500" },
-  tarjetaFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  tarjetaTotalLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  tarjetaTotal: { fontSize: 14, fontWeight: "800" },
-  reportarBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    marginTop: 8,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 6,
-    borderWidth: 1,
-    alignSelf: "flex-end",
-  },
-  reportarBtnText: {
-    fontSize: 11,
-    fontWeight: "700",
-  },
-  vacioContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 32,
-    gap: 6,
-  },
-  vacioIconoWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-  },
-  vacioTitulo: {
-    fontSize: 16,
-    fontWeight: "800",
-    marginTop: 6,
-    textAlign: "center",
-  },
-  vacioTexto: {
-    fontSize: 13,
-    textAlign: "center",
-    lineHeight: 19,
-    marginBottom: 14,
-  },
-  vacioBtnWrap: {
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  vacioBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 13,
-    borderRadius: 12,
-  },
-  vacioBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
-});
 

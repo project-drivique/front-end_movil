@@ -95,7 +95,7 @@ export function InfoPersonal({ usuario, onEditar, onCambiarCorreo }: Props) {
             <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t('perfil.correoActual')}</Text>
             <Text style={[styles.campoValor, { color: c.textPrimary }]}>{usuario.correo}</Text>
           </View>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('perfil.cambiar')}
             style={[styles.btnCambiarCorreo, { backgroundColor: c.primaryBg, borderColor: c.oscuro ? COLOR_MARCA_OSCURO : COLOR_ENLACE }]}
             onPress={onCambiarCorreo}
           >
@@ -105,7 +105,7 @@ export function InfoPersonal({ usuario, onEditar, onCambiarCorreo }: Props) {
       </View>
 
       {/* Botón editar */}
-      <TouchableOpacity style={styles.btnEditarWrap} onPress={onEditar} activeOpacity={0.85}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('perfil.editarInfo')} style={styles.btnEditarWrap} onPress={onEditar} activeOpacity={0.85}>
         <LinearGradient
           colors={GRADIENTES.boton.colors}
           start={GRADIENTES.boton.start}

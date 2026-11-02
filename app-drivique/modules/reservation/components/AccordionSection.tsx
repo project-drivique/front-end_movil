@@ -56,7 +56,7 @@ export default function SeccionAcordeon({
         abierto && { borderColor: primaryAccent },
       ]}
     >
-      <TouchableOpacity style={styles.header} onPress={handleToggle} activeOpacity={0.7}>
+      <TouchableOpacity accessibilityRole="button" style={styles.header} onPress={handleToggle} activeOpacity={0.7}>
         <View
           style={[
             styles.iconoWrap,
