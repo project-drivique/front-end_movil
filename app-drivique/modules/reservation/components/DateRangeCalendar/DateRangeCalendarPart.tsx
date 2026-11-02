@@ -4,7 +4,7 @@ import { styles } from './DateRangeCalendar.styles'
 import { Ionicons } from '@expo/vector-icons'
 import { COLOR_MARCA } from '../../constants/reservation.constants'
 import { useTemaColores } from '@/modules/i18n/hooks/useLanguage'
-import type { MarcaDia } from './'
+import type { MarcaDia } from '../DateRangeCalendar'
 
 function DiaCalendario({
   date,
