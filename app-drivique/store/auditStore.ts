@@ -11,7 +11,7 @@ export interface EventoAuditoria {
   fechaHora: string;
   correo: string;
   rol: string;
-  ip: string;
+  ip?: string;
   resultado: ResultadoAcceso;
   sucursal?: string;
 }
@@ -52,7 +52,6 @@ export const useAuditStore = create<AuditStore>()((set) => ({
       fechaHora,
       correo: "visitante@drivique.com",
       rol: "visitante",
-      ip: "192.168.1.50",
       resultado: "Exitoso",
       sucursal: `${tipo}: ${detalle || "Navegación"}`,
     };

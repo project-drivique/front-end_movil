@@ -81,7 +81,6 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
   const iniciarGoogle = async () => {
     setErrorSocial(null);
     setCargandoGoogle(true);
-    const ipSimulada = '127.0.0.1';
 
     try {
       const { codeVerifier, nonce, state } = await createPkceChallenge();
@@ -218,7 +217,6 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       registrarAuditoria({
         correo: usuario.correo,
         rol: usuario.rol,
-        ip: ipSimulada,
         resultado: 'Exitoso',
         sucursal: 'Móvil / App (Google OAuth)',
       });
@@ -235,7 +233,6 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
   const iniciarFacebook = async () => {
     setErrorSocial(null);
     setCargandoFacebook(true);
-    const ipSimulada = '127.0.0.1';
 
     try {
       const { codeVerifier, nonce, state } = await createPkceChallenge();
@@ -361,7 +358,6 @@ export function useSocialAuth({ onExito }: { onExito?: (usuario: Usuario, token:
       registrarAuditoria({
         correo: usuario.correo,
         rol: usuario.rol,
-        ip: ipSimulada,
         resultado: 'Exitoso',
         sucursal: 'Móvil / App (Facebook OAuth)',
       });
