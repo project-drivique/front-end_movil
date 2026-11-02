@@ -2250,5 +2250,15 @@ export default {
     "esperaAperturaDesc": "Your booking was registered outside the opening hours of the {{sucursal}} branch. As soon as the branch opens, you will receive an automatic email, web and push notification so you can pay and confirm your booking.",
     "esperaAperturaEstado": "Status: waiting for the branch to open",
     "docsEnRevisionEstado": "Status: under review by the branch manager"
+  },
+  "a11y": {
+    "cerrar": "Close",
+    "volver": "Back",
+    "contactar": "Contact",
+    "chat": "Support chat",
+    "eliminar": "Delete",
+    "enviar": "Send",
+    "siguiente": "Next",
+    "ajustes": "Settings"
   }
 };

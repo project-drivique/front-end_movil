@@ -42,7 +42,7 @@ export default function FavoritesScreen() {
     const mainImage = item.mainImageUrl;
 
     return (
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.plazas", { defaultValue: "plazas" })}
         style={[styles.itemCard, { backgroundColor: c.bgCard, borderBottomColor: c.border }]}
         onPress={() => handleCardPress(item.id)}
         activeOpacity={0.9}
@@ -70,7 +70,7 @@ export default function FavoritesScreen() {
 
           {/* Actions */}
           <View style={styles.actionsRow}>
-            <TouchableOpacity style={styles.actionBtn} onPress={() => toggleFavorito(item.id)}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.eliminar", { defaultValue: "Eliminar" })} style={styles.actionBtn} onPress={() => toggleFavorito(item.id)}>
               <Text style={[styles.actionBtnText, { color: "#1D4ED8" }]}>{t("tabs.eliminar", { defaultValue: "Eliminar" })}</Text>
             </TouchableOpacity>
           </View>
@@ -88,7 +88,7 @@ export default function FavoritesScreen() {
         end={{ x: 1, y: 0 }}
         style={[styles.gradientHeader, { paddingTop: insets.top + 12 }]}
       >
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")} style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t("tabs.misFavoritos")}</Text>

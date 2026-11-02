@@ -45,13 +45,13 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={[styles.sheet, { backgroundColor: c.bgCard }]} onPress={() => {}}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t("config.ajustes")} style={styles.overlay} onPress={onClose}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t("config.ajustes")} style={[styles.sheet, { backgroundColor: c.bgCard }]} onPress={() => {}}>
           <View style={[styles.handle, { backgroundColor: c.border }]} />
 
           <View style={styles.header}>
             <Text style={[styles.titulo, { color: c.textPrimary }]}>{t("config.ajustes")}</Text>
-            <TouchableOpacity onPress={onClose} hitSlop={10}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={onClose} hitSlop={10}>
               <Ionicons name="close" size={22} color={c.textMuted} />
             </TouchableOpacity>
           </View>
@@ -62,7 +62,7 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
               <Text style={[styles.label, { color: c.textPrimary }]}>{t("config.tema")}</Text>
             </View>
             <View style={styles.fila}>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("config.claro")}
                 style={[
                   styles.opcionBtn,
                   { borderColor: c.border, backgroundColor: c.bgInput },
@@ -85,7 +85,7 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
                   {t("config.claro")}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("config.oscuro")}
                 style={[
                   styles.opcionBtn,
                   { borderColor: c.border, backgroundColor: c.bgInput },
@@ -116,7 +116,7 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
             </View>
             <View style={styles.idiomasWrap}>
               {(Object.keys(IDIOMAS) as IdiomaKey[]).map((key) => (
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   key={key}
                   style={[
                     styles.idiomaBtn,
@@ -147,7 +147,7 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
               <Text style={[styles.label, { color: c.textPrimary }]}>{t("config.moneda")}</Text>
             </View>
             <View style={styles.fila}>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 style={[
                   styles.opcionBtn,
                   { borderColor: c.border, backgroundColor: c.bgInput },
@@ -165,7 +165,7 @@ export function ConfiguracionModal({ visible, onClose }: Props) {
                   🇨🇴 COP
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 style={[
                   styles.opcionBtn,
                   { borderColor: c.border, backgroundColor: c.bgInput },

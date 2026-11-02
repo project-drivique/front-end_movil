@@ -1,22 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import { Modal, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { getCiudadesFiltro, getSucursalesFiltro } from "../constants/catalog.constants";
 import { useReferenceStore } from "@/store/referenceStore";
 import { FiltrosCatalogoState } from "../types/catalog.types";
 import { useMonedaStore } from "@/store/currencyStore";
+import { styles } from './CatalogFilters/CatalogFilters.styles'
 
 interface Props {
   visible: boolean;
@@ -45,7 +37,7 @@ function Chip({
   c: ReturnType<typeof useTemaColores>;
 }) {
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       activeOpacity={0.75}
       style={[
@@ -180,7 +172,7 @@ export default function FiltrosCatalogo({
               {t("catalogo.filtrosModal.titulo", { defaultValue: "Filtros" })}
             </Text>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.filtrosModal.limpiar", { defaultValue: "Limpiar" })}
               style={[styles.limpiarPillBtn, { borderColor: colorBorde, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
               onPress={limpiar}
               activeOpacity={0.7}
@@ -201,7 +193,7 @@ export default function FiltrosCatalogo({
             {/* FAVORITOS */}
             {usuario && (
               <Seccion label={t("catalogo.filtros.favoritos", { defaultValue: "FAVORITOS" })} c={c}>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.filtros.misFavoritos", { defaultValue: "Mis favoritos" })}
                   style={[
                     styles.favoritoBtn,
                     {
@@ -264,7 +256,7 @@ export default function FiltrosCatalogo({
 
             {/* CIUDAD */}
             <Seccion label={t("catalogo.filtros.ciudad", { defaultValue: "CIUDAD" })} c={c}>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 style={[
                   styles.selectorBtn,
                   {
@@ -291,7 +283,7 @@ export default function FiltrosCatalogo({
                     {CIUDADES_FILTRO.map((item) => {
                       const esSeleccionada = filtros.ciudad === item;
                       return (
-                        <TouchableOpacity
+                        <TouchableOpacity accessibilityRole="button"
                           key={item}
                           style={[
                             styles.dropdownItem,
@@ -322,7 +314,7 @@ export default function FiltrosCatalogo({
 
             {/* SUCURSAL */}
             <Seccion label={t("catalogo.filtros.sucursal", { defaultValue: "SUCURSAL" })} c={c}>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 style={[
                   styles.selectorBtn,
                   {
@@ -349,7 +341,7 @@ export default function FiltrosCatalogo({
                     {SUCURSALES.map((s) => {
                       const esSeleccionada = filtros.sucursal === s;
                       return (
-                        <TouchableOpacity
+                        <TouchableOpacity accessibilityRole="button"
                           key={s}
                           style={[
                             styles.dropdownItem,
@@ -382,7 +374,7 @@ export default function FiltrosCatalogo({
             {/* PRECIO POR DÍA */}
             <Seccion label={`${t("catalogo.filtros.precioPorDia", { defaultValue: "PRECIO POR DÍA" }).replace(/\(\$?[A-Z]+\)/g, "").trim()} (${monedaActual})`} c={c}>
               <View style={styles.precioRow}>
-                <TextInput
+                <TextInput accessibilityLabel={t("catalogo.filtros.minimo", { defaultValue: "Mínimo" })}
                   style={[
                     styles.precioInput,
                     {
@@ -397,7 +389,7 @@ export default function FiltrosCatalogo({
                   value={filtros.precioMin}
                   onChangeText={(v) => setFiltro("precioMin", v.replace(/[^0-9]/g, ""))}
                 />
-                <TextInput
+                <TextInput accessibilityLabel={t("catalogo.filtros.maximo", { defaultValue: "Máximo" })}
                   style={[
                     styles.precioInput,
                     {
@@ -448,7 +440,7 @@ export default function FiltrosCatalogo({
 
           {/* Footer con 2 Botones: Cerrar y Aplicar */}
           <View style={[styles.footer, { borderTopColor: colorBorde, backgroundColor: c.bgCard }]}>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.flujo.cerrar", { defaultValue: "Cerrar" })}
               style={[
                 styles.btnCerrar,
                 {
@@ -464,7 +456,7 @@ export default function FiltrosCatalogo({
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.filtrosModal.aplicarFiltros", { defaultValue: "Aplicar filtros" })}
               style={[styles.btnAplicar, { backgroundColor: COLOR_AZUL }]}
               onPress={onClose}
               activeOpacity={0.85}
@@ -480,187 +472,3 @@ export default function FiltrosCatalogo({
   );
 }
 
-const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
-  },
-  backdrop: {
-    ...(StyleSheet.absoluteFill as any),
-  },
-  sheetContainer: {
-    width: "100%",
-    maxWidth: 400,
-    maxHeight: "84%",
-    borderRadius: 20,
-    borderWidth: 1,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 10,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    letterSpacing: -0.3,
-  },
-  limpiarPillBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  limpiarPillText: {
-    fontSize: 12.5,
-    fontWeight: "700",
-  },
-  scroll: {
-    flexGrow: 0,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-  },
-  seccion: {
-    marginBottom: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-  },
-  seccionLabel: {
-    fontSize: 11,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 10,
-  },
-  chipsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-  },
-  chipText: {
-    fontSize: 12.5,
-    fontWeight: "600",
-  },
-  favoritoBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    alignSelf: "flex-start",
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  favoritoBtnText: {
-    fontSize: 12.5,
-    fontWeight: "600",
-  },
-  badge: {
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 4,
-  },
-  badgeText: {
-    fontSize: 10.5,
-    fontWeight: "800",
-    color: "#fff",
-  },
-  selectorBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-  },
-  selectorText: {
-    fontSize: 13,
-    flex: 1,
-  },
-  dropdownList: {
-    marginTop: 4,
-    borderWidth: 1,
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  dropdownScroll: {
-    maxHeight: 180,
-  },
-  dropdownItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    borderBottomWidth: 1,
-  },
-  dropdownItemText: {
-    fontSize: 13,
-  },
-  precioRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  precioInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    fontSize: 13,
-  },
-  footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 16,
-    borderTopWidth: 1,
-  },
-  btnCerrar: {
-    flex: 1,
-    height: 44,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  btnCerrarTexto: {
-    fontSize: 13.5,
-    fontWeight: "700",
-  },
-  btnAplicar: {
-    flex: 1.3,
-    height: 44,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  btnAplicarTexto: {
-    color: "#FFFFFF",
-    fontSize: 13.5,
-    fontWeight: "800",
-    letterSpacing: 0.3,
-  },
-});

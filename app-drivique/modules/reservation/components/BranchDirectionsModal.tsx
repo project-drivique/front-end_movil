@@ -91,7 +91,7 @@ export function BranchDirectionsModal({
                 {t("reserva.flujo.comoLlegar", { defaultValue: "Cómo llegar" })}
               </Text>
             </View>
-            <TouchableOpacity onPress={onCerrar} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={onCerrar} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <Ionicons name="close" size={22} color={c.textSecondary} />
             </TouchableOpacity>
           </View>
@@ -149,7 +149,7 @@ export function BranchDirectionsModal({
               )}
 
               {/* Botón Flotante Abrir en Maps */}
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.flujo.abrirEnMaps", { defaultValue: "Abrir en Maps" })}
                 style={[styles.floatingBtnMaps, { backgroundColor: c.bgCard, borderColor: c.border }]}
                 onPress={handleOpenExternalMap}
                 activeOpacity={0.8}
@@ -166,7 +166,7 @@ export function BranchDirectionsModal({
 
           {/* Footer con Botón Cerrar */}
           <View style={[styles.footer, { backgroundColor: c.bgCard }]}>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.fechasLugar.cerrar", { defaultValue: "Cerrar" })}
               style={[styles.btnCerrar, { backgroundColor: COLOR_MARCA }]}
               onPress={onCerrar}
               activeOpacity={0.85}

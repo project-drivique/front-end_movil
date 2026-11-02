@@ -99,7 +99,7 @@ export default function EditAdditionalServicesSection({
             defaultValue: "Editar Servicios Adicionales",
           })}
         </Text>
-        <TouchableOpacity onPress={onCancelar} hitSlop={10}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={onCancelar} hitSlop={10}>
           <Ionicons name="close" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </LinearGradient>
@@ -121,7 +121,7 @@ export default function EditAdditionalServicesSection({
               const icono = ICONOS_SERVICIOS[servicio.nombre] ?? ICONO_SERVICIO_DEFECTO;
 
               return (
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(`reserva.planes.nombreServicio.${servicio.nombre}`, { defaultValue: servicio.nombre })}
                   key={servicio.nombre}
                   style={[
                     styles.servicioCard,
@@ -210,7 +210,7 @@ export default function EditAdditionalServicesSection({
 
       {/* Botones Footer: Cancelar y Guardar cambios */}
       <View style={[styles.footer, { borderTopColor: c.border, backgroundColor: c.bg }]}>
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("comun.cancelar", { defaultValue: "Cancelar" })}
           style={[
             styles.cancelarBtn,
             { borderColor: c.border, backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF" },
@@ -223,7 +223,7 @@ export default function EditAdditionalServicesSection({
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.guardarBtnWrap} onPress={handleGuardar} activeOpacity={0.85}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.edicion.guardarCambios", { defaultValue: "Guardar cambios" })} style={styles.guardarBtnWrap} onPress={handleGuardar} activeOpacity={0.85}>
           <LinearGradient
             colors={GRADIENTES.boton.colors}
             start={GRADIENTES.boton.start}

@@ -45,7 +45,7 @@ export function PasswordInput({ label, error, style, placeholderTextColor, color
           autoCapitalize="none"
           {...props}
         />
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button"
           onPress={() => setVisible((v) => !v)}
           style={styles.botonOjo}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

@@ -2250,5 +2250,15 @@ export default {
     "esperaAperturaDesc": "Votre réservation a été enregistrée en dehors des horaires d’ouverture de l’agence {{sucursal}}. Dès l’ouverture, vous recevrez une notification automatique par e-mail, web et push pour procéder au paiement et confirmer votre réservation.",
     "esperaAperturaEstado": "Statut : en attente de l’ouverture de l’agence",
     "docsEnRevisionEstado": "Statut : en cours de vérification par le responsable de l’agence"
+  },
+  "a11y": {
+    "cerrar": "Fermer",
+    "volver": "Retour",
+    "contactar": "Contacter",
+    "chat": "Chat d'assistance",
+    "eliminar": "Supprimer",
+    "enviar": "Envoyer",
+    "siguiente": "Suivant",
+    "ajustes": "Paramètres"
   }
 };

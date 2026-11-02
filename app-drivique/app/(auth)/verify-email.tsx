@@ -208,13 +208,13 @@ export default function VerificarCorreoScreen() {
                 <View style={[styles.divisor, { backgroundColor: c.border }]} />
 
                 <View style={styles.filaInferior}>
-                  <TouchableOpacity onPress={() => router.replace("/(auth)/register")}>
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.verificarCorreo.volverRegistro", { defaultValue: "Volver al registro" })} onPress={() => router.replace("/(auth)/register")}>
                     <Text style={[styles.filaInferiorTexto, { color: c.textSecondary }]}>
                       {t("auth.verificarCorreo.volverRegistro", { defaultValue: "Volver al registro" })}
                     </Text>
                   </TouchableOpacity>
                   {puedeReenviar ? (
-                    <TouchableOpacity onPress={() => enviarOReenviarCodigo("codigo_reenviado")}>
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.verificarCorreo.reenviar")} onPress={() => enviarOReenviarCodigo("codigo_reenviado")}>
                       <Text style={[styles.filaInferiorTexto, { color: c.primary }]}>
                         {t("auth.verificarCorreo.reenviar")}
                       </Text>
@@ -235,7 +235,7 @@ export default function VerificarCorreoScreen() {
                     cargando={cargando}
                   />
                 </View>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.verificarCorreo.volverRegistro", { defaultValue: "Volver al registro" })}
                   style={styles.volverRegistro}
                   onPress={() => router.replace("/(auth)/register")}
                 >

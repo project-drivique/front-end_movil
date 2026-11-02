@@ -145,7 +145,7 @@ export default function SelectorHoraModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCerrar}>
       <View style={styles.overlay}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onCerrar} />
+        <Pressable accessibilityRole="button" style={StyleSheet.absoluteFill} onPress={onCerrar} />
         <View style={[styles.card, { backgroundColor: c.bgCard }]}>
           <View style={[styles.header, { borderBottomColor: c.border }]}>
             <View style={{ flex: 1, marginRight: 8 }}>
@@ -156,7 +156,7 @@ export default function SelectorHoraModal({
                 </Text>
               )}
             </View>
-            <TouchableOpacity onPress={onCerrar} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.resumen.cerrar")} onPress={onCerrar} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Text style={[styles.cerrarTexto, { color: COLOR_MARCA }]}>{t("reserva.resumen.cerrar")}</Text>
             </TouchableOpacity>
           </View>
@@ -200,7 +200,7 @@ export default function SelectorHoraModal({
               if (bloqueada) return null;
               const activa = hora === horaSeleccionada;
               return (
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   key={hora}
                   disabled={bloqueada}
                   style={[

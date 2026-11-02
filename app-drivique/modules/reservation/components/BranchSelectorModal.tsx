@@ -24,11 +24,11 @@ export default function SelectorSucursalModal({ visible, titulo, opciones, onSel
   const { t } = useTranslation();
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onCerrar}>
-      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onCerrar}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.fechasLugar.sinOpcionesDisponibles")} style={styles.overlay} activeOpacity={1} onPress={onCerrar}>
         <View style={[styles.sheet, { backgroundColor: c.bgCard }]} onStartShouldSetResponder={() => true}>
           <View style={[styles.header, { borderBottomColor: c.border }]}>
             <Text style={[styles.headerTitulo, { color: c.textPrimary }]}>{titulo ?? t("reserva.fechasLugar.eligeElLugar")}</Text>
-            <TouchableOpacity onPress={onCerrar}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={onCerrar}>
               <Ionicons name="close" size={22} color={c.textSecondary} />
             </TouchableOpacity>
           </View>
@@ -37,7 +37,7 @@ export default function SelectorSucursalModal({ visible, titulo, opciones, onSel
             data={opciones}
             keyExtractor={(item) => item.value}
             renderItem={({ item }) => (
-              <TouchableOpacity style={[styles.opcion, { borderBottomColor: c.border }]} onPress={() => onSeleccionar(item.value)}>
+              <TouchableOpacity accessibilityRole="button" style={[styles.opcion, { borderBottomColor: c.border }]} onPress={() => onSeleccionar(item.value)}>
                 <Ionicons name={item.icono ?? "location-outline"} size={16} color={COLOR_MARCA} />
                 <Text style={[styles.opcionText, { color: c.textPrimary }]}>{item.label}</Text>
               </TouchableOpacity>

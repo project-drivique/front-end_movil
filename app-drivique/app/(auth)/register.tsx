@@ -112,7 +112,7 @@ export default function RegistroScreen() {
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitleText}>{nombreMarca}</Text>
         </View>
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.login.modoInvitado", "Modo Invitado")}
           style={styles.guestBtn}
           onPress={() => router.replace('/(tabs)/catalog')}
         >
@@ -215,7 +215,7 @@ export default function RegistroScreen() {
 
                     {/* Términos y condiciones */}
                     <View style={styles.filaTerminosBox}>
-                      <TouchableOpacity
+                      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('auth.registro.terminosPart1', 'Acepto los ')}
                         style={styles.checkboxWrapper}
                         onPress={() => {
                           if (!form.aceptaTerminos) {
@@ -272,7 +272,7 @@ export default function RegistroScreen() {
                       <Text style={[styles.loginTexto, { color: c.textSecondary }]}>
                         {t('auth.registro.yaTieneCuenta', { defaultValue: '¿Ya tiene una cuenta?' })}{' '}
                       </Text>
-                      <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
+                      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('auth.registro.inicieSesionLink', { defaultValue: 'Inicie sesión aquí' })} onPress={() => router.replace('/(auth)/login')}>
                         <Text style={[styles.loginLink, { color: c.primary }]}>
                           {t('auth.registro.inicieSesionLink', { defaultValue: 'Inicie sesión aquí' })}
                         </Text>
@@ -293,7 +293,7 @@ export default function RegistroScreen() {
             <View style={[styles.modalHandle, { backgroundColor: c.border }]} />
             <View style={[styles.modalEncabezado, { borderBottomColor: c.border }]}>
               <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>{t('auth.registro.modalTitulo')}</Text>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
                 style={[styles.modalBotonCerrar, { backgroundColor: c.oscuro ? c.bgInput : '#F3F4F6' }]}
                 onPress={() => setModalTerminos(false)}
               >
@@ -345,7 +345,7 @@ export default function RegistroScreen() {
             
             <View style={styles.modalBotonesRow}>
               {/* Botón Cerrar Secundario */}
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('comun.cerrar', 'Cerrar')}
                 onPress={() => setModalTerminos(false)}
                 style={[styles.modalBotonCerrarSecundario, { backgroundColor: c.oscuro ? c.bgInput : '#FFFFFF', borderColor: c.border }]}
                 activeOpacity={0.7}
@@ -357,7 +357,7 @@ export default function RegistroScreen() {
 
               {/* Botón Aceptar Principal */}
               <View style={styles.modalBotonAceptarWrap}>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('auth.registro.modalAceptar', 'Acepto los términos')}
                   onPress={terminosLeidos ? handleAceptarTerminos : undefined}
                   activeOpacity={terminosLeidos ? 0.85 : 1}
                   style={{ width: '100%' }}
@@ -381,12 +381,12 @@ export default function RegistroScreen() {
 
       {/* ── Modal: Bienvenida / Info ──────────────────────── */}
       <Modal visible={modalBienvenida} transparent animationType="fade" onRequestClose={() => setModalBienvenida(false)}>
-        <TouchableOpacity 
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('auth.registro.bienvenidaTitulo')} 
           style={styles.modalBienvenidaOverlay} 
           activeOpacity={1} 
           onPress={() => setModalBienvenida(false)}
         >
-          <TouchableOpacity activeOpacity={1} style={[styles.modalBienvenidaContenedor, { backgroundColor: c.bgCard }]}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('auth.registro.bienvenidaTitulo')} activeOpacity={1} style={[styles.modalBienvenidaContenedor, { backgroundColor: c.bgCard }]}>
             <Text style={[styles.modalBienvenidaTitulo, { color: c.textPrimary }]}>
               {t('auth.registro.bienvenidaTitulo')}
             </Text>

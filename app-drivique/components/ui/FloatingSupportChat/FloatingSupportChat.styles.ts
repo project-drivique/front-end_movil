@@ -1,0 +1,183 @@
+import { StyleSheet } from 'react-native'
+
+export const styles = StyleSheet.create({
+  fab: {
+    position: "absolute",
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    zIndex: 999,
+  },
+  chatContainer: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: "100%",
+    height: "100%",
+    zIndex: 1000,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 24,
+  },
+  chatOpen: {
+    display: "flex",
+  },
+  chatClosed: {
+    display: "none",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  headerInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  botAvatarWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "#2563EB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  onlineDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#10B981",
+    marginRight: 6,
+  },
+  headerSubtitle: {
+    fontSize: 11.5,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconActionBtn: {
+    padding: 8,
+    marginRight: 4,
+  },
+  closeButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  messagesContainer: {
+    padding: 16,
+    paddingBottom: 24,
+  },
+  messageRow: {
+    marginVertical: 6,
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
+  messageRowLeft: {
+    justifyContent: "flex-start",
+  },
+  messageRowRight: {
+    justifyContent: "flex-end",
+  },
+  botIconMini: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "#2563EB",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+    marginBottom: 16,
+  },
+  bubble: {
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  botBubble: {
+    borderWidth: 1,
+    borderBottomLeftRadius: 4,
+  },
+  userBubble: {
+    backgroundColor: "#2563EB",
+    borderBottomRightRadius: 4,
+  },
+  messageText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  timestampText: {
+    fontSize: 10,
+    marginTop: 4,
+    marginHorizontal: 4,
+  },
+  optionsContainer: {
+    marginTop: 8,
+  },
+  optionChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginVertical: 4,
+  },
+  optionChipText: {
+    fontSize: 12.5,
+    fontWeight: "600",
+    color: "#2563EB",
+  },
+  typingText: {
+    fontSize: 12,
+    fontStyle: "italic",
+  },
+  inputBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+  },
+  textInput: {
+    flex: 1,
+    height: 42,
+    borderRadius: 21,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    borderWidth: 1,
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 8,
+  },
+});

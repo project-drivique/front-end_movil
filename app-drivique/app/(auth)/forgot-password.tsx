@@ -88,7 +88,7 @@ export default function OlvideContrasenaScreen() {
         overScrollMode="never"
       >
         {fase === 1 && (
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.olvide.volver")}
             onPress={() => {
               if (router.canGoBack()) {
                 router.back();
@@ -186,7 +186,7 @@ export default function OlvideContrasenaScreen() {
                 <View style={styles.contenedorReenvio}>
                   <Text style={[styles.textoReenvio, { color: c.textSecondary }]}>{t("auth.olvide.noRecibiste")}</Text>
                   {puedeReenviar ? (
-                    <TouchableOpacity style={styles.botonReenvio} onPress={handleReenviar}>
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.olvide.reenviar")} style={styles.botonReenvio} onPress={handleReenviar}>
                       <Text style={[styles.textoBotonReenvio, { color: c.primary }]}>{t("auth.olvide.reenviar")}</Text>
                     </TouchableOpacity>
                   ) : (
@@ -232,7 +232,7 @@ export default function OlvideContrasenaScreen() {
         {fase === 1 && (
           <View style={styles.contenedorRegistro}>
             <Text style={[styles.textoRegistroGris, { color: c.textSecondary }]}>{t("auth.olvide.noTienes")}</Text>
-            <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.olvide.registrateAqui")} onPress={() => router.push("/(auth)/register")}>
               <Text style={[styles.textoRegistroAzul, { color: c.primary }]}>{t("auth.olvide.registrateAqui")}</Text>
             </TouchableOpacity>
           </View>

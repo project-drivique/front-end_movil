@@ -43,7 +43,7 @@ export default function OnboardingNavigation({
   if (isLast) {
     return (
       <View style={styles.container}>
-        <TouchableOpacity style={styles.btnPrimaryWrap} onPress={handleRegistro} activeOpacity={0.85}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("onboarding.nav.registrate")} style={styles.btnPrimaryWrap} onPress={handleRegistro} activeOpacity={0.85}>
           <LinearGradient
             colors={GRADIENTES.boton.colors}
             start={GRADIENTES.boton.start}
@@ -53,7 +53,7 @@ export default function OnboardingNavigation({
             <Text style={styles.btnPrimaryText}>{t("onboarding.nav.registrate")}</Text>
           </LinearGradient>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.btnText} onPress={handleLogin}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("onboarding.nav.tieneCuenta")} style={styles.btnText} onPress={handleLogin}>
           <Text style={[styles.btnTextText, { color: c.textMuted }]}>
             {t("onboarding.nav.tieneCuenta")}{" "}
             <Text style={styles.btnTextLink}>{t("onboarding.nav.iniciarSesion")}</Text>
@@ -66,7 +66,7 @@ export default function OnboardingNavigation({
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button"
           style={[styles.btnGhost, { backgroundColor: c.bgInput, borderColor: c.border }]}
           onPress={isFirst ? onSkip : onPrevious}
         >
@@ -74,7 +74,7 @@ export default function OnboardingNavigation({
             {isFirst ? t("onboarding.nav.saltar") : t("onboarding.nav.atras")}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.btnPrimaryWrap} onPress={onNext} activeOpacity={0.85}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("onboarding.nav.siguiente")} style={styles.btnPrimaryWrap} onPress={onNext} activeOpacity={0.85}>
           <LinearGradient
             colors={GRADIENTES.boton.colors}
             start={GRADIENTES.boton.start}
