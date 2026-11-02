@@ -146,7 +146,7 @@ export function BranchCashPaymentModal({
           </View>
 
           {/* Botón Principal con Gradiente Corporativo */}
-          <TouchableOpacity style={styles.botonPrimarioWrap} onPress={handleIrReservas} activeOpacity={0.88}>
+          <TouchableOpacity accessibilityRole="button" style={styles.botonPrimarioWrap} onPress={handleIrReservas} activeOpacity={0.88}>
             <LinearGradient
               colors={GRADIENTES.boton.colors}
               start={GRADIENTES.boton.start}
@@ -160,7 +160,7 @@ export function BranchCashPaymentModal({
           </TouchableOpacity>
 
           {/* Botón Secundario: Volver al Inicio */}
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.confirmacion.volverAlInicio", { defaultValue: "Volver al Inicio" })}
             style={[
               styles.botonSecundario,
               {

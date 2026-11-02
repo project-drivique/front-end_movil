@@ -70,7 +70,7 @@ export default function MasMenuScreen() {
         <Text style={styles.logoText}>{nombreMarca}</Text>
 
         {/* Welcome message & User Icon */}
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.bienvenido", { nombre: userName })}
           style={styles.profileRow}
           onPress={() => handleNavigation("/(tabs)/profile")}
           activeOpacity={0.7}
@@ -113,7 +113,7 @@ export default function MasMenuScreen() {
 
               {/* Management quick action buttons */}
               <View style={{ width: '100%', gap: 8 }}>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: c.oscuro ? '#0f172a' : '#ffffff', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: c.border }}
                   onPress={() => router.push("/(tabs)/catalog")}
                 >
@@ -122,7 +122,7 @@ export default function MasMenuScreen() {
                   <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
                 </TouchableOpacity>
 
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("busqueda.validarReservasDocs")}
                   style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: c.oscuro ? '#0f172a' : '#ffffff', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: c.border }}
                   onPress={() => router.push("/(tabs)/my-bookings")}
                 >
@@ -131,7 +131,7 @@ export default function MasMenuScreen() {
                   <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
                 </TouchableOpacity>
 
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: c.oscuro ? '#0f172a' : '#ffffff', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: c.border }}
                   onPress={() => router.push("/(tabs)/notifications")}
                 >
@@ -149,7 +149,7 @@ export default function MasMenuScreen() {
           {t("menuLateral.menuPrincipal", { defaultValue: "MENÚ PRINCIPAL" })}
         </Text>
 
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.misFavoritos")}
           style={[styles.menuItem, { backgroundColor: c.bgCard, borderColor: c.border }]}
           onPress={() => handleNavigation("/(tabs)/favorites", true)}
         >
@@ -160,7 +160,7 @@ export default function MasMenuScreen() {
           <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
         </TouchableOpacity>
 
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.notificaciones")}
           style={[styles.menuItem, { backgroundColor: c.bgCard, borderColor: c.border }]}
           onPress={() => handleNavigation("/(tabs)/notifications", true)}
         >
@@ -176,7 +176,7 @@ export default function MasMenuScreen() {
           <Ionicons name="chevron-forward" size={16} color={c.textMuted} />
         </TouchableOpacity>
 
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.soporte")}
           style={[styles.menuItem, { backgroundColor: c.bgCard, borderColor: c.border }]}
           onPress={() => handleNavigation("/(tabs)/support")}
         >
@@ -192,7 +192,7 @@ export default function MasMenuScreen() {
           {t("menuLateral.ajustesPreferencias", { defaultValue: "AJUSTES Y PREFERENCIAS" })}
         </Text>
 
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.configuracion")}
           style={[styles.menuItem, { backgroundColor: c.bgCard, borderColor: c.border }]}
           onPress={() => handleNavigation("config", false)}
         >

@@ -59,8 +59,8 @@ export function AlertModal({
       animationType="fade"
       onRequestClose={onCerrar}
     >
-      <Pressable style={s.alertOverlay} onPress={onCerrar}>
-        <Pressable
+      <Pressable accessibilityRole="button" style={s.alertOverlay} onPress={onCerrar}>
+        <Pressable accessibilityRole="button"
           style={[
             s.alertBox,
             {
@@ -87,7 +87,7 @@ export function AlertModal({
           {listaBotones.length > 0 && (
             <View style={s.alertButtonsContainer}>
               {listaBotones.map((btn, i) => (
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   key={btn.texto + i}
                   style={
                     btn.variante === "secundario"

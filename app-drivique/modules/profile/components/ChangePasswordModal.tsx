@@ -78,15 +78,15 @@ export function ChangePasswordModal({ visible, correo, token, onCerrar, onExito,
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={cancelar}>
-      <Pressable style={s.overlay} onPress={cancelar}>
-        <Pressable style={[s.card, { backgroundColor: c.bgCard }]} onPress={() => {}}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t("perfil.cambiarContrasena.titulo")} style={s.overlay} onPress={cancelar}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t("perfil.cambiarContrasena.titulo")} style={[s.card, { backgroundColor: c.bgCard }]} onPress={() => {}}>
           <View style={s.header}>
             <View style={[s.icono, { backgroundColor: c.primaryBg }]}><Ionicons name="shield-checkmark-outline" size={22} color={c.primary} /></View>
             <View style={s.headerTextos}>
               <Text style={[s.titulo, { color: c.textPrimary }]}>{t("perfil.cambiarContrasena.titulo")}</Text>
               <Text style={[s.subtitulo, { color: c.textMuted }]}>{t("perfil.cambiarContrasena.subtitulo")}</Text>
             </View>
-            <TouchableOpacity onPress={cancelar}><Ionicons name="close" size={24} color={c.textMuted} /></TouchableOpacity>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={cancelar}><Ionicons name="close" size={24} color={c.textMuted} /></TouchableOpacity>
           </View>
 
           <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
@@ -97,8 +97,8 @@ export function ChangePasswordModal({ visible, correo, token, onCerrar, onExito,
           </ScrollView>
 
           <View style={s.acciones}>
-            <TouchableOpacity style={[s.cancelar, { borderColor: c.border }]} onPress={cancelar} disabled={guardando}><Text style={[s.cancelarTexto, { color: c.textSecondary }]}>{t("perfil.cambiarContrasena.cancelar")}</Text></TouchableOpacity>
-            <TouchableOpacity style={[s.guardar, { backgroundColor: c.primary }, guardando && { opacity: .6 }]} onPress={guardar} disabled={guardando}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.cambiarContrasena.cancelar")} style={[s.cancelar, { borderColor: c.border }]} onPress={cancelar} disabled={guardando}><Text style={[s.cancelarTexto, { color: c.textSecondary }]}>{t("perfil.cambiarContrasena.cancelar")}</Text></TouchableOpacity>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.cambiarContrasena.actualizar")} style={[s.guardar, { backgroundColor: c.primary }, guardando && { opacity: .6 }]} onPress={guardar} disabled={guardando}>
               {guardando ? <ActivityIndicator color="#fff" /> : <Text style={s.guardarTexto}>{t("perfil.cambiarContrasena.actualizar")}</Text>}
             </TouchableOpacity>
           </View>

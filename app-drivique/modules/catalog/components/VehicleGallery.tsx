@@ -81,7 +81,7 @@ export function VehicleGallery({ nombre, imagenes, calificacion, borderColor, st
         {/* Flechas de navegación */}
         {imagenes.length > 1 && (
           <>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")}
               style={[s.arrowBtn, s.arrowLeft]}
               onPress={irAnterior}
               activeOpacity={0.8}
@@ -89,7 +89,7 @@ export function VehicleGallery({ nombre, imagenes, calificacion, borderColor, st
               <Ionicons name="chevron-back" size={18} color="#FFFFFF" />
             </TouchableOpacity>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.siguiente", "Siguiente")}
               style={[s.arrowBtn, s.arrowRight]}
               onPress={irSiguiente}
               activeOpacity={0.8}
@@ -106,7 +106,7 @@ export function VehicleGallery({ nombre, imagenes, calificacion, borderColor, st
           {imagenes.slice(0, 8).map((uri, i) => {
             const esActiva = i === activa;
             return (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 key={i}
                 onPress={() => setActiva(i)}
                 activeOpacity={0.8}

@@ -59,7 +59,7 @@ export function DeleteAccountModal({ visible, onCerrar, onEliminada }: Props) {
         <View style={[s.card, { backgroundColor: c.bgCard, borderColor: c.border }]}>
           <Text style={[s.title, { color: c.textPrimary }]}>{t('perfil.eliminarTitulo')}</Text>
           <Text style={[s.message, { color: c.textSecondary }]}>{t('perfil.eliminarMsg')}</Text>
-          <TextInput
+          <TextInput accessibilityLabel={t('perfil.cambiarContrasena.actual', { defaultValue: 'Contraseña actual' })}
             value={contrasena}
             onChangeText={(value) => { setContrasena(value); setError('') }}
             placeholder={t('perfil.cambiarContrasena.actual', { defaultValue: 'Contraseña actual' })}
@@ -71,10 +71,10 @@ export function DeleteAccountModal({ visible, onCerrar, onEliminada }: Props) {
           />
           {error ? <Text style={s.error}>{error}</Text> : null}
           <View style={s.actions}>
-            <TouchableOpacity style={[s.button, s.cancel, { borderColor: c.border }]} onPress={onCerrar} disabled={eliminando}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('perfil.cancelar')} style={[s.button, s.cancel, { borderColor: c.border }]} onPress={onCerrar} disabled={eliminando}>
               <Text style={{ color: c.textSecondary, fontWeight: '700' }}>{t('perfil.cancelar')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[s.button, s.delete]} onPress={confirmar} disabled={eliminando}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('perfil.confirmarEliminar')} style={[s.button, s.delete]} onPress={confirmar} disabled={eliminando}>
               {eliminando
                 ? <ActivityIndicator color="#fff" />
                 : <Text style={s.deleteText}>{t('perfil.confirmarEliminar')}</Text>}

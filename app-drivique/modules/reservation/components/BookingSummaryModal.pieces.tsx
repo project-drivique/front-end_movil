@@ -75,7 +75,7 @@ export function SubcardHeader({
         <Ionicons name={icono} size={14} color={primaryAccent} />
         <Text style={[styles.subcardTitulo, { color: c.textMuted }]}>{titulo}</Text>
       </View>
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.resumen.editar")}
         style={[styles.editarBtn, { backgroundColor: c.primaryBg }]}
         onPress={onEditar}
         hitSlop={8}
@@ -151,7 +151,7 @@ export function OpcionCard({
   const brandBg = c.oscuro ? COLOR_MARCA_OSCURO : COLOR_MARCA;
 
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       style={[
         styles.opcionCard,
         { backgroundColor: c.bgInput, borderColor: c.border },
@@ -192,7 +192,7 @@ export function ServicioRow({
   const primaryAccent = c.oscuro ? COLOR_ACENTO : COLOR_MARCA;
 
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(`reserva.planes.nombreServicio.${nombre}`, { defaultValue: nombre })}
       style={[
         styles.servicioCard,
         { backgroundColor: c.bgInput, borderColor: c.border },
@@ -229,10 +229,10 @@ export function FilaBotonesEdicion({ onVolver, onActualizar }: { onVolver: () =>
 
   return (
     <View style={styles.filaBotones}>
-      <TouchableOpacity style={[styles.volverBtn, { borderColor: c.border }]} onPress={onVolver}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.resumen.volver")} style={[styles.volverBtn, { borderColor: c.border }]} onPress={onVolver}>
         <Text style={[styles.volverBtnText, { color: c.textSecondary }]}>{t("reserva.resumen.volver")}</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.actualizarBtnWrap} onPress={onActualizar} activeOpacity={0.85}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.resumen.actualizar")} style={styles.actualizarBtnWrap} onPress={onActualizar} activeOpacity={0.85}>
         <LinearGradient
           colors={GRADIENTES.boton.colors}
           start={GRADIENTES.boton.start}

@@ -40,7 +40,7 @@ export default function CampoSelectorLista({
     <View style={styles.contenedor}>
       <Text style={[styles.selectLabel, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>{etiqueta}</Text>
 
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         style={[
           styles.selectBox,
           { backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC", borderColor: c.oscuro ? c.border : "#E2E8F0" },
@@ -64,11 +64,11 @@ export default function CampoSelectorLista({
       </TouchableOpacity>
 
       <Modal visible={abierto} animationType="slide" transparent onRequestClose={() => setAbierto(false)}>
-        <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setAbierto(false)}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.fechasLugar.sinOpcionesDisponibles")} style={styles.overlay} activeOpacity={1} onPress={() => setAbierto(false)}>
           <View style={[styles.sheet, { backgroundColor: c.bgCard }]} onStartShouldSetResponder={() => true}>
             <View style={[styles.header, { borderBottomColor: c.border }]}>
               <Text style={[styles.headerTitulo, { color: c.textPrimary }]}>{etiqueta}</Text>
-              <TouchableOpacity onPress={() => setAbierto(false)}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={() => setAbierto(false)}>
                 <Ionicons name="close" size={22} color={c.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -79,7 +79,7 @@ export default function CampoSelectorLista({
               renderItem={({ item }) => {
                 const activo = item.id === valorSeleccionado;
                 return (
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button"
                     style={[
                       styles.opcion,
                       { borderBottomColor: c.borderLight },

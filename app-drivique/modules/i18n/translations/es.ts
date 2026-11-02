@@ -2250,5 +2250,15 @@ export default {
     "esperaAperturaDesc": "Tu reserva fue registrada fuera del horario de atención de la sucursal {{sucursal}}. En cuanto la sede inicie su jornada de atención, recibirás una notificación automática por correo, web y push para proceder con el pago y confirmación de tu reserva.",
     "esperaAperturaEstado": "Estado: esperando apertura de sucursal",
     "docsEnRevisionEstado": "Estado: en revisión por el encargado de la sucursal"
+  },
+  "a11y": {
+    "cerrar": "Cerrar",
+    "volver": "Volver",
+    "contactar": "Contactar",
+    "chat": "Chat de soporte",
+    "eliminar": "Eliminar",
+    "enviar": "Enviar",
+    "siguiente": "Siguiente",
+    "ajustes": "Ajustes"
   }
 };

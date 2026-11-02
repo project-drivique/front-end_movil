@@ -38,6 +38,22 @@ export interface AuthSession {
 let credencialesPendientes: { correo: string; contrasena: string } | null = null;
 
 export const authService = {
+  // Revoca en el servidor el refresh token (dura 7 días) y lo borra del teléfono.
+  async logout(): Promise<void> {
+    const refreshToken = await sessionTokens.getRefreshToken();
+    await sessionTokens.clearRefreshToken();
+    if (!refreshToken) return;
+    try {
+      await fetch(`${apiClient.defaults.baseURL}/auth/logout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+    } catch {
+      // Sin conexión: el token ya no está en el teléfono y caduca solo en el servidor
+    }
+  },
+
   setCredencialesPendientes(correo: string, contrasena: string) {
     credencialesPendientes = { correo: correo.trim().toLowerCase(), contrasena };
   },

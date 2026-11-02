@@ -2,17 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  FlatList,
-  Modal,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar, DateData } from "react-native-calendars";
 import { GRADIENTES } from "@/constants/gradients";
@@ -21,6 +11,7 @@ import { getCiudadesNombres, getSucursalesData } from "../constants/catalog.cons
 import { useReferenceStore } from "@/store/referenceStore";
 import { BusquedaForm } from "../types/catalog.types";
 import { COLOR_ACENTO, COLOR_MARCA, COLOR_MARCA_OSCURO } from "@/constants/brandPalette";
+import { styles } from './CatalogSearch/CatalogSearch.styles'
 
 type PickerField = "ciudad" | "sucursal" | null;
 
@@ -193,7 +184,7 @@ export default function BuscadorCatalogo({
             color={c.textMuted}
             style={styles.searchIcon}
           />
-          <TextInput
+          <TextInput accessibilityLabel={t("catalogo.buscador.placeholder")}
             style={[styles.textInput, { color: c.textPrimary }]}
             placeholder={t("catalogo.buscador.placeholder")}
             placeholderTextColor={c.textMuted}
@@ -202,7 +193,7 @@ export default function BuscadorCatalogo({
           />
         </View>
 
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button"
           style={[
             styles.calendarIconBtn,
             { backgroundColor: c.bgInput, borderColor: c.border },
@@ -226,12 +217,12 @@ export default function BuscadorCatalogo({
       >
         <SafeAreaView style={[styles.modalFormContainer, { backgroundColor: c.bg }]}>
           <View style={[styles.modalFormHeader, { borderBottomColor: c.border }]}>
-            <TouchableOpacity onPress={() => setModalFormVisible(false)}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")} onPress={() => setModalFormVisible(false)}>
               <Ionicons name="arrow-back" size={24} color={c.textPrimary} />
             </TouchableOpacity>
             <Text style={[styles.modalFormTitle, { color: c.textPrimary }]}>{t("catalogo.buscador.tituloModal")}</Text>
             {tieneBusquedaActiva ? (
-              <TouchableOpacity onPress={limpiarFormulario}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.buscador.limpiar")} onPress={limpiarFormulario}>
                 <Text style={[styles.txtLimpiarModal, { color: primaryAccent }]}>{t("catalogo.buscador.limpiar")}</Text>
               </TouchableOpacity>
             ) : (
@@ -243,7 +234,7 @@ export default function BuscadorCatalogo({
             <View style={styles.row}>
               <View style={styles.field}>
                 <Text style={[styles.label, { color: c.textSecondary }]}>{t("catalogo.buscador.ciudad")}</Text>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={[styles.selector, { backgroundColor: c.bgInput, borderColor: c.border }]}
                   onPress={() => setPickerOpen("ciudad")}
                 >
@@ -264,7 +255,7 @@ export default function BuscadorCatalogo({
 
               <View style={styles.field}>
                 <Text style={[styles.label, { color: c.textSecondary }]}>{t("catalogo.buscador.sucursal")}</Text>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={[
                     styles.selector,
                     { backgroundColor: c.bgInput, borderColor: c.border },
@@ -362,7 +353,7 @@ export default function BuscadorCatalogo({
               />
             </View>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.buscador.buscar")}
               style={styles.buscarBtnGrandeWrap}
               onPress={() => {
                 setModalFormVisible(false);
@@ -392,7 +383,7 @@ export default function BuscadorCatalogo({
                     ? t("catalogo.buscador.modalCiudadTitulo")
                     : t("catalogo.buscador.modalSucursalTitulo")}
                 </Text>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
                   style={[styles.modalCloseBtn, { backgroundColor: c.bgInput }]}
                   onPress={() => setPickerOpen(null)}
                 >
@@ -403,7 +394,7 @@ export default function BuscadorCatalogo({
                 data={pickerOpen === "ciudad" ? CIUDADES : sucursalesDeLaCiudad}
                 keyExtractor={(item) => item}
                 renderItem={({ item }) => (
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button"
                     style={[
                       styles.puntoItem,
                       { borderBottomColor: c.borderLight },
@@ -440,162 +431,3 @@ export default function BuscadorCatalogo({
   );
 }
 
-const styles = StyleSheet.create({
-  containerGeneral: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0",
-  },
-  searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  barraInput: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F9FAFB",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    height: 44,
-    paddingHorizontal: 12,
-  },
-  calendarIconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  searchIcon: { marginRight: 8 },
-  textInput: { flex: 1, fontSize: 14, color: "#1F2937", height: "100%" },
-  fechasBarraBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F9FAFB",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    height: 44,
-    paddingHorizontal: 12,
-  },
-  fechasBarraBtnDisabled: { backgroundColor: "#F3F4F6" },
-  fechasBarraBtnActiva: { borderColor: "#BFDBFE", backgroundColor: "#EFF6FF" },
-  fechasBarraBtnText: { flex: 1, fontSize: 13.5, color: "#9CA3AF", fontWeight: "500" },
-  fechasBarraBtnTextActivo: { color: "#2f4ea2", fontWeight: "600" },
-  placeholder: { color: "#9CA3AF" },
-  modalFormContainer: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-  },
-  modalFormHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-  },
-  modalFormTitle: { fontSize: 16, fontWeight: "700", color: "#111827" },
-  txtLimpiarModal: { fontSize: 14, color: "#2f4ea2", fontWeight: "600" },
-  modalFormBody: { padding: 20, gap: 16 },
-  row: { flexDirection: "row", gap: 12 },
-  field: { flex: 1 },
-  label: { fontSize: 9, fontWeight: "700", color: "#6B7280", letterSpacing: 0.8, marginBottom: 6 },
-  selector: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 44,
-    backgroundColor: "#F9FAFB",
-  },
-  selectorDisabled: { backgroundColor: "#F3F4F6", opacity: 0.6 },
-  selectorText: { fontSize: 13, color: "#374151", flex: 1 },
-  dateBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 44,
-    backgroundColor: "#F9FAFB",
-  },
-  dateBtnText: { flex: 1, fontSize: 13, color: "#374151" },
-  calendarioContainer: {
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 12,
-    paddingVertical: 6,
-    paddingHorizontal: 2,
-  },
-  buscarBtnGrandeWrap: {
-    borderRadius: 12,
-    marginTop: 4,
-    overflow: "hidden",
-  },
-  buscarBtnGrande: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderRadius: 12,
-    height: 48,
-  },
-  buscarBtnGrandeTexto: { color: "#fff", fontSize: 14, fontWeight: "700" },
-  modalOverlayInterno: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    padding: 24,
-  },
-  modalInternoContenedor: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    maxHeight: "70%",
-    overflow: "hidden",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-  },
-  modalTitle: { fontSize: 15, fontWeight: "700", color: "#111827" },
-  modalCloseBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#F3F4F6",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  puntoItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-  puntoItemActivo: { backgroundColor: "#EEF2FF" },
-  puntoText: { flex: 1, fontSize: 13.5, color: "#374151" },
-  puntoTextActivo: { color: "#2f4ea2", fontWeight: "700" },
-});

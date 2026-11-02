@@ -79,10 +79,10 @@ export default function OnboardingScreen5() {
 
       {/* Botones CTA */}
       <Animated.View style={[styles.ctaWrap, { opacity: fadeAnim }]}>
-        <TouchableOpacity style={styles.ctaBtnPrimary} onPress={handleRegistro} activeOpacity={0.85}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("onboarding.nav.registrate")} style={styles.ctaBtnPrimary} onPress={handleRegistro} activeOpacity={0.85}>
           <Text style={styles.ctaBtnPrimaryText}>{t("onboarding.nav.registrate")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.ctaBtnText} onPress={handleLogin}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("onboarding.nav.tieneCuenta")} style={styles.ctaBtnText} onPress={handleLogin}>
           <Text style={[styles.ctaBtnTextNormal, { color: c.textMuted }]}>
             {t("onboarding.nav.tieneCuenta")}{" "}
             <Text style={styles.ctaBtnTextLink}>{t("onboarding.nav.iniciarSesion")}</Text>

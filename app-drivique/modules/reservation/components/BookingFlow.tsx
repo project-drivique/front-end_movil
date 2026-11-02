@@ -116,13 +116,13 @@ export default function FlujoReserva({ vehiculo }: Props) {
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: c.bg }]}>
       <View style={[styles.topRow, { backgroundColor: c.bgCard }]}>
-        <TouchableOpacity onPress={handleVolver} style={styles.volverBtn}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.flujo.volver")} onPress={handleVolver} style={styles.volverBtn}>
           <Ionicons name="chevron-back" size={16} color={c.primary} />
           <Text style={[styles.volverText, { color: c.primary }]}>{t("reserva.flujo.volver")}</Text>
         </TouchableOpacity>
 
         <View style={styles.topRightActions}>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             style={[styles.configBtn, { borderColor: c.border, backgroundColor: c.bgInput }]}
             onPress={() => setModalConfigVisible(true)}
             accessibilityLabel={t("config.ajustes", { defaultValue: "Ajustes de idioma y tema" })}
@@ -130,7 +130,7 @@ export default function FlujoReserva({ vehiculo }: Props) {
             <Ionicons name="options-outline" size={16} color={c.textPrimary} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.resumenBtn, { borderColor: c.primary, backgroundColor: c.bgCard }]} onPress={() => setModalResumenVisible(true)}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.flujo.resumenReserva")} style={[styles.resumenBtn, { borderColor: c.primary, backgroundColor: c.bgCard }]} onPress={() => setModalResumenVisible(true)}>
             <Text style={[styles.resumenBtnText, { color: c.primary }]}>{t("reserva.flujo.resumenReserva")}</Text>
           </TouchableOpacity>
         </View>
@@ -170,7 +170,7 @@ export default function FlujoReserva({ vehiculo }: Props) {
             <>
               <FormFechasLugar vehiculo={vehiculo} />
 
-              <TouchableOpacity style={styles.continuarBtnWrap} onPress={handleVerPlanes} activeOpacity={0.85}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.flujo.continuar")} style={styles.continuarBtnWrap} onPress={handleVerPlanes} activeOpacity={0.85}>
                 <LinearGradient
                   colors={GRADIENTES.boton.colors}
                   start={GRADIENTES.boton.start}

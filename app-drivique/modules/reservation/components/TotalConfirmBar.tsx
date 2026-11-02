@@ -43,7 +43,7 @@ export default function BarraTotalConfirmar({ total, cargando = false, onConfirm
         {t("reserva.confirmacion.notaTotalPagar", { defaultValue: "Impuestos incluidos (IVA 19%)" })}
       </Text>
 
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.confirmacion.confirmando", { defaultValue: "Confirmando reserva..." })}
         style={[styles.botonBlanco, cargando && { opacity: 0.8 }]}
         onPress={onConfirmar}
         activeOpacity={0.85}
@@ -64,7 +64,7 @@ export default function BarraTotalConfirmar({ total, cargando = false, onConfirm
       </TouchableOpacity>
 
       {onCancelar && (
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.confirmacion.cancelarReserva", { defaultValue: "Cancelar reserva" })}
           style={styles.botonCancelarInterno}
           onPress={onCancelar}
           activeOpacity={0.8}

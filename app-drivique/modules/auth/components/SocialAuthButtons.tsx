@@ -37,7 +37,7 @@ export function SocialAuthButtons({
   return (
     <View style={s.wrap}>
       {/* Botón Google */}
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.social.google")}
         style={[
           s.btn,
           { backgroundColor: c.bgCard, borderColor: c.border },
@@ -66,7 +66,7 @@ export function SocialAuthButtons({
       </TouchableOpacity>
 
       {/* Botón Facebook */}
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.social.facebook")}
         style={[
           s.btn,
           { backgroundColor: c.bgCard, borderColor: c.border },

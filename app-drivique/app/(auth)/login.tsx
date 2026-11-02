@@ -210,7 +210,7 @@ export default function LoginScreen() {
         <View style={styles.headerTitleContainer}>
           <Text style={[styles.headerTitle, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE_OSCURO }]}>{nombreMarca}</Text>
         </View>
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.login.modoInvitado")}
           style={[
             styles.guestBtn,
             {
@@ -252,7 +252,7 @@ export default function LoginScreen() {
 
               {/* SWITCH DE PESTAÑAS */}
               <View style={[styles.tabsWrapper, { backgroundColor: c.oscuro ? c.bgInput : "rgba(255,255,255,0.08)", borderColor: c.border, borderWidth: c.oscuro ? 1 : 0 }]}>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.login.tabIniciarSesion")}
                   style={[
                     styles.tabBtn,
                     tab === "login" && styles.tabBtnActivo,
@@ -271,7 +271,7 @@ export default function LoginScreen() {
                     {t("auth.login.tabIniciarSesion")}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.login.tabBienvenida")}
                   style={[
                     styles.tabBtn,
                     tab === "bienvenida" && styles.tabBtnActivo,
@@ -336,7 +336,7 @@ export default function LoginScreen() {
                           errores.find((e) => e.campo === "contrasena")?.mensaje
                         }
                       />
-                      <TouchableOpacity
+                      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.login.olvidaste")}
                         onPress={() => router.push("/(auth)/forgot-password")}
                         style={styles.enlaceOlvide}
                       >
@@ -381,7 +381,7 @@ export default function LoginScreen() {
                       <Text style={[styles.registroTexto, { color: c.textSecondary }]}>
                         {t("auth.login.noTienesCuenta")}
                       </Text>
-                      <TouchableOpacity
+                      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("auth.login.registrateAqui")}
                         onPress={() => router.push("/(auth)/register")}
                       >
                         <Text style={[styles.registroLink, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE }]}>
@@ -407,7 +407,7 @@ export default function LoginScreen() {
 
                     <View style={styles.accesosRow}>
                       {ACCESOS.map((a) => (
-                          <TouchableOpacity
+                          <TouchableOpacity accessibilityRole="button"
                             key={a.texto}
                             style={[styles.accesoBtnBienvenida, { backgroundColor: c.bgCard, borderColor: c.border }]}
                             onPress={() => setTab("login")}
