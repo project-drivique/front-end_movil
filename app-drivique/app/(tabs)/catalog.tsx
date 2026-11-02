@@ -1,7 +1,7 @@
 import { AlertModal } from "@/components/ui/AlertModal";
 import BuscadorCatalogo from "@/modules/catalog/components/CatalogSearch";
 import FiltrosCatalogo from "@/modules/catalog/components/CatalogFilters";
-import VehiculoCard from "@/modules/catalog/components/VehicleCard";
+
 import { useCatalogo } from "@/modules/catalog/hooks/useCatalog";
 import { useFavoritos } from "@/modules/catalog/hooks/useFavorites";
 import { useAuthStore } from "@/store/authStore";
@@ -13,18 +13,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, StatusBar, Text, TouchableOpacity, View } from 'react-native'
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { styles } from '../../modules/catalog/screens/catalog.styles'
+import Error from '../../modules/catalog/screens/CatalogScreen/Error'
+import OrdenVisible from '../../modules/catalog/screens/CatalogScreen/OrdenVisible'
+import CatalogPart2 from '../../modules/catalog/screens/CatalogScreen/CatalogPart2'
+import CatalogPart from '../../modules/catalog/screens/CatalogScreen/CatalogPart'
 
-type AlertTipo = "busqueda" | "reservar" | "favorito";
+export type AlertTipo = "busqueda" | "reservar" | "favorito";
 
 // Aviso de "sin resultados" (buscador de fechas o filtros): a propósito NO
 // es un <Modal> — es un banner normal, dentro del árbol de la pantalla.
@@ -58,77 +55,7 @@ function BannerSinResultados({
   );
 }
 
-function ListFooter({
-  paginaActual,
-  totalPaginas,
-  onAnterior,
-  onSiguiente,
-  c,
-}: {
-  paginaActual: number;
-  totalPaginas: number;
-  onAnterior: () => void;
-  onSiguiente: () => void;
-  c: ReturnType<typeof useTemaColores>;
-}) {
-  const { t } = useTranslation();
-  if (totalPaginas <= 1) return null;
-  return (
-    <View style={styles.paginacionContainer}>
-      <TouchableOpacity
-        style={[
-          styles.paginaBtn,
-          paginaActual === 1 && [styles.paginaBtnDisabled, { backgroundColor: c.bgInput }],
-        ]}
-        onPress={onAnterior}
-        disabled={paginaActual === 1}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name="arrow-back"
-          size={16}
-          color={paginaActual === 1 ? c.textMuted : "#1E40AF"}
-        />
-        <Text
-          style={[
-            styles.paginaBtnText,
-            paginaActual === 1 && [styles.paginaBtnTextDisabled, { color: c.textMuted }],
-          ]}
-        >
-          {t("catalogo.anterior")}
-        </Text>
-      </TouchableOpacity>
 
-      <Text style={[styles.paginaInfoTexto, { color: c.textSecondary }]}>
-        {paginaActual} / {totalPaginas}
-      </Text>
-
-      <TouchableOpacity
-        style={[
-          styles.paginaBtn,
-          paginaActual === totalPaginas && [styles.paginaBtnDisabled, { backgroundColor: c.bgInput }],
-        ]}
-        onPress={onSiguiente}
-        disabled={paginaActual === totalPaginas}
-        activeOpacity={0.7}
-      >
-        <Text
-          style={[
-            styles.paginaBtnText,
-            paginaActual === totalPaginas && [styles.paginaBtnTextDisabled, { color: c.textMuted }],
-          ]}
-        >
-          {t("catalogo.siguiente")}
-        </Text>
-        <Ionicons
-          name="arrow-forward"
-          size={16}
-          color={paginaActual === totalPaginas ? c.textMuted : "#1E40AF"}
-        />
-      </TouchableOpacity>
-    </View>
-  );
-}
 
 export default function Catalogo() {
   const insets = useSafeAreaInsets();
@@ -323,46 +250,7 @@ export default function Catalogo() {
         translucent={true}
       />
 
-      <View style={[styles.header, { backgroundColor: c.bgHeader, borderBottomColor: c.border }]}>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>{nombreMarca}</Text>
-        </View>
-        {usuario ? (
-          <TouchableOpacity
-            style={styles.avatarHeaderBtn}
-            onPress={() => router.push("/(tabs)/profile")}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.avatarContainer, { backgroundColor: c.primaryBg }]}>
-              <Text style={[styles.avatarText, { color: "#1D4ED8" }]}>
-                {getInitials()}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.headerBtns}>
-            <TouchableOpacity
-              style={styles.ajustesBtn}
-              onPress={() => setAjustesVisible(true)}
-              hitSlop={6}
-            >
-              <Ionicons name="settings-outline" size={19} color="#1E40AF" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.loginBtn}
-              onPress={() => router.push("/(auth)/login")}
-            >
-              <Text style={styles.loginBtnText}>{t("catalogo.ingresar")}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.registerBtn}
-              onPress={() => router.push("/(auth)/register")}
-            >
-              <Text style={styles.registerBtnText}>{t("catalogo.registro")}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+      <CatalogPart c={c} getInitials={getInitials} nombreMarca={nombreMarca} setAjustesVisible={setAjustesVisible} t={t} usuario={usuario} />
 
       <BuscadorCatalogo
         form={busquedaForm}
@@ -378,70 +266,10 @@ export default function Catalogo() {
         setModalFormVisible={setModalFormVisible}
       />
 
-      <View style={[styles.controlsBar, { backgroundColor: c.bgHeader, borderBottomColor: c.border }]}>
-        <TouchableOpacity
-          style={[styles.filtrosBtn, { backgroundColor: c.bgInput }, filtrosActivos && styles.filtrosBtnActivo]}
-          onPress={() => setFiltrosVisible(true)}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-            <Ionicons
-              name="options-outline"
-              size={16}
-              color={filtrosActivos ? "#fff" : c.textSecondary}
-            />
-            <Text
-              style={[
-                styles.filtrosBtnText,
-                { color: c.textSecondary },
-                filtrosActivos && styles.filtrosBtnTextActivo,
-              ]}
-            >
-              {t("catalogo.filtrosBtn")}
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.controlsRight}>
-          <Text style={[styles.contadorText, { color: c.textSecondary }]}>
-            {t("catalogo.vehiculosContador", { count: vehiculosFiltrados.length })}
-          </Text>
-          <TouchableOpacity
-            style={[styles.ordenBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
-            onPress={() => setOrdenVisible(!ordenVisible)}
-          >
-            <Text style={[styles.ordenBtnText, { color: c.textPrimary }]} numberOfLines={1}>
-              {ordenLabel} ▼
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <CatalogPart2 c={c} filtrosActivos={filtrosActivos} ordenLabel={ordenLabel} ordenVisible={ordenVisible} setFiltrosVisible={setFiltrosVisible} setOrdenVisible={setOrdenVisible} t={t} vehiculosFiltrados={vehiculosFiltrados} />
 
       {ordenVisible && (
-        <View style={[styles.ordenDropdown, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-          {ORDEN_OPCIONES.map((op) => (
-            <TouchableOpacity
-              key={op.valor}
-              style={[
-                styles.ordenOpcion,
-                filtros.orden === op.valor && { backgroundColor: c.primaryBg },
-              ]}
-              onPress={() => {
-                setFiltro("orden", op.valor);
-                setOrdenVisible(false);
-              }}
-            >
-              <Text
-                style={[
-                  styles.ordenOpcionText,
-                  { color: c.textPrimary },
-                  filtros.orden === op.valor && styles.ordenOpcionTextActiva,
-                ]}
-              >
-                {op.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <OrdenVisible ORDEN_OPCIONES={ORDEN_OPCIONES} c={c} filtros={filtros} setFiltro={setFiltro} setOrdenVisible={setOrdenVisible} />
       )}
 
       {sinResultadosBusqueda && (
@@ -460,55 +288,7 @@ export default function Catalogo() {
           <Text style={styles.errorTexto}>{error}</Text>
         </View>
       ) : (
-        <FlatList
-          ref={flatListRef}
-          data={vehiculosAMostrar}
-          keyExtractor={(item) => item.id.toString()}
-          extraData={[paginaActual, favoritos, soloFavoritos]}
-          renderItem={({ item }) => (
-            <VehiculoCard
-              vehiculo={item as any}
-              invitado={!usuario}
-              esFavorito={esFavorito(item.id)}
-              onAccionRestringida={!usuario ? abrirSweetAlert : undefined}
-              onToggleFavorito={usuario ? () => toggleFavorito((item as any).uuid ?? item.id) : undefined}
-              datosPrecarga={datosPrecargaReserva}
-            />
-          )}
-          contentContainerStyle={styles.lista}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            soloFavoritos && favoritos.length === 0 ? (
-              <View style={styles.estadoCentro}>
-                <Ionicons name="heart-outline" size={48} color={c.textMuted} />
-                <Text style={[styles.emptyText, { color: c.textMuted }]}>
-                  {t("catalogo.sinFavoritosGuardados")}
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.estadoCentro}>
-                <Ionicons name="car-outline" size={48} color={c.textMuted} />
-                <Text style={[styles.emptyText, { color: c.textMuted }]}>
-                  {t("catalogo.sinResultadosFiltros")}
-                </Text>
-                {filtrosActivos && (
-                  <TouchableOpacity style={styles.limpiarFiltrosBtn} onPress={handleLimpiarFiltros}>
-                    <Text style={styles.limpiarFiltrosBtnText}>{t("catalogo.limpiarFiltros")}</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )
-          }
-          ListFooterComponent={() => (
-            <ListFooter
-              paginaActual={paginaActual}
-              totalPaginas={totalPaginas}
-              onAnterior={paginaAnterior}
-              onSiguiente={paginaSiguiente}
-              c={c}
-            />
-          )}
-        />
+        <Error abrirSweetAlert={abrirSweetAlert} c={c} datosPrecargaReserva={datosPrecargaReserva} esFavorito={esFavorito} favoritos={favoritos} filtrosActivos={filtrosActivos} flatListRef={flatListRef} handleLimpiarFiltros={handleLimpiarFiltros} paginaActual={paginaActual} paginaAnterior={paginaAnterior} paginaSiguiente={paginaSiguiente} soloFavoritos={soloFavoritos} t={t} toggleFavorito={toggleFavorito} totalPaginas={totalPaginas} usuario={usuario} vehiculosAMostrar={vehiculosAMostrar} />
       )}
 
       <FiltrosCatalogo
@@ -540,156 +320,3 @@ export default function Catalogo() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FAFC" },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#F1F5F9",
-  },
-  headerTitleContainer: { flex: 1 },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "900",
-    color: "#1E40AF",
-    letterSpacing: -0.5,
-  },
-  headerBtns: { flexDirection: "row", gap: 8, alignItems: "center" },
-  ajustesBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: "#1E40AF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loginBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: "#1E40AF",
-  },
-  loginBtnText: { fontSize: 13, fontWeight: "700", color: "#1E40AF" },
-  registerBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 8,
-    backgroundColor: "#1E40AF",
-  },
-  registerBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },
-  controlsBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0",
-  },
-  filtrosBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: "#F1F5F9",
-  },
-  filtrosBtnActivo: { backgroundColor: "#1E40AF" },
-  filtrosBtnText: { fontSize: 13, fontWeight: "600", color: "#475569" },
-  filtrosBtnTextActivo: { color: "#fff" },
-  controlsRight: { flexDirection: "row", alignItems: "center", gap: 8 },
-  contadorText: { fontSize: 13, color: "#64748B", fontWeight: "600" },
-  ordenBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    backgroundColor: "#FFF",
-  },
-  ordenBtnText: { fontSize: 13, color: "#1E293B", fontWeight: "600" },
-  ordenDropdown: {
-    position: "absolute",
-    top: 170,
-    right: 16,
-    zIndex: 100,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    elevation: 4,
-  },
-  ordenOpcion: { paddingHorizontal: 16, paddingVertical: 12 },
-  ordenOpcionActiva: { backgroundColor: "#F1F5F9" },
-  ordenOpcionText: { fontSize: 13, color: "#1F2937" },
-  ordenOpcionTextActiva: { color: "#1E40AF", fontWeight: "700" },
-  bannerSinResultados: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    marginHorizontal: 16,
-    marginTop: 12,
-    padding: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  bannerSinResultadosTextos: { flex: 1 },
-  bannerSinResultadosTitulo: { fontSize: 13.5, fontWeight: "700", color: "#1E40AF", marginBottom: 2 },
-  bannerSinResultadosMensaje: { fontSize: 12.5, lineHeight: 17 },
-  lista: { padding: 16 },
-  estadoCentro: { flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 60 },
-  errorTexto: { fontSize: 14, color: "#EF4444", textAlign: "center" },
-  emptyText: { fontSize: 14, color: "#94A3B8", marginTop: 12, fontWeight: "600", textAlign: "center", paddingHorizontal: 24 },
-  limpiarFiltrosBtn: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: "#1E40AF",
-  },
-  limpiarFiltrosBtnText: { color: "#fff", fontSize: 13, fontWeight: "700" },
-  paginacionContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 8,
-    marginBottom: 28,
-    paddingHorizontal: 4,
-    gap: 8,
-  },
-  paginaBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-    borderRadius: 12,
-    backgroundColor: "#1E40AF",
-  },
-  paginaBtnDisabled: { backgroundColor: "#F1F5F9" },
-  paginaBtnText: { fontSize: 13, fontWeight: "700", color: "#fff" },
-  paginaBtnTextDisabled: { color: "#CBD5E1" },
-  paginaInfoTexto: { fontSize: 14, fontWeight: "700", color: "#475569" },
-  avatarHeaderBtn: {
-    padding: 2,
-  },
-  avatarContainer: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#1D4ED840",
-  },
-  avatarText: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-});
