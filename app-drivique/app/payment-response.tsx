@@ -1,17 +1,8 @@
 // app/payment-response.tsx
 //
 // Detalle de reserva y retorno del checkout de Wompi. Todo sale de la API de reservas.
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,7 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useTemaColores } from "@/modules/i18n/hooks/useLanguage";
 import { GRADIENTES } from "@/constants/gradients";
-import { COLOR_MARCA, getDireccionSucursal } from "@/modules/catalog/constants/catalog.constants";
+import { COLOR_MARCA } from '@/modules/catalog/constants/catalog.constants'
 import {
   calcularGrupoReserva,
   mensajeDeError,
@@ -27,21 +18,22 @@ import {
   ReservaGuardada,
   reservaPersistService,
 } from "@/modules/reservation/services/reservationPersistService";
-import { fechaCorta, fmt } from "@/modules/reservation/components/BookingSummaryModal.pieces";
-import { formatHoraAmPm } from "@/modules/reservation/constants/reservation.constants";
+
+
 import {
   aCentavos,
   construirUrlCheckout,
   consultarTransaccionWompi,
 } from "@/modules/reservation/services/wompiService";
 import { ModalCalificar } from "@/modules/reservation/components/ModalCalificar";
-import DomicilioCard from "@/modules/reservation/components/DomicilioCard";
+
 import { ElegibilidadResena, ResenaGuardada, resenaService } from "@/modules/reservation/services/resenaService";
-import { PasswordInput } from "@/components/ui/PasswordInput";
+
 import { contratoService } from "@/modules/reservation/services/contractService";
 import { useUsuarioStore } from "@/store/userStore";
 import { COLOR_ACENTO } from "@/constants/brandPalette";
 import { Alert } from "@/utils/alerta";
+import PaymentResponsePart from '../modules/reservation/screens/PaymentResponseScreen/PaymentResponsePart'
 
 const COLOR_GRUPO: Record<string, string> = {
   pendiente: "#f59e0b",
@@ -279,362 +271,7 @@ export default function PagoRespuestaScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={[s.scroll, { paddingBottom: insets.bottom + 32 }]}>
-        {/* Cabecera de estado y vehículo */}
-        <View style={s.topHeader}>
-          <Text style={[s.topTituloEstado, { color: c.textPrimary }]}>{tituloEstado}</Text>
-          <Text style={[s.topSubtituloVehiculo, { color: c.textSecondary }]}>{reserva.vehiculoNombre}</Text>
-        </View>
-
-        {/* 1. Imagen del vehículo con bordes redondeados */}
-        {foto ? (
-          <View style={[s.fotoCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-            <Image source={{ uri: foto }} style={s.foto} resizeMode="cover" />
-          </View>
-        ) : null}
-
-        {/* 2. Grid de datos de la reserva en 2 columnas estilo Web */}
-        <View style={s.grid}>
-          {/* Vehículo */}
-          <CeldaDato
-            c={c}
-            icono="car-sport-outline"
-            label={t("reservas.vehicle", { defaultValue: "Vehículo" })}
-            valor={reserva.vehiculoNombre}
-          />
-
-          {/* Fecha de retiro */}
-          <CeldaDato
-            c={c}
-            icono="calendar-outline"
-            label={t("reservas.pickupDate", { defaultValue: "Fecha de retiro" })}
-            valor={fechaCorta(reserva.fechaRetiro)}
-          />
-
-          {/* Hora de retiro */}
-          <CeldaDato
-            c={c}
-            icono="time-outline"
-            label={t("reservas.pickupTime", { defaultValue: "Hora de retiro" })}
-            valor={formatHoraAmPm(reserva.horaRetiro) || "—"}
-          />
-
-          {/* Fecha de devolución */}
-          <CeldaDato
-            c={c}
-            icono="calendar-outline"
-            label={t("reservas.returnDate", { defaultValue: "Fecha de devolución" })}
-            valor={fechaCorta(reserva.fechaDevolucion)}
-          />
-
-          {/* Hora de devolución */}
-          <CeldaDato
-            c={c}
-            icono="time-outline"
-            label={t("reservas.returnTime", { defaultValue: "Hora de devolución" })}
-            valor={formatHoraAmPm(reserva.horaDevolucion) || "—"}
-          />
-
-          {/* Lugar de retiro */}
-          <CeldaDato
-            c={c}
-            icono="location-outline"
-            label={puntoRetiro?.domicilio
-              ? t("reservas.homePickupLocation", { defaultValue: "Entrega a domicilio" })
-              : t("reservas.pickupLocation", { defaultValue: "Lugar de retiro" })}
-            valor={puntoRetiro?.lugar || vehiculo?.sucursal || sucursalEfectivo || "Drivique Principal"}
-          />
-
-          {/* Lugar de devolución */}
-          <CeldaDato
-            c={c}
-            icono="location-outline"
-            label={puntoDevolucion?.domicilio
-              ? t("reservas.homeReturnLocation", { defaultValue: "Recogida a domicilio" })
-              : t("reservas.returnLocation", { defaultValue: "Lugar de devolución" })}
-            valor={puntoDevolucion?.lugar || vehiculo?.sucursal || sucursalEfectivo || "Drivique Principal"}
-          />
-
-          {/* Medio de pago */}
-          <CeldaDato
-            c={c}
-            icono="card-outline"
-            label={t("reservas.paymentMethod", { defaultValue: "Medio de pago" })}
-            valor={reserva.metodoPago === "efectivo" ? t("reserva.confirmacion.pagoEnSucursalCorto", { defaultValue: "Pago en sucursal" }) : "Pago Wompi"}
-          />
-
-          {/* Protección */}
-          <CeldaDato
-            c={c}
-            icono="shield-checkmark-outline"
-            label={t("reservas.protection", { defaultValue: "Protección" })}
-            valor={reserva.proteccion || "Protección Básica Estándar"}
-          />
-
-          {/* Referencia */}
-          <CeldaDato
-            c={c}
-            icono="receipt-outline"
-            label={t("reserva.confirmacion.respuesta.referencia", { defaultValue: "Referencia" })}
-            valor={reserva.referencia}
-          />
-
-          {/* Total */}
-          <CeldaDato
-            c={c}
-            icono="cash-outline"
-            label={t("reserva.confirmacion.respuesta.total", { defaultValue: "Total" })}
-            valor={fmt(reserva.total)}
-            esTotal={true}
-          />
-
-          {/* Estado */}
-          <CeldaDato
-            c={c}
-            icono="checkmark-circle-outline"
-            label={t("reservas.status", { defaultValue: "Estado" })}
-            valor={tituloEstado}
-            colorValor={color}
-          />
-        </View>
-
-        {/* Domicilio: código de entrega, estado y conductor (igual que la web) */}
-        <DomicilioCard reserva={reserva} />
-
-        {/* Tarjeta de Reserva en Espera de Horario de Atención (Idéntica a la Web) */}
-        {enHorario ? (
-          <View
-            style={[
-              s.tarjetaInformativa,
-              {
-                backgroundColor: c.oscuro ? "rgba(30, 58, 138, 0.25)" : "#EFF6FF",
-                borderColor: c.oscuro ? "#1E40AF" : "#BFDBFE",
-              },
-            ]}
-          >
-            <View style={s.tarjetaInfoHead}>
-              <Ionicons name="time" size={24} color={c.oscuro ? COLOR_ACENTO : COLOR_MARCA} />
-              <Text style={[s.tarjetaInfoTitulo, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
-                {t("reservas.esperaAperturaTitulo", { defaultValue: "En Espera de Apertura de Sucursal" })}
-              </Text>
-            </View>
-            <Text style={[s.tarjetaInfoTexto, { color: c.oscuro ? "#DBEAFE" : "#1E3A8A" }]}>
-              {t("reservas.esperaAperturaDesc", {
-                sucursal: vehiculo?.sucursal || sucursalEfectivo || "Drivique",
-                defaultValue: "Tu reserva fue registrada fuera del horario de atención de la sucursal {{sucursal}}. En cuanto la sede inicie su jornada de atención, recibirás una notificación automática por correo, web y push para proceder con el pago y confirmación de tu reserva.",
-              })}
-            </Text>
-            <View
-              style={[
-                s.tarjetaInfoBadge,
-                {
-                  backgroundColor: c.oscuro ? "rgba(30, 64, 175, 0.4)" : "#DBEAFE",
-                },
-              ]}
-            >
-              <Ionicons name="time" size={14} color={c.oscuro ? "#93C5FD" : "#1E3A8A"} />
-              <Text style={[s.tarjetaInfoBadgeTexto, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
-                {t("reservas.esperaAperturaEstado", { defaultValue: "Estado: Esperando apertura de sucursal" })}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
-        {/* Tarjeta de Documentación en Proceso de Validación */}
-        {enRevision ? (
-          <View
-            style={[
-              s.tarjetaInformativa,
-              {
-                backgroundColor: c.oscuro ? "rgba(30, 58, 138, 0.25)" : "#EFF6FF",
-                borderColor: c.oscuro ? "#1E40AF" : "#BFDBFE",
-              },
-            ]}
-          >
-            <View style={s.tarjetaInfoHead}>
-              <Ionicons name="shield-checkmark" size={24} color={c.oscuro ? COLOR_ACENTO : COLOR_MARCA} />
-              <Text style={[s.tarjetaInfoTitulo, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
-                {t("misReservas.detalle.enRevisionDocumentos", { defaultValue: "Documentación en Proceso de Validación" })}
-              </Text>
-            </View>
-            <Text style={[s.tarjetaInfoTexto, { color: c.oscuro ? "#DBEAFE" : "#1E3A8A" }]}>
-              {t("misReservas.detalle.enRevisionTexto", {
-                defaultValue: `Tus documentos de identidad y licencia de conducción están siendo revisados por el encargado de la sucursal ${vehiculo?.sucursal || sucursalEfectivo || "Drivique"}. En cuanto los documentos sean aprobados, tu reserva se confirmará automáticamente y se habilitará la firma digital del contrato.`,
-              })}
-            </Text>
-            <View
-              style={[
-                s.tarjetaInfoBadge,
-                {
-                  backgroundColor: c.oscuro ? "rgba(30, 64, 175, 0.4)" : "#DBEAFE",
-                },
-              ]}
-            >
-              <Ionicons name="time" size={14} color={c.oscuro ? "#93C5FD" : "#1E3A8A"} />
-              <Text style={[s.tarjetaInfoBadgeTexto, { color: c.oscuro ? "#93C5FD" : "#1E3A8A" }]}>
-                {t("reservas.docsEnRevisionEstado", { defaultValue: "Estado: En revisión por encargado de sucursal" })}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
-        {aviso ? (
-          <View style={[s.aviso, { borderColor: "#f59e0b", backgroundColor: c.oscuro ? "#422006" : "#fffbeb" }]}>
-            <Text style={[s.avisoTexto, { color: c.oscuro ? "#fde68a" : "#92400e" }]}>{aviso}</Text>
-          </View>
-        ) : null}
-
-        {esperaPagoEfectivo ? (
-          <View style={[s.aviso, { borderColor: "#f59e0b", backgroundColor: c.oscuro ? "#422006" : "#fffbeb" }]}>
-            <Text style={[s.avisoTitulo, { color: c.oscuro ? "#fde68a" : "#92400e" }]}>
-              {t("misReservas.detalle.tituloPendienteEfectivo")}
-            </Text>
-            {sucursalEfectivo ? (
-              <Text style={[s.avisoTexto, { color: c.textSecondary }]}>
-                {t("reserva.confirmacion.sucursal")}: {sucursalEfectivo}
-              </Text>
-            ) : null}
-            {reserva.codigoPagoEfectivo ? (
-              <Text style={[s.codigo, { color: c.textPrimary }]}>{reserva.codigoPagoEfectivo}</Text>
-            ) : null}
-            {reserva.fechaLimitePago ? (
-              <Text style={[s.avisoTexto, { color: c.textSecondary }]}>
-                {t("reserva.confirmacion.plazoParaPagarTitulo")}:{" "}
-                {new Date(reserva.fechaLimitePago).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
-
-        {esperaPagoWompi ? (
-          <Boton texto={t("reserva.confirmacion.pagarConWompi")} onPress={pagarConWompi} />
-        ) : null}
-
-        {/* Igual que la web: con el contrato sin firmar se ofrece firmarlo directamente */}
-        {pendienteFirma ? (
-          <View style={[s.firmaCard, { borderColor: primaryAccent, backgroundColor: c.primaryBg }]}>
-            <View style={[s.firmaIcono, { backgroundColor: c.oscuro ? "rgba(255,255,255,0.08)" : "#DBEAFE" }]}>
-              <Ionicons name="create-outline" size={24} color={primaryAccent} />
-            </View>
-            <Text style={[s.firmaTitulo, { color: primaryAccent }]}>
-              {t("reservas.signCardTitle", { defaultValue: "Firma de Contrato Digital Pendiente" })}
-            </Text>
-            <Text style={[s.firmaTexto, { color: c.textSecondary }]}>
-              {t("reservas.signCardDesc", {
-                defaultValue:
-                  "Tu pago ha sido confirmado con éxito. Procede a firmar digitalmente tu contrato para completar la reserva y acceder al documento protegido.",
-              })}
-            </Text>
-            <TouchableOpacity
-              style={{ width: "100%" }}
-              activeOpacity={0.85}
-              onPress={() => router.push(`/contract-view?ref=${encodeURIComponent(reserva.id)}&ok=1` as any)}
-            >
-              <LinearGradient
-                colors={GRADIENTES.boton.colors}
-                start={GRADIENTES.boton.start}
-                end={GRADIENTES.boton.end}
-                style={[s.contratoBtn, { flexDirection: "row", justifyContent: "center" }]}
-              >
-                <Ionicons name="create-outline" size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
-                <Text style={s.contratoBtnTexto}>{t("reservas.signCardButton", { defaultValue: "Proceder a Firmar Contrato" })}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        ) : null}
-
-        {tieneContrato && !pendienteFirma ? (
-          <View style={[s.contratoCard, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-            <View style={[s.contratoIcono, { backgroundColor: c.primaryBg }]}>
-              <Ionicons name="lock-closed-outline" size={30} color={primaryAccent} />
-            </View>
-            <Text style={[s.contratoTitulo, { color: c.textPrimary }]}>{t("misReservas.contratoBloqueadoTitulo")}</Text>
-            <Text style={[s.contratoTexto, { color: c.textSecondary }]}>{t("misReservas.contratoBloqueadoTexto")}</Text>
-            <View style={{ width: "100%", marginTop: 14 }}>
-              <PasswordInput
-                placeholder={t("misReservas.claveContratoPlaceholder")}
-                value={claveContrato}
-                onChangeText={(v) => {
-                  setClaveContrato(v);
-                  if (errorClaveContrato) setErrorClaveContrato("");
-                }}
-                error={errorClaveContrato}
-              />
-            </View>
-            <TouchableOpacity style={{ width: "100%", marginTop: 8 }} onPress={abrirContrato} activeOpacity={0.85} disabled={validandoClave}>
-              <LinearGradient colors={GRADIENTES.boton.colors} start={GRADIENTES.boton.start} end={GRADIENTES.boton.end} style={s.contratoBtn}>
-                <Text style={s.contratoBtnTexto}>
-                  {pendienteFirma
-                    ? t("misReservas.firmarContrato", { defaultValue: "Proceder a firmar contrato" })
-                    : t("misReservas.verContrato")}
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        ) : null}
-
-        {grupo === "finalizada" && misResenas.length > 0
-          ? misResenas.map((r) => (
-              <View key={r.titulo} style={{ backgroundColor: "#FFFBEB", borderColor: "#FDE68A", borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 10 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: "#92400E", flexShrink: 1 }}>{r.titulo}</Text>
-                  <View style={{ flexDirection: "row", gap: 2 }}>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <Ionicons key={n} name="star" size={15} color={n <= r.rating ? "#F59E0B" : "#E2E8F0"} />
-                    ))}
-                  </View>
-                </View>
-                <Text style={{ marginTop: 8, fontSize: 13, lineHeight: 19, color: r.comment ? "#78350F" : "#A16207", fontStyle: r.comment ? "normal" : "italic" }}>
-                  {r.comment || t("misReservas.sinComentario", { defaultValue: "Calificaste sin dejar un comentario." })}
-                </Text>
-              </View>
-            ))
-          : null}
-
-        {grupo === "finalizada" ? (
-          <Boton
-            secundario
-            texto={
-              resena && sucursalPendiente
-                ? t("reserva.calificar.calificarSucursal", { defaultValue: "Calificar sucursal" })
-                : resena
-                ? t("misReservas.calificada")
-                : t("reserva.calificar.calificarVehiculo")
-            }
-            onPress={() => (!resena || sucursalPendiente) && setModalCalificar(true)}
-          />
-        ) : null}
-
-        {grupo === "en_curso" && (
-          <Boton
-            secundario
-            texto={t("tabs.hacerReporte")}
-            onPress={() =>
-              router.push({
-                pathname: "/(tabs)/support",
-                params: { reservaId: reserva.id, tab: "nueva" },
-              } as any)
-            }
-          />
-        )}
-
-        {puedeCancelar ? (
-          <TouchableOpacity
-            onPress={cancelar}
-            disabled={ocupado}
-            style={[
-              s.cancelarBtn,
-              { backgroundColor: c.oscuro ? "rgba(220, 38, 38, 0.15)" : "#FEF2F2" },
-            ]}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="close-circle-outline" size={17} color="#DC2626" />
-            <Text style={s.cancelarTexto}>
-              {t("misReservas.cancelarReserva", { defaultValue: "Cancelar reserva" })}
-            </Text>
-          </TouchableOpacity>
-        ) : null}
-      </ScrollView>
+      <PaymentResponsePart abrirContrato={abrirContrato} aviso={aviso} c={c} cancelar={cancelar} claveContrato={claveContrato} color={color} enHorario={enHorario} enRevision={enRevision} errorClaveContrato={errorClaveContrato} esperaPagoEfectivo={esperaPagoEfectivo} esperaPagoWompi={esperaPagoWompi} foto={foto} grupo={grupo} insets={insets} misResenas={misResenas} ocupado={ocupado} pagarConWompi={pagarConWompi} pendienteFirma={pendienteFirma} primaryAccent={primaryAccent} puedeCancelar={puedeCancelar} puntoDevolucion={puntoDevolucion} puntoRetiro={puntoRetiro} resena={resena} reserva={reserva} setClaveContrato={setClaveContrato} setErrorClaveContrato={setErrorClaveContrato} setModalCalificar={setModalCalificar} sucursalEfectivo={sucursalEfectivo} sucursalPendiente={sucursalPendiente} t={t} tieneContrato={tieneContrato} tituloEstado={tituloEstado} validandoClave={validandoClave} vehiculo={vehiculo} />
 
       <ModalCalificar
         visible={modalCalificar}
@@ -665,84 +302,9 @@ function resenasPublicadas(e: ElegibilidadResena, t: (k: string, o?: any) => str
   return out;
 }
 
-function CeldaDato({
-  c,
-  icono,
-  label,
-  valor,
-  anchoCompleto,
-  esTotal,
-  colorValor,
-}: {
-  c: ReturnType<typeof useTemaColores>;
-  icono: keyof typeof Ionicons.glyphMap;
-  label: string;
-  valor: string;
-  anchoCompleto?: boolean;
-  esTotal?: boolean;
-  colorValor?: string;
-}) {
-  return (
-    <View
-      style={[
-        s.celda,
-        {
-          backgroundColor: c.oscuro ? "#1F2937" : "#F8FAFC",
-          borderColor: c.border,
-          width: anchoCompleto ? "100%" : "48.2%",
-        },
-      ]}
-    >
-      <View
-        style={[
-          s.celdaIcono,
-          {
-            backgroundColor: c.oscuro ? "rgba(30, 64, 175, 0.25)" : "#EFF6FF",
-            borderColor: c.oscuro ? "rgba(30, 64, 175, 0.4)" : "#DBEAFE",
-          },
-        ]}
-      >
-        <Ionicons name={icono} size={16} color={c.oscuro ? COLOR_ACENTO : COLOR_MARCA} />
-      </View>
-      <View style={s.celdaContenido}>
-        <Text style={[s.celdaLabel, { color: c.textMuted }]} numberOfLines={1}>
-          {label}
-        </Text>
-        <Text
-          style={[
-            s.celdaValor,
-            {
-              color: colorValor || (esTotal ? (c.oscuro ? COLOR_ACENTO : COLOR_MARCA) : c.textPrimary),
-              fontWeight: esTotal ? "800" : "700",
-            },
-          ]}
-          numberOfLines={2}
-        >
-          {valor}
-        </Text>
-      </View>
-    </View>
-  );
-}
 
-function Fila({
-  c,
-  label,
-  valor,
-  fuerte,
-}: {
-  c: ReturnType<typeof useTemaColores>;
-  label: string;
-  valor: string;
-  fuerte?: boolean;
-}) {
-  return (
-    <View style={s.fila}>
-      <Text style={[s.filaLabel, { color: c.textMuted }]}>{label}</Text>
-      <Text style={[s.filaValor, { color: c.textPrimary, fontWeight: fuerte ? "800" : "600" }]}>{valor}</Text>
-    </View>
-  );
-}
+
+
 
 function Boton({ texto, onPress, secundario }: { texto: string; onPress: () => void; secundario?: boolean }) {
   const c = useTemaColores();
