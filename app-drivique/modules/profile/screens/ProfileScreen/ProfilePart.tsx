@@ -112,14 +112,14 @@ export default function ProfilePart({ c, handleCerrarSesion, handleEliminarCuent
                 </View>
               )}
             </View>
-            <TouchableOpacity style={styles.btnEditar} onPress={() => setEditando(true)}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.editar")} style={styles.btnEditar} onPress={() => setEditando(true)}>
               <Text style={styles.btnEditarText}>{t("perfil.editar")}</Text>
             </TouchableOpacity>
           </View>
   
           {/* Banner completar perfil */}
           {!usuario.perfilCompleto && (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.completarPerfil")}
               style={[localS.banner, { backgroundColor: c.primaryBg, borderColor: "#1D4ED8" }]}
               onPress={() => setCompletando(true)}
               activeOpacity={0.85}
@@ -137,7 +137,7 @@ export default function ProfilePart({ c, handleCerrarSesion, handleEliminarCuent
   
           {/* Menú opciones */}
           <View style={[styles.menuSection, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.historial")}
               style={[styles.menuItem, styles.menuItemBorder, { borderBottomColor: c.borderLight }]}
               onPress={() => router.push("/(tabs)/my-bookings")}
             >
@@ -151,7 +151,7 @@ export default function ProfilePart({ c, handleCerrarSesion, handleEliminarCuent
               <Text style={[styles.menuArrow, { color: c.textMuted }]}>›</Text>
             </TouchableOpacity>
   
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.seguridad")}
               style={styles.menuItem}
               onPress={() => setMostrarCambioContrasena(true)}
             >
@@ -172,7 +172,7 @@ export default function ProfilePart({ c, handleCerrarSesion, handleEliminarCuent
   
           {/* Cerrar sesión */}
           <View style={[styles.cerrarSection, { backgroundColor: c.bgCard, borderColor: c.border }]}>
-            <TouchableOpacity style={styles.cerrarBtn} onPress={handleCerrarSesion}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.cerrarSesion")} style={styles.cerrarBtn} onPress={handleCerrarSesion}>
               <View style={styles.cerrarIconWrap}>
                 <Text style={styles.menuIcon}>→</Text>
               </View>
@@ -182,7 +182,7 @@ export default function ProfilePart({ c, handleCerrarSesion, handleEliminarCuent
   
           {/* Eliminar cuenta */}
           <View style={styles.eliminarWrap}>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.eliminarCuenta")}
               style={styles.eliminarBtn}
               onPress={handleEliminarCuenta}
             >

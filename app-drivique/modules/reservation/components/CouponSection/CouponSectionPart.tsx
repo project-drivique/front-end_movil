@@ -17,7 +17,7 @@ export default function CouponSectionPart({ c, cuponAplicado, cuponesDisponibles
         >
           <View style={styles.modalOverlay}>
             {/* Backdrop superior que cierra al presionar afuera */}
-            <TouchableOpacity 
+            <TouchableOpacity accessibilityRole="button" 
               style={styles.modalBackdropTop} 
               activeOpacity={1} 
               onPress={handleCerrarModal} 
@@ -44,7 +44,7 @@ export default function CouponSectionPart({ c, cuponAplicado, cuponesDisponibles
                       : t("coupon.modalTitle", { defaultValue: "Cupones Disponibles" })}
                   </Text>
   
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
                     style={styles.modalBotonCerrarIcon}
                     onPress={handleCerrarModal}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -61,7 +61,7 @@ export default function CouponSectionPart({ c, cuponAplicado, cuponesDisponibles
                       <Ionicons name="alert-circle" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
                       <Text style={[styles.errorAlertText, { color: c.oscuro ? "#fca5a5" : "#B91C1C" }]}>{errorMsgModal}</Text>
                     </View>
-                    <TouchableOpacity onPress={() => setErrorMsgModal("")}>
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={() => setErrorMsgModal("")}>
                       <Ionicons name="close" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
                     </TouchableOpacity>
                   </View>
@@ -170,7 +170,7 @@ export default function CouponSectionPart({ c, cuponAplicado, cuponesDisponibles
                     {/* Botones de acción del Modal (afuera juntos: Cerrar a la izquierda, Aplicar a la derecha con diseño de Términos y Condiciones) */}
                     <View style={styles.modalBotonesRow}>
                       {/* Botón Cerrar / Volver a la izquierda */}
-                      <TouchableOpacity
+                      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("comun.cerrar", { defaultValue: "Cerrar" })}
                         onPress={handleVolverALista}
                         style={[
                           styles.modalBotonCerrarSecundario,
@@ -185,7 +185,7 @@ export default function CouponSectionPart({ c, cuponAplicado, cuponesDisponibles
   
                       {/* Botón Aplicar a la derecha */}
                       <View style={styles.modalBotonAceptarWrap}>
-                        <TouchableOpacity
+                        <TouchableOpacity accessibilityRole="button"
                           onPress={() => handleSeleccionarCupon(selectedConditionsCoupon, true)}
                           activeOpacity={0.85}
                           style={{ width: "100%" }}
@@ -286,7 +286,7 @@ export default function CouponSectionPart({ c, cuponAplicado, cuponesDisponibles
                                   </Text>
                                 )}
                               </View>
-                              <TouchableOpacity onPress={() => handleOpenConditions(cpx)}>
+                              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("coupon.conditionsBtn", "Condiciones")} onPress={() => handleOpenConditions(cpx)}>
                                 <Text style={[styles.codeSubtitle, { color: primaryAccent }]}>{t("coupon.conditionsBtn", "Condiciones")}</Text>
                               </TouchableOpacity>
                             </View>
@@ -307,7 +307,7 @@ export default function CouponSectionPart({ c, cuponAplicado, cuponesDisponibles
                             <Text style={[styles.couponRule, { color: c.textMuted }]}>
                               {ruleLabel}
                             </Text>
-                            <TouchableOpacity
+                            <TouchableOpacity accessibilityRole="button"
                               style={[styles.couponApplyBtn, { backgroundColor: primaryAccent }, esActivo && { backgroundColor: c.bgInput }]}
                               onPress={() => handleSeleccionarCupon(cpx, true)}
                               disabled={esActivo}

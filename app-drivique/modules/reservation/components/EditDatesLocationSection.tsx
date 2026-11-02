@@ -382,7 +382,7 @@ export default function EditDatesLocationSection({
         <Text style={styles.headerTitulo}>
           {t("reserva.edicion.editarFechasYLugares", { defaultValue: "Editar Fechas y Ubicación" })}
         </Text>
-        <TouchableOpacity onPress={onCancelar} hitSlop={10}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={onCancelar} hitSlop={10}>
           <Ionicons name="close" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </LinearGradient>

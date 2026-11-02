@@ -300,7 +300,7 @@ export default function usePerfilScreenLogic1() {
           <Text style={[configStyles.label, { color: c.textPrimary }]}>{t("config.tema")}</Text>
         </View>
         <View style={configStyles.temaRow}>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("config.claro")}
             style={[configStyles.temaBtn, { borderColor: c.border, backgroundColor: c.bgInput }, temaActual === "claro" && configStyles.temaBtnActivo]}
             onPress={() => cambiarTema("claro")}
           >
@@ -309,7 +309,7 @@ export default function usePerfilScreenLogic1() {
               {t("config.claro")}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("config.oscuro")}
             style={[configStyles.temaBtn, { borderColor: c.border, backgroundColor: c.bgInput }, temaActual === "oscuro" && configStyles.temaBtnActivoDark]}
             onPress={() => cambiarTema("oscuro")}
           >
@@ -326,7 +326,7 @@ export default function usePerfilScreenLogic1() {
         </View>
         <View style={configStyles.idiomasWrap}>
           {(Object.keys(IDIOMAS) as IdiomaKey[]).map((key) => (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               key={key}
               style={[configStyles.idiomaBtn, { borderColor: c.border, backgroundColor: c.bgInput }, idiomaActual === key && configStyles.idiomaBtnActivo]}
               onPress={() => cambiarIdioma(key)}
@@ -349,7 +349,7 @@ export default function usePerfilScreenLogic1() {
           <Text style={[configStyles.label, { color: c.textPrimary }]}>{t("config.moneda")}</Text>
         </View>
         <View style={configStyles.temaRow}>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             style={[configStyles.temaBtn, { borderColor: c.border, backgroundColor: c.bgInput }, monedaActual === "COP" && configStyles.temaBtnActivo]}
             onPress={() => handleCambiarMoneda("COP")}
           >
@@ -357,7 +357,7 @@ export default function usePerfilScreenLogic1() {
               🇨🇴 COP
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             style={[configStyles.temaBtn, { borderColor: c.border, backgroundColor: c.bgInput }, monedaActual === "USD" && configStyles.temaBtnActivo]}
             onPress={() => handleCambiarMoneda("USD")}
           >

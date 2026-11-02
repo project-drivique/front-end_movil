@@ -184,7 +184,7 @@ export default function BuscadorCatalogo({
             color={c.textMuted}
             style={styles.searchIcon}
           />
-          <TextInput
+          <TextInput accessibilityLabel={t("catalogo.buscador.placeholder")}
             style={[styles.textInput, { color: c.textPrimary }]}
             placeholder={t("catalogo.buscador.placeholder")}
             placeholderTextColor={c.textMuted}
@@ -193,7 +193,7 @@ export default function BuscadorCatalogo({
           />
         </View>
 
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button"
           style={[
             styles.calendarIconBtn,
             { backgroundColor: c.bgInput, borderColor: c.border },
@@ -217,12 +217,12 @@ export default function BuscadorCatalogo({
       >
         <SafeAreaView style={[styles.modalFormContainer, { backgroundColor: c.bg }]}>
           <View style={[styles.modalFormHeader, { borderBottomColor: c.border }]}>
-            <TouchableOpacity onPress={() => setModalFormVisible(false)}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")} onPress={() => setModalFormVisible(false)}>
               <Ionicons name="arrow-back" size={24} color={c.textPrimary} />
             </TouchableOpacity>
             <Text style={[styles.modalFormTitle, { color: c.textPrimary }]}>{t("catalogo.buscador.tituloModal")}</Text>
             {tieneBusquedaActiva ? (
-              <TouchableOpacity onPress={limpiarFormulario}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.buscador.limpiar")} onPress={limpiarFormulario}>
                 <Text style={[styles.txtLimpiarModal, { color: primaryAccent }]}>{t("catalogo.buscador.limpiar")}</Text>
               </TouchableOpacity>
             ) : (
@@ -234,7 +234,7 @@ export default function BuscadorCatalogo({
             <View style={styles.row}>
               <View style={styles.field}>
                 <Text style={[styles.label, { color: c.textSecondary }]}>{t("catalogo.buscador.ciudad")}</Text>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={[styles.selector, { backgroundColor: c.bgInput, borderColor: c.border }]}
                   onPress={() => setPickerOpen("ciudad")}
                 >
@@ -255,7 +255,7 @@ export default function BuscadorCatalogo({
 
               <View style={styles.field}>
                 <Text style={[styles.label, { color: c.textSecondary }]}>{t("catalogo.buscador.sucursal")}</Text>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={[
                     styles.selector,
                     { backgroundColor: c.bgInput, borderColor: c.border },
@@ -353,7 +353,7 @@ export default function BuscadorCatalogo({
               />
             </View>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.buscador.buscar")}
               style={styles.buscarBtnGrandeWrap}
               onPress={() => {
                 setModalFormVisible(false);
@@ -383,7 +383,7 @@ export default function BuscadorCatalogo({
                     ? t("catalogo.buscador.modalCiudadTitulo")
                     : t("catalogo.buscador.modalSucursalTitulo")}
                 </Text>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
                   style={[styles.modalCloseBtn, { backgroundColor: c.bgInput }]}
                   onPress={() => setPickerOpen(null)}
                 >
@@ -394,7 +394,7 @@ export default function BuscadorCatalogo({
                 data={pickerOpen === "ciudad" ? CIUDADES : sucursalesDeLaCiudad}
                 keyExtractor={(item) => item}
                 renderItem={({ item }) => (
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button"
                     style={[
                       styles.puntoItem,
                       { borderBottomColor: c.borderLight },

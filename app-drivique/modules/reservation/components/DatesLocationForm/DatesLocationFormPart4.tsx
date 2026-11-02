@@ -14,7 +14,7 @@ export default function DatesLocationFormPart4({ c, fechasLugar, handleAbrirHora
                 {t("vehiculo.selectPickupTime", { defaultValue: "Selecciona Hora de Retiro" })}
               </Text>
             </View>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
               onPress={() => setHoraVisible("retiro")}
               activeOpacity={0.8}
@@ -43,7 +43,7 @@ export default function DatesLocationFormPart4({ c, fechasLugar, handleAbrirHora
                 {t("vehiculo.selectReturnTime", { defaultValue: "Selecciona Hora de Devolución" })}
               </Text>
             </View>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
               onPress={handleAbrirHoraDevolucion}
               activeOpacity={0.8}

@@ -32,7 +32,7 @@ export function PicoYPlacaCard() {
         })}
       </Text>
 
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("vehiculo.goToPage", { defaultValue: "Ir a la página oficial" })}
         style={[styles.boton, { borderColor: primaryAccent, backgroundColor: c.oscuro ? "rgba(30, 58, 138, 0.2)" : "rgba(37, 99, 235, 0.06)" }]}
         onPress={handleIrPagina}
         activeOpacity={0.8}

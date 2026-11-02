@@ -6,7 +6,7 @@ export default function OrdenVisible({ ORDEN_OPCIONES, c, filtros, setFiltro, se
   return (
     <View style={[styles.ordenDropdown, { backgroundColor: c.bgCard, borderColor: c.border }]}>
             {ORDEN_OPCIONES.map((op) => (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 key={op.valor}
                 style={[
                   styles.ordenOpcion,

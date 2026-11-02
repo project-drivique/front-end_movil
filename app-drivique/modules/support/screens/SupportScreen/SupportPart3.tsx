@@ -41,7 +41,7 @@ export default function SupportPart3({ c, getTiempoEstimadoTexto, reporteExitoso
                 {t("soporte.incidencia.notifAvisoModal", { defaultValue: "El equipo administrador revisará el reporte y actualizará el estado del caso. Recibirás notificaciones por correo y en la app." })}
               </Text>
   
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("soporte.incidencia.verEnMisReportes", { defaultValue: "Ver en Mis Reportes" })}
                 style={styles.modalPrimaryBtn}
                 onPress={() => {
                   setReporteExitoso(null);

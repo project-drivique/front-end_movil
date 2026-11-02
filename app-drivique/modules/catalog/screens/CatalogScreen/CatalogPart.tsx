@@ -11,7 +11,7 @@ export default function CatalogPart({ c, getInitials, nombreMarca, setAjustesVis
             <Text style={styles.headerTitle}>{nombreMarca}</Text>
           </View>
           {usuario ? (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               style={styles.avatarHeaderBtn}
               onPress={() => router.push("/(tabs)/profile")}
               activeOpacity={0.7}
@@ -24,20 +24,20 @@ export default function CatalogPart({ c, getInitials, nombreMarca, setAjustesVis
             </TouchableOpacity>
           ) : (
             <View style={styles.headerBtns}>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.ajustes", "Ajustes")}
                 style={styles.ajustesBtn}
                 onPress={() => setAjustesVisible(true)}
                 hitSlop={6}
               >
                 <Ionicons name="settings-outline" size={19} color="#1E40AF" />
               </TouchableOpacity>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.ingresar")}
                 style={styles.loginBtn}
                 onPress={() => router.push("/(auth)/login")}
               >
                 <Text style={styles.loginBtnText}>{t("catalogo.ingresar")}</Text>
               </TouchableOpacity>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.registro")}
                 style={styles.registerBtn}
                 onPress={() => router.push("/(auth)/register")}
               >

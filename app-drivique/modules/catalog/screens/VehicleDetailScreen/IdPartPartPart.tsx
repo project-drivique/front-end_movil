@@ -292,7 +292,7 @@ export default function IdPartPartPart({ c, colorAzulAccion, colorBorde, colorIc
                     <Text style={[s.infoRowTexto, { color: colorTextoSecundario }]}>{horarioAtencion}</Text>
                   </View>
       
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("vehiculo.sucursal.comoLlegar", { defaultValue: "Cómo llegar" })}
                     style={[s.btnAccion, { borderColor: colorAzulAccion }]}
                     onPress={() => setModalComoLlegarVisible(true)}
                     activeOpacity={0.8}

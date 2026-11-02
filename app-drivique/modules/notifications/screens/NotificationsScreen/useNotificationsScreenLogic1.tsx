@@ -204,7 +204,7 @@ export default function useNotificationsScreenLogic1() {
       const dias = daysUntilExpiry(item.expiracion);
   
       return (
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(item.titulo, { defaultValue: item.titulo })}
           style={[
             styles.generalCard,
             {

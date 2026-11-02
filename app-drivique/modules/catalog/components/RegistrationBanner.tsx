@@ -31,7 +31,7 @@ export function BannerRegistro({
         <Text style={[styles.mensaje, { color: c.textSecondary }]}>{mensajeFinal}</Text>
 
         <View style={styles.botones}>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.bannerRegistro.registrarme")}
             style={styles.botonRegistroWrap}
             onPress={() => {
               onCerrar();
@@ -49,7 +49,7 @@ export function BannerRegistro({
             </LinearGradient>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.bannerRegistro.iniciarSesion")}
             style={[styles.botonLogin, { backgroundColor: c.bgInput, borderWidth: 1, borderColor: c.border }]}
             onPress={() => {
               onCerrar();
@@ -60,7 +60,7 @@ export function BannerRegistro({
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.botonCerrar} onPress={onCerrar}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.bannerRegistro.continuarInvitado")} style={styles.botonCerrar} onPress={onCerrar}>
           <Text style={[styles.botonCerrarTexto, { color: c.textMuted }]}>{t("catalogo.bannerRegistro.continuarInvitado")}</Text>
         </TouchableOpacity>
       </View>

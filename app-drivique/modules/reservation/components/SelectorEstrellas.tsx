@@ -22,7 +22,7 @@ export function SelectorEstrellas({ valor, onCambiar, tamano = 32 }: Props) {
       {Array.from({ length: 5 }, (_, i) => {
         const posicion = i + 1;
         return (
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             key={posicion}
             onPress={() => onCambiar(posicion)}
             hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}

@@ -368,11 +368,11 @@ export default function SupportScreen() {
         end={{ x: 1, y: 0 }}
         style={[styles.header, { paddingTop: insets.top + 12 }]}
       >
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.replace("/(tabs)/my-bookings")}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")} style={styles.backBtn} onPress={() => router.replace("/(tabs)/my-bookings")}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t("tabs.soporte")}</Text>
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.contactar", "Contactar")}
           style={styles.headerHelpBtn}
           onPress={() => Linking.openURL(CANALES_CONTACTO[0].urlAction)}
         >

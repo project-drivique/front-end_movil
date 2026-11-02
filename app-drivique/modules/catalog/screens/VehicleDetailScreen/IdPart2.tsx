@@ -287,7 +287,7 @@ export default function IdPart2({ c, colorBorde, colorTituloCard, disponible, ha
             </Text>
           </View>
   
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("vehiculo.reservarAhora", { defaultValue: "Reservar ahora" })}
             style={[s.reservarBtnWrap, !disponible && { opacity: 0.5 }]}
             onPress={handleReservar}
             disabled={!disponible}

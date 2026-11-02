@@ -261,7 +261,7 @@ export default function WompiCheckoutScreen() {
 
       {/* Cabecera Superior */}
       <View style={[styles.header, { borderBottomColor: c.border, backgroundColor: c.bgCard }]}>
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")}
           style={[styles.btnHeader, { backgroundColor: c.oscuro ? "rgba(255,255,255,0.08)" : "#f1f5f9" }]}
           onPress={handleVolver}
           activeOpacity={0.7}
@@ -281,7 +281,7 @@ export default function WompiCheckoutScreen() {
           </Text>
         </View>
 
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button"
           style={[styles.btnHeader, { backgroundColor: c.oscuro ? "rgba(255,255,255,0.08)" : "#f1f5f9" }]}
           onPress={handleAbrirEnNavegador}
           activeOpacity={0.7}

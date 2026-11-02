@@ -126,7 +126,7 @@ export default function EditProtectionMileageSection({
         <Text style={styles.headerTitulo}>
           {t("reserva.edicion.editarProteccion", { defaultValue: "Editar Tu Protección" })}
         </Text>
-        <TouchableOpacity onPress={onCancelar} hitSlop={10}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={onCancelar} hitSlop={10}>
           <Ionicons name="close" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </LinearGradient>
@@ -148,7 +148,7 @@ export default function EditProtectionMileageSection({
               const esTotal = idxSeguro === seguros.length - 1 && seguros.length > 1;
 
               return (
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(`reserva.planes.nombreSeguro.${seguro.nombre}`, { defaultValue: seguro.nombre })}
                   key={seguro.nombre}
                   style={[
                     styles.opcionCard,
@@ -266,7 +266,7 @@ export default function EditProtectionMileageSection({
             </View>
 
             {kmLimitado && (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.planes.kmLimitadoTitulo", { defaultValue: "Kilometraje limitado" })}
                 style={[
                   styles.opcionCard,
                   {
@@ -338,7 +338,7 @@ export default function EditProtectionMileageSection({
             )}
 
             {kmIlimitado && (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.planes.kmIlimitadoTitulo", { defaultValue: "Kilometraje ilimitado" })}
                 style={[
                   styles.opcionCard,
                   {
@@ -421,7 +421,7 @@ export default function EditProtectionMileageSection({
 
       {/* Botones Footer: Cancelar y Guardar cambios */}
       <View style={[styles.footer, { borderTopColor: c.border, backgroundColor: c.bg }]}>
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("comun.cancelar", { defaultValue: "Cancelar" })}
           style={[
             styles.cancelarBtn,
             { borderColor: c.border, backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF" },
@@ -434,7 +434,7 @@ export default function EditProtectionMileageSection({
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.guardarBtnWrap} onPress={handleGuardar} activeOpacity={0.85}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.edicion.guardarCambios", { defaultValue: "Guardar cambios" })} style={styles.guardarBtnWrap} onPress={handleGuardar} activeOpacity={0.85}>
           <LinearGradient
             colors={GRADIENTES.boton.colors}
             start={GRADIENTES.boton.start}

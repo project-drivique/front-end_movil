@@ -193,7 +193,7 @@ function VehiculoCard({
           </Text>
         </View>
 
-        <TouchableOpacity style={[styles.favBtn, { backgroundColor: c.bgCard }]} onPress={handleFavorito}>
+        <TouchableOpacity accessibilityRole="button" style={[styles.favBtn, { backgroundColor: c.bgCard }]} onPress={handleFavorito}>
           <Ionicons
             name={esFavorito ? "heart" : "heart-outline"}
             size={18}
@@ -203,7 +203,7 @@ function VehiculoCard({
 
         {imagenes.length > 1 && (
           <>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")}
               style={[styles.navBtn, styles.navBtnLeft]}
               onPress={handlePrevFoto}
               activeOpacity={0.75}
@@ -212,7 +212,7 @@ function VehiculoCard({
               <Ionicons name="chevron-back" size={16} color="#FFFFFF" />
             </TouchableOpacity>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.siguiente", "Siguiente")}
               style={[styles.navBtn, styles.navBtnRight]}
               onPress={handleNextFoto}
               activeOpacity={0.75}

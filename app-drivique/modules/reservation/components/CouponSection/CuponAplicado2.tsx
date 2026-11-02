@@ -7,7 +7,7 @@ export default function CuponAplicado2({ c, codigoManual, errorMsg, handleAplica
   return (
     <View>
             <View style={styles.inputRow}>
-              <TextInput
+              <TextInput accessibilityLabel={t("coupon.placeholder", "Ingresa un código")}
                 style={[
                   styles.input,
                   {
@@ -22,7 +22,7 @@ export default function CuponAplicado2({ c, codigoManual, errorMsg, handleAplica
                 onChangeText={setCodigoManual}
                 autoCapitalize="characters"
               />
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("coupon.applyBtn", "APLICAR")}
                 style={[styles.aplicarBtn, { backgroundColor: primaryAccent }, codigoManual.length === 0 && { opacity: 0.5 }]}
                 disabled={codigoManual.length === 0 || validando}
                 onPress={handleAplicarManual}
@@ -37,13 +37,13 @@ export default function CuponAplicado2({ c, codigoManual, errorMsg, handleAplica
                   <Ionicons name="alert-circle" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
                   <Text style={[styles.errorAlertText, { color: c.oscuro ? "#fca5a5" : "#B91C1C" }]}>{errorMsg}</Text>
                 </View>
-                <TouchableOpacity onPress={() => setErrorMsg("")}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={() => setErrorMsg("")}>
                   <Ionicons name="close" size={16} color={c.oscuro ? "#f87171" : "#EF4444"} />
                 </TouchableOpacity>
               </View>
             ) : null}
             
-            <TouchableOpacity onPress={() => { setModalVisible(true); setSelectedConditionsCoupon(null); setErrorMsgModal(""); }} style={styles.verCuponesBtn}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("coupon.viewAvailable", "Ver cupones disponibles")} onPress={() => { setModalVisible(true); setSelectedConditionsCoupon(null); setErrorMsgModal(""); }} style={styles.verCuponesBtn}>
               <Text style={[styles.verCuponesText, { color: primaryAccent }]}>{t("coupon.viewAvailable", "Ver cupones disponibles")}</Text>
             </TouchableOpacity>
           </View>

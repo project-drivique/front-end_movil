@@ -76,12 +76,12 @@ export default function CampoSubidaDocumento({
               </Text>
             ) : null}
           </View>
-          <TouchableOpacity onPress={onQuitar} hitSlop={8}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.eliminar", "Eliminar")} onPress={onQuitar} hitSlop={8}>
             <Ionicons name="trash-outline" size={16} color={c.oscuro ? "#9CA3AF" : "#6B7280"} />
           </TouchableOpacity>
         </View>
       ) : (
-        <TouchableOpacity style={[styles.boton, { backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF", borderColor: c.border }]} onPress={onSeleccionar} activeOpacity={0.7}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.documentos.subirPdf")} style={[styles.boton, { backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF", borderColor: c.border }]} onPress={onSeleccionar} activeOpacity={0.7}>
           <Ionicons name="cloud-upload-outline" size={14} color={primaryAccent} />
           <Text style={[styles.botonTexto, { color: primaryAccent }]}>{t("reserva.documentos.subirPdf")}</Text>
         </TouchableOpacity>

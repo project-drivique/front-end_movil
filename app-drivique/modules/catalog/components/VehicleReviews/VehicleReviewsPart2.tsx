@@ -280,7 +280,7 @@ export default function VehicleReviewsPart2({ c, colorBorde, listaComentarios, s
                 {r.fotos && r.fotos.length > 0 && (
                   <View style={s.fotosResenaFila}>
                     {r.fotos.map((fotoUri, fIdx) => (
-                      <TouchableOpacity
+                      <TouchableOpacity accessibilityRole="button"
                         key={fIdx}
                         activeOpacity={0.8}
                         onPress={() => setFotoModalUri(fotoUri)}

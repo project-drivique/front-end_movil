@@ -150,7 +150,7 @@ export function VehicleReviews({ vehiculoId }: Props) {
       {total > 4 && (
         <>
           <View style={[s.divisor, { backgroundColor: colorBorde }]} />
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             style={s.verMasBtn}
             onPress={() => setVisibles((v) => (v >= total ? 4 : total))}
             activeOpacity={0.7}
@@ -171,12 +171,12 @@ export function VehicleReviews({ vehiculoId }: Props) {
         animationType="fade"
         onRequestClose={() => setFotoModalUri(null)}
       >
-        <Pressable style={s.modalFotoOverlay} onPress={() => setFotoModalUri(null)}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} style={s.modalFotoOverlay} onPress={() => setFotoModalUri(null)}>
           <View style={s.modalFotoContenedor}>
             {!!fotoModalUri && (
               <Image source={{ uri: fotoModalUri }} style={s.modalFotoImg} resizeMode="contain" />
             )}
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
               style={s.modalFotoCerrarBtn}
               onPress={() => setFotoModalUri(null)}
               activeOpacity={0.8}

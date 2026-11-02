@@ -37,7 +37,7 @@ function Chip({
   c: ReturnType<typeof useTemaColores>;
 }) {
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       onPress={onPress}
       activeOpacity={0.75}
       style={[
@@ -172,7 +172,7 @@ export default function FiltrosCatalogo({
               {t("catalogo.filtrosModal.titulo", { defaultValue: "Filtros" })}
             </Text>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.filtrosModal.limpiar", { defaultValue: "Limpiar" })}
               style={[styles.limpiarPillBtn, { borderColor: colorBorde, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
               onPress={limpiar}
               activeOpacity={0.7}
@@ -193,7 +193,7 @@ export default function FiltrosCatalogo({
             {/* FAVORITOS */}
             {usuario && (
               <Seccion label={t("catalogo.filtros.favoritos", { defaultValue: "FAVORITOS" })} c={c}>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.filtros.misFavoritos", { defaultValue: "Mis favoritos" })}
                   style={[
                     styles.favoritoBtn,
                     {
@@ -256,7 +256,7 @@ export default function FiltrosCatalogo({
 
             {/* CIUDAD */}
             <Seccion label={t("catalogo.filtros.ciudad", { defaultValue: "CIUDAD" })} c={c}>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 style={[
                   styles.selectorBtn,
                   {
@@ -283,7 +283,7 @@ export default function FiltrosCatalogo({
                     {CIUDADES_FILTRO.map((item) => {
                       const esSeleccionada = filtros.ciudad === item;
                       return (
-                        <TouchableOpacity
+                        <TouchableOpacity accessibilityRole="button"
                           key={item}
                           style={[
                             styles.dropdownItem,
@@ -314,7 +314,7 @@ export default function FiltrosCatalogo({
 
             {/* SUCURSAL */}
             <Seccion label={t("catalogo.filtros.sucursal", { defaultValue: "SUCURSAL" })} c={c}>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 style={[
                   styles.selectorBtn,
                   {
@@ -341,7 +341,7 @@ export default function FiltrosCatalogo({
                     {SUCURSALES.map((s) => {
                       const esSeleccionada = filtros.sucursal === s;
                       return (
-                        <TouchableOpacity
+                        <TouchableOpacity accessibilityRole="button"
                           key={s}
                           style={[
                             styles.dropdownItem,
@@ -374,7 +374,7 @@ export default function FiltrosCatalogo({
             {/* PRECIO POR DÍA */}
             <Seccion label={`${t("catalogo.filtros.precioPorDia", { defaultValue: "PRECIO POR DÍA" }).replace(/\(\$?[A-Z]+\)/g, "").trim()} (${monedaActual})`} c={c}>
               <View style={styles.precioRow}>
-                <TextInput
+                <TextInput accessibilityLabel={t("catalogo.filtros.minimo", { defaultValue: "Mínimo" })}
                   style={[
                     styles.precioInput,
                     {
@@ -389,7 +389,7 @@ export default function FiltrosCatalogo({
                   value={filtros.precioMin}
                   onChangeText={(v) => setFiltro("precioMin", v.replace(/[^0-9]/g, ""))}
                 />
-                <TextInput
+                <TextInput accessibilityLabel={t("catalogo.filtros.maximo", { defaultValue: "Máximo" })}
                   style={[
                     styles.precioInput,
                     {
@@ -440,7 +440,7 @@ export default function FiltrosCatalogo({
 
           {/* Footer con 2 Botones: Cerrar y Aplicar */}
           <View style={[styles.footer, { borderTopColor: colorBorde, backgroundColor: c.bgCard }]}>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.flujo.cerrar", { defaultValue: "Cerrar" })}
               style={[
                 styles.btnCerrar,
                 {
@@ -456,7 +456,7 @@ export default function FiltrosCatalogo({
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.filtrosModal.aplicarFiltros", { defaultValue: "Aplicar filtros" })}
               style={[styles.btnAplicar, { backgroundColor: COLOR_AZUL }]}
               onPress={onClose}
               activeOpacity={0.85}

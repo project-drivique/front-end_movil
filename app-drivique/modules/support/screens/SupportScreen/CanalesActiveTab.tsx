@@ -20,7 +20,7 @@ export default function CanalesActiveTab({ c, faqsAbiertas, handleContactAction,
                 {t("soporte.centroAtencionSub", { defaultValue: "Asistencia personalizada para tus alquileres de vehículos en Drivique." })}
               </Text>
   
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.reportarIncidencia")}
                 style={styles.quickReportBtn}
                 onPress={() => setActiveTab("reportar")}
                 activeOpacity={0.88}
@@ -41,7 +41,7 @@ export default function CanalesActiveTab({ c, faqsAbiertas, handleContactAction,
             <Text style={[styles.sectionTitle, { color: c.textPrimary }]}>{t("tabs.canalesAtencion")}</Text>
   
             {CANALES_CONTACTO.map((canal) => (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(canal.nombreKey, { defaultValue: canal.nombreDefault })}
                 key={canal.id}
                 style={[styles.contactCard, { backgroundColor: c.bgCard, borderColor: c.border }]}
                 onPress={() => handleContactAction(canal)}
@@ -74,7 +74,7 @@ export default function CanalesActiveTab({ c, faqsAbiertas, handleContactAction,
                   key={faq.id}
                   style={[styles.faqCard, { backgroundColor: c.bgCard, borderColor: c.border }]}
                 >
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(`soporte.faq.${faq.id}.q`, { defaultValue: faq.pregunta })}
                     style={styles.faqHeader}
                     onPress={() => toggleFaq(faq.id)}
                     activeOpacity={0.8}

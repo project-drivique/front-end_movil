@@ -181,7 +181,7 @@ export default function PendienteFirma({ c, primaryAccent, reserva, t }: { c: { 
                       "Tu pago ha sido confirmado con éxito. Procede a firmar digitalmente tu contrato para completar la reserva y acceder al documento protegido.",
                   })}
                 </Text>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reservas.signCardButton", { defaultValue: "Proceder a Firmar Contrato" })}
                   style={{ width: "100%" }}
                   activeOpacity={0.85}
                   onPress={() => router.push(`/contract-view?ref=${encodeURIComponent(reserva.id)}&ok=1` as any)}

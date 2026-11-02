@@ -19,7 +19,7 @@ export default function SupportPart2({ c, cargandoReservas, errores, isDropdownO
                 <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
                   {t("soporte.incidencia.seleccionaVehiculo", { defaultValue: "Selecciona tu Vehículo en Alquiler" })}
                 </Text>
-                <TouchableOpacity onPress={() => setIsDropdownOpen(false)}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={() => setIsDropdownOpen(false)}>
                   <Ionicons name="close" size={24} color={c.textPrimary} />
                 </TouchableOpacity>
               </View>
@@ -51,7 +51,7 @@ export default function SupportPart2({ c, cargandoReservas, errores, isDropdownO
                     const itemPlaca = (item as any).vehiclePlate || item.vehiculoPlaca || vehSnap?.placa || vehSnap?.plate || "";
                     const esSeleccionada = item.referencia === reservaId;
                     return (
-                      <TouchableOpacity
+                      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("soporte.incidencia.placa", { defaultValue: "Placa" })}
                         style={[
                           styles.reservaSeleccionCard,
                           {
@@ -90,7 +90,7 @@ export default function SupportPart2({ c, cargandoReservas, errores, isDropdownO
                 />
               )}
   
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("comun.cancelar", { defaultValue: "Cancelar" })}
                 style={[styles.modalCloseBtn, { marginTop: 10 }]}
                 onPress={() => setIsDropdownOpen(false)}
               >

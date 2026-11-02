@@ -63,7 +63,7 @@ export default function Length({ BENEFICIOS_PROTECCION, actualizarPlanes, c, dia
               const esTotal = idxSeguro === seguros.length - 1 && seguros.length > 1;
   
               return (
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(`reserva.planes.nombreSeguro.${seguro.nombre}`, { defaultValue: seguro.nombre })}
                   key={seguro.nombre}
                   style={[
                     styles.opcionCard,

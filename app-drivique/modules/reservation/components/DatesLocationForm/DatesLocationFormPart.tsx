@@ -10,7 +10,7 @@ export default function DatesLocationFormPart({ METODOS_PAGO, actualizarFechasLu
             const activo = fechasLugar.metodoPago === metodo.id;
             const bloqueado = metodo.id === "efectivo" && !efectivoPermitido;
             return (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 key={metodo.id}
                 style={[
                   styles.metodoCard,

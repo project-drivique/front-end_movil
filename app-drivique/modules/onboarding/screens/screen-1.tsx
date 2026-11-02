@@ -34,7 +34,7 @@ export default function OnboardingScreen1() {
     <View style={[styles.container, { paddingTop: insets.top + 24, backgroundColor: c.bg }]}>
 
       {/* Botón configuración esquina superior derecha */}
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         style={[localStyles.configBtn, { backgroundColor: c.primaryBg, borderColor: c.border }]}
         onPress={() => setModalConfig(true)}
       >
@@ -89,7 +89,7 @@ export default function OnboardingScreen1() {
             {/* Header */}
             <View style={localStyles.modalHeader}>
               <Text style={[localStyles.modalTitulo, { color: c.textPrimary }]}>⚙️ {t("config.tema")}</Text>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 style={[localStyles.modalCloseBtnX, { backgroundColor: c.bgInput }]}
                 onPress={() => setModalConfig(false)}
               >
@@ -100,7 +100,7 @@ export default function OnboardingScreen1() {
             {/* Tema */}
             <Text style={[localStyles.seccionLabel, { color: c.oscuro ? COLOR_ACENTO : COLOR_ENLACE }]}>{t("config.tema")}</Text>
             <View style={localStyles.temaRow}>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("config.claro")}
                 style={[
                   localStyles.temaBtn,
                   { backgroundColor: c.bgInput, borderColor: c.border },
@@ -113,7 +113,7 @@ export default function OnboardingScreen1() {
                   <Text style={localStyles.temaCheck}>✓</Text>
                 )}
               </TouchableOpacity>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("config.oscuro")}
                 style={[
                   localStyles.temaBtn,
                   { backgroundColor: c.bgInput, borderColor: c.border },
@@ -138,7 +138,7 @@ export default function OnboardingScreen1() {
               {t("config.idioma")}
             </Text>
             {(Object.keys(IDIOMAS) as IdiomaKey[]).map((key) => (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button"
                 key={key}
                 style={[
                   localStyles.idiomaOption,
@@ -163,7 +163,7 @@ export default function OnboardingScreen1() {
               </TouchableOpacity>
             ))}
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("comun.cerrar", { defaultValue: "Cerrar" })}
               style={[localStyles.modalBtnCerrar, { backgroundColor: c.bgInput }]}
               onPress={() => setModalConfig(false)}
             >

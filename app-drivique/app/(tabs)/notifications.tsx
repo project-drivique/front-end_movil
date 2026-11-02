@@ -36,7 +36,7 @@ export default function NotificationsScreen() {
           end={{ x: 1, y: 0 }}
           style={[styles.header, { paddingTop: insets.top + 12 }]}
         >
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")} style={styles.backBtn} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t("tabs.notificaciones")}</Text>
@@ -90,7 +90,7 @@ export default function NotificationsScreen() {
           </Text>
 
           <View style={{ width: "100%", gap: 14 }}>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.registrateYa", "Crear una cuenta")}
               style={[SOMBRA_BOTON_GRADIENTE, { borderRadius: 14, overflow: "hidden" }]}
               onPress={() => router.push("/(auth)/register")}
               activeOpacity={0.85}
@@ -116,7 +116,7 @@ export default function NotificationsScreen() {
               </LinearGradient>
             </TouchableOpacity>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.iniciarSesionInvitado", { defaultValue: "¿Ya tienes una cuenta? Inicia sesión" })}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -152,12 +152,12 @@ export default function NotificationsScreen() {
         end={{ x: 1, y: 0 }}
         style={[styles.header, { paddingTop: insets.top + 12 }]}
       >
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")} style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t("tabs.notificaciones")}</Text>
         {activeTab === "general" ? (
-          <TouchableOpacity style={styles.readAllBtn} onPress={marcarTodasComoLeidas}>
+          <TouchableOpacity accessibilityRole="button" style={styles.readAllBtn} onPress={marcarTodasComoLeidas}>
             <Ionicons name="checkmark-done-circle-outline" size={26} color="#FFFFFF" />
           </TouchableOpacity>
         ) : (
@@ -167,7 +167,7 @@ export default function NotificationsScreen() {
 
       {/* Tab Switcher */}
       <View style={[styles.tabBar, { backgroundColor: c.bgCard, borderBottomColor: c.border }]}>
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.generales")}
           style={[styles.tabButton, activeTab === "general" && styles.activeTabButton]}
           onPress={() => setActiveTab("general")}
         >
@@ -175,7 +175,7 @@ export default function NotificationsScreen() {
             {t("tabs.generales")}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.promociones")}
           style={[styles.tabButton, activeTab === "promocion" && styles.activeTabButton]}
           onPress={() => setActiveTab("promocion")}
         >

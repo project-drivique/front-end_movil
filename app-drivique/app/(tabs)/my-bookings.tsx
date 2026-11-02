@@ -329,7 +329,7 @@ export default function MisReservasScreen() {
           <Ionicons name="search-outline" size={40} color={c.textMuted} />
           <Text style={[styles.vacioTitulo, { color: c.textPrimary }]}>{t("misReservas.sinResultadosFiltroTitulo")}</Text>
           <Text style={[styles.vacioTexto, { color: c.textMuted }]}>{t("misReservas.sinResultadosFiltro")}</Text>
-          <TouchableOpacity onPress={limpiarFiltros}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("misReservas.limpiarFiltros")} onPress={limpiarFiltros}>
             <Text style={[styles.limpiarBtnTexto, { color: c.primary, fontSize: 13 }]}>{t("misReservas.limpiarFiltros")}</Text>
           </TouchableOpacity>
         </View>
@@ -344,7 +344,7 @@ export default function MisReservasScreen() {
           <Text style={[styles.vacioTexto, { color: c.textMuted }]}>
             {errorCarga || t("misReservas.vacioTexto")}
           </Text>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("misReservas.explorarVehiculos")}
             style={styles.vacioBtnWrap}
             onPress={() => router.push("/(tabs)/catalog")}
             activeOpacity={0.85}
@@ -387,7 +387,7 @@ function TarjetaReserva({
   const foto = vehiculoSnap?.imagenes?.[0];
 
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.confirmacion.respuesta.total", { defaultValue: "Total" })}
       activeOpacity={0.85}
       style={[styles.tarjeta, { backgroundColor: c.bgCard, borderColor: c.border }]}
       onPress={onPress}
@@ -441,7 +441,7 @@ function TarjetaReserva({
           </View>
 
           {grupo === "en_curso" && (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.hacerReporte", { defaultValue: "Soporte de incidencias" })}
               style={[styles.reportarBtn, { backgroundColor: c.primaryBg, borderColor: c.primary }]}
               onPress={(e) => {
                 e.stopPropagation();

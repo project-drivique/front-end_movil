@@ -226,18 +226,18 @@ const MAX_CARACTERES = 400;
 
 export default function ModalCalificarPart({ c, calificacion, calificacionSuc, comentario, comentarioSuc, elegibilidad, etiquetaActual, getMensajeModeracion, guardando, handleGuardar, mostrarSucursal, mostrarVehiculo, onCerrar, puedeGuardar, setCalificacion, setCalificacionSuc, setComentario, setComentarioSuc, t, validacion, validacionSuc, valorInicial, vehiculoNombre }: { c: { bg: string; bgCard: string; bgInput: string; bgHeader: string; textPrimary: string; textSecondary: string; textMuted: string; border: string; borderLight: string; primary: string; primaryBg: string; success: string; error: string; warning: string; oscuro: boolean; }; calificacion: number; calificacionSuc: number; comentario: string; comentarioSuc: string; elegibilidad: ElegibilidadResena | null; etiquetaActual: { texto: string; emoji: string; }; getMensajeModeracion: () => string | undefined; guardando: boolean; handleGuardar: () => Promise<void>; mostrarSucursal: boolean; mostrarVehiculo: boolean; onCerrar: () => void; puedeGuardar: boolean; setCalificacion: React.Dispatch<React.SetStateAction<number>>; setCalificacionSuc: React.Dispatch<React.SetStateAction<number>>; setComentario: React.Dispatch<React.SetStateAction<string>>; setComentarioSuc: React.Dispatch<React.SetStateAction<string>>; t: any; validacion: import("C:/Users/danna/Downloads/front-end_movil/app-drivique/modules/reservation/utils/reviewModeration").ResultadoValidacion; validacionSuc: import("C:/Users/danna/Downloads/front-end_movil/app-drivique/modules/reservation/utils/reviewModeration").ResultadoValidacion; valorInicial: ResenaGuardada | null | undefined; vehiculoNombre: string | undefined }) {
   return (
-    <Pressable style={s.overlay} onPress={onCerrar}>
+    <Pressable accessibilityRole="button" accessibilityLabel={t("reserva.calificar.comoCalificarias", { defaultValue: "¿Cómo calificarías el vehículo y tu experiencia?" })} style={s.overlay} onPress={onCerrar}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : undefined}
             style={s.keyboardWrap}
           >
-            <Pressable
+            <Pressable accessibilityRole="button" accessibilityLabel={t("reserva.calificar.comoCalificarias", { defaultValue: "¿Cómo calificarías el vehículo y tu experiencia?" })}
               style={[s.card, { backgroundColor: c.bgCard, borderColor: c.border }]}
               onPress={(e) => e.stopPropagation()}
             >
               {/* Cabecera con botón de cerrar X */}
               <View style={s.header}>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
                   style={s.closeBtn}
                   onPress={onCerrar}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -309,7 +309,7 @@ export default function ModalCalificarPart({ c, calificacion, calificacionSuc, c
                     </Text>
                   </View>
   
-                  <TextInput
+                  <TextInput accessibilityLabel={t("reserva.calificar.placeholderComentario", { defaultValue: "Describe el estado del auto, limpieza, confort o rendimiento..." })}
                     style={[
                       s.comentarioInput,
                       {
@@ -358,7 +358,7 @@ export default function ModalCalificarPart({ c, calificacion, calificacionSuc, c
                         {comentarioSuc.length}/{MAX_CARACTERES}
                       </Text>
                     </View>
-                    <TextInput
+                    <TextInput accessibilityLabel={t("reserva.calificar.sucursalPlaceholder", { defaultValue: "¿Cómo fue la atención, la entrega y la devolución del vehículo?" })}
                       style={[
                         s.comentarioInput,
                         { color: c.textPrimary, backgroundColor: c.bgInput, borderColor: !validacionSuc.valido ? "#EF4444" : c.border },
@@ -385,7 +385,7 @@ export default function ModalCalificarPart({ c, calificacion, calificacionSuc, c
   
               {/* Botones de Acción FIJOS en la parte inferior del Modal */}
               <View style={[s.botones, { borderTopColor: c.border }]}>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("comun.cancelar", { defaultValue: "Cancelar" })}
                   style={[s.btnCancelar, { borderColor: c.border, backgroundColor: c.bgInput }]}
                   onPress={onCerrar}
                   activeOpacity={0.8}
@@ -396,7 +396,7 @@ export default function ModalCalificarPart({ c, calificacion, calificacionSuc, c
                   </Text>
                 </TouchableOpacity>
   
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.calificar.publicarResena", { defaultValue: "Publicar reseña" })}
                   style={[s.btnGuardarWrap, { opacity: guardando ? 0.7 : 1 }]}
                   onPress={handleGuardar}
                   activeOpacity={0.85}

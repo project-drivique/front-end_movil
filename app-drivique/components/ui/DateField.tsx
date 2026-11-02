@@ -84,7 +84,7 @@ export function DateField({
   return (
     <View style={s.wrap}>
       <Text style={[s.label, { color: c.textSecondary }]}>{label}</Text>
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         style={[s.selector, { borderColor: error ? "#EF4444" : c.border, backgroundColor: c.bgInput }]}
         onPress={() => setVisible(true)}
       >
@@ -96,12 +96,12 @@ export function DateField({
       {error ? <Text style={s.error}>{error}</Text> : null}
 
       <Modal visible={visible} transparent animationType="slide" onRequestClose={() => setVisible(false)}>
-        <Pressable style={s.overlay} onPress={() => setVisible(false)}>
-          <Pressable style={[s.sheet, { backgroundColor: c.bgCard }]} onPress={() => {}}>
+        <Pressable accessibilityRole="button" style={s.overlay} onPress={() => setVisible(false)}>
+          <Pressable accessibilityRole="button" style={[s.sheet, { backgroundColor: c.bgCard }]} onPress={() => {}}>
             <View style={[s.handle, { backgroundColor: c.border }]} />
             <View style={s.sheetHeader}>
               <Text style={[s.sheetTitulo, { color: c.textPrimary }]}>{label}</Text>
-              <TouchableOpacity onPress={() => setVisible(false)} hitSlop={10}>
+              <TouchableOpacity accessibilityRole="button" onPress={() => setVisible(false)} hitSlop={10}>
                 <Ionicons name="close" size={22} color={c.textMuted} />
               </TouchableOpacity>
             </View>

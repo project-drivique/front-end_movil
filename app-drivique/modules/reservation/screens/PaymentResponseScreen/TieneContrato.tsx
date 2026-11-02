@@ -184,7 +184,7 @@ export default function TieneContrato({ abrirContrato, c, claveContrato, errorCl
                     error={errorClaveContrato}
                   />
                 </View>
-                <TouchableOpacity style={{ width: "100%", marginTop: 8 }} onPress={abrirContrato} activeOpacity={0.85} disabled={validandoClave}>
+                <TouchableOpacity accessibilityRole="button" style={{ width: "100%", marginTop: 8 }} onPress={abrirContrato} activeOpacity={0.85} disabled={validandoClave}>
                   <LinearGradient colors={GRADIENTES.boton.colors} start={GRADIENTES.boton.start} end={GRADIENTES.boton.end} style={s.contratoBtn}>
                     <Text style={s.contratoBtnTexto}>
                       {pendienteFirma

@@ -18,7 +18,7 @@ export default function NotificationsPart({ c, formatDateShort, monedaActual, pr
                 <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
                   {t("coupon.conditionsTitle", "Condiciones del Cupón")}
                 </Text>
-                <TouchableOpacity onPress={() => setSelectedConditionsCoupon(null)}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={() => setSelectedConditionsCoupon(null)}>
                   <Ionicons name="close" size={24} color={c.textPrimary} />
                 </TouchableOpacity>
               </View>
@@ -50,7 +50,7 @@ export default function NotificationsPart({ c, formatDateShort, monedaActual, pr
                 </ScrollView>
               )}
   
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("coupon.understoodBtn", "Entendido")}
                 style={[styles.modalCloseBtn, { backgroundColor: primaryAccent, marginTop: 16 }]}
                 onPress={() => setSelectedConditionsCoupon(null)}
               >

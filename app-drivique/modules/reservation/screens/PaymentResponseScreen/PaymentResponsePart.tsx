@@ -182,7 +182,7 @@ function Boton({ texto, onPress, secundario }: { texto: string; onPress: () => v
   const c = useTemaColores();
   if (secundario) {
     return (
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         onPress={onPress}
         activeOpacity={0.85}
         style={[s.botonSec, { borderColor: c.oscuro ? COLOR_ACENTO : COLOR_MARCA }]}
@@ -192,7 +192,7 @@ function Boton({ texto, onPress, secundario }: { texto: string; onPress: () => v
     );
   }
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+    <TouchableOpacity accessibilityRole="button" onPress={onPress} activeOpacity={0.85}>
       <LinearGradient
         colors={GRADIENTES.boton.colors}
         start={GRADIENTES.boton.start}
@@ -324,7 +324,7 @@ export default function PaymentResponsePart({ abrirContrato, aviso, c, cancelar,
           )}
   
           {puedeCancelar ? (
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("misReservas.cancelarReserva", { defaultValue: "Cancelar reserva" })}
               onPress={cancelar}
               disabled={ocupado}
               style={[

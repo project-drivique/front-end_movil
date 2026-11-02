@@ -49,7 +49,7 @@ export default function BookingSummaryModalPart({ c, cotizacion, cuponAplicado, 
                     {t("reserva.resumen.titulo", { defaultValue: "Resumen de tu Reserva" })}
                   </Text>
                 </View>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
                   onPress={handleCerrar}
                   hitSlop={10}
                   style={[styles.closeBtn, { backgroundColor: c.oscuro ? c.bgInput : "#F1F5F9", borderColor: c.border }]}
@@ -80,7 +80,7 @@ export default function BookingSummaryModalPart({ c, cotizacion, cuponAplicado, 
                     {t("reserva.resumen.fechasYLugares", { defaultValue: "FECHAS Y UBICACIÓN" })}
                   </Text>
                   {permitirEditar && (
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.resumen.editar", { defaultValue: "Editar" })}
                       onPress={() => {
                         onEditarSeccion ? onEditarSeccion("fechas") : setSeccionEditando("fechas");
                       }}
@@ -167,7 +167,7 @@ export default function BookingSummaryModalPart({ c, cotizacion, cuponAplicado, 
                     {t("reserva.resumen.tuProteccionYExtras", { defaultValue: "TU PROTECCIÓN Y EXTRAS" })}
                   </Text>
                   {permitirEditar && (
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.resumen.editar", { defaultValue: "Editar" })}
                       onPress={() => {
                         onEditarSeccion ? onEditarSeccion("planes") : setSeccionEditando("planes");
                       }}
@@ -204,7 +204,7 @@ export default function BookingSummaryModalPart({ c, cotizacion, cuponAplicado, 
                       {t("reserva.resumen.serviciosAdicionalesMayus", { defaultValue: "SERVICIOS ADICIONALES" })}
                     </Text>
                     {permitirEditar && (
-                      <TouchableOpacity
+                      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.resumen.editar", { defaultValue: "Editar" })}
                         onPress={() => {
                           onEditarSeccion ? onEditarSeccion("servicios") : setSeccionEditando("servicios");
                         }}
@@ -374,7 +374,7 @@ export default function BookingSummaryModalPart({ c, cotizacion, cuponAplicado, 
   
           {/* Footer con Botón Cerrar */}
           <View style={[styles.footer, { borderTopColor: c.border, backgroundColor: c.bg, paddingBottom: insets.bottom + 12 }]}>
-            <TouchableOpacity style={styles.cerrarBtnWrap} onPress={handleCerrar} activeOpacity={0.85}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.resumen.cerrar", { defaultValue: "Cerrar" })} style={styles.cerrarBtnWrap} onPress={handleCerrar} activeOpacity={0.85}>
               <LinearGradient
                 colors={GRADIENTES.boton.colors}
                 start={GRADIENTES.boton.start}

@@ -262,7 +262,7 @@ export default function PagoRespuestaScreen() {
   return (
     <View style={[s.flex, { backgroundColor: c.bg, paddingTop: insets.top }]}>
       <View style={[s.header, { backgroundColor: c.bgCard, borderBottomColor: c.border }]}>
-        <TouchableOpacity onPress={irAMisReservas} hitSlop={10}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")} onPress={irAMisReservas} hitSlop={10}>
           <Ionicons name="chevron-back" size={24} color={primaryAccent} />
         </TouchableOpacity>
         <Text style={[s.headerTitulo, { color: c.textPrimary }]}>
@@ -310,7 +310,7 @@ function Boton({ texto, onPress, secundario }: { texto: string; onPress: () => v
   const c = useTemaColores();
   if (secundario) {
     return (
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         onPress={onPress}
         activeOpacity={0.85}
         style={[s.botonSec, { borderColor: c.oscuro ? COLOR_ACENTO : COLOR_MARCA }]}
@@ -320,7 +320,7 @@ function Boton({ texto, onPress, secundario }: { texto: string; onPress: () => v
     );
   }
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+    <TouchableOpacity accessibilityRole="button" onPress={onPress} activeOpacity={0.85}>
       <LinearGradient
         colors={GRADIENTES.boton.colors}
         start={GRADIENTES.boton.start}

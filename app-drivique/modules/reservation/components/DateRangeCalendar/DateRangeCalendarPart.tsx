@@ -64,7 +64,7 @@ function DiaCalendario({
   }
 
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       activeOpacity={0.7}
       disabled={deshabilitado}
       onPress={() => onPress?.(date)}

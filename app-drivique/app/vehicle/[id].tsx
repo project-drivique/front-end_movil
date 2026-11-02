@@ -107,7 +107,7 @@ export default function VehiculoDetallePage() {
       <View style={[s.contenedorVacio, { backgroundColor: c.bg, paddingTop: insets.top }]}>
         <Ionicons name="alert-circle-outline" size={40} color={c.textMuted} />
         <Text style={[s.vacioTexto, { color: c.textSecondary }]}>{t("vehiculo.noDisponible")}</Text>
-        <TouchableOpacity style={s.vacioBtn} onPress={volver}>
+        <TouchableOpacity accessibilityRole="button" style={s.vacioBtn} onPress={volver}>
           <Text style={[s.vacioBtnTexto, { color: c.primary }]}>
             {from === "favorites" ? t("tabs.misFavoritos", { defaultValue: "Volver a favoritos" }) : t("vehiculo.volverCatalogo")}
           </Text>
@@ -173,7 +173,7 @@ export default function VehiculoDetallePage() {
 
       {/* Top Header con botón Volver (<) */}
       <View style={[s.topHeader, { backgroundColor: bgPantalla, borderBottomColor: colorBorde }]}>
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")}
           onPress={volver}
           style={s.volverBtn}
           activeOpacity={0.7}

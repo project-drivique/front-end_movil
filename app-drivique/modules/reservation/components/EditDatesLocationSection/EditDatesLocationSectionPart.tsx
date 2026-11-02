@@ -21,7 +21,7 @@ export default function EditDatesLocationSectionPart({ METODOS_PAGO, c, ciudadEn
               {METODOS_PAGO.map((metodo) => {
                 const activo = draft.metodoPago === metodo.id;
                 return (
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button"
                     key={metodo.id}
                     style={[
                       styles.metodoCard,
@@ -111,7 +111,7 @@ export default function EditDatesLocationSectionPart({ METODOS_PAGO, c, ciudadEn
                     {t("reserva.fechasLugar.lugarDeRetiro")}
                   </Text>
                 </View>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
                   onPress={() => setModalTipo("retiro")}
                   activeOpacity={0.8}
@@ -135,7 +135,7 @@ export default function EditDatesLocationSectionPart({ METODOS_PAGO, c, ciudadEn
                     {t("reserva.fechasLugar.lugarDeDevolucion")}
                   </Text>
                 </View>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
                   onPress={() => setModalTipo("devolucion")}
                   activeOpacity={0.8}
@@ -178,7 +178,7 @@ export default function EditDatesLocationSectionPart({ METODOS_PAGO, c, ciudadEn
                   </View>
                 </View>
                 <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.barrio")}</Text>
-                <TextInput
+                <TextInput accessibilityLabel={t("reserva.fechasLugar.placeholderBarrio")}
                   style={[
                     styles.input,
                     { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" },
@@ -189,7 +189,7 @@ export default function EditDatesLocationSectionPart({ METODOS_PAGO, c, ciudadEn
                   onChangeText={(texto) => setDraft((prev) => ({ ...prev, barrioRetiro: texto, barrioDevolucion: texto }))}
                 />
                 <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.direccion")}</Text>
-                <TextInput
+                <TextInput accessibilityLabel={t("reserva.fechasLugar.placeholderDireccion")}
                   style={[
                     styles.input,
                     { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" },
@@ -202,7 +202,7 @@ export default function EditDatesLocationSectionPart({ METODOS_PAGO, c, ciudadEn
                 <Text style={[styles.inputLabel, { color: c.textSecondary }]}>
                   {t("reserva.fechasLugar.referenciasEntrega")}
                 </Text>
-                <TextInput
+                <TextInput accessibilityLabel={t("reserva.fechasLugar.placeholderReferencias")}
                   style={[
                     styles.input,
                     { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" },
@@ -306,7 +306,7 @@ export default function EditDatesLocationSectionPart({ METODOS_PAGO, c, ciudadEn
                     {t("vehiculo.selectPickupTime", { defaultValue: "Selecciona Hora de Retiro" })}
                   </Text>
                 </View>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
                   onPress={() => setHoraVisible("retiro")}
                   activeOpacity={0.8}
@@ -332,7 +332,7 @@ export default function EditDatesLocationSectionPart({ METODOS_PAGO, c, ciudadEn
                     {t("vehiculo.selectReturnTime", { defaultValue: "Selecciona Hora de Devolución" })}
                   </Text>
                 </View>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
                   onPress={handleAbrirHoraDevolucion}
                   activeOpacity={0.8}

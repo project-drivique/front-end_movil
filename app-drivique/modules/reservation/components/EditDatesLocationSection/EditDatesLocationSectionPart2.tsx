@@ -6,7 +6,7 @@ import { GRADIENTES } from '@/constants/gradients'
 export default function EditDatesLocationSectionPart2({ c, handleGuardar, onCancelar, t }: { c: { bg: string; bgCard: string; bgInput: string; bgHeader: string; textPrimary: string; textSecondary: string; textMuted: string; border: string; borderLight: string; primary: string; primaryBg: string; success: string; error: string; warning: string; oscuro: boolean; }; handleGuardar: () => void; onCancelar: () => void; t: any }) {
   return (
     <View style={[styles.footer, { borderTopColor: c.border, backgroundColor: c.bg }]}>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("comun.cancelar", { defaultValue: "Cancelar" })}
             style={[
               styles.cancelarBtn,
               { borderColor: c.border, backgroundColor: c.oscuro ? c.bgCard : "#FFFFFF" },
@@ -19,7 +19,7 @@ export default function EditDatesLocationSectionPart2({ c, handleGuardar, onCanc
             </Text>
           </TouchableOpacity>
   
-          <TouchableOpacity style={styles.guardarBtnWrap} onPress={handleGuardar} activeOpacity={0.85}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.edicion.guardarCambios", { defaultValue: "Guardar cambios" })} style={styles.guardarBtnWrap} onPress={handleGuardar} activeOpacity={0.85}>
             <LinearGradient
               colors={GRADIENTES.boton.colors}
               start={GRADIENTES.boton.start}

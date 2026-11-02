@@ -18,7 +18,7 @@ export default function SupportPart4({ c, getEstadoColor, getEstadoTexto, getTie
                 <Text style={[styles.modalTitle, { color: c.textPrimary }]}>
                   {t("soporte.incidencia.detalleReporte", { defaultValue: "Detalle de Reporte" })} {reporteSeleccionado?.id}
                 </Text>
-                <TouchableOpacity onPress={() => setReporteSeleccionado(null)}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={() => setReporteSeleccionado(null)}>
                   <Ionicons name="close" size={24} color={c.textPrimary} />
                 </TouchableOpacity>
               </View>
@@ -111,7 +111,7 @@ export default function SupportPart4({ c, getEstadoColor, getEstadoTexto, getTie
                 </ScrollView>
               )}
   
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("comun.cerrar", { defaultValue: "Cerrar" })}
                 style={styles.modalCloseBtn}
                 onPress={() => setReporteSeleccionado(null)}
               >

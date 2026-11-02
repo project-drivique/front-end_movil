@@ -16,7 +16,7 @@ export default function MisReportesActiveTab({ abrirReporte, c, getEstadoColor, 
                 <Text style={[styles.emptySub, { color: c.textSecondary }]}>
                   {t("soporte.incidencia.sinReportesSub", { defaultValue: "Si tienes un problema durante tu alquiler, regístralo desde la pestaña \"Reportar Incidencia\"." })}
                 </Text>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("soporte.incidencia.crearPrimerReporte", { defaultValue: "Crear primer reporte" })}
                   style={styles.emptyReportBtn}
                   onPress={() => setActiveTab("reportar")}
                 >
@@ -33,7 +33,7 @@ export default function MisReportesActiveTab({ abrirReporte, c, getEstadoColor, 
                 renderItem={({ item }) => {
                   const colorEstado = getEstadoColor(item.estado);
                   return (
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(item.descripcion, { defaultValue: item.descripcion })}
                       style={[styles.reporteCard, { backgroundColor: c.bgCard, borderColor: c.border }]}
                       onPress={() => abrirReporte(item)}
                       activeOpacity={0.88}

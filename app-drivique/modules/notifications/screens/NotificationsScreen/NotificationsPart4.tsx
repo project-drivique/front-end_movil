@@ -28,7 +28,7 @@ export default function NotificationsPart4({ c, formatDateTime, primaryAccent, s
                     {selectedNotification ? t(selectedNotification.titulo, { defaultValue: selectedNotification.titulo }) : ""}
                   </Text>
                 </View>
-                <TouchableOpacity onPress={() => setSelectedNotification(null)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={() => setSelectedNotification(null)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                   <Ionicons name="close" size={24} color={c.textPrimary} />
                 </TouchableOpacity>
               </View>
@@ -84,7 +84,7 @@ export default function NotificationsPart4({ c, formatDateTime, primaryAccent, s
               )}
   
               {Boolean(selectedNotification?.metadata?.actionPath) && (
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("notificaciones.verDetalle", "Ver detalle")}
                   style={[styles.modalActionBtn, { backgroundColor: primaryAccent, marginTop: 14 }]}
                   onPress={() => {
                     const destino = rutaDesdeActionPath(String(selectedNotification?.metadata?.actionPath));
@@ -103,7 +103,7 @@ export default function NotificationsPart4({ c, formatDateTime, primaryAccent, s
                 selectedNotification?.titulo?.toLowerCase().includes("reserva") ||
                 selectedNotification?.mensaje?.toLowerCase().includes("reserva")
               ) && (
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("notificaciones.verReserva", "Ver Reserva / Continuar")}
                   style={[styles.modalActionBtn, { backgroundColor: primaryAccent, marginTop: 14 }]}
                   onPress={() => {
                     setSelectedNotification(null);
@@ -117,7 +117,7 @@ export default function NotificationsPart4({ c, formatDateTime, primaryAccent, s
                 </TouchableOpacity>
               )}
   
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.ok", "Entendido")}
                 style={[
                   styles.modalCloseBtn,
                   {

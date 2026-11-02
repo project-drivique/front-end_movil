@@ -80,7 +80,7 @@ export default function ContractViewPart({ Campo, Card, Clausula, Titulo, aviso,
     <View style={[s.tarjetaModal, { backgroundColor: c.bg, marginVertical: insets.top + 12 }]}>
         <StatusBar barStyle={c.oscuro ? "light-content" : "dark-content"} />
         <View style={[s.header, { borderBottomColor: c.border, backgroundColor: c.bgCard }]}>
-          <TouchableOpacity onPress={volver} hitSlop={10}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.volver", "Volver")} onPress={volver} hitSlop={10}>
             <Ionicons name="chevron-back" size={24} color={primaryAccent} />
           </TouchableOpacity>
           <Text style={[s.headerTitulo, { color: c.textPrimary }]} numberOfLines={1}>
@@ -120,7 +120,7 @@ export default function ContractViewPart({ Campo, Card, Clausula, Titulo, aviso,
                     error={errorClave}
                   />
                 </View>
-                <TouchableOpacity style={{ width: "100%", marginTop: 8 }} onPress={handleValidarClave} activeOpacity={0.85}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("misReservas.verContrato")} style={{ width: "100%", marginTop: 8 }} onPress={handleValidarClave} activeOpacity={0.85}>
                   <LinearGradient
                     colors={GRADIENTES.boton.colors}
                     start={GRADIENTES.boton.start}
@@ -236,7 +236,7 @@ export default function ContractViewPart({ Campo, Card, Clausula, Titulo, aviso,
                   <Text style={[s.ayuda, { color: c.textMuted }]}>{t("contratoFirma.signHere")}</Text>
                   <FirmaCanvas ref={firmaRef} onCambiar={setFirmaVacia} />
                   {errorFirma ? <Text style={s.errorFirma}>{errorFirma}</Text> : null}
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("contratoFirma.clearSignature")}
                     onPress={() => {
                       firmaRef.current?.limpiar();
                       setFirmaVacia(true);
@@ -267,7 +267,7 @@ export default function ContractViewPart({ Campo, Card, Clausula, Titulo, aviso,
             </Card>
   
             {puedeFirmar ? (
-              <TouchableOpacity onPress={handleFirmar} disabled={firmando || firmaVacia} activeOpacity={0.85} style={{ opacity: firmaVacia ? 0.5 : 1 }}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("contratoFirma.signAndContinue")} onPress={handleFirmar} disabled={firmando || firmaVacia} activeOpacity={0.85} style={{ opacity: firmaVacia ? 0.5 : 1 }}>
                 <LinearGradient
                   colors={GRADIENTES.boton.colors}
                   start={GRADIENTES.boton.start}
@@ -285,7 +285,7 @@ export default function ContractViewPart({ Campo, Card, Clausula, Titulo, aviso,
   
             {firmado ? (
               <View style={s.acciones}>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("contratoFirma.downloadPdf")}
                   onPress={handlePdf}
                   disabled={ocupado}
                   style={[s.botonSec, { borderColor: primaryAccent }]}
@@ -293,7 +293,7 @@ export default function ContractViewPart({ Campo, Card, Clausula, Titulo, aviso,
                   <Ionicons name="download-outline" size={16} color={primaryAccent} />
                   <Text style={[s.botonSecTexto, { color: primaryAccent }]}>{t("contratoFirma.downloadPdf")}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("contratoFirma.sendEmail")}
                   onPress={handleCorreo}
                   disabled={ocupado}
                   style={[s.botonSec, { borderColor: primaryAccent }]}

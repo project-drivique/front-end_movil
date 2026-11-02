@@ -71,7 +71,7 @@ export default function ReportarActiveTab({ agregarEvidencia, c, cargandoReserva
                 <View style={{ gap: 10 }}>
                   <View style={styles.rowTwoInputs}>
                     {/* Vehículo Selector Dropdown */}
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button"
                       style={[
                         styles.input,
                         {
@@ -111,7 +111,7 @@ export default function ReportarActiveTab({ agregarEvidencia, c, cargandoReserva
                 {TIPOS_INCIDENCIA.map((tipo) => {
                   const seleccionado = tipoSeleccionado === tipo.id;
                   return (
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button"
                       key={tipo.id}
                       style={[
                         styles.tipoChip,
@@ -151,7 +151,7 @@ export default function ReportarActiveTab({ agregarEvidencia, c, cargandoReserva
               <Text style={[styles.inputLabel, { color: c.textPrimary, marginTop: 14 }]}>
                 {t("soporte.incidencia.descripcionLabel", { defaultValue: "Descripción del problema *" })}
               </Text>
-              <TextInput
+              <TextInput accessibilityLabel={t("soporte.incidencia.descripcionPlaceholder", { defaultValue: "Describe lo sucedido, ruidos, testigos en tablero o ubicación actual..." })}
                 style={[
                   styles.inputMultiline,
                   { backgroundColor: c.bgInput, borderColor: errores.descripcion ? "#EF4444" : c.border, color: c.textPrimary },
@@ -183,7 +183,7 @@ export default function ReportarActiveTab({ agregarEvidencia, c, cargandoReserva
                 {evidenciasAdjuntas.map((uri, idx) => (
                   <View key={idx} style={styles.evidenciaPreviewWrap}>
                     <Image source={{ uri }} style={styles.evidenciaPreviewImg} />
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
                       style={styles.evidenciaEliminarBtn}
                       onPress={() => eliminarEvidencia(idx)}
                     >
@@ -193,7 +193,7 @@ export default function ReportarActiveTab({ agregarEvidencia, c, cargandoReserva
                 ))}
   
                 {evidenciasAdjuntas.length < 3 && (
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("soporte.incidencia.adjuntar", { defaultValue: "+ Adjuntar" })}
                     style={[styles.agregarEvidenciaBtn, { backgroundColor: c.bgInput, borderColor: c.border }]}
                     onPress={agregarEvidencia}
                   >
@@ -276,7 +276,7 @@ export default function ReportarActiveTab({ agregarEvidencia, c, cargandoReserva
               </View>
   
               {/* Botón de Enviar */}
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("soporte.incidencia.btnEnviar", { defaultValue: "Enviar Reporte de Incidencia" })}
                 style={[styles.submitBtn, (!params.reservaId && reservasValidas.length === 0) && { opacity: 0.5 }]}
                 onPress={(!params.reservaId && reservasValidas.length === 0) ? undefined : validarYEnviarReporte}
                 activeOpacity={0.88}

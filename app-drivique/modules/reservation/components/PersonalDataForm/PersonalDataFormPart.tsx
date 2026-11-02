@@ -43,7 +43,7 @@ export default function PersonalDataFormPart({ OPCIONES_NACIONALIDAD, actualizar
               <Text style={[styles.inputLabel, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
                 {t("reserva.datosPersonales.nombreCompleto", { defaultValue: "Nombre completo *" })}
               </Text>
-              <TextInput
+              <TextInput accessibilityLabel={t("perfil.placeholders.nombreCompleto", { defaultValue: "Ej. Juan Pérez" })}
                 style={[
                   styles.input,
                   { backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC", borderColor: c.oscuro ? c.border : "#E2E8F0", color: c.oscuro ? "#F8FAFC" : "#0F172A" },
@@ -94,7 +94,7 @@ export default function PersonalDataFormPart({ OPCIONES_NACIONALIDAD, actualizar
               <Text style={[styles.inputLabel, { color: c.oscuro ? "#94A3B8" : "#64748B" }]}>
                 {t("reserva.datosPersonales.correoElectronico", { defaultValue: "Correo electrónico *" })}
               </Text>
-              <TextInput
+              <TextInput accessibilityLabel={t("perfil.placeholders.correo", { defaultValue: "cliente@drivique.com" })}
                 style={[
                   styles.input,
                   { backgroundColor: c.oscuro ? c.bgInput : "#F8FAFC", borderColor: c.oscuro ? c.border : "#E2E8F0", color: c.oscuro ? "#F8FAFC" : "#0F172A" },
@@ -131,7 +131,9 @@ export default function PersonalDataFormPart({ OPCIONES_NACIONALIDAD, actualizar
                     </Text>
                   </View>
                 ) : null}
-                <TextInput
+                <TextInput accessibilityLabel={!hayPrefijo
+                      ? t("vehiculo.selectNationalityFirst", { defaultValue: "Primero selecciona tu nacionalidad" })
+                      : t("perfil.placeholders.telefono", { defaultValue: "Ej. 3144214909" })}
                   style={[
                     styles.input,
                     styles.inputCelular,
@@ -202,7 +204,13 @@ export default function PersonalDataFormPart({ OPCIONES_NACIONALIDAD, actualizar
                     </Text>
                   </View>
                 ) : null}
-                <TextInput
+                <TextInput accessibilityLabel={!hayPrefijo
+                      ? t("vehiculo.selectNationalityFirst", { defaultValue: "Primero selecciona tu nacionalidad" })
+                      : !datosPersonales.tipoDocumento
+                        ? t("vehiculo.selectDocTypeFirst", { defaultValue: "Primero selecciona tu tipo de documento" })
+                        : datosPersonales.tipoDocumento === "Pasaporte"
+                          ? "Ej. P12345678"
+                          : "Ej. 1075228306"}
                   style={[
                     styles.input,
                     styles.inputCelular,

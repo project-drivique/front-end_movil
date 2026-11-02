@@ -45,7 +45,7 @@ export function PrimaryButton({
   // Botón principal (CTA) — azul gradiente de marca
   if (variante === 'primario') {
     return (
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button"
         style={[
           styles.botonSombra,
           !estaDeshabilitado && SOMBRA_BOTON_GRADIENTE,
@@ -70,7 +70,7 @@ export function PrimaryButton({
   }
 
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       style={[
         styles.boton,
         variante === 'secundario' && styles.botonSecundario,

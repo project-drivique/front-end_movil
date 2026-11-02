@@ -34,7 +34,7 @@ export default function TabsSeccion<T extends string = SeccionReserva>({
         const activa = seccion.id === seccionActiva;
         const deshabilitado = tabsDeshabilitados.includes(seccion.id);
         return (
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button"
             key={seccion.id}
             style={[styles.tab, activa && styles.tabActivo, deshabilitado && styles.tabDeshabilitado]}
             onPress={() => onCambiarSeccion(seccion.id)}

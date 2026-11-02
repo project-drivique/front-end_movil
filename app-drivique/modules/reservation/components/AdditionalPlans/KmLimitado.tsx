@@ -25,7 +25,7 @@ export default function KmLimitado({ actualizarPlanes, c, dias, kmIlimitado, kmL
   
             {/* Opción 1: Kilometraje limitado */}
             {kmLimitado && (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.planes.kmLimitadoTitulo", { defaultValue: "Kilometraje limitado" })}
                 style={[
                   styles.opcionCard,
                   {
@@ -105,7 +105,7 @@ export default function KmLimitado({ actualizarPlanes, c, dias, kmIlimitado, kmL
   
             {/* Opción 2: Kilometraje ilimitado */}
             {kmIlimitado && (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.planes.kmIlimitadoTitulo", { defaultValue: "Kilometraje ilimitado" })}
                 style={[
                   styles.opcionCard,
                   {

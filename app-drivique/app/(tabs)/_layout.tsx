@@ -62,7 +62,7 @@ export default function TabLayout() {
             backgroundColor: "transparent",
           },
           tabBarButton: (props: any) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               {...props}
               android_ripple={{ color: "transparent" }}
               style={props.style}

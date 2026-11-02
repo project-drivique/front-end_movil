@@ -26,7 +26,7 @@ export default function MostrarDomicilioRetiro({ actualizarFechasLugar, c, ciuda
             </View>
   
             <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.barrio")}</Text>
-            <TextInput
+            <TextInput accessibilityLabel={t("reserva.fechasLugar.placeholderBarrio")}
               style={[styles.input, { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
               placeholder={t("reserva.fechasLugar.placeholderBarrio")}
               placeholderTextColor={c.textMuted}
@@ -35,7 +35,7 @@ export default function MostrarDomicilioRetiro({ actualizarFechasLugar, c, ciuda
             />
   
             <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.direccion")}</Text>
-            <TextInput
+            <TextInput accessibilityLabel={t("reserva.fechasLugar.placeholderDireccion")}
               style={[styles.input, { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
               placeholder={t("reserva.fechasLugar.placeholderDireccion")}
               placeholderTextColor={c.textMuted}
@@ -44,7 +44,7 @@ export default function MostrarDomicilioRetiro({ actualizarFechasLugar, c, ciuda
             />
   
             <Text style={[styles.inputLabel, { color: c.textSecondary }]}>{t("reserva.fechasLugar.referenciasEntrega")}</Text>
-            <TextInput
+            <TextInput accessibilityLabel={t("reserva.fechasLugar.placeholderReferencias")}
               style={[styles.input, { borderColor: c.border, color: c.textPrimary, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
               placeholder={t("reserva.fechasLugar.placeholderReferencias")}
               placeholderTextColor={c.textMuted}

@@ -13,7 +13,7 @@ export default function NotificationsPart2({ activePendingCoupon, c, confirmAppl
         >
           <View style={styles.modalOverlay}>
             <View style={[styles.modalCard, { backgroundColor: c.bgCard, borderColor: c.border, alignItems: "center" }]}>
-              <TouchableOpacity 
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} 
                 style={{ position: 'absolute', top: 12, right: 12, padding: 8 }} 
                 onPress={() => setActivePendingCoupon(null)}
               >
@@ -38,7 +38,7 @@ export default function NotificationsPart2({ activePendingCoupon, c, confirmAppl
                   </View>
   
                   <View style={{ flexDirection: 'row', gap: 12, marginTop: 20, width: '100%' }}>
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("coupon.cancelBtn", "Cancelar")}
                       style={[
                         styles.modalCloseBtn, 
                         { 
@@ -55,7 +55,7 @@ export default function NotificationsPart2({ activePendingCoupon, c, confirmAppl
                         {t("coupon.cancelBtn", "Cancelar")}
                       </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("coupon.applyAction", "Aplicar")}
                       style={[styles.modalCloseBtn, { flex: 1, backgroundColor: primaryAccent }]}
                       onPress={confirmApplyCoupon}
                       activeOpacity={0.85}

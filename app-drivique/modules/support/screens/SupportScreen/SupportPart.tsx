@@ -6,7 +6,7 @@ import React from 'react'
 export default function SupportPart({ activeTab, c, reportes, setActiveTab, t }: { activeTab: 'canales' | 'reportar' | 'mis_reportes'; c: { bg: string; bgCard: string; bgInput: string; bgHeader: string; textPrimary: string; textSecondary: string; textMuted: string; border: string; borderLight: string; primary: string; primaryBg: string; success: string; error: string; warning: string; oscuro: boolean; }; reportes: ReporteIncidencia[]; setActiveTab: React.Dispatch<React.SetStateAction<'canales' | 'reportar' | 'mis_reportes'>>; t: any }) {
   return (
     <View style={[styles.tabBar, { backgroundColor: c.bgCard, borderBottomColor: c.border }]}>
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.canalesAtencion")}
             style={[styles.tabButton, activeTab === "canales" && styles.activeTabButton]}
             onPress={() => setActiveTab("canales")}
           >
@@ -15,7 +15,7 @@ export default function SupportPart({ activeTab, c, reportes, setActiveTab, t }:
             </Text>
           </TouchableOpacity>
   
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.reportarIncidencia")}
             style={[styles.tabButton, activeTab === "reportar" && styles.activeTabButton]}
             onPress={() => setActiveTab("reportar")}
           >
@@ -24,7 +24,7 @@ export default function SupportPart({ activeTab, c, reportes, setActiveTab, t }:
             </Text>
           </TouchableOpacity>
   
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("tabs.misReportes")}
             style={[styles.tabButton, activeTab === "mis_reportes" && styles.activeTabButton]}
             onPress={() => setActiveTab("mis_reportes")}
           >

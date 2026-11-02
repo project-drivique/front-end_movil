@@ -74,7 +74,7 @@ export default function Length({ appliedCoupons, c, cupones, daysUntilExpiry, fo
                             {formatDateShort(cpx.fechaOtorgado)}
                           </Text>
                         </View>
-                        <TouchableOpacity onPress={() => setSelectedConditionsCoupon(cpx)}>
+                        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("coupon.conditions", { defaultValue: "Condiciones" })} onPress={() => setSelectedConditionsCoupon(cpx)}>
                           <Text style={styles.conditionsLink}>
                             {t("coupon.conditions", { defaultValue: "Condiciones" })}
                           </Text>
@@ -97,7 +97,7 @@ export default function Length({ appliedCoupons, c, cupones, daysUntilExpiry, fo
                       <Text style={[styles.couponRule, { color: c.textMuted }]}>
                         {ruleLabel}
                       </Text>
-                      <TouchableOpacity
+                      <TouchableOpacity accessibilityRole="button"
                         style={[
                           styles.couponApplyBtn,
                           isApplied && { backgroundColor: c.bgInput },
@@ -121,7 +121,7 @@ export default function Length({ appliedCoupons, c, cupones, daysUntilExpiry, fo
             </Text>
   
             {vehiculoPromos.map((vp) => (
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(vp.titulo, { defaultValue: vp.titulo })}
                 key={vp.id}
                 style={[styles.vehiculoPromoCard, { backgroundColor: c.bgCard, borderColor: c.border }]}
                 onPress={() => {

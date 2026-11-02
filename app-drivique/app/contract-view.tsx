@@ -197,7 +197,7 @@ export default function ContratoScreen() {
 
   return (
     <View style={s.fondoModal}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={volver} accessibilityLabel={t("comun.cerrar")} />
+      <Pressable accessibilityRole="button" style={StyleSheet.absoluteFill} onPress={volver} accessibilityLabel={t("comun.cerrar")} />
       <ContractViewPart Campo={Campo} Card={Card} Clausula={Clausula} Titulo={Titulo} aviso={aviso} c={c} cargando={cargando} claveDesbloqueada={claveDesbloqueada} claveIngresada={claveIngresada} contrato={contrato} error={error} errorClave={errorClave} errorFirma={errorFirma} firmaRef={firmaRef} firmaUri={firmaUri} firmaVacia={firmaVacia} firmado={firmado} firmando={firmando} handleCorreo={handleCorreo} handleFirmar={handleFirmar} handlePdf={handlePdf} handleValidarClave={handleValidarClave} insets={insets} licencia={licencia} nombreMarca={nombreMarca} ocupado={ocupado} primaryAccent={primaryAccent} puedeFirmar={puedeFirmar} setAviso={setAviso} setClaveIngresada={setClaveIngresada} setErrorClave={setErrorClave} setFirmaVacia={setFirmaVacia} t={t} volver={volver} />
     </View>
   );

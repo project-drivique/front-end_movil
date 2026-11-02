@@ -123,7 +123,7 @@ export default function PlanesAdicionales({ vehiculo, onContinuar }: Props) {
       )}
 
       {/* Botón Continuar */}
-      <TouchableOpacity style={styles.confirmarBtnWrap} onPress={handleIrADatos} activeOpacity={0.85}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.planes.continuar", { defaultValue: "Continuar" })} style={styles.confirmarBtnWrap} onPress={handleIrADatos} activeOpacity={0.85}>
         <LinearGradient
           colors={GRADIENTES.boton.colors}
           start={GRADIENTES.boton.start}

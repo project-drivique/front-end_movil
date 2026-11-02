@@ -27,7 +27,7 @@ export default function Length2({ c, dias, planes, primaryAccent, t, todosLosSer
               const icono = ICONOS_SERVICIOS[servicio.nombre] ?? ICONO_SERVICIO_DEFECTO;
   
               return (
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(`reserva.planes.nombreServicio.${servicio.nombre}`, { defaultValue: servicio.nombre })}
                   key={servicio.nombre}
                   style={[
                     styles.servicioCard,

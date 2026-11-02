@@ -104,7 +104,7 @@ export function FloatingSupportChat() {
     <>
       {/* Botón Flotante (FAB) */}
       {!isOpen && (
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.chat", "Chat de soporte")}
           style={[
             styles.fab,
             {
@@ -156,11 +156,11 @@ export function FloatingSupportChat() {
             </View>
 
             <View style={styles.headerActions}>
-              <TouchableOpacity style={styles.iconActionBtn} onPress={reiniciarChat}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.eliminar", "Eliminar")} style={styles.iconActionBtn} onPress={reiniciarChat}>
                 <Ionicons name="trash-outline" size={20} color={c.textMuted} />
               </TouchableOpacity>
 
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
                 style={[styles.closeButton, { backgroundColor: c.oscuro ? "#374151" : "#F3F4F6" }]}
                 onPress={() => setIsOpen(false)}
               >
@@ -229,7 +229,7 @@ export function FloatingSupportChat() {
                     {isBot && msg.options && msg.options.length > 0 && (
                       <View style={styles.optionsContainer}>
                         {msg.options.map((opt, idx) => (
-                          <TouchableOpacity
+                          <TouchableOpacity accessibilityRole="button"
                             key={idx}
                             style={[
                               styles.optionChip,
@@ -290,7 +290,7 @@ export function FloatingSupportChat() {
               },
             ]}
           >
-            <TextInput
+            <TextInput accessibilityLabel={t("soporte.chat.placeholder", { defaultValue: "Escribe tu consulta aquí..." })}
               style={[
                 styles.textInput,
                 {
@@ -306,7 +306,7 @@ export function FloatingSupportChat() {
               onSubmitEditing={() => enviarMensaje(inputText)}
             />
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.enviar", "Enviar")}
               style={[
                 styles.sendButton,
                 { backgroundColor: inputText.trim() ? "#2563EB" : c.oscuro ? "#374151" : "#CBD5E1" },

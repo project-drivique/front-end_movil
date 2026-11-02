@@ -24,7 +24,7 @@ export default function ReservarScreen() {
         <Text style={[styles.vacioTexto, { color: c.textMuted }]}>
           {t("reserva.flujo.vacioTexto")}
         </Text>
-        <TouchableOpacity style={styles.vacioBtnWrap} onPress={() => router.push("/(tabs)/catalog")} activeOpacity={0.85}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.flujo.irAlCatalogo")} style={styles.vacioBtnWrap} onPress={() => router.push("/(tabs)/catalog")} activeOpacity={0.85}>
           <LinearGradient
             colors={GRADIENTES.boton.colors}
             start={GRADIENTES.boton.start}

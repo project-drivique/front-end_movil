@@ -65,7 +65,13 @@ export default function TarjetaTerminosCondiciones() {
           </Text>
         </View>
 
-        <TouchableOpacity
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={t(
+              "reserva.terminos.aceptoTexto",
+              {
+                defaultValue:
+                  "Acepto los términos, condiciones del contrato de alquiler y la política de privacidad *",
+              }
+            )}
           style={styles.filaCheckbox}
           onPress={() => {
             if (!datosPersonales.terminosAceptados) {
@@ -111,14 +117,14 @@ export default function TarjetaTerminosCondiciones() {
       <Modal visible={modalTerminos} transparent animationType="slide" onRequestClose={() => setModalTerminos(false)} statusBarTranslucent>
         <View style={styles.modalOverlay}>
           {/* Backdrop superior que no se solapa con el contenedor */}
-          <TouchableOpacity style={styles.modalBackdropTop} activeOpacity={1} onPress={() => setModalTerminos(false)} />
+          <TouchableOpacity accessibilityRole="button" style={styles.modalBackdropTop} activeOpacity={1} onPress={() => setModalTerminos(false)} />
           <View style={[styles.modalContenedor, { backgroundColor: c.bgCard }]}>
             <View style={[styles.modalHandle, { backgroundColor: c.border }]} />
             <View style={[styles.modalEncabezado, { borderBottomColor: c.border }]}>
               <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>
                 {t("reserva.terminos.modalTitulo", { defaultValue: "Términos y condiciones de alquiler" })}
               </Text>
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")}
                 style={[styles.modalBotonCerrar, { backgroundColor: c.oscuro ? "#374151" : "#F3F4F6" }]}
                 onPress={() => setModalTerminos(false)}
               >
@@ -198,7 +204,7 @@ export default function TarjetaTerminosCondiciones() {
             {/* Botones de acción del Modal */}
             <View style={styles.modalBotonesRow}>
               {/* Botón Cerrar */}
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("comun.cerrar", { defaultValue: "Cerrar" })}
                 onPress={() => setModalTerminos(false)}
                 style={[
                   styles.modalBotonCerrarSecundario,
@@ -213,7 +219,7 @@ export default function TarjetaTerminosCondiciones() {
 
               {/* Botón Entendido con activación al llegar al final del scroll */}
               <View style={styles.modalBotonAceptarWrap}>
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.terminos.modalAceptar", { defaultValue: "Entendido" })}
                   onPress={terminosLeidos ? handleAceptarTerminos : undefined}
                   disabled={!terminosLeidos}
                   activeOpacity={terminosLeidos ? 0.85 : 1}

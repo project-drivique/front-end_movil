@@ -39,7 +39,7 @@ export default function CuponAplicado({ c, cuponAplicado, monedaActual, removerC
                 </Text>
               </View>
             </View>
-            <TouchableOpacity onPress={removerCupon} hitSlop={8}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.eliminar", "Eliminar")} onPress={removerCupon} hitSlop={8}>
               <Ionicons name="trash-outline" size={18} color={c.oscuro ? "#9CA3AF" : "#64748B"} />
             </TouchableOpacity>
           </View>

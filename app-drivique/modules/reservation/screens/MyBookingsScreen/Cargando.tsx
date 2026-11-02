@@ -22,7 +22,7 @@ function SelectorFiltro({
   c: ReturnType<typeof useTemaColores>;
 }) {
   return (
-    <TouchableOpacity
+    <TouchableOpacity accessibilityRole="button"
       style={[
         styles.selectorFiltro,
         {
@@ -60,7 +60,7 @@ export default function Cargando({ c, filtroGrupo, filtroMes, hayFiltrosActivos,
               </View>
               <Text style={[styles.filtrosTitulo, { color: c.textPrimary }]}>{t("misReservas.filtros")}</Text>
               {hayFiltrosActivos && (
-                <TouchableOpacity onPress={limpiarFiltros} activeOpacity={0.7}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("misReservas.limpiarFiltros")} onPress={limpiarFiltros} activeOpacity={0.7}>
                   <Text style={[styles.limpiarBtnTexto, { color: c.primary }]}>{t("misReservas.limpiarFiltros")}</Text>
                 </TouchableOpacity>
               )}
@@ -86,13 +86,13 @@ export default function Cargando({ c, filtroGrupo, filtroMes, hayFiltrosActivos,
             </View>
   
             <Modal visible={modalEstadoVisible} transparent animationType="fade" onRequestClose={() => setModalEstadoVisible(false)}>
-              <Pressable style={styles.modalOverlay} onPress={() => setModalEstadoVisible(false)}>
-                <Pressable style={[styles.modalCard, { backgroundColor: c.bgCard }]} onPress={() => {}}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t("misReservas.filtrarPorEstado")} style={styles.modalOverlay} onPress={() => setModalEstadoVisible(false)}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("misReservas.filtrarPorEstado")} style={[styles.modalCard, { backgroundColor: c.bgCard }]} onPress={() => {}}>
                   <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>{t("misReservas.filtrarPorEstado")}</Text>
                   {(["todas", ...ORDEN_GRUPOS] as const).map((grupo) => {
                     const activo = filtroGrupo === grupo;
                     return (
-                      <TouchableOpacity
+                      <TouchableOpacity accessibilityRole="button"
                         key={grupo}
                         style={[styles.opcionEstado, { borderBottomColor: c.border }]}
                         onPress={() => { setFiltroGrupo(grupo); setModalEstadoVisible(false); }}
@@ -114,13 +114,13 @@ export default function Cargando({ c, filtroGrupo, filtroMes, hayFiltrosActivos,
               animationType="fade"
               onRequestClose={() => setModalMesVisible(false)}
             >
-              <Pressable style={styles.modalOverlay} onPress={() => setModalMesVisible(false)}>
-                <Pressable style={[styles.modalCard, { backgroundColor: c.bgCard }]} onPress={() => {}}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t("misReservas.filtrarPorMes")} style={styles.modalOverlay} onPress={() => setModalMesVisible(false)}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t("misReservas.filtrarPorMes")} style={[styles.modalCard, { backgroundColor: c.bgCard }]} onPress={() => {}}>
                   <Text style={[styles.modalTitulo, { color: c.textPrimary }]}>{t("misReservas.filtrarPorMes")}</Text>
   
                   <View style={styles.mesesGrid}>
                     {mesesDelAnio.map((m) => (
-                      <TouchableOpacity
+                      <TouchableOpacity accessibilityRole="button"
                         key={m.clave}
                         style={[styles.celdaMes, { backgroundColor: filtroMes === m.clave ? COLOR_MARCA : c.bgInput }]}
                         onPress={() => seleccionarMes(m.clave)}
@@ -133,7 +133,7 @@ export default function Cargando({ c, filtroGrupo, filtroMes, hayFiltrosActivos,
                     ))}
                   </View>
   
-                  <TouchableOpacity style={styles.todosMesesBtn} onPress={() => seleccionarMes(null)} activeOpacity={0.7}>
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("misReservas.todosLosMeses")} style={styles.todosMesesBtn} onPress={() => seleccionarMes(null)} activeOpacity={0.7}>
                     <Text
                       style={[
                         styles.todosMesesTexto,

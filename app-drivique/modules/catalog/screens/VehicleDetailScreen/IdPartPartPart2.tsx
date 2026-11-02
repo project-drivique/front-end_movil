@@ -289,7 +289,7 @@ export default function IdPartPartPart2({ c, colorAzulAccion, colorBorde, colorI
                     )}
                   </Text>
       
-                  <TouchableOpacity
+                  <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("reserva.flujo.irALaPagina", { defaultValue: "Ir a la página" })}
                     style={[s.btnAccion, { borderColor: colorAzulAccion }]}
                     onPress={handleOpenPicoYPlaca}
                     activeOpacity={0.8}

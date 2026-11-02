@@ -48,7 +48,7 @@ function BannerSinResultados({
           {t("catalogo.alertas.sinResultadosMensaje")}
         </Text>
       </View>
-      <TouchableOpacity onPress={onCerrar} hitSlop={8}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("a11y.cerrar", "Cerrar")} onPress={onCerrar} hitSlop={8}>
         <Ionicons name="close" size={18} color={c.textMuted} />
       </TouchableOpacity>
     </View>

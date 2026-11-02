@@ -36,7 +36,7 @@ export default function NotificationsPart3({ activeAppliedCoupon, c, setActiveAp
                 </View>
               )}
   
-              <TouchableOpacity
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("promoCoupons.modalBtn", "¡Excelente!")}
                 style={[styles.modalCloseBtn, { width: "100%", marginTop: 20 }]}
                 onPress={() => setActiveAppliedCoupon(null)}
               >

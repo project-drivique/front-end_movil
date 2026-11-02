@@ -56,7 +56,7 @@ export default function PerfilScreen() {
           end={GRADIENTES.boton.end}
           style={styles.editHeader}
         >
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.volver")}
             style={styles.editHeaderBack}
             onPress={() => setCompletando(false)}
             activeOpacity={0.75}
@@ -93,7 +93,7 @@ export default function PerfilScreen() {
           end={GRADIENTES.boton.end}
           style={styles.editHeader}
         >
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.volver")}
             style={styles.editHeaderBack}
             onPress={handleCancelar}
             activeOpacity={0.75}
@@ -115,7 +115,7 @@ export default function PerfilScreen() {
 
             <View style={styles.editCampoWrap}>
               <Text style={[styles.editCampoLabel, { color: c.textSecondary }]}>{t("perfil.nombres")}</Text>
-              <TextInput
+              <TextInput accessibilityLabel={t("perfil.placeholderNombres")}
                 style={[styles.editInput, { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary }, errores.nombres ? styles.editInputError : null]}
                 value={form.nombres}
                 onChangeText={(val) => actualizarCampo("nombres", val)}
@@ -128,7 +128,7 @@ export default function PerfilScreen() {
 
             <View style={styles.editCampoWrap}>
               <Text style={[styles.editCampoLabel, { color: c.textSecondary }]}>{t("perfil.apellidos")}</Text>
-              <TextInput
+              <TextInput accessibilityLabel={t("perfil.placeholderApellidos")}
                 style={[styles.editInput, { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary }, errores.apellidos ? styles.editInputError : null]}
                 value={form.apellidos}
                 onChangeText={(val) => actualizarCampo("apellidos", val)}
@@ -201,7 +201,7 @@ export default function PerfilScreen() {
                   </Text>
                 </View>
                 ) : null}
-                <TextInput
+                <TextInput accessibilityLabel={t("perfil.placeholderTelefono")}
                   style={[
                     styles.editInput,
                     styles.editInputCelular,
@@ -221,7 +221,7 @@ export default function PerfilScreen() {
 
             <View style={styles.editCampoWrap}>
               <Text style={[styles.editCampoLabel, { color: c.textSecondary }]}>{t("perfil.direccion", { defaultValue: "Dirección" })}</Text>
-              <TextInput
+              <TextInput accessibilityLabel={t("perfil.placeholderDireccion", { defaultValue: "Calle 10 # 20-30, Medellín" })}
                 style={[styles.editInput, { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary }]}
                 value={form.direccion}
                 onChangeText={(val) => actualizarCampo("direccion", val)}
@@ -232,7 +232,7 @@ export default function PerfilScreen() {
             </View>
           </View>
 
-          <TouchableOpacity
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.guardarCambios")}
             style={[styles.editBtnGuardar, cargando && styles.editBtnGuardarDisabled]}
             onPress={handleGuardar}
             activeOpacity={0.85}
@@ -305,7 +305,7 @@ export default function PerfilScreen() {
           {seccionConfig}
 
           <View style={localS.guestCtaContainer}>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.registrateYa")}
               style={[localS.guestBtnShadow, SOMBRA_BOTON_GRADIENTE]}
               onPress={irARegistro}
               activeOpacity={0.85}
@@ -322,7 +322,7 @@ export default function PerfilScreen() {
               </LinearGradient>
             </TouchableOpacity>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.iniciarSesionInvitado", { defaultValue: "¿Ya tienes una cuenta? Inicia sesión" })}
               style={[
                 localS.guestLoginBtn,
                 { borderColor: c.border, backgroundColor: c.bgCard }

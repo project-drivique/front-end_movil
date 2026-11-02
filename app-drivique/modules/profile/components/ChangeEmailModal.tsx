@@ -72,7 +72,7 @@ export function ModalCambiarCorreo({
             {/* Encabezado */}
             <View style={styles.header}>
               <Text style={[styles.titulo, { color: c.textPrimary }]}>{t("perfil.cambiarCorreo.titulo")}</Text>
-              <TouchableOpacity style={[styles.btnCerrar, { backgroundColor: c.bgInput }]} onPress={onCerrar}>
+              <TouchableOpacity accessibilityRole="button" style={[styles.btnCerrar, { backgroundColor: c.bgInput }]} onPress={onCerrar}>
                 <Text style={[styles.btnCerrarText, { color: c.textSecondary }]}>✕</Text>
               </TouchableOpacity>
             </View>
@@ -86,7 +86,7 @@ export function ModalCambiarCorreo({
             {/* Nuevo correo */}
             <View style={styles.campoWrap}>
               <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t("perfil.cambiarCorreo.nuevoCorreo")}</Text>
-              <TextInput
+              <TextInput accessibilityLabel={t("perfil.cambiarCorreo.nuevoCorreoPlaceholder")}
                 style={[
                   styles.input,
                   { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary },
@@ -107,7 +107,7 @@ export function ModalCambiarCorreo({
             {/* Confirmar correo */}
             <View style={styles.campoWrap}>
               <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t("perfil.cambiarCorreo.confirmarNuevoCorreo")}</Text>
-              <TextInput
+              <TextInput accessibilityLabel={t("perfil.cambiarCorreo.confirmarNuevoCorreoPlaceholder")}
                 style={[
                   styles.input,
                   { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary },
@@ -129,7 +129,7 @@ export function ModalCambiarCorreo({
             <View style={styles.campoWrap}>
               <Text style={[styles.campoLabel, { color: c.textSecondary }]}>{t("perfil.cambiarCorreo.contrasenaActual")}</Text>
               <View style={styles.inputRow}>
-                <TextInput
+                <TextInput accessibilityLabel={t("perfil.cambiarCorreo.contrasenaActualPlaceholder")}
                   style={[
                     styles.inputFlex,
                     { backgroundColor: c.bgInput, borderColor: c.border, color: c.textPrimary },
@@ -142,7 +142,7 @@ export function ModalCambiarCorreo({
                   secureTextEntry={!verContrasena}
                   autoCapitalize="none"
                 />
-                <TouchableOpacity
+                <TouchableOpacity accessibilityRole="button"
                   style={[styles.btnVerContrasena, { backgroundColor: c.bgInput, borderColor: c.border }]}
                   onPress={() => setVerContrasena(!verContrasena)}
                 >
@@ -163,7 +163,7 @@ export function ModalCambiarCorreo({
             </View>
 
             {/* Botones */}
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.cambiarCorreo.cambiarCorreoBtn")}
               style={styles.btnGuardarWrap}
               onPress={onGuardar}
               activeOpacity={0.85}
@@ -185,7 +185,7 @@ export function ModalCambiarCorreo({
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("perfil.cambiarCorreo.cancelar")}
               style={[styles.btnCancelar, { backgroundColor: c.bgCard, borderColor: c.border }]}
               onPress={onCerrar}
               disabled={cargando}

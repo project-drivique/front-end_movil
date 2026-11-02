@@ -24,7 +24,7 @@ function ListFooter({
   if (totalPaginas <= 1) return null;
   return (
     <View style={styles.paginacionContainer}>
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.anterior")}
         style={[
           styles.paginaBtn,
           paginaActual === 1 && [styles.paginaBtnDisabled, { backgroundColor: c.bgInput }],
@@ -52,7 +52,7 @@ function ListFooter({
         {paginaActual} / {totalPaginas}
       </Text>
 
-      <TouchableOpacity
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.siguiente")}
         style={[
           styles.paginaBtn,
           paginaActual === totalPaginas && [styles.paginaBtnDisabled, { backgroundColor: c.bgInput }],
@@ -113,7 +113,7 @@ export default function Error({ abrirSweetAlert, c, datosPrecargaReserva, esFavo
                     {t("catalogo.sinResultadosFiltros")}
                   </Text>
                   {filtrosActivos && (
-                    <TouchableOpacity style={styles.limpiarFiltrosBtn} onPress={handleLimpiarFiltros}>
+                    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t("catalogo.limpiarFiltros")} style={styles.limpiarFiltrosBtn} onPress={handleLimpiarFiltros}>
                       <Text style={styles.limpiarFiltrosBtnText}>{t("catalogo.limpiarFiltros")}</Text>
                     </TouchableOpacity>
                   )}

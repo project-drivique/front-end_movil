@@ -14,7 +14,7 @@ export default function DatesLocationFormPart2({ c, fechasLugar, labelLugarDevol
                 {t("reserva.fechasLugar.lugarDeRetiro")}
               </Text>
             </View>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
               onPress={() => setModalTipo("retiro")}
               activeOpacity={0.8}
@@ -41,7 +41,7 @@ export default function DatesLocationFormPart2({ c, fechasLugar, labelLugarDevol
                 {t("reserva.fechasLugar.lugarDeDevolucion")}
               </Text>
             </View>
-            <TouchableOpacity
+            <TouchableOpacity accessibilityRole="button"
               style={[styles.selectBox, { borderColor: c.border, backgroundColor: c.oscuro ? c.bgInput : "#FFFFFF" }]}
               onPress={() => setModalTipo("devolucion")}
               activeOpacity={0.8}
