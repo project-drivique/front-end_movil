@@ -1,3 +1,4 @@
+/* global __dirname */
 require('./setupTestEnv.js');
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
