@@ -26,5 +26,17 @@ describe('Mobile Auth Service & Registration Sanity Tests', () => {
     const baseURL = process.env.EXPO_PUBLIC_API_URL || 'https://drivique.tech/api/v1';
     assert.ok(baseURL.includes('/api/v1'));
   });
-});
+  it('cerrar sesión revoca el refresh token en el servidor y lo borra del teléfono', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const servicio = fs.readFileSync(path.join(__dirname, '../modules/auth/services/authService.ts'), 'utf8');
+    const logout = servicio.slice(servicio.indexOf('async logout()'), servicio.indexOf('setCredencialesPendientes'));
+    assert.ok(logout.includes('/auth/logout'), 'debe llamar a /auth/logout');
+    assert.ok(logout.includes('clearRefreshToken'), 'debe borrar el refresh token local');
+    assert.ok(logout.indexOf('getRefreshToken') < logout.indexOf('clearRefreshToken'), 'lee el token antes de borrarlo');
 
+    const perfil = fs.readFileSync(path.join(__dirname, '../modules/profile/screens/ProfileScreen/usePerfilScreenLogic1.tsx'), 'utf8');
+    const manejador = perfil.slice(perfil.indexOf('const handleCerrarSesion'), perfil.indexOf('const handleCerrarSesion') + 200);
+    assert.ok(manejador.includes('authService.logout()'), 'el botón de cerrar sesión debe usar authService.logout');
+  });
+});

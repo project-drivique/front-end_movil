@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { IDIOMAS, IdiomaKey } from '@/modules/i18n'
 import { mezclar, COLOR_MARCA } from '@/constants/brandPalette'
 import { sessionTokens } from '@/services/http/sessionTokens'
+import { authService } from '@/modules/auth/services/authService'
 
 const configStyles = StyleSheet.create({
   seccion: {
@@ -263,7 +264,8 @@ export default function usePerfilScreenLogic1() {
       );
     };
   
-    const handleCerrarSesion = () => {
+    const handleCerrarSesion = async () => {
+      await authService.logout();
       cerrarSesionAuth();
       limpiarUsuario();
       router.replace("/(auth)/login");
