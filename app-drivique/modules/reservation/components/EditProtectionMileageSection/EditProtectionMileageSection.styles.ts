@@ -1,0 +1,191 @@
+import { StyleSheet } from 'react-native'
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  headerGradient: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  headerTitulo: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#FFFFFF",
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 20,
+  },
+  card: {
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+  },
+  cardHeaderFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 12,
+    marginTop: 2,
+  },
+  cardHeaderTitulo: {
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.3,
+    includeFontPadding: false,
+    textAlignVertical: "center",
+  },
+  opcionCard: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 14,
+  },
+  opcionCardActiva: {
+    borderWidth: 1.2,
+  },
+  escudosNivelRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 2,
+    marginBottom: 6,
+  },
+  planNombreGrande: {
+    fontSize: 16,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  planPrecioRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    marginTop: 4,
+  },
+  planPrecioValor: {
+    fontSize: 19,
+    fontWeight: "800",
+  },
+  planPrecioUnidad: {
+    fontSize: 12,
+    fontWeight: "500",
+    marginLeft: 4,
+    marginBottom: 2,
+  },
+  planDivisor: {
+    height: 1,
+    marginVertical: 14,
+  },
+  kmDescripcionTexto: {
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: "center",
+    marginHorizontal: 8,
+    marginTop: 8,
+    marginBottom: 6,
+  },
+  btnPlanNoSeleccionado: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 9,
+    alignItems: "center",
+    marginTop: 12,
+  },
+  btnPlanNoSeleccionadoTexto: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.4,
+  },
+  btnPlanSeleccionado: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    paddingVertical: 9,
+    marginTop: 12,
+  },
+  btnPlanSeleccionadoTexto: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.4,
+    marginLeft: 5,
+  },
+  beneficiosLista: {
+    gap: 8,
+    marginTop: 4,
+  },
+  beneficioFila: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  beneficioTexto: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  beneficioTextoTachado: {
+    textDecorationLine: "line-through",
+  },
+  footerTotalTarjeta: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 6,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  footerTotalLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  footerTotalValor: {
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  footer: {
+    borderTopWidth: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 20,
+    flexDirection: "row",
+    gap: 12,
+  },
+  cancelarBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelarBtnTexto: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  guardarBtnWrap: {
+    flex: 1.5,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  guardarBtn: {
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  guardarBtnTexto: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+});
