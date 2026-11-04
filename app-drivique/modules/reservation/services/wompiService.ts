@@ -9,6 +9,7 @@ import { contratoService } from "./contractService";
  */
 export const wompiConfig = {
   ambiente: "sandbox" as const,
+  publicKey: "pub_test_Xq9JLHZllsreCdWcFQoubBvUZUQ61sFC",
   currency: "COP" as const,
 };
 
@@ -126,10 +127,7 @@ export async function construirUrlCheckout({
     paymentMethodCode,
   });
 
-  const resolvedPubKey = checkout?.publicKey;
-  if (!resolvedPubKey) {
-    throw new Error("[Wompi] El servidor no devolvió la llave pública del pago.");
-  }
+  const resolvedPubKey = checkout?.publicKey || wompiConfig.publicKey;
   const resolvedCurrency = checkout?.currency || wompiConfig.currency || "COP";
   const resolvedAmount = checkout?.amountInCents ?? Math.round(Number(amountInCents));
   const resolvedRef = checkout?.reference || reference;
@@ -200,7 +198,11 @@ export interface WompiTransactionResponse {
  */
 export async function consultarTransaccionWompi(transactionId: string): Promise<WompiTransactionResponse | null> {
   try {
-    const res = await fetch(`https://sandbox.wompi.co/v1/transactions/${transactionId}`);
+    const res = await fetch(`https://sandbox.wompi.co/v1/transactions/${transactionId}`, {
+      headers: {
+        Authorization: `Bearer ${wompiConfig.publicKey}`,
+      },
+    });
     if (!res.ok) return null;
     const json = await res.json();
     return json?.data ?? null;
